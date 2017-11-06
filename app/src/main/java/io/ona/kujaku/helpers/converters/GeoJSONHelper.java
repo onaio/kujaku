@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.FeatureCollection;
+import com.cocoahero.android.geojson.GeoJSON;
 import com.cocoahero.android.geojson.MultiPoint;
 import com.cocoahero.android.geojson.Point;
 import com.cocoahero.android.geojson.Position;
@@ -48,13 +49,31 @@ public class GeoJSONHelper {
         this.featureCollection = featureCollection;
     }
 
-    public String getJson() {
+    public String getJsonFeatureCollection() {
         if (featureCollection == null) {
             return "";
         }
 
         try {
             return featureCollection.toJSON().toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(GeoJSONHelper.class.getName(), Log.getStackTraceString(e));
+            return "";
+        }
+    }
+
+    public String getGeoJsonData() {
+        if (featureCollection == null) {
+            return "";
+        }
+
+        JSONObject geoJson = new JSONObject();
+
+        try {
+            geoJson.put("type", "geojson");
+            geoJson.put("data", featureCollection);
+            return geoJson.toString();
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e(GeoJSONHelper.class.getName(), Log.getStackTraceString(e));

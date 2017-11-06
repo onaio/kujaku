@@ -50,7 +50,7 @@ public class GeoJSONHelperTest {
 
         try {
             JSONObject expectedJsonObject = new JSONObject(geoJsonFeatureCollection);
-            JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getJson());
+            JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getJsonFeatureCollection());
 
             //todo - Make this better
             assertEquals(expectedJsonObject.toString(), actualJsonObject.toString());
