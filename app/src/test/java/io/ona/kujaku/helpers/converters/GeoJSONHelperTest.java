@@ -1,17 +1,23 @@
 package io.ona.kujaku.helpers.converters;
 
+import com.mapbox.mapboxsdk.BuildConfig;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
 import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Ephraim Kigamba on 06/11/2017.
  */
 
-
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class GeoJSONHelperTest {
 
     @Test
@@ -25,7 +31,8 @@ public class GeoJSONHelperTest {
                 "        \"geometry\": {\n" +
                 "          \"coordinates\": [\n" +
                 "            36.791183,\n" +
-                "            -1.293522\n" +
+                "            -1.293522,\n" +
+                "            0\n" +
                 "          ],\n" +
                 "          \"type\": \"Point\"\n" +
                 "        },\n" +
@@ -36,7 +43,7 @@ public class GeoJSONHelperTest {
                 "}";
 
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
-        geoJSONFeature.addPoint(new LatLng(36.791183, -1.293522));
+        geoJSONFeature.addPoint(new LatLng(-1.293522, 36.791183));
         geoJSONFeature.setId("b3369aa6b5022be641198d898bd20e47");
 
         GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
@@ -46,7 +53,7 @@ public class GeoJSONHelperTest {
             JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getJson());
 
             //todo - Make this better
-            assertEquals(expectedJsonObject, actualJsonObject);
+            assertEquals(expectedJsonObject.toString(), actualJsonObject.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -55,6 +62,7 @@ public class GeoJSONHelperTest {
 
     @Test
     public void getFeatureShouldReturnMultiPointFeatureWithoutProperties() {
+
     }
 
 
