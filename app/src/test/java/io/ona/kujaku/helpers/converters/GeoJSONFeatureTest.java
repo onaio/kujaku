@@ -1,6 +1,11 @@
 package io.ona.kujaku.helpers.converters;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 import org.junit.Test;
+
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
 
 /**
@@ -23,6 +28,7 @@ public class GeoJSONFeatureTest {
         //Check the contents
         assertTrue("monitor name".equals(geoJSONFeature.getFeatureProperties().get(0).getName()));
         assertTrue("Samsung".equals(geoJSONFeature.getFeatureProperties().get(0).getValue()));
+        assertTrue("Samsung".equals(geoJSONFeature.getFeatureProperties().get(0).getValue()));
 
 
         assertTrue("name".equals(geoJSONFeature.getFeatureProperties().get(1).getName()));
@@ -35,11 +41,56 @@ public class GeoJSONFeatureTest {
     @Test
     public void addPointShouldIncreasePoints() {
 
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
+        geoJSONFeature.addProperty("name", "Some boundary");
+        geoJSONFeature.addPoint(new LatLng(3, 4));
+        geoJSONFeature.addPoint(new LatLng(9, 12));
+
+        int count = 10;
+        for(int i = 0; i < count; i++) {
+            geoJSONFeature.addPoint(new LatLng(getRandomLatOrLong(), getRandomLatOrLong()));
+            assertEquals(geoJSONFeature.getFeaturePoints().size(), i + 2);
+        }
+
     }
 
     @Test
-    public void constructorShouldCreatePointFeature() {}
+    public void constructorShouldCreatePointFeature() {
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
+        geoJSONFeature.addProperty("monitor name", "Samsung");
+        geoJSONFeature.addPoint(new LatLng(3, 4));
+
+        assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature.getFeatureType());
+
+        ArrayList<LatLng> myPoints = new ArrayList<>();
+        myPoints.add(new LatLng(-5, 30));
+        GeoJSONFeature geoJSONFeature2 = new GeoJSONFeature(myPoints);
+
+        assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature2.getFeatureType());
+
+    }
+
+    private double getRandomLatOrLong() {
+        double myRandom = Math.random();
+
+        return (myRandom * 180) - 90;
+    }
 
     @Test
-    public void constructorShouldCreateMultiPointFeature() {}
+    public void constructorShouldCreateMultiPointFeature() {
+
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
+        geoJSONFeature.addProperty("monitor name", "Samsung");
+        geoJSONFeature.addPoint(new LatLng(3, 4));
+        geoJSONFeature.addPoint(new LatLng(9, 12));
+
+        assertEquals(GeoJSONFeature.Type.MULTI_POINT, geoJSONFeature.getFeatureType());
+
+        ArrayList<LatLng> myPoints = new ArrayList<>();
+        myPoints.add(new LatLng(-5, 30));
+        myPoints.add(new LatLng(-1.2923, 5.29093));
+        GeoJSONFeature geoJSONFeature2 = new GeoJSONFeature(myPoints);
+
+        assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature2.getFeatureType());
+    }
 }

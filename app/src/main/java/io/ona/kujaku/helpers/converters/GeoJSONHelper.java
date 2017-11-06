@@ -72,7 +72,7 @@ public class GeoJSONHelper {
 
         try {
             geoJson.put("type", "geojson");
-            geoJson.put("data", featureCollection);
+            geoJson.put("data", featureCollection.toJSON());
             return geoJson.toString();
         } catch (JSONException e) {
             e.printStackTrace();
