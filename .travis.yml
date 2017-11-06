@@ -26,7 +26,7 @@ android:
 
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-26
+    - sys-img-armeabi-v7a-android-22
 
 addons:
   apt_packages:
@@ -49,7 +49,7 @@ script:
   #- travis_wait ./gradlew opensrp-app:jacocoTestReport coveralls --stacktrace
 
 after_failure:
- - pandoc opensrp-app/build/reports/tests/index.html -t plain
+ #- pandoc opensrp-app/build/reports/tests/index.html -t plain
 
 
 # Add this once a slack notification channel for Kujaku project app is created
