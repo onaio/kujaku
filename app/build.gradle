@@ -4,8 +4,8 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
     defaultConfig {
-        applicationId "kujaku.ona.io.kujaku"
-        minSdkVersion 15
+        applicationId "io.ona.kujaku"
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"

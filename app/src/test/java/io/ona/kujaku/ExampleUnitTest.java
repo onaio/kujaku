@@ -1,4 +1,4 @@
-package kujaku.ona.io.kujaku;
+package io.ona.kujaku;
 
 import org.junit.Test;
 
