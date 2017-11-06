@@ -61,6 +61,49 @@ public class GeoJSONHelperTest {
     }
 
     @Test
+    public void getGeoJsonShouldReturnGeoJsonWithPointFeatureWithoutProperties() {
+        // Might fail bcoz of Feature collection positioning
+        String geoJson = "{\n" +
+                "  \"type\": \"geojson\",\n" +
+                "  \"data\": {\n" +
+                "    \"features\": [\n" +
+                "        {\n" +
+                "          \"type\": \"Feature\",\n" +
+                "          \"properties\": {},\n" +
+                "          \"geometry\": {\n" +
+                "            \"coordinates\": [\n" +
+                "              36.791183,\n" +
+                "              -1.293522,\n" +
+                "              0\n" +
+                "            ],\n" +
+                "            \"type\": \"Point\"\n" +
+                "          },\n" +
+                "          \"id\": \"b3369aa6b5022be641198d898bd20e47\"\n" +
+                "        }\n" +
+                "      ],\n" +
+                "    \"type\": \"FeatureCollection\"\n" +
+                "  }\n" +
+                "}";
+
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
+        geoJSONFeature.addPoint(new LatLng(-1.293522, 36.791183));
+        geoJSONFeature.setId("b3369aa6b5022be641198d898bd20e47");
+
+        GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
+
+        try {
+            JSONObject expectedJsonObject = new JSONObject(geoJson);
+            JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getGeoJsonData());
+
+            //todo - Make this better
+            assertEquals(expectedJsonObject.toString(), actualJsonObject.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void getFeatureShouldReturnMultiPointFeatureWithoutProperties() {
 
     }
