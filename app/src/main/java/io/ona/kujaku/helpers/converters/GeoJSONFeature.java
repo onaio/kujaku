@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Ephraim Kigamba on 06/11/2017.
- */
-
-/**
- * This is an ambiguous geojson feature. Depending on the feature points
+ * This is an ambiguous GeoJSON feature. Depending on the feature points
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 06/11/2017.
  */
 public class GeoJSONFeature {
 
@@ -113,6 +111,4 @@ public class GeoJSONFeature {
             this.value = value;
         }
     }
-
-    // TODO - Add support for other features Other than feature collection and features
 }
