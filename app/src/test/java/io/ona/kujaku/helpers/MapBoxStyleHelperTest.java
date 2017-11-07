@@ -6,13 +6,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.exceptions.InvalidMapBoxStyleException;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
  */
 
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class MapBoxStyleHelperTest {
     /**
      * Tests best case for adding GeoJson data source to MapBox style
@@ -41,8 +47,8 @@ public class MapBoxStyleHelperTest {
 
         Assert.assertTrue(returnedData.has("sources"));
         Assert.assertTrue(returnedData.getJSONObject("sources").has(geoJsonSourceName));
-        Assert.assertEquals(returnedData.getJSONObject("sources").getJSONObject(geoJsonSourceName),
-                getGeoJsonDataSource());
+        Assert.assertEquals(returnedData.getJSONObject("sources").getJSONObject(geoJsonSourceName).toString(),
+                getGeoJsonDataSource().toString());
         Assert.assertTrue(returnedData.getJSONArray("layers").getJSONObject(0).has("source"));
         Assert.assertTrue(returnedData.getJSONArray("layers").getJSONObject(0).getString("source").equals(geoJsonSourceName));
     }
