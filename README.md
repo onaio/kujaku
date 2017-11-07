@@ -1,6 +1,13 @@
-Welcome to Project Kujaku
+# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku)
+
+A mapping and check-in library for Android using MapBox SDK.
 
 ## Setup Instructions
 
-1. Make sure to add your api key in the following file 'app/src/main/res/values/secrets.xml' from the current default
-1. Make git ignore changes to the file, in case you don't want to share it, by typing this command 'git update-index --skip-worktree app/src/main/res/values/secrets.xml'
+### Running Sample App
+
+For instructions on how to run the sample app see [these instructions](./sample/README.md).
+
+### Importing the Library
+
+--
