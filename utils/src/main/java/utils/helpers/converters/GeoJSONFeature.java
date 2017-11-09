@@ -38,7 +38,7 @@ public class GeoJSONFeature {
     }
 
     public GeoJSONFeature(List<LatLng> featurePoints) {
-        this(featurePoints, null);
+        this(featurePoints, new ArrayList<Property>());
     }
 
     public GeoJSONFeature addPoint(LatLng latLng) {
@@ -83,7 +83,7 @@ public class GeoJSONFeature {
     }
 
     public boolean hasId() {
-        return !id.isEmpty();
+        return (id != null && !id.isEmpty());
     }
 
     static class Property {
