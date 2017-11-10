@@ -18,10 +18,10 @@ import java.util.UUID;
  * ----------<br/>
  *
  * {@code MapBoxStyleStorage mapboxStyleStorage = new MapBoxStyleStorage()}
- * {@code mapboxStyleStorage.getFilePath("file:///storage/Downloads/style.json")}
- * {@code mapboxStyleStorage.getFilePath("asset://town_style.json")}
- * {@code mapboxStyleStorage.getFilePath("https://companysite.com/style/style.json")}
- * {@code mapboxStyleStorage.getFilePath("{ 'version': 8, 'name': 'kujaku-map', 'metadata': {}, }")}<br/><br/>
+ * {@code mapboxStyleStorage.getStyleURL("file:///storage/Downloads/style.json")}
+ * {@code mapboxStyleStorage.getStyleURL("asset://town_style.json")}
+ * {@code mapboxStyleStorage.getStyleURL("https://companysite.com/style/style.json")}
+ * {@code mapboxStyleStorage.getStyleURL("{ 'version': 8, 'name': 'kujaku-map', 'metadata': {}, }")}<br/><br/>
  * {@code mapboxStyleStorage.deleteFile("json.style", false)}
  * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style", true)}
  * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style")}
@@ -41,7 +41,7 @@ public class MapBoxStyleStorage {
      * @param stylePathOrJSON Mapbox Style Path or Mapbox Style JSON String
      * @return Path to the MapBox Style in the format {@code file://[Path_to_file] }
      */
-    public String getFilePath(String stylePathOrJSON) {
+    public String getStyleURL(String stylePathOrJSON) {
         if (stylePathOrJSON.startsWith("file:")
                 || stylePathOrJSON.startsWith("asset:")
                 || stylePathOrJSON.startsWith("http:")

@@ -48,7 +48,7 @@ public class MapActivity extends AppCompatActivity {
                     currentStylePath = stylesArray[0];
                     if (currentStylePath != null && !currentStylePath.isEmpty()) {
                         currentStylePath = new MapBoxStyleStorage()
-                                .getFilePath(currentStylePath);
+                                .getStyleURL(currentStylePath);
                     }
                 }
 
