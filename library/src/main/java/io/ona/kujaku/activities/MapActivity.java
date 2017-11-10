@@ -7,8 +7,6 @@ import android.os.Bundle;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 
-import java.lang.ref.ReferenceQueue;
-
 import io.ona.kujaku.R;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.utils.Constants;
@@ -50,7 +48,7 @@ public class MapActivity extends AppCompatActivity {
                     currentStylePath = stylesArray[0];
                     if (currentStylePath != null && !currentStylePath.isEmpty()) {
                         currentStylePath = new MapBoxStyleStorage()
-                                .getFilePath(currentStylePath);
+                                .getStyleURL(currentStylePath);
                     }
                 }
 
