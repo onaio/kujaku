@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
 
+import io.ona.kujaku.activities.MapActivity;
+
 /**
  * Helps add the MapBox Style to the MapBox MapView when provided as string since the MapBox API only allows
  * urls i.e. assets, network & storage. Mapbox style should follow the <a href="">Mapbox Style Spec</a><br/><br/>
@@ -80,7 +82,7 @@ public class MapBoxStyleStorage {
                 FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());
                 fileWriter.write(content);
                 fileWriter.flush();
-                fileWriter.close(); file.getAbsolutePath();
+                fileWriter.close();
 
                 return file.getAbsolutePath();
             } catch (IOException e) {
@@ -93,6 +95,7 @@ public class MapBoxStyleStorage {
 
     /**
      * Deletes a file on external/shared storage given the path or file name
+     * This should be called on {@link MapActivity#onDestroy()} so as to clean up the resources created
      *
      * @param filePath Path to the file eg. /emulated/storage/style.json, style.json
      * @param isCompletePath Flag indicating whether the Path is complete
@@ -109,6 +112,7 @@ public class MapBoxStyleStorage {
 
     /**
      * Deletes a file given the complete path
+     * This should be called on {@link MapActivity#onDestroy()} so as to clean up the resources created
      *
      * @param filePath Path to the file eg. /emulated/storage/style.json
      * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
