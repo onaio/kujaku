@@ -1,9 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="io.ona.kujaku.sample.activities.MainActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mapbox Style URL to download"/>
+
+        <EditText
+            android:id="@+id/edt_mainActivity_mapboxStyleURL"
+            android:hint="Enter mapbox Style URL to download here"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"/>
+
+        <Button
+            android:id="@+id/btn_mainActivity_downloadMapboxStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Download Mapbox Style"/>
+
+
+        <Button
+            android:id="@+id/btn_mainActivity_launchKujakuMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Launch Kujaku Map"/>
+
+    </LinearLayout>
+
+</ScrollView>
