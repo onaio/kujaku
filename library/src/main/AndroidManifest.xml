@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activities.MapActivity">
-            <intent-filter>
+            <intent-filter><!-- TODO: more to wrapper -->
                 <action android:name="io.ona.kujaku.map.SHOW" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

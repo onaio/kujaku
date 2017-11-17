@@ -1,24 +1,18 @@
-apply plugin: 'com.android.library'
-
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "io.realm:realm-gradle-plugin:4.1.1"
-    }
-}
-apply plugin: 'realm-android'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
+
     defaultConfig {
+        applicationId "io.ona.kujaku.wrapper"
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -33,14 +27,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
-        transitive = true
-    }
-    compile(project(':utils')) {
-        transitive = true
-    }
     compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.cocoahero.android:geojson:1.0.1@jar'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
 }

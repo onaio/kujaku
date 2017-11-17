@@ -1,4 +1,4 @@
-package io.ona.kujaku.helpers.converters;
+package utils.helpers.converters;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 

@@ -7,11 +7,9 @@ import android.os.Bundle;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapView;
 
-import java.lang.ref.ReferenceQueue;
-
 import io.ona.kujaku.R;
-import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
+import utils.Constants;
 
 public class MapActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_CODE = 342;

@@ -1,6 +1,4 @@
-package io.ona.kujaku.helpers.converters;
-
-import android.util.Log;
+package utils.helpers.converters;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.FeatureCollection;
@@ -57,7 +55,7 @@ public class GeoJSONHelper {
             try {
                 featureCollection.addFeature(getFeature(geoJSONFeature));
             } catch (JSONException e) {
-                Log.e(TAG, Log.getStackTraceString(e));
+                e.printStackTrace();
             }
         }
     }

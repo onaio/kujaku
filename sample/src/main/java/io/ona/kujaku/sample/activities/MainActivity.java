@@ -12,11 +12,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import io.ona.kujaku.parcelables.LatLngParcelable;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import io.ona.kujaku.utils.Constants;
+import utils.Constants;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, "Hp Invent");
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLngParcelable(37.7897, -119.5073));//new LatLngParcelable(-1.29020515, 36.78702772)); //new LatLngParcelable(-1.2920646, 36.7846043));
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLngParcelable(37.6744, -119.6815));//new LatLngParcelable(-1.29351951, 36.79288566));//new LatLngParcelable(-2.2920646, 38.7846043));
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(37.7897, -119.5073));//new LatLngParcelable(-1.29020515, 36.78702772)); //new LatLngParcelable(-1.2920646, 36.7846043));
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(37.6744, -119.6815));//new LatLngParcelable(-1.29351951, 36.79288566));//new LatLngParcelable(-2.2920646, 38.7846043));
 
         startService(mapDownloadIntent);
     }

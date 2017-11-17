@@ -1,4 +1,4 @@
-package io.ona.kujaku.exceptions;
+package utils.exceptions;
 
 /**
  * Thrown when an error occurs trying to download a MapBox Offline Map

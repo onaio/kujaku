@@ -17,11 +17,11 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-import io.ona.kujaku.exceptions.OfflineMapDownloadException;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import utils.exceptions.OfflineMapDownloadException;
 
 /**
  *
