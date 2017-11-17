@@ -1,6 +1,6 @@
 package io.ona.kujaku.services;
 
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,7 +45,7 @@ import io.ona.kujaku.utils.Constants;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
 
-public class MapboxOfflineDownloaderService extends IntentService {
+public class MapboxOfflineDownloaderService extends Service {
 
 
     private enum SERVICE_ACTION_RESULT {
@@ -64,25 +64,16 @@ public class MapboxOfflineDownloaderService extends IntentService {
     private static final String MY_PREFERENCES = "KUJAKU PREFERENCES";
     private static final String PREFERENCE_MAPBOX_ACCESS_TOKEN = "MAPBOX ACCESS TOKEN";
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
-    public MapboxOfflineDownloaderService(String name) {
-        super(name);
-    }
-
     public MapboxOfflineDownloaderService() {
-        super("MapBox Offline Downloader Service");
+        super();
     }
 
-    /*@Override
+    @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         onHandleIntent(intent);
-        return START_STICKY;
-    }*/
+        return START_NOT_STICKY;
+    }
 
     @Nullable
     @Override
@@ -199,7 +190,7 @@ public class MapboxOfflineDownloaderService extends IntentService {
         if (isNetworkConnectionPreferred(networkType)) {
             String mapBoxAccessToken = getSavedAccessToken();
             if (!mapBoxAccessToken.isEmpty()) {
-                final MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
+                final MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(getApplicationContext(), mapBoxAccessToken);
                 mapBoxOfflineResourcesDownloader.getIncompleteMapDownloads(new IncompleteMapDownloadCallback() {
                     @Override
                     public void incompleteMap(OfflineRegion offlineRegion, OfflineRegionStatus offlineRegionStatus) {
