@@ -10,12 +10,8 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MapActivity">
-            <intent-filter><!-- TODO: more to wrapper -->
-                <action android:name="io.ona.kujaku.map.SHOW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".activities.MapActivity"
+            android:exported="false" />
         <service android:name=".services.MapboxOfflineDownloaderService"/>
         <receiver android:name=".receivers.KujakuNetworkChangeReceiver">
             <intent-filter>

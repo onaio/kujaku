@@ -12,6 +12,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="io.ona.kujaku.activities.MapActivity">
+            <intent-filter>
+                <action android:name="io.ona.kujaku.map.SHOW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

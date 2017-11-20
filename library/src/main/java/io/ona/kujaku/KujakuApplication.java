@@ -9,6 +9,8 @@ import android.os.SystemClock;
 
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.storage.realm.RealmDatabase;
+import io.realm.Realm;
 import utils.Constants;
 
 /**
@@ -20,13 +22,22 @@ import utils.Constants;
  */
 
 public class KujakuApplication extends Application {
+    private final boolean enableMapDownloadResume;
+
+    public KujakuApplication(boolean enableMapDownloadResume) {
+        this.enableMapDownloadResume = enableMapDownloadResume;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(getApplicationContext());
-        resumeMapDownload(this);
+        RealmDatabase.init(this);
+
+        if (enableMapDownloadResume) {
+            KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(getApplicationContext());
+            resumeMapDownload(this);
+        }
     }
 
     private void resumeMapDownload(Context context) {
