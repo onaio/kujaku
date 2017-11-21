@@ -6,36 +6,94 @@
     android:layout_height="match_parent"
     tools:context="io.ona.kujaku.sample.activities.MainActivity">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp">
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Offline Map Download"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="20dp"/>
+
+        <EditText
+            android:id="@+id/edt_mainActivity_mapName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Map Name"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Top left Bound"
+            android:layout_marginBottom="10dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
 
             <EditText
-                android:id="@+id/edt_mainActivity_latitude"
+                android:id="@+id/edt_mainActivity_topLeftlatitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:inputType="numberDecimal|numberSigned"
                 android:layout_weight="1" />
 
             <EditText
-                android:id="@+id/edt_mainActivity_longitude"
+                android:id="@+id/edt_mainActivity_topLeftlongitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:inputType="numberDecimal|numberSigned"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bottom Right Bound"
+            android:layout_marginBottom="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <EditText
+                android:id="@+id/edt_mainActivity_bottomRightlatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal|numberSigned"
+                android:layout_weight="1" />
+
+            <EditText
+                android:id="@+id/edt_mainActivity_bottomRightlongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal|numberSigned"
                 android:layout_weight="1"/>
         </LinearLayout>
 
         <Button
             android:id="@+id/btn_mainActivity_startOfflineDownload"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Start Offline Download"/>
+
+        <Button
+            android:id="@+id/btn_mainActivity_openMapActivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Map Activity"/>
     </LinearLayout>
 
 </ScrollView>

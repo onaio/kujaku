@@ -1,4 +1,4 @@
-package io.ona.kujaku.storage.realm;
+package io.ona.kujaku.data.realm;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

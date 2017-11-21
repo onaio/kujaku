@@ -8,8 +8,17 @@ package io.ona.kujaku.listeners;
 
 public interface OnPauseMapDownloadCallback {
 
+    /**
+     * Called when a request to pause an Offline Region's download is successful
+     */
     void onPauseSuccess();
 
+    /**
+     * Called when a request to pause an Offline Region's download fails
+     *
+     * @param error
+     * @param message
+     */
     void onPauseError(String error, String message);
 
     String

@@ -9,8 +9,7 @@ import android.os.SystemClock;
 
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import io.ona.kujaku.storage.realm.RealmDatabase;
-import io.realm.Realm;
+import io.ona.kujaku.data.realm.RealmDatabase;
 import utils.Constants;
 
 /**

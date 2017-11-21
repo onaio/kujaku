@@ -1,9 +1,12 @@
 package io.ona.kujaku.listeners;
 
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
 /**
+ * Callback used to provide periodic updates on an Offline Regions Status during downloads
+ *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
 
@@ -17,8 +20,10 @@ public interface OfflineRegionObserver {
      * </p>
      *
      * @param status the changed status
+     * @param offlineRegion the {@link OfflineRegion} for which the {@link OfflineRegionStatus}
+     *                      was queried
      */
-    void onStatusChanged(OfflineRegionStatus status);
+    void onStatusChanged(OfflineRegionStatus status, OfflineRegion offlineRegion);
 
     /**
      * Implement this method to be notified of errors encountered while downloading

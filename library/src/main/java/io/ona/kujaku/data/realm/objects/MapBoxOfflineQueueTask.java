@@ -1,4 +1,4 @@
-package io.ona.kujaku.storage.realm.objects;
+package io.ona.kujaku.data.realm.objects;
 
 import android.support.annotation.NonNull;
 
@@ -16,10 +16,16 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class MapBoxOfflineQueueTask extends RealmObject {
+
+    public static final String TASK_TYPE_DOWNLOAD = "TASK TYPE DOWNLOAD"
+            , TASK_TYPE_DELETE = "TASK TYPE DELETE";
+
+    public static final int TASK_STATUS_DONE = 1
+            , TASK_STATUS_INCOMPLETE = 2;
+
     @PrimaryKey
     private String id = UUID.randomUUID().toString();
     private String taskType;
-    private String packageName;
     private int taskStatus;
     private String task;
     private Date dateCreated;
@@ -35,14 +41,6 @@ public class MapBoxOfflineQueueTask extends RealmObject {
 
     public void setTaskType(String taskType) {
         this.taskType = taskType;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
     }
 
     public int getTaskStatus() {
