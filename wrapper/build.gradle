@@ -1,3 +1,9 @@
+allprojects {
+    repositories {
+        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+    }
+}
+
 apply plugin: 'com.android.application'
 
 android {
