@@ -24,6 +24,8 @@ public class Constants {
     public static int MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE = 8687;
     public static long MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 
+    public static final String MAP_BOX_URL_FORMAT = "mapbox://styles/[A-Za-z0-9]+/[A-Za-z0-9]+";
+
     public static enum SERVICE_ACTION {
         DOWNLOAD_MAP,
         DELETE_MAP,

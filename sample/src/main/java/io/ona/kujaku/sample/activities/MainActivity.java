@@ -20,6 +20,7 @@ import java.util.UUID;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
+import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void callLibrary() {
-        Intent intent = new Intent(Constants.INTENT_ACTION_SHOW_MAP);
+        Intent intent = new Intent(this, MapActivity.class);
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         startActivity(intent);
     }

@@ -9,6 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+
 import utils.exceptions.InvalidMapBoxStyleException;
 
 /**
@@ -52,7 +56,7 @@ public class MapBoxStyleHelper {
      * @param sourceLayer   Layer on the vector tile source to use
      * @return  {@code TRUE} if able to associate the data-source with the layer
      * @throws JSONException                If unable to parse the style object
-     * @throws InvalidMapBoxStyleException  If the style object has missing required components
+     * @throws InvalidMapBoxStyleException  If the style object is missing required components
      */
     public boolean linkDataSourceToLayer(@NonNull String sourceName, @NonNull String layerId, @Nullable String sourceLayer)
             throws JSONException, InvalidMapBoxStyleException {
@@ -82,6 +86,50 @@ public class MapBoxStyleHelper {
         }
 
         return false;
+    }
+
+    /**
+     * Makes layers invisible by changing the visibility property of the layer. This is useful
+     * where layers in a style have dummy data which is not going to be replaced
+     *
+     * @param layerIds String array of <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#layer-id">layerIds</a>
+     * @return
+     * @throws JSONException
+     * @throws InvalidMapBoxStyleException If the style object is missing required components
+     */
+    public boolean disableLayers(@Nullable String[] layerIds)
+            throws JSONException, InvalidMapBoxStyleException{
+        if (layerIds == null || layerIds.length < 1 || styleObject == null) {
+            return false;
+        }
+
+        ArrayList<String> layerIdsList = new ArrayList<>(Arrays.asList(layerIds));
+
+        if (styleObject.has("layers")) {
+            JSONArray layers = styleObject.getJSONArray("layers");
+            for (int i = 0; i < layers.length(); i++) {
+                JSONObject currentLayer = layers.getJSONObject(i);
+                if (currentLayer.has("id") && !currentLayer.getString("id").isEmpty()) {
+                    for (Iterator<String> layerIdIterator = layerIdsList.iterator(); layerIdIterator.hasNext();) {
+                        String layerId = layerIdIterator.next();
+                        if (layerId.equals(currentLayer.getString("id"))) {
+                            JSONObject layout = new JSONObject();
+                            layout.put("visibility", "none");
+                            currentLayer.put("layout", layout);
+
+                            layerIdIterator.remove();
+                            if (layerIdsList.isEmpty()) {
+                                return true;
+                            }
+                        }
+                    }
+                } else {
+                    throw new InvalidMapBoxStyleException("Layer with no Id");
+                }
+            }
+        }
+
+        return true;
     }
 
     public JSONObject getStyleObject() {

@@ -15,8 +15,8 @@ import utils.Constants;
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
  * These are passed as:
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles
+ *      {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
+ *      {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
  *
  *
  *      <p>
