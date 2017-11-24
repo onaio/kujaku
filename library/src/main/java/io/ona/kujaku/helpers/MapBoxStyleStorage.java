@@ -158,14 +158,34 @@ public class MapBoxStyleStorage {
         return "";
     }
 
-    private String readFile(String folders, String path) {
+    public String readStyle(@NonNull String protocolledFilePath) {
+        String fileProtocolOrSth = "file://";
+        if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {
+            return "";
+        }
+        String folders = "";
+
+        if (protocolledFilePath.indexOf(File.separator) > 6) {
+            folders = protocolledFilePath.substring(
+                    fileProtocolOrSth.length(),
+                    protocolledFilePath.lastIndexOf(File.separator) - 1);
+        }
+
+        String fileName = protocolledFilePath.substring(
+                protocolledFilePath.lastIndexOf(File.separator) + 1
+        );
+
+        return readFile(folders, fileName);
+    }
+
+    private String readFile(String folders, String filename) {
         File fileFolders = new File(Environment.getExternalStorageDirectory() + folders);
 
         if (!fileFolders.exists()) {
             fileFolders.mkdirs();
         }
 
-        File finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + path);
+        File finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + filename);
         StringBuilder text = new StringBuilder();
 
         try {
