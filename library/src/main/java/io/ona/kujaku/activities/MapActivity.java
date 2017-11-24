@@ -135,8 +135,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             JSONObject metadata = jsonObject.getJSONObject("metadata");
             if (metadata.has("kujaku")) {
                 JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("data_layers")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("data_layers");
+                if (kujakuRelatedData.has("data_source_names")) {
+                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("data_source_names");
                     String[] dataLayers = new String[jsonArray.length()];
 
                     for(int i = 0; i < sortFields.length; i++) {
