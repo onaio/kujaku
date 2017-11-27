@@ -1,6 +1,7 @@
 package io.ona.kujaku.helpers.converters;
 
 import org.junit.Test;
+import utils.helpers.converters.GeoJSONFeature;
 import static org.junit.Assert.*;
 
 /**

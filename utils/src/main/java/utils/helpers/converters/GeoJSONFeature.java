@@ -86,7 +86,7 @@ public class GeoJSONFeature {
         return (id != null && !id.isEmpty());
     }
 
-    static class Property {
+    public static class Property {
         private String name;
         private Object value;
 

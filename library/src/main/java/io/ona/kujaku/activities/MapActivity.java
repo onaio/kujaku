@@ -205,7 +205,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    //Todo handle this better --> For near future but not now
+    //Todo handle this better --> In the near future but not now
     private String getStyleJSONString(@NonNull String stylePathOrJSON) {
         String defaultStyleJSONString = "";
         if (stylePathOrJSON.matches(Constants.MAP_BOX_URL_FORMAT)) {

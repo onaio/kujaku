@@ -11,7 +11,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.BuildConfig;
-import io.ona.kujaku.exceptions.InvalidMapBoxStyleException;
+import utils.exceptions.InvalidMapBoxStyleException;
+import utils.helpers.MapBoxStyleHelper;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
