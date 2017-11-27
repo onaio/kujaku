@@ -10,6 +10,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import utils.helpers.converters.GeoJSONFeature;
+import utils.helpers.converters.GeoJSONHelper;
+
 import static org.junit.Assert.assertEquals;
 
 /**

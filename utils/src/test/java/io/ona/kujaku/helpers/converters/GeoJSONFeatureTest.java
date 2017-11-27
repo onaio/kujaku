@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
+import utils.helpers.converters.GeoJSONFeature;
+
 import static org.junit.Assert.*;
 
 /**
