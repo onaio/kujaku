@@ -32,6 +32,27 @@ public class MapBoxStyleHelper {
         this.styleObject = styleObject;
     }
 
+    /**
+     * Adds Kujaku's configuration to the MapBox style's metadata object
+     * 
+     * @param kujakuConfig
+     * @return
+     * @throws JSONException
+     */
+    public boolean insertKujakuConfig(@NonNull JSONObject kujakuConfig) throws JSONException {
+        if (styleObject != null) {
+            if (!styleObject.has("metadata")) {
+                styleObject.put("metadata", new JSONObject());
+            }
+
+            styleObject.getJSONObject("metadata").put("kujaku", kujakuConfig);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public boolean insertGeoJsonDataSource(@NonNull String sourceName, JSONObject geoJson, @NonNull String layerId)
             throws JSONException, InvalidMapBoxStyleException {
         if (styleObject != null && !TextUtils.isEmpty(sourceName)) {
