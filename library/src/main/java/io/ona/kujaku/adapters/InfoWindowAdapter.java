@@ -1,12 +1,19 @@
 package io.ona.kujaku.adapters;
 
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,22 +32,33 @@ import io.ona.kujaku.R;
 
 public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.InfoWindowViewHolder> {
 
+    private Activity activity;
     private ArrayList<InfoWindowObject> items;
     private OnClickListener onClickListener;
     private static InfoWindowAdapter instance;
     private RecyclerView recyclerView;
 
-    private int lastSelectedPosition = 0;
+    private int lastSelectedPosition = -1;
     private static final String TAG = InfoWindowAdapter.class.getSimpleName();
 
-    public InfoWindowAdapter(@NonNull LinkedHashMap<String, InfoWindowObject> items, @NonNull RecyclerView recyclerView) {
-        this(new ArrayList<InfoWindowObject>(items.values()), recyclerView);
+    private int unselectedOpacity = 50;
+    private int selectedOpacity = 255;
+    private int selectedSizeDifferenceDp = 10;
+    private int animateResizeDuration = 1000;
+    @ColorInt private int unselectedColor = Color.WHITE;
+    @ColorInt private int selectedColor;
+
+    public InfoWindowAdapter(@NonNull Activity activity, @NonNull LinkedHashMap<String, InfoWindowObject> items, @NonNull RecyclerView recyclerView) {
+        this(activity, new ArrayList<InfoWindowObject>(items.values()), recyclerView);
     }
 
-    public InfoWindowAdapter(@NonNull ArrayList<InfoWindowObject> items, @NonNull RecyclerView recyclerView) {
+    public InfoWindowAdapter(@NonNull Activity activity, @NonNull ArrayList<InfoWindowObject> items, @NonNull RecyclerView recyclerView) {
+        this.activity = activity;
         this.items = items;
         this.recyclerView = recyclerView;
         instance = this;
+
+        selectedColor = activity.getResources().getColor(R.color.infoWindowItemSelected);
     }
 
     @Override
@@ -97,6 +115,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         public InfoWindowViewHolder(@NonNull LinearLayout linearLayout,@NonNull  CardView cardView,@NonNull  TextView nameTv,
                                     @NonNull TextView ageTv,@NonNull  TextView weightTv,@NonNull  TextView vaccineTv) {
             super(linearLayout);
+            this.linearLayout = linearLayout;
             this.cardView = cardView;
             this.nameTv = nameTv;
             this.ageTv = ageTv;
@@ -105,14 +124,13 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         }
 
         public void onBind(final int position) {
+            linearLayout.setAlpha(0.5f);
+            //instance.changeMargin(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
             linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    instance.deactivatePreviouslySelectedItem(instance.lastSelectedPosition);
-                    instance.activateSelectedItem(position);
-                    instance.lastSelectedPosition = position;
-
                     OnClickListener onClickListener = instance.getOnClickListener();
+                    instance.focusOnPosition(position);
                     if (onClickListener != null) {
                         onClickListener.onClick(v, position);
                     }
@@ -122,32 +140,62 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
 
         public void setData(JSONObject jsonObject) throws JSONException {
             String[] priorityFields = new String[] {
-                    "name",
-                    "age",
-                    "weight",
-                    "vaccine"
+                    "first_name",
+                    "Birth_Weight",
+                    "Place_Birth",
+                    "zeir_id"
             };
-            TextView[] tvs = new TextView[] {nameTv, ageTv, weightTv, vaccineTv};
+            TextView[] tvs = new TextView[]{nameTv, ageTv, weightTv, vaccineTv};
+            int fromPriorityFieldIndex = 0;
 
-            for(int i = 0; i < priorityFields.length; i++) {
-                TextView tv = tvs[i];
+            if (jsonObject.has("properties")) {
+                JSONObject propertiesJSON = jsonObject.getJSONObject("properties");
 
-                for(String priorityField: priorityFields) {
-                    if (jsonObject.has(priorityField)) {
-                        tv.setText(jsonObject.getString(priorityField));
-                        break;
-                    } else {
-                        // Select a substitude field or disable the text view
-                        tv.setVisibility(View.GONE);
+                for (int i = 0; i < tvs.length; i++) {
+                    TextView tv = tvs[i];
+
+                    for (int j = fromPriorityFieldIndex; j < priorityFields.length; j++) {
+                        String priorityField = priorityFields[j];
+
+                        if (propertiesJSON.has(priorityField)) {
+                            tv.setText(propertiesJSON.getString(priorityField));
+                            fromPriorityFieldIndex = j + 1;
+                            break;
+                        } else {
+                            // Select a substitude field or disable the text view
+                            tv.setVisibility(View.GONE);
+                            //tv.setText(propertiesJSON.getString("id"));
+                        }
+
                     }
                 }
             }
 
         }
 
-        public void select() {}
+        public void select() {
+            //linearLayout.setBackgroundColor(instance.selectedColor);
+            //cardView.setBackgroundColor(instance.selectedColor);
+            linearLayout.setAlpha(1.0f);
 
-        public void unselect() {}
+            // Resize the widget
+            instance.resizeView(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
+            instance.changeMargin(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp));
+        }
+
+        public void unselect() {
+            //linearLayout.setBackgroundColor(instance.unselectedColor);
+            linearLayout.setAlpha(0.5f);
+
+            // Reduce the size
+            instance.resizeView(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp));
+            instance.changeMargin(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
+
+        }
+
+        private float getPx(int dp) {
+            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, linearLayout.getResources().getDisplayMetrics());
+        }
     }
 
     public static interface OnClickListener {
@@ -156,13 +204,75 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
     }
 
     private void activateSelectedItem(int position) {
-        ((InfoWindowAdapter.InfoWindowViewHolder) recyclerView.findViewHolderForAdapterPosition(position))
-                .select();
+        InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+        if (infoWindowViewHolder != null) {
+            infoWindowViewHolder.select();
+        }
     }
 
     private void deactivatePreviouslySelectedItem(int lastSelectedPosition) {
-        ((InfoWindowAdapter.InfoWindowViewHolder) recyclerView.findViewHolderForAdapterPosition(lastSelectedPosition))
-                .unselect();
+        InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) recyclerView.findViewHolderForAdapterPosition(lastSelectedPosition);
+        if (infoWindowViewHolder != null) {
+            infoWindowViewHolder.unselect();
+        }
+    }
+
+    private void resizeView(@NonNull final View view, final int sizeIncreaseInPixels) {
+        /*ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.width = (int) (params.width + sizeIncreaseInPixels);
+        params.height = (int) (params.height + sizeIncreaseInPixels);
+        view.setLayoutParams(params);*/
+
+        /*if (view instanceof LinearLayout || view instanceof CardView) {
+            int paddingTop = view.getPaddingTop();
+            int paddingBottom = view.getPaddingBottom();
+            int paddingLeft = view.getPaddingLeft();
+            int paddingRight = view.getPaddingRight();
+
+            view.setPadding(
+                    paddingLeft + sizeIncreaseInPixels,
+                    paddingTop + sizeIncreaseInPixels,
+                    paddingRight + sizeIncreaseInPixels,
+                    paddingBottom + sizeIncreaseInPixels
+            );
+        }*/
+
+        /*view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+            }
+        });*/
+
+        int height = view.getMeasuredHeight();
+        int width = view.getMeasuredWidth();
+
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.width = (int) (width + (sizeIncreaseInPixels * 2));
+        params.height = (int) (height + (sizeIncreaseInPixels * 2));
+        view.setLayoutParams(params);
+    }
+
+    private void changeMargin(@NonNull View view, final int sizeIncreaseInPixels) {
+        ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+
+        marginLayoutParams.setMargins(
+                marginLayoutParams.leftMargin,
+                marginLayoutParams.topMargin + sizeIncreaseInPixels,
+                marginLayoutParams.rightMargin,
+                marginLayoutParams.bottomMargin + sizeIncreaseInPixels
+        );
+    }
+
+    public void focusOnPosition(int position) {
+        if (lastSelectedPosition != position) {
+            if (lastSelectedPosition > -1) {
+                deactivatePreviouslySelectedItem(instance.lastSelectedPosition);
+            }
+            activateSelectedItem(position);
+            lastSelectedPosition = position;
+
+        }
     }
 
 }

@@ -38,7 +38,7 @@ import utils.Constants;
  */
 
 public class MapBoxStyleStorage {
-    private static final String DIRECTORY = ".KujakuStyles";
+    public static final String DIRECTORY = ".KujakuStyles";
     private static final String TAG = MapBoxStyleStorage.class.getSimpleName();
 
     /**
@@ -165,27 +165,42 @@ public class MapBoxStyleStorage {
         }
         String folders = "";
 
-        if (protocolledFilePath.indexOf(File.separator) > 6) {
+        if (protocolledFilePath.lastIndexOf(File.separator) > 6) {
             folders = protocolledFilePath.substring(
                     fileProtocolOrSth.length(),
-                    protocolledFilePath.lastIndexOf(File.separator) - 1);
+                    protocolledFilePath.lastIndexOf(File.separator));
         }
 
         String fileName = protocolledFilePath.substring(
                 protocolledFilePath.lastIndexOf(File.separator) + 1
         );
 
-        return readFile(folders, fileName);
+        return readFile(folders, fileName, true);
     }
 
     private String readFile(String folders, String filename) {
-        File fileFolders = new File(Environment.getExternalStorageDirectory() + folders);
+        return readFile(folders, filename, false);
+    }
+
+    private String readFile(String folders, String filename, boolean isPathComplete) {
+        File fileFolders;
+
+        if (isPathComplete) {
+            fileFolders = new File(folders);
+        } else {
+            fileFolders = new File(Environment.getExternalStorageDirectory() + folders);
+        }
 
         if (!fileFolders.exists()) {
             fileFolders.mkdirs();
         }
 
-        File finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + filename);
+        File finalFile;
+        if (isPathComplete) {
+            finalFile = new File(folders + File.separator + filename);
+        } else {
+            finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + filename);
+        }
         StringBuilder text = new StringBuilder();
 
         try {

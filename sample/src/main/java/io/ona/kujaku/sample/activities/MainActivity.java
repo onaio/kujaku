@@ -87,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void callLibrary() {
         Intent intent = new Intent(this, MapActivity.class);
+        intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
+                "file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json"
+        });
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         startActivity(intent);
     }
