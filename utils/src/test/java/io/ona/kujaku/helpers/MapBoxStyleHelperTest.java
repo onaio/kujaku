@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.utils.BuildConfig;
 import utils.exceptions.InvalidMapBoxStyleException;
 import utils.helpers.MapBoxStyleHelper;
 
