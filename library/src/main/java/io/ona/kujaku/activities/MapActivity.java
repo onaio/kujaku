@@ -395,25 +395,34 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             // Supposed to scroll to the selected position
             final InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
             if (infoWindowViewHolder == null) {
-
-                linearLayoutManager.setOnScrollListener(new InfoWindowLayoutManager.OnScrollListener() {
+                infoWindowsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
-                    public void onFinishedScrolling() {
-                        InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
-                        if (infoWindowViewHolder != null) {
+                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                        super.onScrollStateChanged(recyclerView, newState);
 
-                            View v = infoWindowViewHolder.itemView;
-                            infoWindowViewHolder.select();
-                            linearLayoutManager.removeOnScrollListener();
+                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                            InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+                            if (infoWindowViewHolder != null) {
+                                View v = infoWindowViewHolder.itemView;
+
+                                final int offset = (screenWidth/2) - (v.getWidth()/2);
+                                linearLayoutManager.scrollToPositionWithOffset(position,  offset);
+
+                                infoWindowViewHolder.select();
+                            }
+
+                            infoWindowsRecyclerView.removeOnScrollListener(this);
+                            startedScrolling = false;
                         }
                     }
                 });
+                startedScrolling = true;
                 infoWindowsRecyclerView.smoothScrollToPosition(position);
 
             } else {
                 View v = infoWindowViewHolder.itemView;
-                infoWindowViewHolder.select();
                 animateToPosition(v, position, animateToNewTargetDuration);
+                infoWindowViewHolder.select();
             }
         }
     }
@@ -437,7 +446,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         int scrollX = (left - (screenWidth/2)) + (view.getWidth()/2);
         final int offset = (screenWidth/2) - (view.getWidth()/2);
 
-        infoWindowsRecyclerView.smoothScrollToPosition(position);
+        //infoWindowsRecyclerView.smoothScrollToPosition(position);
+        linearLayoutManager.scrollToPositionWithOffset(position,  offset);
         //Todo Figure out how to handle another item being selected while this one is being animated
         /*new Thread(new Runnable() {
             @Override
