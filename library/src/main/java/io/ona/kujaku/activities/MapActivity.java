@@ -1,5 +1,6 @@
 package io.ona.kujaku.activities;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
@@ -70,18 +71,16 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private MapboxMap mapboxMap;
     private boolean infoWindowDisplayed = false;
 
-    private RecyclerView.OnScrollListener onScrollListener = null;
-
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
     private InfoWindowLayoutManager linearLayoutManager;
     private int lastSelected = 0;
 
     private int animateToNewTargetDuration = 1000;
+    private int animateToNewInfoWindowDuration = 300;
     private int screenWidth = 0;
 
     private InfoWindowAdapter infoWindowAdapter;
-    private boolean startedScrolling = false;
 
     private LatLng topLeftBound;
     private LatLng bottomRightBound;
@@ -188,12 +187,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 mapboxMap.setOnMapClickListener(MapActivity.this);
 
                 if (topLeftBound != null && bottomRightBound != null) {
-                    mapboxMap.setLatLngBoundsForCameraTarget(
-                            new LatLngBounds.Builder()
+                    LatLngBounds latLngBounds = new LatLngBounds.Builder()
                             .include(topLeftBound)
                             .include(bottomRightBound)
-                            .build()
-                    );
+                            .build();
+
+                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 50), 50);
                 }
 
                 if (minZoom != -1) {
@@ -470,39 +469,34 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     }
 
-    private void showInfoWindow(final int position) {
+    private void showInfoWindowListAndScrollToPosition(final int position) {
         if (!infoWindowDisplayed) {
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
             infoWindowsRecyclerView.getViewTreeObserver()
-                    .addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
+                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                         @Override
-                        public void onDraw() {
-                            // Perform the focus on position here
-                            InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
-                            if (infoWindowViewHolder != null) {
-                                View v = infoWindowViewHolder.itemView;
-
-                                final int offset = (screenWidth/2) - (v.getWidth()/2);
-                                linearLayoutManager.scrollToPositionWithOffset(position,  offset);
-
-                                infoWindowViewHolder.select();
-                            }
-                            infoWindowsRecyclerView.getViewTreeObserver().removeOnDrawListener(this);
+                        public void onGlobalLayout() {
+                            infoWindowsRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            scrollToInfoWindowPosition(position);
                         }
                     });
             infoWindowDisplayed = true;
+        } else {
+            scrollToInfoWindowPosition(position);
         }
     }
 
-    private void renderInfoWindow(final int position) {
+    private void scrollToInfoWindowPosition(final int position) {
         if (position > -1) {
-
             infoWindowAdapter.focusOnPosition(position);
 
             // Supposed to scroll to the selected position
             final InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
-            if (infoWindowViewHolder == null) {
+            int lastVisiblePosition = linearLayoutManager.findLastVisibleItemPosition();
+            int firstVisiblePosition = linearLayoutManager.findFirstVisibleItemPosition();
+
+            if (infoWindowViewHolder == null || (position < firstVisiblePosition || position > lastVisiblePosition)) {
                 infoWindowsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -513,24 +507,21 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             if (infoWindowViewHolder != null) {
                                 View v = infoWindowViewHolder.itemView;
 
-                                final int offset = (screenWidth/2) - (v.getWidth()/2);
+                                int offset = (screenWidth/2) - (v.getWidth()/2);
                                 linearLayoutManager.scrollToPositionWithOffset(position,  offset);
 
                                 infoWindowViewHolder.select();
                             }
 
                             infoWindowsRecyclerView.removeOnScrollListener(this);
-                            startedScrolling = false;
                         }
                     }
                 });
-                startedScrolling = true;
                 infoWindowsRecyclerView.smoothScrollToPosition(position);
 
             } else {
                 View v = infoWindowViewHolder.itemView;
-                animateToPosition(v, position, animateToNewTargetDuration);
-                infoWindowViewHolder.select();
+                animateScrollToPosition(v, position, infoWindowViewHolder, animateToNewInfoWindowDuration);
             }
         }
     }
@@ -540,55 +531,34 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 .target(point)
                 .build();
 
-
         if (mapboxMap != null) {
             mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);
         }
     }
 
-
-    private void animateToPosition(@NonNull View view, final int position, final int animationDuration) {
-        final int left = view.getLeft()
-                , right = view.getRight();
-        
-        int scrollX = (left - (screenWidth/2)) + (view.getWidth()/2);
+    private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
+        final int left = view.getLeft();
         final int offset = (screenWidth/2) - (view.getWidth()/2);
+        final float totalOffset = offset - left;
 
-        //infoWindowsRecyclerView.smoothScrollToPosition(position);
-        linearLayoutManager.scrollToPositionWithOffset(position,  offset);
-        //Todo Figure out how to handle another item being selected while this one is being animated
-        /*new Thread(new Runnable() {
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(totalOffset);
+        valueAnimator.setDuration(animationDuration);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void run() {
-                int sleepCounts = 10;
-                int sleepDuration = animationDuration/sleepCounts;
-                int counter = 0;
-                int eachMove = (offset - left)/sleepCounts;
-                int startOffset = left;
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float updatedValue = (float) animation.getAnimatedValue();
+                float currentOffset = updatedValue + left;
 
-                while (counter < sleepCounts) {
-                    startOffset += eachMove;
-                    counter++;
+                linearLayoutManager.scrollToPositionWithOffset(position, (int) currentOffset);
 
-                    try {
-                        Thread.sleep(sleepDuration);
-
-                        final int finalStartOffset = startOffset;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                linearLayoutManager.scrollToPositionWithOffset(position, finalStartOffset);
-                                //linearLayoutManager.smoothScrollToPosition();
-
-                                //Todo add size animation
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                        Log.e(TAG, Log.getStackTraceString(e));
-                    }
+                if (updatedValue == totalOffset) {
+                    infoWindowViewHolder.select();
                 }
             }
-        }).start(); */
+        });
+
+        valueAnimator.start();
+        //Todo Figure out how to handle another item being selected while this one is being animated
     }
 
     private int getScreenWidth(Activity activity) {
@@ -625,9 +595,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        showInfoWindow(position);
+        showInfoWindowListAndScrollToPosition(position);
         centerMap(latLng);
-        renderInfoWindow(position);
     }
 
 
@@ -672,6 +641,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     }
 
     private String getFeatureId(@NonNull JSONObject jsonObject) throws JSONException {
+        if (jsonObject.has("id")) {
+            return jsonObject.getString("id");
+        }
+
         if (jsonObject.has("properties")) {
             JSONObject propertiesJSON = jsonObject.getJSONObject("properties");
             if (propertiesJSON.has("id")) {
