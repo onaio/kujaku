@@ -51,7 +51,7 @@ public class GeoJSONFeatureTest {
         int count = 10;
         for(int i = 0; i < count; i++) {
             geoJSONFeature.addPoint(new LatLng(getRandomLatOrLong(), getRandomLatOrLong()));
-            assertEquals(geoJSONFeature.getFeaturePoints().size(), i + 2);
+            assertEquals(geoJSONFeature.getFeaturePoints().size(), i + 3);
         }
 
     }
@@ -93,6 +93,6 @@ public class GeoJSONFeatureTest {
         myPoints.add(new LatLng(-1.2923, 5.29093));
         GeoJSONFeature geoJSONFeature2 = new GeoJSONFeature(myPoints);
 
-        assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature2.getFeatureType());
+        assertEquals(GeoJSONFeature.Type.MULTI_POINT, geoJSONFeature2.getFeatureType());
     }
 }
