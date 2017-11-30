@@ -11,11 +11,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -81,6 +83,15 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private InfoWindowAdapter infoWindowAdapter;
     private boolean startedScrolling = false;
 
+    private LatLng topLeftBound;
+    private LatLng bottomRightBound;
+    private LatLng cameraTargetLatLng;
+    private double cameraZoom = -1;
+    private double cameraTilt = -1;
+    private double cameraBearing = -1;
+    private double maxZoom = -1;
+    private double minZoom = -1;
+
     //Todo: Move reading data to another Thread
 
     @Override
@@ -98,6 +109,38 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
                 String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
                 currentStylePath = "";
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
+                    topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
+
+                    if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
+                        bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
+                    }
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
+                    maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {
+                    minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
+                    cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
+                    cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
+                    cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
+                }
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
+                    cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
+                }
 
                 if (stylesArray != null) {
                     currentStylePath = stylesArray[0];
@@ -119,13 +162,16 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     }
                 }
 
-
-                initMapBoxSdk(savedInstanceState, mapBoxAccessToken, currentStylePath);
+                initMapBoxSdk(savedInstanceState, mapBoxAccessToken, currentStylePath, topLeftBound, bottomRightBound,
+                        cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
             }
         }
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapboxAccessToken, String mapBoxStylePath) {
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapboxAccessToken, String mapBoxStylePath,
+                               @Nullable final LatLng topLeftBound, @Nullable final LatLng bottomRightBound,
+                               @Nullable final LatLng cameraTargetLatLng, final double cameraZoom, final double cameraTilt,
+                               final double cameraBearing, final double maxZoom, final double minZoom) {
         Mapbox.getInstance(this, mapboxAccessToken);
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
@@ -140,6 +186,51 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
+
+                if (topLeftBound != null && bottomRightBound != null) {
+                    mapboxMap.setLatLngBoundsForCameraTarget(
+                            new LatLngBounds.Builder()
+                            .include(topLeftBound)
+                            .include(bottomRightBound)
+                            .build()
+                    );
+                }
+
+                if (minZoom != -1) {
+                    mapboxMap.setMinZoomPreference(minZoom);
+                }
+
+                if (maxZoom != -1) {
+                    mapboxMap.setMaxZoomPreference(maxZoom);
+                }
+
+                CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
+                boolean cameraPositionChanged = false;
+
+                if (cameraTargetLatLng != null) {
+                    cameraPositionBuilder.target(cameraTargetLatLng);
+                    mapboxMap.setLatLng(cameraTargetLatLng);
+                    cameraPositionChanged = true;
+                }
+
+                if (cameraZoom != -1) {
+                    cameraPositionBuilder.zoom(cameraZoom);
+                    cameraPositionChanged = true;
+                }
+
+                if (cameraTilt != -1) {
+                    cameraPositionBuilder.tilt(cameraTilt);
+                    cameraPositionChanged = true;
+                }
+
+                if (cameraBearing != -1) {
+                    cameraPositionBuilder.bearing(cameraBearing);
+                    cameraPositionChanged = true;
+                }
+
+                if (cameraPositionChanged) {
+                    mapboxMap.setCameraPosition(cameraPositionBuilder.build());
+                }
             }
         });
     }
@@ -379,16 +470,33 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     }
 
-    private void showInfoWindow() {
+    private void showInfoWindow(final int position) {
         if (!infoWindowDisplayed) {
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
+            infoWindowsRecyclerView.getViewTreeObserver()
+                    .addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
+                        @Override
+                        public void onDraw() {
+                            // Perform the focus on position here
+                            InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+                            if (infoWindowViewHolder != null) {
+                                View v = infoWindowViewHolder.itemView;
+
+                                final int offset = (screenWidth/2) - (v.getWidth()/2);
+                                linearLayoutManager.scrollToPositionWithOffset(position,  offset);
+
+                                infoWindowViewHolder.select();
+                            }
+                            infoWindowsRecyclerView.getViewTreeObserver().removeOnDrawListener(this);
+                        }
+                    });
             infoWindowDisplayed = true;
         }
     }
 
     private void renderInfoWindow(final int position) {
-        if (position > 1) {
+        if (position > -1) {
 
             infoWindowAdapter.focusOnPosition(position);
 
@@ -517,7 +625,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        showInfoWindow();
+        showInfoWindow(position);
         centerMap(latLng);
         renderInfoWindow(position);
     }

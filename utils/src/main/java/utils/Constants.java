@@ -17,7 +17,14 @@ public class Constants {
     public static final String PARCELABLE_KEY_MAP_UNIQUE_NAME = "offline_map_unique_name";
     public static final String PARCELABLE_KEY_TOP_LEFT_BOUND = "offline_map_top_left_bound";
     public static final String PARCELABLE_KEY_BOTTOM_RIGHT_BOUND = "offline_map_bottom_right_bound";
-    public static final String PARCELABLE_KEY_MAP_= "offline_map_bottom_right_bound";
+    public static final String PARCELABLE_KEY_MAP_= "offline_map_bottom_map";
+    public static final String PARCELABLE_KEY_CAMERA_TARGET_LATLNG = "mapbox_camera_target_latlng";
+    public static final String PARCELABLE_KEY_CAMERA_ZOOM = "mapbox_camera_zoom";
+    public static final String PARCELABLE_KEY_CAMERA_TILT = "mapbox_camera_tilt";
+    public static final String PARCELABLE_KEY_CAMERA_BEARING = "mapbox_camera_bearing";
+    public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
+    public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
+
     public static final String PARCELABLE_KEY_SERVICE_ACTION = "map_downloader_service";
     public static final String PARCELABLE_KEY_NETWORK_STATE = "active_network_state";
 
