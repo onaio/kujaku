@@ -1,13 +1,11 @@
 package io.ona.kujaku.adapters;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,7 +19,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import io.ona.kujaku.R;
@@ -72,7 +69,13 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         TextView weightTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_weight);
         TextView vaccineTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_vaccine);
 
-        InfoWindowViewHolder infoWindowViewHolder = new InfoWindowViewHolder(linearLayout, cardView, nameTv, ageTv, weightTv, vaccineTv);
+        TextView labelNameTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_labelName);
+        TextView labelAgeTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_labelAge);
+        TextView labelWeightTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_labelWeight);
+        TextView labelVaccineTv = linearLayout.findViewById(R.id.tv_bottomInfoWindow_labelVaccine);
+
+        InfoWindowViewHolder infoWindowViewHolder = new InfoWindowViewHolder(linearLayout, cardView,
+                nameTv, ageTv, weightTv, vaccineTv, labelNameTv, labelAgeTv, labelWeightTv, labelVaccineTv);
         return infoWindowViewHolder;
     }
 
@@ -112,8 +115,18 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         private TextView weightTv;
         private TextView vaccineTv;
 
-        public InfoWindowViewHolder(@NonNull LinearLayout linearLayout,@NonNull  CardView cardView,@NonNull  TextView nameTv,
-                                    @NonNull TextView ageTv,@NonNull  TextView weightTv,@NonNull  TextView vaccineTv) {
+        TextView labelNameTv;
+        TextView labelAgeTv;
+        TextView labelWeightTv;
+        TextView labelVaccineTv;
+
+        private int width = -1;
+        private int height = -1;
+        private ViewGroup.MarginLayoutParams layoutParams;
+
+        public InfoWindowViewHolder(@NonNull final LinearLayout linearLayout, @NonNull  CardView cardView, @NonNull  TextView nameTv,
+                                    @NonNull TextView ageTv, @NonNull  TextView weightTv, @NonNull  TextView vaccineTv,
+                                    @NonNull TextView nameLabel, @NonNull TextView ageLabel, @NonNull  TextView weightLabel, @NonNull  TextView vaccineLabel) {
             super(linearLayout);
             this.linearLayout = linearLayout;
             this.cardView = cardView;
@@ -121,11 +134,25 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
             this.ageTv = ageTv;
             this.weightTv = weightTv;
             this.vaccineTv = vaccineTv;
+
+            labelNameTv = nameLabel;
+            labelAgeTv = ageLabel;
+            labelWeightTv = weightTv;
+            labelVaccineTv = vaccineLabel;
+
+            linearLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    width = linearLayout.getMeasuredWidth();
+                    height = linearLayout.getMeasuredHeight();
+
+                    layoutParams = (ViewGroup.MarginLayoutParams) linearLayout.getLayoutParams();
+                }
+            });
         }
 
         public void onBind(final int position) {
-            linearLayout.setAlpha(0.5f);
-            //instance.changeMargin(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
+            resetView();
             linearLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -138,6 +165,25 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
             });
         }
 
+        private void resetView() {
+            linearLayout.setAlpha(0.5f);
+            /*if (height > -1 && width > -1) {
+                RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) linearLayout.getLayoutParams();
+                layoutParams.height = height;
+                layoutParams.width = width;
+
+                // Set the default margins also
+                layoutParams.setMargins(
+                        this.layoutParams.leftMargin,
+                        this.layoutParams.topMargin,
+                        this.layoutParams.rightMargin,
+                        this.layoutParams.bottomMargin
+                );
+
+                linearLayout.setLayoutParams(layoutParams);
+            }*/
+        }
+
         public void setData(JSONObject jsonObject) throws JSONException {
             String[] priorityFields = new String[] {
                     "first_name",
@@ -146,6 +192,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
                     "zeir_id"
             };
             TextView[] tvs = new TextView[]{nameTv, ageTv, weightTv, vaccineTv};
+            TextView[] tvLabels = new TextView[]{labelNameTv, labelAgeTv, labelWeightTv, labelVaccineTv};
             int fromPriorityFieldIndex = 0;
 
             if (jsonObject.has("properties")) {
@@ -153,16 +200,19 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
 
                 for (int i = 0; i < tvs.length; i++) {
                     TextView tv = tvs[i];
+                    TextView labelTv = tvLabels[i];
 
                     for (int j = fromPriorityFieldIndex; j < priorityFields.length; j++) {
                         String priorityField = priorityFields[j];
 
                         if (propertiesJSON.has(priorityField)) {
+                            labelTv.setText(humanizeFieldName(priorityField));
                             tv.setText(propertiesJSON.getString(priorityField));
                             fromPriorityFieldIndex = j + 1;
                             break;
                         } else {
                             // Select a substitude field or disable the text view
+                            labelTv.setVisibility(View.GONE);
                             tv.setVisibility(View.GONE);
                             //tv.setText(propertiesJSON.getString("id"));
                         }
@@ -174,13 +224,11 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         }
 
         public void select() {
-            //linearLayout.setBackgroundColor(instance.selectedColor);
-            //cardView.setBackgroundColor(instance.selectedColor);
             linearLayout.setAlpha(1.0f);
 
             // Resize the widget
-            instance.resizeView(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
-            instance.changeMargin(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp));
+            //instance.resizeView(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp), width, height);
+            //instance.changeMargin(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp), layoutParams);
         }
 
         public void unselect() {
@@ -188,13 +236,38 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
             linearLayout.setAlpha(0.5f);
 
             // Reduce the size
-            instance.resizeView(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp));
-            instance.changeMargin(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp));
+            //instance.resizeView(linearLayout, (int) -getPx(instance.selectedSizeDifferenceDp), width, height);
+            //instance.changeMargin(linearLayout, (int) getPx(instance.selectedSizeDifferenceDp), layoutParams);
 
         }
 
         private float getPx(int dp) {
             return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, linearLayout.getResources().getDisplayMetrics());
+        }
+
+        private String humanizeFieldName(String fieldName) {
+            // Replace underscores with spaces
+            // Capitalize the words
+            fieldName = fieldName.replace("_", " ");
+            fieldName = capitalize(fieldName);
+
+            // Todo: Capitalize all words
+
+            // Change abbreviations to Uppercase
+            String[] abbreviations = new String[] {
+                    "id",
+                    "zeir"
+            };
+
+            for (String abbreviation: abbreviations) {
+                fieldName = fieldName.replace(abbreviation, abbreviation.toUpperCase());
+            }
+
+            return fieldName;
+        }
+
+        private String capitalize(String name) {
+            return name.substring(0, 1).toUpperCase() + name.substring(1);
         }
     }
 
@@ -217,35 +290,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         }
     }
 
-    private void resizeView(@NonNull final View view, final int sizeIncreaseInPixels) {
-        /*ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.width = (int) (params.width + sizeIncreaseInPixels);
-        params.height = (int) (params.height + sizeIncreaseInPixels);
-        view.setLayoutParams(params);*/
-
-        /*if (view instanceof LinearLayout || view instanceof CardView) {
-            int paddingTop = view.getPaddingTop();
-            int paddingBottom = view.getPaddingBottom();
-            int paddingLeft = view.getPaddingLeft();
-            int paddingRight = view.getPaddingRight();
-
-            view.setPadding(
-                    paddingLeft + sizeIncreaseInPixels,
-                    paddingTop + sizeIncreaseInPixels,
-                    paddingRight + sizeIncreaseInPixels,
-                    paddingBottom + sizeIncreaseInPixels
-            );
-        }*/
-
-        /*view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-            }
-        });*/
-
-        int height = view.getMeasuredHeight();
-        int width = view.getMeasuredWidth();
+    private void resizeView(@NonNull final View view, final int sizeIncreaseInPixels, int width, int height) {
 
         ViewGroup.LayoutParams params = view.getLayoutParams();
         params.width = (int) (width + (sizeIncreaseInPixels * 2));
@@ -253,15 +298,27 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowAdapter.In
         view.setLayoutParams(params);
     }
 
-    private void changeMargin(@NonNull View view, final int sizeIncreaseInPixels) {
-        ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+    private void changeMargin(@NonNull View view, final int sizeIncreaseInPixels, ViewGroup.MarginLayoutParams layoutParams) {
+        /*ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
 
         marginLayoutParams.setMargins(
                 marginLayoutParams.leftMargin,
                 marginLayoutParams.topMargin + sizeIncreaseInPixels,
                 marginLayoutParams.rightMargin,
                 marginLayoutParams.bottomMargin + sizeIncreaseInPixels
-        );
+        );*/
+        if (view instanceof LinearLayout && view != null) {
+            RecyclerView.LayoutParams layoutParams1 = (RecyclerView.LayoutParams) view.getLayoutParams();
+            if (layoutParams1 != null && layoutParams != null) {
+                layoutParams1.setMargins(
+                        layoutParams.leftMargin,
+                        layoutParams.topMargin + sizeIncreaseInPixels,
+                        layoutParams.rightMargin,
+                        layoutParams.bottomMargin + sizeIncreaseInPixels
+                );
+                view.setLayoutParams(layoutParams1);
+            }
+        }
     }
 
     public void focusOnPosition(int position) {

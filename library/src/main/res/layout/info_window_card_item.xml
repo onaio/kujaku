@@ -31,14 +31,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                
                 android:layout_marginBottom="10dp">
 
-                <ImageView
+                <TextView
+                    android:id="@+id/tv_bottomInfoWindow_labelName"
+                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_info_window_name"/>
+                    android:layout_marginRight="10dp"/>
 
                 <TextView
                     android:id="@+id/tv_bottomInfoWindow_name"
@@ -53,14 +53,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-
                 android:layout_marginBottom="10dp">
 
-                <ImageView
+                <TextView
+                    android:id="@+id/tv_bottomInfoWindow_labelAge"
+                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_info_window_age"/>
+                    android:layout_marginRight="10dp"/>
 
                 <TextView
                     android:id="@+id/tv_bottomInfoWindow_age"
@@ -75,14 +75,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                
                 android:layout_marginBottom="10dp">
 
-                <ImageView
+                <TextView
+                    android:id="@+id/tv_bottomInfoWindow_labelWeight"
+                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_info_window_weight"/>
+                    android:layout_marginRight="10dp"/>
 
                 <TextView
                     android:id="@+id/tv_bottomInfoWindow_weight"
@@ -99,11 +99,12 @@
                 android:orientation="horizontal"
                 android:layout_marginBottom="10dp">
 
-                <ImageView
+                <TextView
+                    android:id="@+id/tv_bottomInfoWindow_labelVaccine"
+                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_info_window_vaccine"/>
+                    android:layout_marginRight="10dp"/>
 
                 <TextView
                     android:id="@+id/tv_bottomInfoWindow_vaccine"
