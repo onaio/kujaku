@@ -110,7 +110,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 currentStylePath = "";
 
                 if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
-                    topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
+                    topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
 
                     if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
                         bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
