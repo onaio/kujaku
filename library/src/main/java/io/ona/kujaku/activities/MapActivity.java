@@ -35,6 +35,7 @@ import java.util.List;
 import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.sorting.objects.SortField;
@@ -357,13 +358,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap) {
         if (!featuresMap.isEmpty()) {
             infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView);
-            infoWindowAdapter.setOnClickListener(new InfoWindowAdapter.OnClickListener() {
-                @Override
-                public void onClick(View v, int position) {
-                    focusOnFeature(position);
-                }
-            });
-
             infoWindowsRecyclerView.setHasFixedSize(true);
             linearLayoutManager = new InfoWindowLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
             infoWindowsRecyclerView.setLayoutManager(linearLayoutManager);
@@ -484,7 +478,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     }
 
-    private void showInfoWindowListAndScrollToPosition(final int position) {
+    private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {
         if (!infoWindowDisplayed) {
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
@@ -493,21 +487,21 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         @Override
                         public void onGlobalLayout() {
                             infoWindowsRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            scrollToInfoWindowPosition(position);
+                            scrollToInfoWindowPosition(position, informInfoWindowAdapter);
                         }
                     });
             infoWindowDisplayed = true;
         } else {
-            scrollToInfoWindowPosition(position);
+            scrollToInfoWindowPosition(position, informInfoWindowAdapter);
         }
     }
 
-    private void scrollToInfoWindowPosition(final int position) {
+    private void scrollToInfoWindowPosition(final int position, boolean informInfoWindowAdapter) {
         if (position > -1) {
-            infoWindowAdapter.focusOnPosition(position);
+            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position);
 
             // Supposed to scroll to the selected position
-            final InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+            final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
             int lastVisiblePosition = linearLayoutManager.findLastVisibleItemPosition();
             int firstVisiblePosition = linearLayoutManager.findFirstVisibleItemPosition();
 
@@ -518,7 +512,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         super.onScrollStateChanged(recyclerView, newState);
 
                         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                            InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder = (InfoWindowAdapter.InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+                            InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
                             if (infoWindowViewHolder != null) {
                                 View v = infoWindowViewHolder.itemView;
 
@@ -551,7 +545,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowAdapter.InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
+    private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
         final int left = view.getLeft();
         final int offset = (screenWidth/2) - (view.getWidth()/2);
         final float totalOffset = offset - left;
@@ -583,7 +577,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return displayMetrics.widthPixels;
     }
 
-    private void focusOnFeature(int position, @Nullable String id, @Nullable LatLng latLng) {
+    private void focusOnFeature(int position, @Nullable String id, @Nullable LatLng latLng, boolean informInfoWindowAdapter) {
         if (position == -1 && id != null && !id.isEmpty()) {
             if (featuresMap.containsKey(id)) {
                 position = featuresMap.get(id).getPosition();
@@ -610,21 +604,21 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        showInfoWindowListAndScrollToPosition(position);
+        showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
         centerMap(latLng);
     }
 
 
-    private void focusOnFeature(int position) {
-        focusOnFeature(position, null, null);
+    public void focusOnFeature(int position) {
+        focusOnFeature(position, null, null, false);
     }
 
     private void focusOnFeature(String id, LatLng latLng) {
-        focusOnFeature(-1, id, latLng);
+        focusOnFeature(-1, id, latLng, true);
     }
 
     private void focusOnFeature(String id) {
-        focusOnFeature(-1, id, null);
+        focusOnFeature(-1, id, null, true);
     }
 
     private LatLng getFeaturePoint(JSONObject featureJSON) {

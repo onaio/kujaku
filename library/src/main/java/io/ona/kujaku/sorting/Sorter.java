@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.google.gson.internal.bind.util.ISO8601Utils;
 
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -144,12 +146,7 @@ public class Sorter {
     }
 
     private Date getDateFromISO8601(@NonNull String dateString) {
-        DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        try {
-            return df2.parse(dateString);
-        } catch (ParseException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-            return new Date();
-        }
+        DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
+        return formatter.parseDateTime(dateString).toDate();
     }
 }
