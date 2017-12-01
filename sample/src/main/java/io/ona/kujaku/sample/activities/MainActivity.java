@@ -91,6 +91,23 @@ public class MainActivity extends AppCompatActivity {
                 "file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json"
         });
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
+        LatLng bottomRight = new LatLng(
+                -17.854564,
+                25.854782
+        );
+
+        LatLng topLeft = new LatLng(
+                        -17.875469,
+                        25.876589
+                );
+
+        intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRight);
+        intent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeft);
+        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_TILT, 80.0);
+        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
+        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
+
         startActivity(intent);
     }
 
