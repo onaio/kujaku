@@ -228,10 +228,25 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
 
                 if (cameraPositionChanged) {
+
+                    if (bottomRightBound != null & topLeftBound != null) {
+                        cameraPositionBuilder.target(getBoundsCenter(topLeftBound, bottomRightBound));
+                    }
+
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
             }
         });
+    }
+
+    private LatLng getBoundsCenter(LatLng topLeftBound, LatLng bottomRightBound) {
+        double latDifference = topLeftBound.getLatitude() - bottomRightBound.getLatitude();
+        double lngDifference = bottomRightBound.getLongitude() - topLeftBound.getLongitude();
+
+        return new LatLng(
+                bottomRightBound.getLatitude() + (latDifference/2),
+                topLeftBound.getLongitude() + (lngDifference/2)
+        );
     }
 
     private void initializeViews() {
