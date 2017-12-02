@@ -1,7 +1,9 @@
 package io.ona.kujaku.adapters;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,7 +47,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
 
     @Override
     public InfoWindowViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View inflatedView = LayoutInflater.from(parent.getContext()).inflate(R.layout.info_window_card_item, parent, false);
+        final CardView inflatedView = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.info_window_card_item, parent, false);
         InfoWindowViewHolder infoWindowViewHolder = new InfoWindowViewHolder(this, inflatedView);
         return infoWindowViewHolder;
     }
@@ -61,6 +63,10 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
                 Log.e(TAG, Log.getStackTraceString(e));
             }
         }
+    }
+
+    public Context getContext() {
+        return this.activity;
     }
 
     @Override

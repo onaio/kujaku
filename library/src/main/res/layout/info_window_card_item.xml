@@ -1,114 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:id="@+id/cv_bottomInfoWindow_cardView"
+    card_view:cardCornerRadius="4dp"
+    android:layout_width="@dimen/info_window_nonfocus_width"
+    android:layout_height="@dimen/info_window_nonfocus_height"
+    android:layout_gravity="center"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp">
+    android:layout_marginTop="@dimen/info_window_nonfocus_v_margin"
+    android:layout_marginBottom="@dimen/info_window_nonfocus_v_margin"
+    android:elevation="11dp">
 
-    <!-- A CardView that contains a TextView -->
-    <android.support.v7.widget.CardView
-        android:id="@+id/cv_bottomInfoWindow_cardView"
-        android:layout_gravity="center"
-        card_view:cardCornerRadius="4dp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:minWidth="200dp"
-        android:elevation="11dp">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="10dp">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_labelName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
+                android:layout_marginRight="10dp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_labelName"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"/>
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_labelAge"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"/>
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_age"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_labelWeight"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"/>
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_weight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_labelVaccine"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"/>
-
-                <TextView
-                    android:id="@+id/tv_bottomInfoWindow_vaccine"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
-    </android.support.v7.widget.CardView>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
 
-</LinearLayout>
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_labelAge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_age"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_labelWeight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_weight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_labelVaccine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_bottomInfoWindow_vaccine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>
