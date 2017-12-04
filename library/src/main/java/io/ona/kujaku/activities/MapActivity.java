@@ -92,6 +92,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double cameraBearing = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
+    private Bundle savedInstanceState;
 
     //Todo: Move reading data to another Thread
 
@@ -101,79 +102,95 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         setContentView(R.layout.activity_map);
         initializeViews();
 
-        checkPermissions();
         screenWidth = getScreenWidth(this);
 
+        Bundle bundle = getIntentExtras();
+        if (bundle != null) {
+            String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
+            Mapbox.getInstance(this, mapBoxAccessToken);
+        }
+
+        checkPermissions(savedInstanceState);
+    }
+
+    private Bundle getIntentExtras() {
         if (getIntent() != null) {
             Bundle bundle = getIntent().getExtras();
-            if (bundle != null){
-                String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
-                String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
-                currentStylePath = "";
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
-                    topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
-
-                    if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
-                        bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
-                    }
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
-                    maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {
-                    minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
-                    cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
-                    cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
-                    cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
-                }
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
-                    cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
-                }
-
-                if (stylesArray != null) {
-                    currentStylePath = stylesArray[0];
-                    if (currentStylePath != null && !currentStylePath.isEmpty()) {
-                        currentStylePath = new MapBoxStyleStorage()
-                                .getStyleURL(currentStylePath);
-                        mapboxStyleJSON = getStyleJSON(currentStylePath);
-
-                        // Extract kujaku meta-data
-                        try {
-                            sortFields = extractSortFields(mapboxStyleJSON);
-                            dataLayers = extractSourceNames(mapboxStyleJSON, sortFields);
-                            featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
-                            featuresMap = sortData(featuresMap, sortFields);
-                            displayInitialFeatures(featuresMap);
-                        } catch (JSONException e) {
-                            Log.e(TAG, Log.getStackTraceString(e));
-                        }
-                    }
-                }
-
-                initMapBoxSdk(savedInstanceState, mapBoxAccessToken, currentStylePath, topLeftBound, bottomRightBound,
-                        cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
+            if (bundle != null) {
+                return bundle;
             }
+        }
+
+        return null;
+    }
+
+    private void initializeMapActivityAfterPermissionsSupplied(Bundle savedInstanceState) {
+        Bundle bundle = getIntentExtras();
+        if (bundle != null) {
+            String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
+            currentStylePath = "";
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
+                topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
+
+                if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
+                    bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
+                }
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
+                maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {
+                minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
+                cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
+                cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
+                cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
+            }
+
+            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
+                cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
+            }
+
+            if (stylesArray != null) {
+                currentStylePath = stylesArray[0];
+                if (currentStylePath != null && !currentStylePath.isEmpty()) {
+                    currentStylePath = new MapBoxStyleStorage()
+                            .getStyleURL(currentStylePath);
+                    mapboxStyleJSON = getStyleJSON(currentStylePath);
+
+                    // Extract kujaku meta-data
+                    try {
+                        sortFields = extractSortFields(mapboxStyleJSON);
+                        dataLayers = extractSourceNames(mapboxStyleJSON, sortFields);
+                        featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
+                        featuresMap = sortData(featuresMap, sortFields);
+                        displayInitialFeatures(featuresMap);
+                    } catch (JSONException e) {
+                        Log.e(TAG, Log.getStackTraceString(e));
+                    }
+                }
+            }
+
+            initMapBoxSdk(savedInstanceState, currentStylePath, topLeftBound, bottomRightBound,
+                    cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
         }
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapboxAccessToken, String mapBoxStylePath,
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                @Nullable final LatLng topLeftBound, @Nullable final LatLng bottomRightBound,
                                @Nullable final LatLng cameraTargetLatLng, final double cameraZoom, final double cameraTilt,
                                final double cameraBearing, final double maxZoom, final double minZoom) {
-        Mapbox.getInstance(this, mapboxAccessToken);
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
@@ -444,14 +461,17 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            checkPermissions();
+            checkPermissions(this.savedInstanceState);
         }
     }
 
-    private void checkPermissions() {
+    private void checkPermissions(Bundle savedInstanceState) {
+        this.savedInstanceState = savedInstanceState;
         String[] unauthorizedPermissions = Permissions.getUnauthorizedCriticalPermissions(this);
         if (unauthorizedPermissions.length > 0) {
             Permissions.request(this, unauthorizedPermissions, PERMISSIONS_REQUEST_CODE);
+        } else {
+            initializeMapActivityAfterPermissionsSupplied(savedInstanceState);
         }
     }
 
