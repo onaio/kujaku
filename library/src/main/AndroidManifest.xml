@@ -3,19 +3,25 @@
     package="io.ona.kujaku">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MapActivity">
+        <activity android:name=".activities.MapActivity"
+            android:exported="false" />
+        <service android:name=".services.MapboxOfflineDownloaderService"/>
+        <receiver android:name=".receivers.KujakuNetworkChangeReceiver">
             <intent-filter>
-                <action android:name="io.ona.kujaku.map.SHOW" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
             </intent-filter>
-        </activity>
+        </receiver>
     </application>
 
 </manifest>

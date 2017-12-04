@@ -1,5 +1,75 @@
 apply plugin: 'com.android.library'
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "io.realm:realm-gradle-plugin:4.1.1"
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+    }
+}
+
+apply plugin: 'realm-android'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+version '0.1.3-info-window'
+project.version = this.version
+
+publishing {
+    publications {
+        Production(MavenPublication) {
+            artifact("$buildDir/outputs/aar/library-release.aar")
+            groupId 'io.ona.kujaku'
+            artifactId 'library'
+            version this.version
+
+            //The publication doesn't know about our dependencies, so we have to manually add them to the pom
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    // Get Bintray credential from environment variable
+    user = System.getenv('BINTRAY_USER') // Get bintray User
+    key = System.getenv('BINTRAY_KEY') // Get bintray Secret Key
+    configurations = ['archives']
+    pkg {
+        repo = 'kujaku'
+        name = project.name
+        userOrg = 'jasonrogena'
+        licenses = ['Apache-2.0']
+        desc = 'Kujaku library'
+        websiteUrl = "https://github.com/jasonrogena"
+        publish = true
+        vcsUrl = "https://github.com/onaio/kujaku.git"
+        version {
+            name = this.version
+            desc = "Kujaku library version ${this.version}"
+            released = new Date()
+            vcsTag = this.version
+        }
+    }
+    publications = ['Production']
+}
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
@@ -7,7 +77,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
-        versionName "1.0"
+        versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -19,15 +89,27 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
-        transitive = true
+        transitive = true;
+    }
+    compile('io.ona.kujaku:utils:0.1.3') {
+        transitive = true;
+        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.cocoahero.android:geojson:1.0.1@jar'
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'com.snatik:storage:2.1.0'
+    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
+
+    // Info Window dependencies
+    compile 'com.android.support:cardview-v7:26.+'
+    compile 'com.android.support:recyclerview-v7:26.+'
+
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.5.1'
 }

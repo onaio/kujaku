@@ -1,14 +1,21 @@
 package io.ona.kujaku.helpers;
 
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.snatik.storage.Storage;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
 
 import io.ona.kujaku.activities.MapActivity;
+
+import utils.Constants;
 
 /**
  * Helps add the MapBox Style to the MapBox MapView when provided as string since the MapBox API only allows
@@ -32,7 +39,7 @@ import io.ona.kujaku.activities.MapActivity;
  */
 
 public class MapBoxStyleStorage {
-    private static final String DIRECTORY = ".KujakuStyles";
+    public static final String DIRECTORY = ".KujakuStyles";
     private static final String TAG = MapBoxStyleStorage.class.getSimpleName();
 
     /**
@@ -75,7 +82,7 @@ public class MapBoxStyleStorage {
         File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);
 
         new File(Environment.getExternalStorageDirectory(), folderName)
-                .mkdir();
+                .mkdirs();
 
         if (!file.exists()) {
             try {
@@ -125,4 +132,96 @@ public class MapBoxStyleStorage {
         }
         return file.delete();
     }
+
+    public boolean cacheStyle(@NonNull String mapBoxUrl,@NonNull String mapBoxStyleJSON) {
+        if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+            String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
+            String folder =  mapBoxPaths[0];
+            String filename = mapBoxPaths[1];
+
+            String fileAbsolutePath = writeToFile(DIRECTORY + File.separator + folder, filename, mapBoxStyleJSON);
+            if (fileAbsolutePath != null && !fileAbsolutePath.isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public String getCachedStyle(String mapBoxUrl) {
+        if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+            String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
+            String folder =  mapBoxPaths[0];
+            String filename = mapBoxPaths[1];
+
+            return readFile(folder, filename);
+        }
+        return "";
+    }
+
+    public String readStyle(@NonNull String protocolledFilePath) {
+        String fileProtocolOrSth = "file://";
+        if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {
+            return "";
+        }
+        String folders = "";
+
+        if (protocolledFilePath.lastIndexOf(File.separator) > 6) {
+            folders = protocolledFilePath.substring(
+                    fileProtocolOrSth.length(),
+                    protocolledFilePath.lastIndexOf(File.separator));
+        }
+
+        String fileName = protocolledFilePath.substring(
+                protocolledFilePath.lastIndexOf(File.separator) + 1
+        );
+
+        return readFile(folders, fileName, true);
+    }
+
+    private String readFile(String folders, String filename) {
+        return readFile(folders, filename, false);
+    }
+
+    private String readFile(String folders, String filename, boolean isPathComplete) {
+        File fileFolders;
+
+        if (isPathComplete) {
+            fileFolders = new File(folders);
+        } else {
+            fileFolders = new File(Environment.getExternalStorageDirectory() + folders);
+        }
+
+        if (!fileFolders.exists()) {
+            fileFolders.mkdirs();
+        }
+
+        File finalFile;
+        if (isPathComplete) {
+            finalFile = new File(folders + File.separator + filename);
+        } else {
+            finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + filename);
+        }
+        StringBuilder text = new StringBuilder();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(finalFile));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+            }
+            br.close();
+        } catch (IOException e) {
+            return "";
+        }
+
+        return text.toString();
+
+    }
+
+    /*private String readFile(String path) {
+        return readFile()
+    }*/
 }

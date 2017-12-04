@@ -1,3 +1,9 @@
+allprojects {
+    repositories {
+        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+    }
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -49,8 +55,18 @@ android {
 }
 
 dependencies {
-    compile project(':library')
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    /*compile('io.ona.kujaku:library:0.1') {
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+    }*/
+    compile (project(":library")) {
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+    }
+    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
+        transitive = true;
+    }
+//    compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
