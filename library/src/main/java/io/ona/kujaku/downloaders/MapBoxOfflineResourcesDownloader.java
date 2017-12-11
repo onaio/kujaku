@@ -44,10 +44,10 @@ import utils.exceptions.OfflineMapDownloadException;
  */
 public class MapBoxOfflineResourcesDownloader {
 
-    private static MapBoxOfflineResourcesDownloader instance = null;
+    protected static MapBoxOfflineResourcesDownloader instance = null;
     private Context context;
-    private Mapbox mapbox;
-    private OfflineManager offlineManager;
+    protected Mapbox mapbox;
+    protected OfflineManager offlineManager;
     private static final String TAG = MapBoxOfflineResourcesDownloader.class.getSimpleName();
 
     // JSON encoding/decoding
@@ -55,7 +55,7 @@ public class MapBoxOfflineResourcesDownloader {
     public static final String JSON_FIELD_REGION_NAME = "FIELD_REGION_NAME";
 
 
-    public static MapBoxOfflineResourcesDownloader getInstance(Context context, String accessToken) {
+    public static MapBoxOfflineResourcesDownloader getInstance(@NonNull Context context, String accessToken) {
         return getInstance(context, Mapbox.getInstance(context, accessToken));
     }
 

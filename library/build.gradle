@@ -80,11 +80,40 @@ android {
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            if (project.rootProject.file("local.properties").exists()) {
+                Properties properties = new Properties()
+                properties.load(project.rootProject.file("local.properties").newDataInputStream())
+                if (properties != null &&
+                        properties.containsKey("mapbox.sdk.token")) {
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
+                } else {
+                    println("One of the required config variables is not set in your local.properties");
+                }
+            } else {
+                println("local.properties does not exist");
+            }
+        }
+
+        debug {
+            if (project.rootProject.file("local.properties").exists()) {
+                Properties properties = new Properties()
+                properties.load(project.rootProject.file("local.properties").newDataInputStream())
+                if (properties != null &&
+                        properties.containsKey("mapbox.sdk.token")) {
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
+                } else {
+                    println("One of the required config variables is not set in your local.properties");
+                }
+            } else {
+                println("local.properties does not exist");
+            }
         }
     }
 }
@@ -113,4 +142,7 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.5.1'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+
+    androidTestCompile 'org.mockito:mockito-android:2.7.22'
 }
