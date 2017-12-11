@@ -1,4 +1,4 @@
-package kujaku.ona.io.kujaku;
+package io.ona.kujaku;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

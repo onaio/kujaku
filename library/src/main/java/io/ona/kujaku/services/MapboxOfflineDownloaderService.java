@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -114,6 +115,17 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final int PROGRESS_NOTIFICATION_ID = 85;
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
 
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    private static boolean onStartCommandCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    private static boolean persistOfflineMapTaskCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    private static boolean performNextTaskCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    private static boolean observeOfflineRegionCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    private static boolean persistCompletedStatusCalled = false;
+
     public MapboxOfflineDownloaderService() {
         super();
     }
@@ -121,6 +133,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+        onStartCommandCalled = true;
         persistOfflineMapTask(intent);
         performNextTask();
         return START_NOT_STICKY;
@@ -137,6 +150,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @return {@code TRUE} if the OfflineMapTask was successfully saved, {@code FALSE} if the OfflineMapTask could not be saved
      */
     private boolean persistOfflineMapTask(@Nullable Intent intent) {
+        persistOfflineMapTaskCalled = true;
         if (intent == null) {
             return false;
         }
@@ -202,6 +216,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * , IGNORED(thus FAILING if it does) or DOWNLOADED.
      */
     private void performNextTask() {
+        performNextTaskCalled = true;
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
@@ -459,6 +474,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private void observeOfflineRegion(@NonNull final OfflineRegion offlineRegion) {
         //Do not remove the line below!!!
         offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);
+        observeOfflineRegionCalled = true;
         offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {
             @Override
             public void onStatusChanged(OfflineRegionStatus status) {
@@ -485,6 +501,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param mapBoxOfflineQueueTask
      */
     private void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+        persistCompletedStatusCalled = true;
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
@@ -556,6 +573,31 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         String finalMessage = "MapBox Tile Count limit exceeded : " + limit + " while Downloading " + currentMapDownloadName;
         Log.e(TAG, finalMessage);
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, finalMessage);
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public static boolean isOnStartCommandCalled() {
+        return onStartCommandCalled;
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public static boolean isPersistOfflineMapTaskCalled() {
+        return performNextTaskCalled;
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public static boolean isPerformNextTaskCalled() {
+        return performNextTaskCalled;
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public static boolean isObserveOfflineRegionCalled() {
+        return observeOfflineRegionCalled;
+    }
+
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public static boolean isPersistCompletedStatusCalled() {
+        return persistCompletedStatusCalled;
     }
 
 }
