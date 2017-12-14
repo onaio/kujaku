@@ -212,7 +212,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
     @Override
     public void onClick(View v) {
         if (v == cardView && currentInfoWindowObject != null) {
-            adapter.focusOnPosition(currentInfoWindowObject.getPosition());
+            adapter.focusOnPosition(currentInfoWindowObject.getPosition(), true);
         }
     }
 }

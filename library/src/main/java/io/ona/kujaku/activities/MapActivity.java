@@ -2,6 +2,7 @@ package io.ona.kujaku.activities;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -499,7 +500,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void scrollToInfoWindowPosition(final int position, boolean informInfoWindowAdapter) {
         if (position > -1) {
-            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position);
+            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position, false);
 
             // Supposed to scroll to the selected position
             final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
@@ -595,7 +596,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             id = (String) featureIdList.get(position);
         }
 
-
         if (latLng == null) {
             latLng = getFeaturePoint(featuresMap.get(id)
                     .getJsonObject());
@@ -605,10 +605,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-        centerMap(latLng);
+        if (lastSelected == position) {
+            performInfoWindowDoubleClickAction(featuresMap.get(id));
+        } else {
+            showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
+            centerMap(latLng);
+        }
+        lastSelected = position;
     }
-
 
     public void focusOnFeature(int position) {
         focusOnFeature(position, null, null, false);
@@ -663,5 +667,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
 
         return "";
+    }
+
+    private void performInfoWindowDoubleClickAction(InfoWindowObject infoWindowObject) {
+        //For now, this will be a return Result with the current GeoJSON Feature
+        Intent intent = new Intent();
+        intent.putExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE, infoWindowObject.getJsonObject().toString());
+
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 }

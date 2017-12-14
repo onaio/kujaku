@@ -23,6 +23,7 @@ public class Constants {
     public static final String PARCELABLE_KEY_CAMERA_BEARING = "mapbox_camera_bearing";
     public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
     public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
+    public static final String PARCELABLE_KEY_GEOJSON_FEATURE = "geojson_feature";
 
     public static final String PARCELABLE_KEY_SERVICE_ACTION = "map_downloader_service";
     public static final String PARCELABLE_KEY_NETWORK_STATE = "active_network_state";

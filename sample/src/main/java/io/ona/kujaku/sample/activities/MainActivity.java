@@ -15,8 +15,6 @@ import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import java.util.UUID;
-
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -34,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
             , bottomRightLatEd
             , bottomRightLngEd
             , mapNameEd;
+
+    private static final int MAP_ACTIVITY_REQUEST_CODE = 43;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
 
-        startActivity(intent);
+        startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
 
     private void downloadMap() {
@@ -187,5 +187,22 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case MAP_ACTIVITY_REQUEST_CODE:
+                String geoJSONFeature = "";
+                if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
+                    geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                }
+                Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
+                        .show();
+                break;
+
+            default:
+                break;
+        }
     }
 }
