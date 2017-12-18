@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.activities;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -193,12 +194,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
             case MAP_ACTIVITY_REQUEST_CODE:
-                String geoJSONFeature = "";
-                if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
-                    geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                if (resultCode == Activity.RESULT_OK) {
+                    String geoJSONFeature = "";
+                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
+                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                    }
+                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
+                            .show();
                 }
-                Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
-                        .show();
                 break;
 
             default:
