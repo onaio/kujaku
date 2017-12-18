@@ -77,7 +77,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
     private InfoWindowLayoutManager linearLayoutManager;
-    private int lastSelected = 0;
+    private int lastSelected = -1;
 
     private int animateToNewTargetDuration = 1000;
     private int animateToNewInfoWindowDuration = 300;
@@ -472,6 +472,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         String id = feature.getProperty("id").getAsString();
                         if (featuresMap.containsKey(id)) {
                             focusOnFeature(id);
+                            break;
                         }
                     }
                 }
