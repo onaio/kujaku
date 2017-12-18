@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.1.3'
+version '0.1.4'
 project.version = this.version
 
 publishing {
@@ -11,7 +11,7 @@ publishing {
             artifact("$buildDir/outputs/aar/utils-release.aar")
             groupId 'io.ona.kujaku'
             artifactId 'utils'
-            version '0.1.3'
+            version '0.1.4'
 
             //The publication doesn't know about our dependencies, so we have to manually add them to the pom
             pom.withXml {
