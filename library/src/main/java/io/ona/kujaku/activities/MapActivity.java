@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -14,8 +15,17 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -59,7 +69,7 @@ import utils.helpers.converters.GeoJSONFeature;
  *
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
-public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
+public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
     private MapView mapView;
     private String currentStylePath;
@@ -79,6 +89,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private InfoWindowLayoutManager linearLayoutManager;
     private int lastSelected = -1;
 
+    private ImageButton focusOnMyLocationImgBtn;
+
     private int animateToNewTargetDuration = 1000;
     private int animateToNewInfoWindowDuration = 300;
     private int screenWidth = 0;
@@ -93,6 +105,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double cameraBearing = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
+
+    private GoogleApiClient googleApiClient;
+    private Location lastLocation;
+    private boolean waitingForLocation = true;
+    private boolean googleApiClientInitialized = false;
+
+    private Marker myLocationMarker;
 
     //Todo: Move reading data to another Thread
 
@@ -190,6 +209,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 mapboxMap.setOnMapClickListener(MapActivity.this);
 
                 if (topLeftBound != null && bottomRightBound != null) {
+                    waitingForLocation = false;
                     LatLngBounds latLngBounds = new LatLngBounds.Builder()
                             .include(topLeftBound)
                             .include(bottomRightBound)
@@ -210,6 +230,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 boolean cameraPositionChanged = false;
 
                 if (cameraTargetLatLng != null) {
+                    waitingForLocation = false;
                     cameraPositionBuilder.target(cameraTargetLatLng);
                     mapboxMap.setLatLng(cameraTargetLatLng);
                     cameraPositionChanged = true;
@@ -238,6 +259,15 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
+
+                lastLocation = null;
+                initGoogleApiClient();
+                focusOnMyLocationImgBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        focusOnMyLocation(MapActivity.this.mapboxMap);
+                    }
+                });
             }
         });
     }
@@ -254,6 +284,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void initializeViews() {
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
+        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapActivity_focusOnMyLocationIcon);
     }
 
     private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
@@ -395,6 +426,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onResume() {
         super.onResume();
         if (mapView != null) mapView.onResume();
+        if (googleApiClientInitialized) initGoogleApiClient();
     }
 
     @Override
@@ -413,6 +445,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onPause() {
         super.onPause();
         if (mapView != null) mapView.onPause();
+        disconnectGoogleApiClient();
     }
 
     @Override
@@ -674,5 +707,87 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         setResult(Activity.RESULT_OK, intent);
         finish();
+    }
+
+    private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
+        if (lastLocation != null) {
+            LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+
+            CameraPosition newCameraPosition = new CameraPosition.Builder(mapboxMap.getCameraPosition())
+                    .target(newTarget)
+                    .build();
+
+            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition), animateToNewTargetDuration);
+
+            // Change the marker position to the new position - This should also be animated at some point
+            if (myLocationMarker == null) {
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(newTarget);
+                myLocationMarker = mapboxMap.addMarker(markerOptions);
+            } else {
+                myLocationMarker.setPosition(newTarget);
+                mapboxMap.updateMarker(myLocationMarker);
+            }
+        } else {
+            waitingForLocation = true;
+        }
+    }
+
+    private void initGoogleApiClient() {
+        googleApiClientInitialized = true;
+        if (googleApiClient == null) {
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+
+        googleApiClient.connect();
+    }
+
+    private void disconnectGoogleApiClient() {
+        if (googleApiClient != null) {
+            googleApiClient.disconnect();
+        }
+    }
+
+    // GPS - Location Stuff
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(1000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        } catch (SecurityException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+            Toast.makeText(this, "Sorry but we could not get your location since the app does not have permissions to access your Location", Toast.LENGTH_LONG)
+                    .show();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this, R.string.msg_could_not_find_your_location, Toast.LENGTH_LONG)
+                .show();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lastLocation = location;
+
+        if (waitingForLocation) {
+            waitingForLocation = false;
+            focusOnMyLocation(mapboxMap);
+        }
     }
 }
