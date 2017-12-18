@@ -89,6 +89,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private ImageButton focusOnMyLocationImgBtn;
 
+    private ImageButton focusOnMyLocationImgBtn;
+
     private int animateToNewTargetDuration = 1000;
     private int animateToNewInfoWindowDuration = 300;
     private int screenWidth = 0;
@@ -101,6 +103,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
+
+    private GoogleApiClient googleApiClient;
+    private Location lastLocation;
+    private boolean waitingForLocation = true;
+    private boolean googleApiClientInitialized = false;
+
+    private Marker myLocationMarker;
 
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
