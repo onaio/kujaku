@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Kujaku</string>
+    <string name="msg_could_not_find_your_location">Sorry but we could not get your GPS location</string>
 </resources>
