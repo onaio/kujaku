@@ -4,7 +4,9 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -54,6 +57,7 @@ import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 
 import utils.Constants;
+import utils.CoordinateUtils;
 import utils.helpers.converters.GeoJSONFeature;
 
 /**
@@ -112,6 +116,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private boolean googleApiClientInitialized = false;
 
     private Marker myLocationMarker;
+    private LatLng focusedLocation;
+    private boolean focusedOnOfMyLocation = false;
 
     //Todo: Move reading data to another Thread
 
@@ -203,10 +209,25 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(MapboxMap mapboxMap) {
+            public void onMapReady(final MapboxMap mapboxMap) {
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
+                mapboxMap.setOnScrollListener(new MapboxMap.OnScrollListener() {
+                    @Override
+                    public void onScroll() {
+                        if (focusedLocation != null) {
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapboxMap.getProjection().getVisibleRegion().latLngBounds)) {
+                                if (focusedOnOfMyLocation) {
+                                    focusedOnOfMyLocation = false;
+
+                                    // Revert the icon to the non-focused grey one
+                                    changeTargetIcon(R.drawable.ic_my_location);
+                                }
+                            }
+                        }
+                    }
+                });
 
                 if (topLeftBound != null && bottomRightBound != null) {
                     waitingForLocation = false;
@@ -715,6 +736,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
         if (lastLocation != null) {
             LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            focusedLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            focusedOnOfMyLocation = true;
+
+            // Change the icon to the blue one
+            changeTargetIcon(R.drawable.ic_my_location_focused);
 
             CameraPosition newCameraPosition = new CameraPosition.Builder(mapboxMap.getCameraPosition())
                     .target(newTarget)
@@ -793,4 +819,29 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             focusOnMyLocation(mapboxMap);
         }
     }
+
+    private void changeTargetIcon(int drawableIcon) {
+        changeDrawable(focusOnMyLocationImgBtn, drawableIcon);
+    }
+
+    private void changeDrawable(@NonNull View view, int drawableId) {
+        if (view instanceof ImageButton || view instanceof ImageView) {
+
+            Drawable focusedIcon;
+            if (Build.VERSION.SDK_INT >= 21) {
+                focusedIcon = getResources().getDrawable(drawableId, null);
+            } else {
+                focusedIcon = getResources().getDrawable(drawableId);
+            }
+
+            if (view instanceof ImageButton) {
+                ImageButton imageButton = (ImageButton) view;
+                imageButton.setImageDrawable(focusedIcon);
+            } else if (view instanceof ImageView) {
+                ImageView imageView = (ImageView) view;
+                imageView.setImageDrawable(focusedIcon);
+            }
+        }
+    }
+
 }

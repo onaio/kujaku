@@ -11,7 +11,7 @@ publishing {
             artifact("$buildDir/outputs/aar/utils-release.aar")
             groupId 'io.ona.kujaku'
             artifactId 'utils'
-            version '0.1.4'
+            version this.version
 
             //The publication doesn't know about our dependencies, so we have to manually add them to the pom
             pom.withXml {
