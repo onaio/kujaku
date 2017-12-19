@@ -33,6 +33,7 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -209,7 +210,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(final MapboxMap mapboxMap) {
+            public void onMapReady(MapboxMap mapboxMap) {
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
@@ -217,7 +218,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     @Override
                     public void onScroll() {
                         if (focusedLocation != null) {
-                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapboxMap.getProjection().getVisibleRegion().latLngBounds)) {
+                            VisibleRegion mapsVisibleRegion = MapActivity.this.mapboxMap.getProjection().getVisibleRegion();
+                            //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
+                            //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
+
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds)) {
                                 if (focusedOnOfMyLocation) {
                                     focusedOnOfMyLocation = false;
 
