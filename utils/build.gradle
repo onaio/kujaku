@@ -3,7 +3,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 
-version '0.1.4'
+version '0.1.4-non-pr-merge-branch'
 project.version = this.version
 
 publishing {

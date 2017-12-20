@@ -797,6 +797,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         try {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+            onLocationChanged(lastLocation);
         } catch (SecurityException e) {
             Log.e(TAG, Log.getStackTraceString(e));
             Toast.makeText(this, "Sorry but we could not get your location since the app does not have permissions to access your Location", Toast.LENGTH_LONG)
