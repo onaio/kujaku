@@ -3,6 +3,8 @@ package io.ona.kujaku.data.realm;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -32,5 +34,34 @@ public class RealmDatabase {
                 .schemaVersion(VERSION)
                 .build();
         Realm.setDefaultConfiguration(configuration);
+    }
+
+    public boolean deleteTask(@NonNull String mapName, boolean isDownloadTask) {
+        Realm realm = Realm.getDefaultInstance();
+        MapBoxOfflineQueueTask taskToDelete;
+        if (isDownloadTask) {
+             taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
+                    .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)
+                    .contains("task", mapName)
+                    .findFirst();
+
+        } else {
+            taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
+                    .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DELETE)
+                    .contains("task", mapName)
+                    .findFirst();
+        }
+
+        if (taskToDelete != null) {
+            realm.beginTransaction();
+            taskToDelete.deleteFromRealm();
+            realm.commitTransaction();
+
+            realm.close();
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -1,12 +1,14 @@
 package io.ona.kujaku.sample.activities;
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -49,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
+    private int lastNotificationId = 200;
+    private int lastMapDownloadId = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
             Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, "pk.eyJ1Ijoib25hIiwiYSI6IlVYbkdyclkifQ.0Bz-QOOXZZK01dq4MuMImQ");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);//"Hp Invent " + UUID.randomUUID().toString());
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
@@ -166,8 +171,20 @@ public class MainActivity extends AppCompatActivity {
 
             startService(mapDownloadIntent);
         } else {
-            Toast.makeText(this, "Invalid Lat or Lng!", Toast.LENGTH_LONG)
+            Toast.makeText(this, "Invalid Lat or Lng! Reverting to default values", Toast.LENGTH_LONG)
                     .show();
+
+            Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, "pk.eyJ1Ijoib25hIiwiYSI6IlVYbkdyclkifQ.0Bz-QOOXZZK01dq4MuMImQ");
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, "Map Dw : " + (++lastMapDownloadId));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(37.7897, -119.5073));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(37.6744, -119.6815));
+
+            startService(mapDownloadIntent);
         }
     }
 
@@ -185,7 +202,26 @@ public class MainActivity extends AppCompatActivity {
                 .registerReceiver(new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        Log.i("KUJAKU SAMPLE APP TAG", intent.getExtras().toString());
+                        Bundle bundle = intent.getExtras();
+                        if (bundle != null) {
+                            Log.i("KUJAKU SAMPLE APP TAG", intent.getExtras().toString());
+                            if (bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULT_STATUS)
+                                    && bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE)
+                                    && bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION)
+                                    && bundle.containsKey(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME)) {
+
+                                String mapUniqueName = bundle.getString(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);
+                                String resultStatus = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_STATUS);
+                                MapboxOfflineDownloaderService.SERVICE_ACTION serviceAction = (MapboxOfflineDownloaderService.SERVICE_ACTION) bundle.get(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION);
+
+                                if (resultStatus.equals(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name())) {
+                                    String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);
+                                    showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+                                }
+                            }
+                        } else {
+                            Log.i("KUJAKU SAMPLE APP TAG", "Broadcast message has null Extras");
+                        }
                     }
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
@@ -256,5 +292,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             requestBasicPermissions();
         }
+    }
+
+    private void showInfoNotification(String title, String content) {
+        lastNotificationId++;
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSmallIcon(android.R.drawable.ic_dialog_info);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(lastNotificationId, notificationBuilder.build());
     }
 }

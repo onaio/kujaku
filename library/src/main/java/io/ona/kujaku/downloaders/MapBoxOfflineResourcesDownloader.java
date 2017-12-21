@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
-import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
@@ -61,7 +60,7 @@ public class MapBoxOfflineResourcesDownloader {
 
     public static MapBoxOfflineResourcesDownloader getInstance(Context context, Mapbox mapbox) {
         if (instance == null) {
-            instance = new MapBoxOfflineResourcesDownloader(context, mapbox);
+            instance = new MapBoxOfflineResourcesDownloader(context.getApplicationContext(), mapbox);
         }
 
         return instance;

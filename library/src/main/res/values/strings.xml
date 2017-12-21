@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Kujaku</string>
+    <string name="stop_download">Stop Download</string>
 </resources>
