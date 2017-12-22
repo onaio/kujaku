@@ -273,10 +273,19 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
+            currentMapBoxTask = mapBoxOfflineQueueTask;
+            if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {
+                currentServiceAction = SERVICE_ACTION.DELETE_MAP;
+            } else {
+                currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
+            }
+
             getTaskStatus(mapBoxOfflineQueueTask, mapBoxAccessToken, new OfflineRegionStatusCallback() {
                 @Override
                 public void onStatus(OfflineRegionStatus status, OfflineRegion offlineRegion) {
+
                     if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {
+                        currentServiceAction = SERVICE_ACTION.DELETE_MAP;
                         MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)
                                 .deleteMap(currentMapDownloadName, new OfflineRegion.OfflineRegionDeleteCallback() {
                                     @Override
@@ -323,20 +332,24 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
                 @Override
                 public void onError(String error) {
-                    if (error.contains("Map could not be found") && MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD.equals(mapBoxOfflineQueueTask.getTaskType())) {
-                        currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
-                        currentMapBoxTask = mapBoxOfflineQueueTask;
+                    if (error.contains("Map could not be found")) {
+                        if (MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD.equals(mapBoxOfflineQueueTask.getTaskType())) {
 
-                        try {
-                            startDownloadProgressUpdater();
-                            MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)
-                                    .downloadMap(new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask()), MapboxOfflineDownloaderService.this);
+                            try {
+                                startDownloadProgressUpdater();
+                                MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)
+                                        .downloadMap(new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask()), MapboxOfflineDownloaderService.this);
 
-                            //Set the progress notification
-                            queueDownloadProgressUpdate(currentMapDownloadName, 0.0);
-                            showProgressNotification(currentMapDownloadName, 0.0);
-                        } catch (MalformedDataException | JSONException | OfflineMapDownloadException e) {
-                            Log.e(TAG, Log.getStackTraceString(e));
+                                //Set the progress notification
+                                queueDownloadProgressUpdate(currentMapDownloadName, 0.0);
+                                showProgressNotification(currentMapDownloadName, 0.0);
+                            } catch (MalformedDataException | JSONException | OfflineMapDownloadException e) {
+                                Log.e(TAG, Log.getStackTraceString(e));
+                            }
+                        } else {
+                            // An error means this cannot be solved even at a later time THUS persist the task as DONE
+                            persistCompletedStatus(mapBoxOfflineQueueTask);
+                            performNextTask();
                         }
                     } else {
                         MapboxOfflineDownloaderService.this.onError(error, null);
