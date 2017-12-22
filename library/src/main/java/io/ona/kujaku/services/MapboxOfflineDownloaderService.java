@@ -92,9 +92,9 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         NETWORK_RESUME
     }
 
-    public static final String KEY_RESULT_STATUS = "KEY_RESULT_STATUS";
-    public static final String KEY_RESULT_MESSAGE = "KEY_RESULT_MESSAGE";
-    public static final String KEY_RESULTS_PARENT_ACTION = "KEY_RESULTS_PARENT_ACTION";
+    public static final String KEY_RESULT_STATUS = "RESULT STATUS";
+    public static final String KEY_RESULT_MESSAGE = "RESULT MESSAGE";
+    public static final String KEY_RESULTS_PARENT_ACTION = "RESULTS PARENT ACTION";
     private static final String TAG = MapboxOfflineDownloaderService.class.getSimpleName();
     public static final int[] PREFERRED_DOWNLOAD_NETWORKS = {
             ConnectivityManager.TYPE_WIFI,
