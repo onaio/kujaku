@@ -2,22 +2,23 @@
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cv_bottomInfoWindow_cardView"
-    card_view:cardCornerRadius="4dp"
     android:layout_width="@dimen/info_window_nonfocus_width"
     android:layout_height="@dimen/info_window_nonfocus_height"
     android:layout_gravity="center"
+    android:layout_marginBottom="@dimen/info_window_nonfocus_v_margin"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
     android:layout_marginTop="@dimen/info_window_nonfocus_v_margin"
-    android:layout_marginBottom="@dimen/info_window_nonfocus_v_margin"
-    android:elevation="11dp">
+    android:elevation="11dp"
+    card_view:cardCornerRadius="4dp">
 
     <LinearLayout
+        android:id="@+id/ll_canvas_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="@dimen/info_window_nonfocus_padding">
 
 
         <LinearLayout
@@ -31,12 +32,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
+                android:textSize="@dimen/info_window_nonfocus_text_size"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_bottomInfoWindow_name"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/info_window_nonfocus_text_size" />
 
         </LinearLayout>
 
@@ -51,12 +54,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
+                android:textSize="@dimen/info_window_nonfocus_text_size"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_bottomInfoWindow_age"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/info_window_nonfocus_text_size" />
 
         </LinearLayout>
 
@@ -71,12 +76,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
+                android:textSize="@dimen/info_window_nonfocus_text_size"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_bottomInfoWindow_weight"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/info_window_nonfocus_text_size" />
 
         </LinearLayout>
 
@@ -91,12 +98,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="10dp"
+                android:textSize="@dimen/info_window_nonfocus_text_size"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_bottomInfoWindow_vaccine"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/info_window_nonfocus_text_size" />
 
         </LinearLayout>
 

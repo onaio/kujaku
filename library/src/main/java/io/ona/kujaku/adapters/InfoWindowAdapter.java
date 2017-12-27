@@ -28,7 +28,6 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
 
     private Activity activity;
     private ArrayList<InfoWindowObject> items;
-    private static InfoWindowAdapter instance;
     private RecyclerView recyclerView;
 
     private int lastSelectedPosition = -1;
@@ -42,7 +41,6 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
         this.activity = activity;
         this.items = items;
         this.recyclerView = recyclerView;
-        instance = this;
     }
 
     @Override
@@ -86,5 +84,9 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
         if (activity instanceof MapActivity) {
             ((MapActivity) activity).focusOnFeature(position);
         }
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 }
