@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.snatik.storage.Storage;
@@ -64,7 +65,7 @@ public class MapBoxStyleStorage {
         while (!fileCreated) {
             fileName = UUID.randomUUID().toString() + ".json";
             fileName = writeToFile(DIRECTORY, fileName, stylePathOrJSON);
-            fileCreated = !fileName.isEmpty();
+            fileCreated = !TextUtils.isEmpty(fileName);
         }
 
         return "file://" + fileName;
@@ -76,7 +77,7 @@ public class MapBoxStyleStorage {
      * @param folderName Folder name(s) eg. AppFiles where to create file
      * @param fileName Filename with extension
      * @param content String content to be written to the file
-     * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... OR "" is the operation FAILS
+     * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... or NULL is the operation FAILS
      *          This operation fails if the file exists, permissions denied, invalid
      */
     public String writeToFile(String folderName, String fileName, String content) {
@@ -98,7 +99,7 @@ public class MapBoxStyleStorage {
             }
         }
 
-        return "";
+        return null;
     }
 
     /**
@@ -150,9 +151,7 @@ public class MapBoxStyleStorage {
             String filename = mapBoxPaths[1];
 
             String fileAbsolutePath = writeToFile(DIRECTORY + File.separator + folder, filename, mapBoxStyleJSON);
-            if (fileAbsolutePath != null && !fileAbsolutePath.isEmpty()) {
-                return true;
-            }
+            return !TextUtils.isEmpty(fileAbsolutePath);
         }
 
         return false;
@@ -173,20 +172,20 @@ public class MapBoxStyleStorage {
 
             return readFile(folder, filename);
         }
-        return "";
+        return null;
     }
 
     /**
      * Reads a style on local storage given the path using the format {@literal file://{file_path}}
      *
      * @param protocolledFilePath
-     * @return <p>- Empty String("") if the file does not exist<br/>
+     * @return <p>- NULL if the file does not exist<br/>
      *          - The style's JSON String if the file exists</p>
      */
     public String readStyle(@NonNull String protocolledFilePath) {
         String fileProtocolOrSth = "file://";
         if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {
-            return "";
+            return null;
         }
         String folders = "";
 
@@ -207,6 +206,14 @@ public class MapBoxStyleStorage {
         return readFile(folders, filename, false);
     }
 
+    /**
+     * Reads the contents of a file, returns them as a string
+     *
+     * @param folders           The directory hierarchy for the file
+     * @param filename          The name of the file to read
+     * @param isPathComplete
+     * @return NULL if unable to read the file or a String containing the contents of the file
+     */
     private String readFile(String folders, String filename, boolean isPathComplete) {
         File fileFolders;
 
@@ -238,7 +245,7 @@ public class MapBoxStyleStorage {
             }
             br.close();
         } catch (IOException e) {
-            return "";
+            return null;
         }
 
         return text.toString();

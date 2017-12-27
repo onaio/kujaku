@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +28,7 @@ import com.mapbox.services.commons.geojson.Feature;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -293,7 +295,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                                 JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 
                                 String id = getFeatureId(featureJSON);
-                                if (!id.isEmpty()) {
+                                if (!TextUtils.isEmpty(id)) {
                                     //Todo: Should check for errors here & print them in LogCat or notify the dev somehow
                                     featuresMap.put(id, new InfoWindowObject(counter, featureJSON));
                                     featureIdList.add(id);
@@ -381,7 +383,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 for(InfoWindowObject infoWindowObject: infoWindowObjectArrayList) {
                     String id = getFeatureId(infoWindowObject);
-                    if (!id.isEmpty()) {
+                    if (!TextUtils.isEmpty(id)) {
                         infoWindowObject.setPosition(counter);
                         featuresMap.put(id, infoWindowObject);
                         counter++;
@@ -662,6 +664,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        return "";
+        return null;
     }
 }

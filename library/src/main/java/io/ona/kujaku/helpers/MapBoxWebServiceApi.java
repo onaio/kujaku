@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.android.volley.NetworkError;
 import com.android.volley.Request;
@@ -54,7 +55,7 @@ public class MapBoxWebServiceApi {
                 if (error instanceof NetworkError) {
                     String cachedStyle = (new MapBoxStyleStorage())
                             .getCachedStyle("mapbox://styles/" + username + File.separator + styleId);
-                    if (cachedStyle != null && !cachedStyle.isEmpty()) {
+                    if (!TextUtils.isEmpty(cachedStyle)) {
                         responseListener.onResponse(cachedStyle);
                         return;
                     }
