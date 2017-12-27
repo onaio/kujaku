@@ -70,7 +70,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private static final String TAG = MapActivity.class.getSimpleName();
 
     private LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
-    private ArrayList featureIdList = new ArrayList();
+    private ArrayList<String> featureIdList = new ArrayList<>();
     private MapboxMap mapboxMap;
     private boolean infoWindowDisplayed = false;
 
@@ -154,7 +154,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         // Extract kujaku meta-data
                         try {
                             sortFields = extractSortFields(mapboxStyleJSON);
-                            dataLayers = extractSourceNames(mapboxStyleJSON, sortFields);
+                            dataLayers = extractSourceNames(mapboxStyleJSON);
                             featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                             featuresMap = sortData(featuresMap, sortFields);
                             displayInitialFeatures(featuresMap);
@@ -256,7 +256,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
     }
 
-    private String[] extractSourceNames(@NonNull JSONObject jsonObject, @NonNull SortField[] sortFields) throws JSONException {
+    private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
         if (jsonObject.has("metadata")) {
             JSONObject metadata = jsonObject.getJSONObject("metadata");
             if (metadata.has("kujaku")) {
@@ -277,8 +277,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return null;
     }
 
-    private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, @NonNull String[] dataSourceNames) throws JSONException {
-        if (mapBoxStyleJSON.has("sources")) {
+    private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
+        if (dataSourceNames != null && mapBoxStyleJSON.has("sources")) {
             JSONObject sources = mapBoxStyleJSON.getJSONObject("sources");
             LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
             int counter = 0;
@@ -367,15 +367,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap,@NonNull SortField[] sortFields) throws JSONException {
-        //TODO: Add support for multiple sorts
+    private LinkedHashMap<String, InfoWindowObject> sortData(LinkedHashMap<String, InfoWindowObject> featuresMap, SortField[] sortFields) throws JSONException {
         int counter = 0;
-        if (sortFields.length > 0) {
+        if (sortFields != null && sortFields.length > 0) {
             SortField sortField = sortFields[0];
             if (sortField.getType() == SortField.FieldType.DATE) {
-                //Todo: Add sorter here
-                //Todo: Change the order of ids' in the featureIdsList
-                Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));
+                Sorter sorter = new Sorter(new ArrayList<>(featuresMap.values()));
                 ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() -1, sortField.getDataField(), sortField.getType());
 
                 featuresMap.clear();
@@ -594,7 +591,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 return;
             }
 
-            id = (String) featureIdList.get(position);
+            id = featureIdList.get(position);
         }
 
         if (latLng == null) {

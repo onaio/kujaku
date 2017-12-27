@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
             , bottomRightLngEd
             , mapNameEd;
 
-    private static final int MAP_ACTIVITY_REQUEST_CODE = 43;
+    protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         switch(requestCode) {
             case MAP_ACTIVITY_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
-                    String geoJSONFeature = "";
+                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
                     if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
                         geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
                     }
