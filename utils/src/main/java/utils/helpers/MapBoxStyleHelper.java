@@ -160,7 +160,7 @@ public class MapBoxStyleHelper {
         return true;
     }
 
-    public class KujakuConfig {
+    public static class KujakuConfig {
         public static final String KEY_INFO_WINDOW = "info_window";
         public static final String KEY_SORT_FIELDS = "sort_fields";
         public static final String KEY_DATA_SOURCE_NAMES = "data_source_names";
@@ -264,7 +264,7 @@ public class MapBoxStyleHelper {
             return infoWindowConfig;
         }
 
-        public class InfoWindowConfig {
+        public static class InfoWindowConfig {
             public static final String KEY_VISIBLE_PROPERTIES = "visible_properties";
             public static final String KEY_VP_ID = "id";
             public static final String KEY_VP_LABEL = "label";
