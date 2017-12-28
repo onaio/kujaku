@@ -5,12 +5,15 @@ import android.animation.ValueAnimator;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,96 +22,110 @@ import java.util.ArrayList;
 import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.utils.Views;
+import utils.helpers.MapBoxStyleHelper;
 
-public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
+public class InfoWindowViewHolder extends RecyclerView.ViewHolder
+        implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
     private static final String TAG = InfoWindowViewHolder.class.getSimpleName();
-    private final InfoWindowAdapter adapter;
     private static final float UNSELECTED_OPACITY = 0.5f;
     private static final float SELECTED_OPACITY = 1.0f;
     private static final long ANIMATION_DURATION = 200;
 
+    private final InfoWindowAdapter adapter;
+    private final CardView cardView;
+    private final ArrayList<TextView> propertyLabels;
+    private final ArrayList<TextView> propertyValues;
+    private MapBoxStyleHelper.KujakuConfig.InfoWindowConfig infoWindowConfig;
     private InfoWindowObject currentInfoWindowObject;
-    private CardView cardView;
     private LinearLayout canvasLayout;
-    private ArrayList<TextView> textViews;
-    private TextView nameTv;
-    private TextView ageTv;
-    private TextView weightTv;
-    private TextView vaccineTv;
-    private TextView labelNameTv;
-    private TextView labelAgeTv;
-    private TextView labelWeightTv;
-    private TextView labelVaccineTv;
 
-    public InfoWindowViewHolder(@NonNull InfoWindowAdapter adapter, CardView cardView) {
+    public InfoWindowViewHolder(@NonNull InfoWindowAdapter adapter, @NonNull CardView cardView) {
         super(cardView);
-
         this.adapter = adapter;
         this.cardView = cardView;
-        this.textViews = new ArrayList<>();
+        this.propertyLabels = new ArrayList<>();
+        this.propertyValues = new ArrayList<>();
         canvasLayout = cardView.findViewById(R.id.ll_canvas_layout);
-        nameTv = cardView.findViewById(R.id.tv_bottomInfoWindow_name);
-        textViews.add(nameTv);
-        ageTv = cardView.findViewById(R.id.tv_bottomInfoWindow_age);
-        textViews.add(ageTv);
-        weightTv = cardView.findViewById(R.id.tv_bottomInfoWindow_weight);
-        textViews.add(weightTv);
-        vaccineTv = cardView.findViewById(R.id.tv_bottomInfoWindow_vaccine);
-        textViews.add(vaccineTv);
-        labelNameTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelName);
-        textViews.add(labelNameTv);
-        labelAgeTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelAge);
-        textViews.add(labelAgeTv);
-        labelWeightTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelWeight);
-        textViews.add(labelWeightTv);
-        labelVaccineTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelVaccine);
-        textViews.add(labelVaccineTv);
+
         this.cardView.setOnClickListener(this);
+    }
+
+    /**
+     * Resets the stored configuration as well as all the views affected by the configuration.
+     *
+     * @param config    The new configuration to be applied
+     * @throws JSONException If unable to parse the new configuration
+     */
+    public void setInfoWindowConfig(@NonNull MapBoxStyleHelper.KujakuConfig.InfoWindowConfig config)
+            throws JSONException {
+        this.infoWindowConfig = config;
+        removeDynamicViews();
+        JSONArray visibleProperties = infoWindowConfig.getVisibleProperties();
+        if (visibleProperties != null) {
+            for (int i = 0; i < visibleProperties.length(); i++) {
+                createPropertyViews(visibleProperties.getJSONObject(i));
+            }
+        }
+    }
+
+    private void removeDynamicViews() {
+        canvasLayout.removeAllViews();
+        propertyLabels.clear();
+        propertyValues.clear();
+    }
+
+    /**
+     * Creates views for a GeoJSON property meant to be visible, as defined in the
+     * {@link utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig}
+     *
+     * @param property The GeoJSON property to be displayed as defined in
+     *                 {@code utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.addVisibleProperty}
+     */
+    private void createPropertyViews(JSONObject property) throws JSONException {
+        String label = property
+                .getString(MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.KEY_VP_LABEL);
+        String id = property.getString(MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.KEY_VP_ID);
+
+        LinearLayout itemCanvas = (LinearLayout) LayoutInflater
+                .from(adapter.getContext()).inflate(R.layout.item_info_window, canvasLayout, true);
+        itemCanvas.setId(Views.generateViewId());
+
+        TextView labelTV = (TextView) itemCanvas.findViewById(R.id.tv_label);
+        labelTV.setId(Views.generateViewId());
+        labelTV.setText(label + ":");
+        labelTV.setTag(id);
+        propertyLabels.add(labelTV);
+
+        TextView valueTV = (TextView) itemCanvas.findViewById(R.id.tv_value);
+        valueTV.setId(Views.generateViewId());
+        valueTV.setTag(id);
+        propertyValues.add(valueTV);
     }
 
     public void setData(InfoWindowObject infoWindowObject) throws JSONException {
         this.currentInfoWindowObject = infoWindowObject;
         this.currentInfoWindowObject.setOnFocusChangeListener(this);
-        String[] priorityFields = new String[]{
-                "first_name",
-                "Birth_Weight",
-                "Place_Birth",
-                "zeir_id"
-        };
-        TextView[] tvs = new TextView[]{nameTv, ageTv, weightTv, vaccineTv};
-        TextView[] tvLabels = new TextView[]{labelNameTv, labelAgeTv, labelWeightTv, labelVaccineTv};
-        int fromPriorityFieldIndex = 0;
-
         JSONObject jsonObject = infoWindowObject.getJsonObject();
 
         if (jsonObject.has("properties")) {
             JSONObject propertiesJSON = jsonObject.getJSONObject("properties");
 
-            for (int i = 0; i < tvs.length; i++) {
-                TextView tv = tvs[i];
-                TextView labelTv = tvLabels[i];
-
-                for (int j = fromPriorityFieldIndex; j < priorityFields.length; j++) {
-                    String priorityField = priorityFields[j];
-
-                    if (propertiesJSON.has(priorityField)) {
-                        labelTv.setText(humanizeFieldName(priorityField) + ": ");
-                        tv.setText(propertiesJSON.getString(priorityField));
-                        fromPriorityFieldIndex = j + 1;
-                        break;
-                    } else {
-                        // Select a substitude field or disable the TextView(s)
-                        labelTv.setVisibility(View.GONE);
-                        tv.setVisibility(View.GONE);
-                    }
-
+            for (TextView curField : propertyValues) {
+                String propertyId = (String) curField.getTag();
+                if (propertyId != null && propertiesJSON.has(propertyId)) {
+                    curField.setText(propertiesJSON.getString(propertyId));
+                } else {
+                    curField.setText(null);
                 }
             }
         }
+
         updateFocusViews();
     }
 
-    private void startCardViewWidthAnimation(int endWidth, Animator.AnimatorListener animatorListener) {
+    private void startCardViewWidthAnimation(int endWidth,
+                                             Animator.AnimatorListener animatorListener) {
         final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
         final ValueAnimator anim = ValueAnimator.ofInt(layoutParams.width, endWidth);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -126,7 +143,8 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
         anim.start();
     }
 
-    private void startCardViewAlphaAnimation(float endAlpha, Animator.AnimatorListener animatorListener) {
+    private void startCardViewAlphaAnimation(float endAlpha,
+                                             Animator.AnimatorListener animatorListener) {
         ValueAnimator anim = ValueAnimator.ofFloat(cardView.getAlpha(), endAlpha);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -142,7 +160,8 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
         anim.start();
     }
 
-    private void startCardViewHeightAnimation(int endHeight, Animator.AnimatorListener animatorListener) {
+    private void startCardViewHeightAnimation(int endHeight,
+                                              Animator.AnimatorListener animatorListener) {
         final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
         ValueAnimator anim = ValueAnimator.ofInt(layoutParams.height, endHeight);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -160,8 +179,10 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
         anim.start();
     }
 
-    private void startCardViewVMarginAnimation(int endMargin, Animator.AnimatorListener animatorListener) {
-        final ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) cardView.getLayoutParams();
+    private void startCardViewVMarginAnimation(int endMargin,
+                                               Animator.AnimatorListener animatorListener) {
+        final ViewGroup.MarginLayoutParams layoutParams =
+                (ViewGroup.MarginLayoutParams) cardView.getLayoutParams();
         ValueAnimator anim = ValueAnimator.ofInt(layoutParams.bottomMargin, endMargin);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -179,13 +200,19 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
         anim.start();
     }
 
-    private void startTextSizeAnimation(float endTextSize, Animator.AnimatorListener animatorListener) {
-        ValueAnimator anim = ValueAnimator.ofFloat(textViews.get(0).getPaint().getTextSize(), endTextSize);
+    private void startTextSizeAnimation(float endTextSize,
+                                        Animator.AnimatorListener animatorListener) {
+        ValueAnimator anim =
+                ValueAnimator.ofFloat(propertyLabels.get(0).getPaint().getTextSize(), endTextSize);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float animatedValue = (Float) valueAnimator.getAnimatedValue();
-                for (TextView curTextView : textViews) {
+                for (TextView curTextView : propertyLabels) {
+                    curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);
+                }
+
+                for (TextView curTextView : propertyValues) {
                     curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);
                 }
             }
@@ -197,7 +224,8 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
         anim.start();
     }
 
-    private void startCanvasPaddingAnimation(int endPadding, Animator.AnimatorListener animatorListener) {
+    private void startCanvasPaddingAnimation(int endPadding,
+                                             Animator.AnimatorListener animatorListener) {
         ValueAnimator anim = ValueAnimator.ofInt(canvasLayout.getPaddingTop(), endPadding);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -278,31 +306,6 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
 
             }
         });
-    }
-
-    private String humanizeFieldName(String fieldName) {
-        // Replace underscores with spaces
-        // Capitalize the words
-        fieldName = fieldName.replace("_", " ");
-        fieldName = capitalize(fieldName);
-
-        // Todo: Capitalize all words
-
-        // Change abbreviations to Uppercase
-        String[] abbreviations = new String[]{
-                "id",
-                "zeir"
-        };
-
-        for (String abbreviation : abbreviations) {
-            fieldName = fieldName.replace(abbreviation, abbreviation.toUpperCase());
-        }
-
-        return fieldName;
-    }
-
-    private String capitalize(String name) {
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     private void updateFocusViews() {

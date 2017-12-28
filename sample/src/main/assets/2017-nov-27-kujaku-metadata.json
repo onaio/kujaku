@@ -18,19 +18,19 @@
       "info_window": {
         "visible_properties": [
           {
-            "key": "first_name",
+            "id": "first_name",
             "label": "First Name"
           },
           {
-            "key": "birth_weight",
+            "id": "Birth_Weight",
             "label": "Birth Weight"
           },
           {
-            "key": "place_birth",
+            "id": "Place_Birth",
             "label": "Place of Birth"
           },
           {
-            "key": "zeir_id",
+            "id": "zeir_id",
             "label": "ZEIR ID"
           }
         ]

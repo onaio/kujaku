@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Kujaku</string>
+    <string name="kujaku_config">Kujaku Configuration</string>
+    <string name="error_kujaku_config">There\'s an error in the Kujaku configuration provided. Some features might not work properly.</string>
+    <string name="ok">Okay</string>
 </resources>

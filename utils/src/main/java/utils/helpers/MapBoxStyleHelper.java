@@ -33,7 +33,7 @@ public class MapBoxStyleHelper {
     private final KujakuConfig kujakuConfig;
 
     public MapBoxStyleHelper(JSONObject styleObject) throws JSONException {
-        this.styleObject = new JSONObject(styleObject.toString());
+        this.styleObject = styleObject;
         if (this.styleObject.has("metadata")
                 && this.styleObject.getJSONObject("metadata").has(KEY_KUJAKU)) {
             this.kujakuConfig = new KujakuConfig(this.styleObject.getJSONObject("metadata").getJSONObject(KEY_KUJAKU));
@@ -70,6 +70,10 @@ public class MapBoxStyleHelper {
         }
 
         return false;
+    }
+
+    public KujakuConfig getKujakuConfig() {
+        return kujakuConfig;
     }
 
     /**
@@ -248,8 +252,22 @@ public class MapBoxStyleHelper {
             return config;
         }
 
+        public JSONArray getSortFields() {
+            return sortFields;
+        }
+
+        public JSONArray getDataSourceNames() {
+            return dataSourceNames;
+        }
+
+        public InfoWindowConfig getInfoWindowConfig() {
+            return infoWindowConfig;
+        }
+
         public class InfoWindowConfig {
             public static final String KEY_VISIBLE_PROPERTIES = "visible_properties";
+            public static final String KEY_VP_ID = "id";
+            public static final String KEY_VP_LABEL = "label";
             private final JSONArray visibleProperties;
 
             public InfoWindowConfig() {
@@ -262,6 +280,10 @@ public class MapBoxStyleHelper {
                 } else {
                     visibleProperties = new JSONArray();
                 }
+            }
+
+            public JSONArray getVisibleProperties() {
+                return visibleProperties;
             }
 
             /**
@@ -277,8 +299,8 @@ public class MapBoxStyleHelper {
                     throws JSONException, InvalidMapBoxStyleException {
                 if (!TextUtils.isEmpty(id) && !TextUtils.isEmpty(label)) {
                     JSONObject property = new JSONObject();
-                    property.put("id", id);
-                    property.put("label", label);
+                    property.put(KEY_VP_ID, id);
+                    property.put(KEY_VP_LABEL, label);
                     visibleProperties.put(property);
                 } else {
                     throw new InvalidMapBoxStyleException("The provided property has an empty key or label");
