@@ -33,6 +33,7 @@ import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.utils.NumberFormatter;
+import io.ona.kujaku.utils.ObjectCoercer;
 import io.realm.Realm;
 import utils.Constants;
 import utils.exceptions.MalformedDataException;
@@ -116,15 +117,15 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
 
     @RestrictTo(RestrictTo.Scope.TESTS)
-    private static boolean onStartCommandCalled = false;
+    public boolean onStartCommandCalled = false;
     @RestrictTo(RestrictTo.Scope.TESTS)
-    private static boolean persistOfflineMapTaskCalled = false;
+    public boolean persistOfflineMapTaskCalled = false;
     @RestrictTo(RestrictTo.Scope.TESTS)
-    private static boolean performNextTaskCalled = false;
+    public boolean performNextTaskCalled = false;
     @RestrictTo(RestrictTo.Scope.TESTS)
-    private static boolean observeOfflineRegionCalled = false;
+    public boolean observeOfflineRegionCalled = false;
     @RestrictTo(RestrictTo.Scope.TESTS)
-    private static boolean persistCompletedStatusCalled = false;
+    public boolean persistCompletedStatusCalled = false;
 
     public MapboxOfflineDownloaderService() {
         super();
@@ -149,7 +150,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param intent Intent passed when the service was called {@link Context#startService(Intent)}
      * @return {@code TRUE} if the OfflineMapTask was successfully saved, {@code FALSE} if the OfflineMapTask could not be saved
      */
-    private boolean persistOfflineMapTask(@Nullable Intent intent) {
+    protected boolean persistOfflineMapTask(@Nullable Intent intent) {
         persistOfflineMapTaskCalled = true;
         if (intent == null) {
             return false;
@@ -179,8 +180,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
                         downloadTask.setPackageName("kl");
                         downloadTask.setMapBoxStyleUrl(extras.getString(Constants.PARCELABLE_KEY_STYLE_URL));
-                        downloadTask.setMaxZoom(extras.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM));
-                        downloadTask.setMinZoom(extras.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM));
+                        downloadTask.setMaxZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MAX_ZOOM)));
+                        downloadTask.setMinZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MIN_ZOOM)));
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
 
@@ -431,7 +432,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private void showProgressNotification(@NonNull String mapName, double percentageProgress) {
         if (progressNotificationBuilder == null) {
             progressNotificationBuilder = new NotificationCompat.Builder(MapboxOfflineDownloaderService.this)
-                    .setContentTitle("Offline Map Download Progress: " + currentMapDownloadName)
+                    .setContentTitle("Offline Map Download Progress: " + mapName)
                     .setSmallIcon(R.drawable.ic_stat_file_download);
         }
 
@@ -573,31 +574,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         String finalMessage = "MapBox Tile Count limit exceeded : " + limit + " while Downloading " + currentMapDownloadName;
         Log.e(TAG, finalMessage);
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, finalMessage);
-    }
-
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public static boolean isOnStartCommandCalled() {
-        return onStartCommandCalled;
-    }
-
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public static boolean isPersistOfflineMapTaskCalled() {
-        return performNextTaskCalled;
-    }
-
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public static boolean isPerformNextTaskCalled() {
-        return performNextTaskCalled;
-    }
-
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public static boolean isObserveOfflineRegionCalled() {
-        return observeOfflineRegionCalled;
-    }
-
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public static boolean isPersistCompletedStatusCalled() {
-        return persistCompletedStatusCalled;
     }
 
 }
