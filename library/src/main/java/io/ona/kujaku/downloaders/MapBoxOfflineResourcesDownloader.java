@@ -197,7 +197,7 @@ public class MapBoxOfflineResourcesDownloader {
                         public void onError(String error) {
                             Log.e(TAG, error);
                             if(onDownloadMapListener != null) {
-                                onDownloadMapListener.onError(error, "");
+                                onDownloadMapListener.onError(error, null);
                             }
                         }
                     });
@@ -213,7 +213,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(String error) {
                 Log.e(TAG, error);
                 if(onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error, "");
+                    onDownloadMapListener.onError(error, null);
                 }
             }
         });
@@ -287,7 +287,7 @@ public class MapBoxOfflineResourcesDownloader {
         if (offlineManager == null) {
             Log.e(TAG, "Context passed is null");
             if (onDownloadMapListener != null) {
-                onDownloadMapListener.onError("Context passed is null", "");
+                onDownloadMapListener.onError("Context passed is null", null);
             }
 
             return;
@@ -300,7 +300,7 @@ public class MapBoxOfflineResourcesDownloader {
                 if (offlineRegion == null) {
                     Log.e(TAG, "Map could not be found");
                     if (onDownloadMapListener != null) {
-                        onDownloadMapListener.onError("Map could not be found", "");
+                        onDownloadMapListener.onError("Map could not be found", null);
                     }
                     return;
                 }
@@ -309,14 +309,14 @@ public class MapBoxOfflineResourcesDownloader {
                     @Override
                     public void onStatus(OfflineRegionStatus status) {
                         if (status.isComplete()) {
-                            Log.e(TAG, "Map Download is already complete");
+                            Log.e(TAG, "Map download is already complete");
                             if (onDownloadMapListener != null) {
-                                onDownloadMapListener.onError("Map Download is already complete", "");
+                                onDownloadMapListener.onError("Map download is already complete", null);
                             }
                         } else if (status.getDownloadState() == OfflineRegion.STATE_ACTIVE) {
                             Log.e(TAG, "Map is already downloading");
                             if (onDownloadMapListener != null) {
-                                onDownloadMapListener.onError("Map is already downloading", "");
+                                onDownloadMapListener.onError("Map is already downloading", null);
                             }
                         } else {
                             // Resume map download here
@@ -328,7 +328,7 @@ public class MapBoxOfflineResourcesDownloader {
                     public void onError(String error) {
                         Log.e(TAG, error);
                         if (onDownloadMapListener != null) {
-                            onDownloadMapListener.onError(error, "");
+                            onDownloadMapListener.onError(error, null);
                         }
                     }
                 });
@@ -338,7 +338,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(String error) {
                 Log.e(TAG, error);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error, "");
+                    onDownloadMapListener.onError(error, null);
                 }
             }
         });
@@ -364,7 +364,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(OfflineRegionError error) {
                 Log.e(TAG, "Message: " + error.getMessage() + "\nREASON: " + error.getReason());
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error.getMessage(), error.getReason());
+                    onDownloadMapListener.onError(error.getReason(), error.getMessage());
                 }
             }
 
@@ -372,7 +372,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void mapboxTileCountLimitExceeded(long limit) {
                 Log.e(TAG, "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more");
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError("MapBox Tile count " + limit + " limit exceeded", "Checkout https://www.mapbox.com/help/mobile-offline/ for more");
+                    onDownloadMapListener.onError("MapBox Tile count " + limit + " limit exceeded", "MapBox Tile count limit of " + limit + " exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more information");
                 }
             }
         });
@@ -427,7 +427,7 @@ public class MapBoxOfflineResourcesDownloader {
     public void pauseMapDownload(@NonNull final String name, final OnPauseMapDownloadCallback onPauseMapDownloadCallback) {
         if (offlineManager == null) {
             if (onPauseMapDownloadCallback != null) {
-                onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.CONTEXT_PASSED_IS_NULL, "");
+                onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.CONTEXT_PASSED_IS_NULL);
             }
             return;
         }
@@ -439,7 +439,7 @@ public class MapBoxOfflineResourcesDownloader {
                 if (offlineRegion == null) {
                     Log.e(TAG, "Map could not be found");
                     if (onPauseMapDownloadCallback != null) {
-                        onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_COULD_NOT_BE_FOUND, "");
+                        onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_COULD_NOT_BE_FOUND);
                     }
                     return;
                 }
@@ -456,12 +456,12 @@ public class MapBoxOfflineResourcesDownloader {
                             if (status.isComplete()) {
                                 Log.e(TAG, "Map download is already complete");
                                 if (onPauseMapDownloadCallback != null) {
-                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_DOWNLOAD_COMPLETE, "");
+                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_DOWNLOAD_COMPLETE);
                                 }
                             } else {
                                 Log.e(TAG, "Map was not downloading");
                                 if (onPauseMapDownloadCallback != null) {
-                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_WAS_NOT_DOWNLOADING, "");
+                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_WAS_NOT_DOWNLOADING);
                                 }
                             }
                         }
@@ -471,7 +471,7 @@ public class MapBoxOfflineResourcesDownloader {
                     public void onError(String error) {
                         Log.e(TAG, error);
                         if (onPauseMapDownloadCallback != null) {
-                            onPauseMapDownloadCallback.onPauseError(error, "");
+                            onPauseMapDownloadCallback.onPauseError(error);
                         }
                     }
                 });
@@ -481,7 +481,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(String error) {
                 Log.e(TAG, error);
                 if (onPauseMapDownloadCallback != null) {
-                    onPauseMapDownloadCallback.onPauseError(error, "");
+                    onPauseMapDownloadCallback.onPauseError(error);
                 }
             }
         });

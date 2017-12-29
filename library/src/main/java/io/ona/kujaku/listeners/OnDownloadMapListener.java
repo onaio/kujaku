@@ -24,7 +24,6 @@ public interface OnDownloadMapListener {
      * Called when an error occurs during download or when an Offline download of a Region is requested
      *
      * @param errorReason
-     * @param errorMessage
      */
     public void onError(String errorReason, String errorMessage);
 }
