@@ -19,12 +19,11 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
-import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
-import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import utils.exceptions.MalformedDataException;
 import utils.exceptions.OfflineMapDownloadException;
 
@@ -52,7 +51,7 @@ public class MapBoxOfflineResourcesDownloader {
 
     // JSON encoding/decoding
     public static final String JSON_CHARSET = "UTF-8";
-    public static final String JSON_FIELD_REGION_NAME = "FIELD_REGION_NAME";
+    public static final String METADATA_JSON_FIELD_REGION_NAME = "FIELD_REGION_NAME";
 
 
     public static MapBoxOfflineResourcesDownloader getInstance(Context context, String accessToken) {
@@ -163,7 +162,7 @@ public class MapBoxOfflineResourcesDownloader {
                 OfflineRegion similarOfflineRegion = getOfflineRegion(name, offlineRegions);
                 if (similarOfflineRegion != null) {
                     if (onDownloadMapListener != null) {
-                        onDownloadMapListener.onError("Map Already Exists", "The map name provided already exists");
+                        onDownloadMapListener.onError("Map Already Exists");
                     }
                     return;
                 }
@@ -172,7 +171,7 @@ public class MapBoxOfflineResourcesDownloader {
                 byte[] metadata = new byte[0];
                 try {
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put(JSON_FIELD_REGION_NAME, name);
+                    jsonObject.put(METADATA_JSON_FIELD_REGION_NAME, name);
                     metadata = jsonObject.toString().getBytes(JSON_CHARSET);
 
                     LatLngBounds latLngBounds = new LatLngBounds.Builder()
@@ -196,15 +195,15 @@ public class MapBoxOfflineResourcesDownloader {
                         @Override
                         public void onError(String error) {
                             Log.e(TAG, error);
-                            if(onDownloadMapListener != null) {
-                                onDownloadMapListener.onError(error, null);
+                            if (onDownloadMapListener != null) {
+                                onDownloadMapListener.onError(error);
                             }
                         }
                     });
                 } catch (UnsupportedEncodingException | JSONException e) {
                     Log.e(TAG, Log.getStackTraceString(e));
-                    if(onDownloadMapListener != null) {
-                        onDownloadMapListener.onError(e.getMessage(), Log.getStackTraceString(e));
+                    if (onDownloadMapListener != null) {
+                        onDownloadMapListener.onError(e.getMessage());
                     }
                 }
             }
@@ -212,8 +211,8 @@ public class MapBoxOfflineResourcesDownloader {
             @Override
             public void onError(String error) {
                 Log.e(TAG, error);
-                if(onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error, null);
+                if (onDownloadMapListener != null) {
+                    onDownloadMapListener.onError(error);
                 }
             }
         });
@@ -230,7 +229,7 @@ public class MapBoxOfflineResourcesDownloader {
      */
     public void deleteMap(@NonNull final String name, final OfflineRegion.OfflineRegionDeleteCallback offlineRegionDeleteCallback) {
         if (offlineManager == null) {
-            if(offlineRegionDeleteCallback != null) {
+            if (offlineRegionDeleteCallback != null) {
                 Log.e(TAG, "Context passed is null");
                 offlineRegionDeleteCallback.onError("Context passed is null");
             }
@@ -270,7 +269,7 @@ public class MapBoxOfflineResourcesDownloader {
             @Override
             public void onError(String error) {
                 Log.e(TAG, error);
-                if(offlineRegionDeleteCallback != null) {
+                if (offlineRegionDeleteCallback != null) {
                     offlineRegionDeleteCallback.onError(error);
                 }
             }
@@ -287,7 +286,7 @@ public class MapBoxOfflineResourcesDownloader {
         if (offlineManager == null) {
             Log.e(TAG, "Context passed is null");
             if (onDownloadMapListener != null) {
-                onDownloadMapListener.onError("Context passed is null", null);
+                onDownloadMapListener.onError("Context passed is null");
             }
 
             return;
@@ -300,7 +299,7 @@ public class MapBoxOfflineResourcesDownloader {
                 if (offlineRegion == null) {
                     Log.e(TAG, "Map could not be found");
                     if (onDownloadMapListener != null) {
-                        onDownloadMapListener.onError("Map could not be found", null);
+                        onDownloadMapListener.onError("Map could not be found");
                     }
                     return;
                 }
@@ -311,12 +310,12 @@ public class MapBoxOfflineResourcesDownloader {
                         if (status.isComplete()) {
                             Log.e(TAG, "Map download is already complete");
                             if (onDownloadMapListener != null) {
-                                onDownloadMapListener.onError("Map download is already complete", null);
+                                onDownloadMapListener.onError("Map download is already complete");
                             }
                         } else if (status.getDownloadState() == OfflineRegion.STATE_ACTIVE) {
                             Log.e(TAG, "Map is already downloading");
                             if (onDownloadMapListener != null) {
-                                onDownloadMapListener.onError("Map is already downloading", null);
+                                onDownloadMapListener.onError("Map is already downloading");
                             }
                         } else {
                             // Resume map download here
@@ -328,7 +327,7 @@ public class MapBoxOfflineResourcesDownloader {
                     public void onError(String error) {
                         Log.e(TAG, error);
                         if (onDownloadMapListener != null) {
-                            onDownloadMapListener.onError(error, null);
+                            onDownloadMapListener.onError(error);
                         }
                     }
                 });
@@ -338,7 +337,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(String error) {
                 Log.e(TAG, error);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error, null);
+                    onDownloadMapListener.onError(error);
                 }
             }
         });
@@ -364,15 +363,16 @@ public class MapBoxOfflineResourcesDownloader {
             public void onError(OfflineRegionError error) {
                 Log.e(TAG, "Message: " + error.getMessage() + "\nREASON: " + error.getReason());
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(error.getReason(), error.getMessage());
+                    onDownloadMapListener.onError(error.getReason() + ": " + error.getMessage());
                 }
             }
 
             @Override
             public void mapboxTileCountLimitExceeded(long limit) {
-                Log.e(TAG, "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more");
+                String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
+                Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError("MapBox Tile count " + limit + " limit exceeded", "MapBox Tile count limit of " + limit + " exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more information");
+                    onDownloadMapListener.onError(errorMessage);
                 }
             }
         });
@@ -386,7 +386,7 @@ public class MapBoxOfflineResourcesDownloader {
     public void getIncompleteMapDownloads(@NonNull final IncompleteMapDownloadCallback incompleteMapDownloadCallback) {
         if (offlineManager == null) {
             Log.e(TAG, "Context passed is null");
-            incompleteMapDownloadCallback.onError("Context passed is null", "");
+            incompleteMapDownloadCallback.onError("Context passed is null");
             return;
         }
 
@@ -405,7 +405,7 @@ public class MapBoxOfflineResourcesDownloader {
                         @Override
                         public void onError(String error) {
                             Log.e(TAG, error);
-                            incompleteMapDownloadCallback.onError(error, "");
+                            incompleteMapDownloadCallback.onError(error);
                         }
                     });
                 }
@@ -414,7 +414,7 @@ public class MapBoxOfflineResourcesDownloader {
             @Override
             public void onError(String error) {
                 Log.e(TAG, error);
-                incompleteMapDownloadCallback.onError(error, "");
+                incompleteMapDownloadCallback.onError(error);
             }
         });
     }
@@ -546,12 +546,12 @@ public class MapBoxOfflineResourcesDownloader {
      * @return {@link OfflineRegion} with the given name
      */
     private OfflineRegion getOfflineRegion(@NonNull String name,@NonNull OfflineRegion[] offlineRegions) {
-        for(OfflineRegion offlineRegion: offlineRegions) {
+        for (OfflineRegion offlineRegion: offlineRegions) {
             try {
                 String json = new String(offlineRegion.getMetadata(), JSON_CHARSET);
                 JSONObject jsonObject = new JSONObject(json);
-                if (jsonObject.has(JSON_FIELD_REGION_NAME)) {
-                    String regionName = jsonObject.getString(JSON_FIELD_REGION_NAME);
+                if (jsonObject.has(METADATA_JSON_FIELD_REGION_NAME)) {
+                    String regionName = jsonObject.getString(METADATA_JSON_FIELD_REGION_NAME);
                     if (name.equals(regionName)) {
                         return offlineRegion;
                     }

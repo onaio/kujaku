@@ -352,9 +352,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                     }
 
                     @Override
-                    public void onError(String errorReason, String errorMessage) {
-                        // We cant do much for now
-                        Log.e(TAG, errorReason + "\n" + errorMessage);
+                    public void onError(String error) {
+                        Log.e(TAG, error);
                     }
                 });
             }
@@ -538,14 +537,18 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     @Override
-    public void onError(@NonNull String reason, @Nullable String message) {
-        String finalMessage = "REASON : " + reason;
-        if (message != null && !message.isEmpty()) {
-            finalMessage += "\nMESSAGE: " + message;
-        }
-        Log.e(TAG, finalMessage);
-        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, finalMessage);
+    public void onError(String error) {
+        Log.e(TAG, error);
+        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, error);
+    }
 
+    @Override
+    public void onError(@NonNull String reason, @Nullable String message) {
+        String finalMessage = reason;
+        if (message != null && !message.isEmpty()) {
+            finalMessage += ": " + message;
+        }
+        onError(finalMessage);
     }
 
     @Override
