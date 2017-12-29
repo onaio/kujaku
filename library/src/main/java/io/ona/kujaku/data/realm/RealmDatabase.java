@@ -13,8 +13,8 @@ import io.realm.RealmConfiguration;
  */
 
 public class RealmDatabase {
-    private static final long VERSION = 1l;
-    private static final String NAME = "kujaku.realm";
+    protected static final long VERSION = 1l;
+    protected static final String NAME = "kujaku.realm";
     private static RealmDatabase realmDatabase;
     private final Context context;
 
@@ -39,18 +39,12 @@ public class RealmDatabase {
     public boolean deleteTask(@NonNull String mapName, boolean isDownloadTask) {
         Realm realm = Realm.getDefaultInstance();
         MapBoxOfflineQueueTask taskToDelete;
-        if (isDownloadTask) {
-             taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
-                    .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)
-                    .contains("task", mapName)
-                    .findFirst();
+        String taskType = isDownloadTask ? MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD : MapBoxOfflineQueueTask.TASK_TYPE_DELETE;
 
-        } else {
-            taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
-                    .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DELETE)
-                    .contains("task", mapName)
-                    .findFirst();
-        }
+        taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
+                .equalTo("taskType", taskType)
+                .contains("task", mapName)
+                .findFirst();
 
         if (taskToDelete != null) {
             realm.beginTransaction();
