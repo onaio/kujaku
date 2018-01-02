@@ -22,8 +22,7 @@ import utils.Constants;
 
 public class MapBoxWebServiceApi {
 
-    private String mapboxApiUrl = "https://api.mapbox.com"
-            , stylesPath = "/styles/v1";
+    private String mapboxApiUrl = "https://api.mapbox.com", stylesPath = "/styles/v1";
     private RequestQueue requestQueue;
     private String mapboxAccessToken;
 
@@ -67,7 +66,7 @@ public class MapBoxWebServiceApi {
         requestQueue.add(stringRequest);
     }
 
-    public void retrieveStyleJSON(@NonNull String mapBoxStyleURL,@NonNull Response.Listener<String> responseListener,@NonNull Response.ErrorListener errorListener) {
+    public void retrieveStyleJSON(@NonNull String mapBoxStyleURL, @NonNull Response.Listener<String> responseListener, @NonNull Response.ErrorListener errorListener) {
         if (!mapBoxStyleURL.matches(Constants.MAP_BOX_URL_FORMAT)) {
             errorListener.onErrorResponse(new VolleyError("Invalid MapBox Style URL "));
             return;

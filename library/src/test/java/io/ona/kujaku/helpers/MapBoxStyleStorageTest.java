@@ -16,7 +16,7 @@ import io.ona.kujaku.BuildConfig;
  */
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,manifest=Config.NONE)
+@Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class MapBoxStyleStorageTest {
 
     @Test
@@ -92,6 +92,4 @@ public class MapBoxStyleStorageTest {
         assertFalse(isDeleted);
         assertTrue(file.exists());
     }
-    
-    
 }
