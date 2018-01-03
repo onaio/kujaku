@@ -71,6 +71,7 @@ public class MapBoxStyleStorage {
     }
 
     /**
+     * Writes content to a file on local storage
      *
      * @param folderName Folder name(s) eg. AppFiles where to create file
      * @param fileName Filename with extension
@@ -78,7 +79,7 @@ public class MapBoxStyleStorage {
      * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... OR "" is the operation FAILS
      *          This operation fails if the file exists, permissions denied, invalid
      */
-    private String writeToFile(String folderName, String fileName, String content) {
+    public String writeToFile(String folderName, String fileName, String content) {
         File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);
 
         new File(Environment.getExternalStorageDirectory(), folderName)
@@ -133,6 +134,15 @@ public class MapBoxStyleStorage {
         return file.delete();
     }
 
+    /**
+     * Caches Mapbox styles in Folder: {@value DIRECTORY} as user/stylename eg. mapbox://style/edwin/9iowdcjsd
+     * will be saved in <strong>{@value DIRECTORY}/edwin/9iowdcjsd</strong>
+     *
+     * @param mapBoxUrl
+     * @param mapBoxStyleJSON
+     * @return <p>- {@code TRUE} if the style is cached successfully<br/>
+     *          - {@code FALSE} if the style is not cached successfully</p>
+     */
     public boolean cacheStyle(@NonNull String mapBoxUrl,@NonNull String mapBoxStyleJSON) {
         if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
@@ -148,6 +158,13 @@ public class MapBoxStyleStorage {
         return false;
     }
 
+    /**
+     * Retrieves the cached style if one exists
+     *
+     * @param mapBoxUrl
+     * @return <p>- The cached style JSON String, if it exists on local storage<br>
+     *          - Empty String("") if the style is not cached</p>
+     */
     public String getCachedStyle(String mapBoxUrl) {
         if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
@@ -159,6 +176,13 @@ public class MapBoxStyleStorage {
         return "";
     }
 
+    /**
+     * Reads a style on local storage given the path using the format {@literal file://{file_path}}
+     *
+     * @param protocolledFilePath
+     * @return <p>- Empty String("") if the file does not exist<br/>
+     *          - The style's JSON String if the file exists</p>
+     */
     public String readStyle(@NonNull String protocolledFilePath) {
         String fileProtocolOrSth = "file://";
         if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {

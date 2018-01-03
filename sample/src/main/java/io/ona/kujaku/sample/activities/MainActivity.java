@@ -1,13 +1,16 @@
 package io.ona.kujaku.sample.activities;
 
 import android.app.Activity;
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,14 +19,19 @@ import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.utils.Permissions;
 import utils.Constants;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,12 +43,20 @@ public class MainActivity extends AppCompatActivity {
             , mapNameEd;
 
     protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
+    private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
+    private static final int PERMISSIONS_REQUEST_CODE = 9823;
+    private String[] basicPermissions = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //callLibrary();
+
+        requestBasicPermissions();
 
         bottomRightLatEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlatitude);
         bottomRightLngEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlongitude);
@@ -173,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
+  
     private void downloadMapBoxStyle(String mapboxStyleUrl) {
         MapBoxWebServiceApi mapBoxWebServiceApi = new MapBoxWebServiceApi(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapBoxWebServiceApi.retrieveStyleJSON(mapboxStyleUrl, new Response.Listener<String>() {
@@ -206,6 +223,58 @@ public class MainActivity extends AppCompatActivity {
 
             default:
                 break;
+        }
+    }
+  
+    private void confirmSampleStyleAvailable() {
+        MapBoxStyleStorage mapBoxStyleStorage = new MapBoxStyleStorage();
+        String style = mapBoxStyleStorage.readStyle("file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json");
+        if (TextUtils.isEmpty(style)) {
+            //Write the file to storage
+            String sampleStyleString = readAssetFile(SAMPLE_JSON_FILE_NAME);
+            mapBoxStyleStorage.writeToFile("Dukto", SAMPLE_JSON_FILE_NAME,  sampleStyleString);
+        }
+    }
+
+    public String readAssetFile(String inFile) {
+        String tContents = "";
+
+        try {
+            InputStream stream = getAssets().open(inFile);
+
+            int size = stream.available();
+            byte[] buffer = new byte[size];
+            stream.read(buffer);
+            stream.close();
+            tContents = new String(buffer);
+        } catch (IOException e) {
+            // Handle exceptions here
+        }
+
+        return tContents;
+
+    }
+
+    private void requestBasicPermissions() {
+        ArrayList<String> notGivenPermissions = new ArrayList<>();
+
+        for (String permission : basicPermissions) {
+            if (!Permissions.check(this, permission)) {
+                notGivenPermissions.add(permission);
+            }
+        }
+
+        if (notGivenPermissions.size() > 0) {
+            Permissions.request(this, notGivenPermissions.toArray(new String[notGivenPermissions.size()]), PERMISSIONS_REQUEST_CODE);
+        } else {
+            confirmSampleStyleAvailable();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            requestBasicPermissions();
         }
     }
 }
