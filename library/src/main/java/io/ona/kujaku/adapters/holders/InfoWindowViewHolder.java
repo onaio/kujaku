@@ -23,6 +23,8 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.utils.Views;
+import utils.config.InfoWindowConfig;
+import utils.config.KujakuConfig;
 import utils.helpers.MapBoxStyleHelper;
 
 public class InfoWindowViewHolder extends RecyclerView.ViewHolder
@@ -36,7 +38,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
     private final CardView cardView;
     private final ArrayList<TextView> propertyLabels;
     private final ArrayList<TextView> propertyValues;
-    private MapBoxStyleHelper.KujakuConfig.InfoWindowConfig infoWindowConfig;
+    private InfoWindowConfig infoWindowConfig;
     private InfoWindowObject currentInfoWindowObject;
     private LinearLayout canvasLayout;
 
@@ -57,7 +59,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
      * @param config    The new configuration to be applied
      * @throws JSONException If unable to parse the new configuration
      */
-    public void setInfoWindowConfig(@NonNull MapBoxStyleHelper.KujakuConfig.InfoWindowConfig config)
+    public void setInfoWindowConfig(@NonNull InfoWindowConfig config)
             throws JSONException {
         this.infoWindowConfig = config;
         removeDynamicViews();
@@ -77,15 +79,15 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
 
     /**
      * Creates views for a GeoJSON property meant to be visible, as defined in the
-     * {@link utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig}
+     * {@link utils.config.InfoWindowConfig}
      *
      * @param property The GeoJSON property to be displayed as defined in
      *                 {@code utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.addVisibleProperty}
      */
     private void createPropertyViews(JSONObject property) throws JSONException {
         String label = property
-                .getString(MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.KEY_VP_LABEL);
-        String id = property.getString(MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.KEY_VP_ID);
+                .getString(InfoWindowConfig.KEY_VP_LABEL);
+        String id = property.getString(InfoWindowConfig.KEY_VP_ID);
 
         LinearLayout itemCanvas = (LinearLayout) LayoutInflater
                 .from(adapter.getContext()).inflate(R.layout.item_info_window, canvasLayout, true);

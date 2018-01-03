@@ -3,11 +3,19 @@
   "name": "zeir-sample-1-kigamba",
   "metadata": {
     "kujaku": {
-      "data_source_names": [
-        "opensrp-custom-data-source-0",
-        "opensrp-custom-data-source-1",
-        "opensrp-custom-data-source-2",
-        "opensrp-custom-data-source-3"
+      "data_sources": [
+        {
+          "name": "opensrp-custom-data-source-0"
+        },
+        {
+          "name": "opensrp-custom-data-source-1"
+        },
+        {
+          "name": "opensrp-custom-data-source-2"
+        },
+        {
+          "name": "opensrp-custom-data-source-3"
+        }
       ],
       "sort_fields": [
         {

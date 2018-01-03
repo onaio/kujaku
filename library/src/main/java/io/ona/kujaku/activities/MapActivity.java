@@ -42,11 +42,14 @@ import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
-import io.ona.kujaku.sorting.objects.SortField;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 
 import utils.Constants;
+import utils.config.DataSourceConfig;
+import utils.config.KujakuConfig;
+import utils.config.SortFieldConfig;
+import utils.exceptions.InvalidMapBoxStyleException;
 import utils.helpers.MapBoxStyleHelper;
 import utils.helpers.converters.GeoJSONFeature;
 
@@ -68,7 +71,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private MapView mapView;
     private String currentStylePath;
 
-    private SortField[] sortFields;
+    private SortFieldConfig[] sortFields;
     private String[] dataLayers;
     private JSONObject mapboxStyleJSON;
     private static final String TAG = MapActivity.class.getSimpleName();
@@ -159,13 +162,20 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         // Extract kujaku meta-data
                         try {
                             MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(mapboxStyleJSON);
-                            sortFields = extractSortFields(styleHelper);
-                            dataLayers = extractSourceNames(styleHelper);
+                            if (!styleHelper.getKujakuConfig().isValid()) {
+                                showIncompleteStyleError();
+                            }
+                            sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);;
+                            dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
                             featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                             featuresMap = sortData(featuresMap, sortFields);
                             displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
                         } catch (JSONException e) {
                             Log.e(TAG, Log.getStackTraceString(e));
+                            showIncompleteStyleError();
+                        } catch (InvalidMapBoxStyleException e) {
+                            Log.e(TAG, Log.getStackTraceString(e));
+                            showIncompleteStyleError();
                         }
                     }
                 }
@@ -174,6 +184,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
             }
         }
+    }
+
+    private void showIncompleteStyleError() {
+        showAlertDialog(
+                R.string.kujaku_config,
+                R.string.error_kujaku_config,
+                R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }, -1, null);
     }
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapboxAccessToken, String mapBoxStylePath,
@@ -274,33 +297,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private String[] extractSourceNames(@NonNull MapBoxStyleHelper styleHelper) throws JSONException {
-        MapBoxStyleHelper.KujakuConfig kujakuConfig = styleHelper.getKujakuConfig();
-        if (kujakuConfig.isValid()) {
-            JSONArray jsonArray = kujakuConfig.getDataSourceNames();
-            String[] dataLayers = new String[jsonArray.length()];
-
-            for (int i = 0; i < dataLayers.length; i++) {
-                dataLayers[i] = jsonArray.getString(i);
-            }
-
-            return dataLayers;
-        } else {
-            showAlertDialog(
-                    R.string.kujaku_config,
-                    R.string.error_kujaku_config,
-                    R.string.ok,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }, -1, null);
-        }
-
-        return new String[]{};
-    }
-
     @Nullable
     private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, @NonNull String[] dataSourceNames) throws JSONException {
         if (mapBoxStyleJSON.has("sources")) {
@@ -337,33 +333,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return null;
     }
 
-    private SortField[] extractSortFields(@NonNull MapBoxStyleHelper styleHelper) throws JSONException {
-        MapBoxStyleHelper.KujakuConfig kujakuConfig = styleHelper.getKujakuConfig();
-        if (kujakuConfig.isValid()) {
-            JSONArray jsonArray = kujakuConfig.getSortFields();
-            SortField[] sortFields = new SortField[jsonArray.length()];
-
-            for (int i = 0; i < sortFields.length; i++) {
-                sortFields[i] = SortField.extract(jsonArray.getJSONObject(i));
-            }
-
-            return sortFields;
-        } else {
-            showAlertDialog(
-                    R.string.kujaku_config,
-                    R.string.error_kujaku_config,
-                    R.string.ok,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }, -1, null);
-        }
-
-        return new SortField[]{};
-    }
-
     private JSONObject getStyleJSON(@NonNull String stylePathOrJSON) {
         try {
             return new JSONObject(getStyleJSONString(stylePathOrJSON));
@@ -388,7 +357,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull MapBoxStyleHelper.KujakuConfig kujakuConfig) {
+    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull KujakuConfig kujakuConfig) {
         if (!featuresMap.isEmpty()) {
             infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView, kujakuConfig);
             infoWindowsRecyclerView.setHasFixedSize(true);
@@ -398,12 +367,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull SortField[] sortFields) throws JSONException {
+    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull SortFieldConfig[] sortFields) throws JSONException {
         //TODO: Add support for multiple sorts
         int counter = 0;
         if (sortFields.length > 0) {
-            SortField sortField = sortFields[0];
-            if (sortField.getType() == SortField.FieldType.DATE) {
+            SortFieldConfig sortField = sortFields[0];
+            if (sortField.getType() == SortFieldConfig.FieldType.DATE) {
                 //Todo: Add sorter here
                 //Todo: Change the order of ids' in the featureIdsList
                 Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));

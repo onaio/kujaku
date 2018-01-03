@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import io.ona.kujaku.R;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import utils.config.KujakuConfig;
 import utils.helpers.MapBoxStyleHelper;
 
 /**
@@ -30,7 +31,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
     private final Activity activity;
     private final ArrayList<InfoWindowObject> items;
     private final RecyclerView recyclerView;
-    private final MapBoxStyleHelper.KujakuConfig kujakuConfig;
+    private final KujakuConfig kujakuConfig;
 
     private int lastSelectedPosition = -1;
     private int currentSelectedPosition = -1;
@@ -38,13 +39,13 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
     public InfoWindowAdapter(@NonNull Activity activity,
                              @NonNull LinkedHashMap<String, InfoWindowObject> items,
                              @NonNull RecyclerView recyclerView,
-                             @NonNull MapBoxStyleHelper.KujakuConfig kujakuConfig) {
+                             @NonNull KujakuConfig kujakuConfig) {
         this(activity, new ArrayList<InfoWindowObject>(items.values()), recyclerView, kujakuConfig);
     }
 
     public InfoWindowAdapter(@NonNull Activity activity, @NonNull ArrayList<InfoWindowObject> items,
                              @NonNull RecyclerView recyclerView,
-                             @NonNull MapBoxStyleHelper.KujakuConfig kujakuConfig) {
+                             @NonNull KujakuConfig kujakuConfig) {
         this.activity = activity;
         this.items = items;
         this.recyclerView = recyclerView;
