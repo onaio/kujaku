@@ -24,6 +24,7 @@ import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import utils.Constants;
 import utils.exceptions.MalformedDataException;
 import utils.exceptions.OfflineMapDownloadException;
 
@@ -144,7 +145,7 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Invalid map name");
         }
 
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.contains("mapbox://")) {
+        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             throw new OfflineMapDownloadException("Invalid Style URL");
         }
 

@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -21,18 +19,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.api.support.membermodification.MemberMatcher;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -57,10 +48,9 @@ import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.shadows.ShadowConnectivityReceiver;
 import io.ona.kujaku.shadows.ShadowMapBoxDeleteTask;
 import io.ona.kujaku.shadows.ShadowMapBoxDownloadTask;
-import io.ona.kujaku.shadows.ShadowMapboxOfflineDownloaderService;
 import io.ona.kujaku.shadows.ShadowOfflineManager;
 import io.ona.kujaku.shadows.ShadowRealm;
-import io.ona.kujaku.shadows.implementations.RealmDb;
+import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
 import io.ona.kujaku.utils.NumberFormatter;
 import utils.Constants;
 
@@ -81,12 +71,13 @@ import static org.junit.Assert.fail;
                 ShadowMapBoxDeleteTask.class,
                 ShadowMapBoxDownloadTask.class,
                 ShadowConnectivityReceiver.class,
+                ShadowRealm.class,
                 ShadowOfflineManager.class
 })
 public class MapboxOfflineDownloaderServiceTest {
 
     private String mapName = UUID.randomUUID().toString();
-    private static final String TAG = MapboxOfflineDownloaderService.class.getSimpleName();
+    private static final String TAG = MapboxOfflineDownloaderServiceTest.class.getSimpleName();
 
     private Context context;
     private MapboxOfflineDownloaderService mapboxOfflineDownloaderService;
@@ -104,22 +95,9 @@ public class MapboxOfflineDownloaderServiceTest {
     @Before
     public void setUp() throws Exception {
         context = RuntimeEnvironment.application;
-        RealmDb.resetDb();
+        RealmDbTestImplementation.resetDb();
         mapboxOfflineDownloaderService = Robolectric.buildService(MapboxOfflineDownloaderService.class)
                 .get();
-
-        //mapboxOfflineDownloaderService = PowerMockito.spy(mapboxOfflineDownloaderServiceReal);
-        /*PowerMockito.when(mapboxOfflineDownloaderService, MemberMatcher.method(MapboxOfflineDownloaderService.class, "persistCompletedStatus", MapBoxOfflineQueueTask.class))
-                .withArguments(Matchers.anyObject())
-                .then(new Answer() {
-                    @Override
-                    public Object answer(InvocationOnMock invocation) throws Throwable {
-                        MapBoxOfflineQueueTask mapboxOfflineQueueTask = invocation.getArgumentAt(0, MapBoxOfflineQueueTask.class);
-                        mapboxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
-
-                        return null;
-                    }
-                });*/
 
         resultsToCheck.clear();
     }
@@ -195,7 +173,7 @@ public class MapboxOfflineDownloaderServiceTest {
         Calendar calendar = Calendar.getInstance();
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
-        MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDb.first();
+        MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DELETE, task.getTaskType());
         assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
@@ -223,7 +201,7 @@ public class MapboxOfflineDownloaderServiceTest {
         Calendar calendar = Calendar.getInstance();
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
-        MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDb.first();
+        MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD, task.getTaskType());
         assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
@@ -305,68 +283,6 @@ public class MapboxOfflineDownloaderServiceTest {
         latch.await();
         Intent intent = (Intent) resultsToCheck.get(0);
         assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason, Constants.SERVICE_ACTION.DELETE_MAP);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    @Test
-    public void onStatusChangedShouldShowDownloadCompleteNotificationWhenGivenCompletedOfflineRegion() throws Exception {
-        latch = new CountDownLatch(1);
-        OfflineRegionStatus completeOfflineRegionStatus = createOfflineRegion(OfflineRegion.STATE_ACTIVE, 300, 98923, 898, 230909, 300, true, true);
-
-        // Create dummy download task & insert it into the service
-        Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
-        sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
-        mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
-
-        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = (MapBoxOfflineQueueTask) RealmDb.first();
-
-        insertValueInPrivateField(mapboxOfflineDownloaderService, "currentMapBoxTask", mapBoxOfflineQueueTask);
-
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
-        registerLocalBroadcastReceiverForDownloadServiceUpdates();
-
-        MapboxOfflineDownloaderService mapboxOfflineDownloaderServiceSpy = PowerMockito.spy(mapboxOfflineDownloaderService);
-
-        /*PowerMockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                MapBoxOfflineQueueTask mapboxOfflineQueueTask = invocation.getArgumentAt(0, MapBoxOfflineQueueTask.class);
-                mapboxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
-
-                return null;
-            }
-        }).when(mapboxOfflineDownloaderServiceSpy, "persistCompletedStatus", mapBoxOfflineQueueTask);*/
-
-        /*PowerMockito.when(mapboxOfflineDownloaderServiceSpy, MemberMatcher.method(MapboxOfflineDownloaderService.class, , MapBoxOfflineQueueTask.class))
-                .withArguments(mapBoxOfflineQueueTask)
-                .then();*/
-
-        mapboxOfflineDownloaderServiceSpy.onStatusChanged(completeOfflineRegionStatus, null);
-        latch.await();
-
-        //1. Make sure broadcast is sent
-        Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "100.0", Constants.SERVICE_ACTION.DOWNLOAD_MAP);
-
-        //2. Make sure download complete notification is sent
-        String notificationTitle = "Download for " + mapName + " Map Complete!";
-        String notificationMessage = "Downloaded " + NumberFormatter.getFriendlyFileSize(context, completeOfflineRegionStatus.getCompletedResourceSize());
-        ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
-        Notification displayedNotification = shadowNotificationManager.getNotification(mapboxOfflineDownloaderServiceSpy.LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID);
-
-        assertTrue("Notification message does not exist", displayedNotification != null);
-        assertEquals(notificationTitle, displayedNotification.extras.getString("android.title"));
-        assertEquals(notificationMessage, displayedNotification.extras.get("android.message"));
-
-        //3. Make sure performNextTask() is called
-        assertTrue(mapboxOfflineDownloaderServiceSpy.performNextTaskCalled);
-
-        //4. Make sure the new task status was persisted
-        Field mapboxQueueTask = mapboxOfflineDownloaderServiceSpy.getClass().getField("currentMapBoxTask");
-        mapboxQueueTask.setAccessible(true);
-        MapBoxOfflineQueueTask mapBoxOfflineQueueTask2 = (MapBoxOfflineQueueTask) mapboxQueueTask.get(mapboxOfflineDownloaderServiceSpy);
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_DONE, mapBoxOfflineQueueTask2.getTaskStatus());
-
     }
 
     @Test

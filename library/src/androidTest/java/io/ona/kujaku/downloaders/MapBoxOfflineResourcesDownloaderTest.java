@@ -35,6 +35,7 @@ import io.ona.kujaku.listeners.OnDownloadMapListener;
 import utils.exceptions.OfflineMapDownloadException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/12/2017.
@@ -45,8 +46,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
     private MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader;
     private Context context;
 
-    private MapBoxDownloadTask sampleDownloadTask;
-    private MapBoxDeleteTask sampleDeleteTask;
     private String sampleMapName = UUID.randomUUID().toString();
     private CountDownLatch downLatch = new CountDownLatch(0);
     private ArrayList<Object> outputsFromCallbacks = new ArrayList<>();
@@ -61,29 +60,9 @@ public class MapBoxOfflineResourcesDownloaderTest {
     public void setup() {
         context = InstrumentationRegistry.getTargetContext();
         MapBoxOfflineResourcesDownloader.instance = null;
-        //mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        sampleDownloadTask = new MapBoxDownloadTask(
-                "kl",
-                sampleMapName,
-                "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m",
-                10d,
-                12d,
-                new LatLng(
-                        -17.854564,
-                        25.854782
-                ),
-                new LatLng(
-                        -17.875469,
-                        25.876589
-                ),
-                BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
-        );
-
-        sampleDeleteTask = new MapBoxDeleteTask(sampleMapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
     }
 
-    // I don't know why this test fails!! It's flaky or should be mocked also
     @Test
     public void downloadMapShouldThrowExceptionWhenGivenNullContext() throws OfflineMapDownloadException {
         expectedException.expect(OfflineMapDownloadException.class);
@@ -117,7 +96,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
         mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
-    }/*
+    }
 
     @Test
     public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL2() throws OfflineMapDownloadException {
@@ -128,6 +107,8 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMapBoxStyleUrl("mapbox://tiles/kosi");
 
         mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
+        assertTrue(mapBoxOfflineResourcesDownloader.offlineManager != null);
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
@@ -141,7 +122,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
         mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
-    }*/
+    }
 
     @Test
     public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom() throws OfflineMapDownloadException {
@@ -372,7 +353,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, spiedOnDownloadListener);
     }
 
-    // I also don't know why this test fails, maybe flaky or bad logic on the Class. Should probably also be mocked
     @Test
     public void deleteMapShouldCallErrorCallbackWhenGivenNullContext() throws OfflineMapDownloadException, InterruptedException {
         downLatch = new CountDownLatch(1);
