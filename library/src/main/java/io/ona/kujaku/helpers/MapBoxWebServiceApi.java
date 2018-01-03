@@ -14,7 +14,7 @@ import com.android.volley.toolbox.Volley;
 
 import java.io.File;
 
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/11/2017.

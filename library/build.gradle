@@ -96,7 +96,7 @@ dependencies {
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
         transitive = true;
     }
-    compile('io.ona.kujaku:utils:0.1.10-info-window') {
+    compile('io.ona.kujaku:utils:0.1.11-info-window') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }

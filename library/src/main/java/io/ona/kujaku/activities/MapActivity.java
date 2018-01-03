@@ -44,14 +44,13 @@ import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
-
-import utils.Constants;
-import utils.config.DataSourceConfig;
-import utils.config.KujakuConfig;
-import utils.config.SortFieldConfig;
-import utils.exceptions.InvalidMapBoxStyleException;
-import utils.helpers.MapBoxStyleHelper;
-import utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.config.DataSourceConfig;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.

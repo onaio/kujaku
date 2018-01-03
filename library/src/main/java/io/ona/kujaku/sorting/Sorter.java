@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import io.ona.kujaku.adapters.InfoWindowObject;
-import utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.config.SortFieldConfig;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2017.

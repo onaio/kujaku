@@ -1,4 +1,4 @@
-package utils.config;
+package io.ona.kujaku.utils.config;
 
 import android.support.annotation.NonNull;
 
@@ -9,8 +9,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import utils.exceptions.InvalidMapBoxStyleException;
-import utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 24/11/2017.

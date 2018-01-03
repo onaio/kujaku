@@ -1,4 +1,4 @@
-package utils.helpers;
+package io.ona.kujaku.utils.helpers;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import utils.config.KujakuConfig;
-import utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
  * Helps manipulate the contents of a MapBox Style object.

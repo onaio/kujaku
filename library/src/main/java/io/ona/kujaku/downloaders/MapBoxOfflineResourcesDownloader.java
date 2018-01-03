@@ -24,8 +24,8 @@ import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
-import utils.exceptions.MalformedDataException;
-import utils.exceptions.OfflineMapDownloadException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
 
 /**
  *

@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.1.10-info-window'
+version '0.1.11-info-window'
 project.version = this.version
 
 publishing {

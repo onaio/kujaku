@@ -1,4 +1,4 @@
-package utils.config;
+package io.ona.kujaku.utils.config;
 
 import junit.framework.Assert;
 
@@ -10,8 +10,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.utils.BuildConfig;
-import utils.exceptions.InvalidMapBoxStyleException;
-import utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 1/2/18.

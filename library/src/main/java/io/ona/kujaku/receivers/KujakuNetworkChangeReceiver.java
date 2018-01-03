@@ -9,7 +9,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * This receiver starts the {@link MapboxOfflineDownloaderService} a data connection (MOBILE or WIFI) is enabled.

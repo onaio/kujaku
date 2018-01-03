@@ -18,8 +18,7 @@ import java.util.LinkedHashMap;
 import io.ona.kujaku.R;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
-import utils.config.KujakuConfig;
-import utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.config.KujakuConfig;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 24/11/2017.

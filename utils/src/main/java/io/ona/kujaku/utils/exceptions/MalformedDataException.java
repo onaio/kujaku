@@ -1,4 +1,4 @@
-package utils.exceptions;
+package io.ona.kujaku.utils.exceptions;
 
 /**
  * Thrown when data eg. {@link org.json.JSONObject} is malformed/invalid/insufficient

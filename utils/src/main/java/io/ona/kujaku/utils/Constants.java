@@ -1,4 +1,4 @@
-package utils;
+package io.ona.kujaku.utils;
 
 import android.app.AlarmManager;
 

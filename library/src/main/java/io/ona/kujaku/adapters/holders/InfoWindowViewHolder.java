@@ -23,9 +23,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.utils.Views;
-import utils.config.InfoWindowConfig;
-import utils.config.KujakuConfig;
-import utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.config.InfoWindowConfig;
 
 public class InfoWindowViewHolder extends RecyclerView.ViewHolder
         implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {

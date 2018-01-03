@@ -36,9 +36,9 @@ import io.ona.kujaku.listeners.OnDownloadMapListener;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
-import utils.Constants;
-import utils.exceptions.MalformedDataException;
-import utils.exceptions.OfflineMapDownloadException;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
 
 /**
  * Service performs Offline Map Download, Offline Map Deletion & Offline Map Download Resumption

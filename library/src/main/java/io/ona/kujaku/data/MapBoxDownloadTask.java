@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
-import utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
 /**
  * Stores/Carries data on Offline MapBox Style

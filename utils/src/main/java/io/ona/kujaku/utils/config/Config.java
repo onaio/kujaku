@@ -1,4 +1,4 @@
-package utils.config;
+package io.ona.kujaku.utils.config;
 
 import org.json.JSONException;
 import org.json.JSONObject;

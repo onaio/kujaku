@@ -1,8 +1,6 @@
-package utils.config;
+package io.ona.kujaku.utils.config;
 
 import android.support.annotation.NonNull;
-
-import com.mapbox.services.commons.utils.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,8 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import io.ona.kujaku.utils.BuildConfig;
-import utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 1/2/18.

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import io.ona.kujaku.activities.MapActivity;
 
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * Helps add the MapBox Style to the MapBox MapView when provided as string since the MapBox API only allows

@@ -33,7 +33,7 @@ import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Permissions;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 public class MainActivity extends AppCompatActivity {
 

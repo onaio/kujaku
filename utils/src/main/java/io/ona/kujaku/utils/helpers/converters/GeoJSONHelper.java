@@ -1,4 +1,4 @@
-package utils.helpers.converters;
+package io.ona.kujaku.utils.helpers.converters;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.FeatureCollection;
