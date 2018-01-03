@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 27/12/2017.
  */
 
-public class RealmDb {
+public class RealmDbTestImplementation {
 
     public static LinkedHashMap<String, Object> db = new LinkedHashMap<>();
 

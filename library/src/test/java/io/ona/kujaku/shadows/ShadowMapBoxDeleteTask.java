@@ -8,11 +8,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import java.util.Date;
-import java.util.UUID;
 
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
-import io.ona.kujaku.shadows.implementations.RealmDb;
+import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 22/12/2017.
@@ -31,7 +30,7 @@ public class ShadowMapBoxDeleteTask {
             mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
             mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DELETE);
 
-            RealmDb.add(mapBoxOfflineQueueTask.getId(), mapBoxOfflineQueueTask);
+            RealmDbTestImplementation.add(mapBoxOfflineQueueTask.getId(), mapBoxOfflineQueueTask);
 
             return mapBoxOfflineQueueTask;
         } catch (JSONException e) {
