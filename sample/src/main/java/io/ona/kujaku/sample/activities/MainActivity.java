@@ -18,15 +18,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.UUID;
-
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
@@ -39,11 +37,7 @@ import utils.Constants;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText topLeftLatEd
-            , topLeftLngEd
-            , bottomRightLatEd
-            , bottomRightLngEd
-            , mapNameEd;
+    private EditText topLeftLatEd, topLeftLngEd, bottomRightLatEd, bottomRightLngEd, mapNameEd;
 
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
@@ -68,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         topLeftLatEd = (EditText) findViewById(R.id.edt_mainActivity_topLeftlatitude);
         topLeftLngEd = (EditText) findViewById(R.id.edt_mainActivity_topLeftlongitude);
 
-        mapNameEd = (EditText) findViewById(R.id.edt_mainActivity_mapName) ;
+        mapNameEd = (EditText) findViewById(R.id.edt_mainActivity_mapName);
 
         Button startOfflineDownload = (Button) findViewById(R.id.btn_mainActivity_startOfflineDownload);
         Button openMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
@@ -120,9 +114,9 @@ public class MainActivity extends AppCompatActivity {
         );
 
         LatLng topLeft = new LatLng(
-                        -17.875469,
-                        25.876589
-                );
+                -17.875469,
+                25.876589
+        );
 
         intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRight);
         intent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeft);
@@ -134,10 +128,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void downloadMap() {
-        double topLeftLat = -1.29020515
-                , topLeftLng = 36.78702772
-                , bottomRightLat = -1.29351951
-                , bottomRightLng =  36.79288566;
+        double topLeftLat = -1.29020515, topLeftLng = 36.78702772, bottomRightLat = -1.29351951, bottomRightLng = 36.79288566;
 
         String tllatE = topLeftLatEd.getText().toString();
         String tllngE = topLeftLngEd.getText().toString();
@@ -151,14 +142,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (isValidDouble(tllatE) && isValidDouble(tllngE) && isValidDouble(brlatE) && isValidDouble(brlngE) ) {
+        if (isValidDouble(tllatE) && isValidDouble(tllngE) && isValidDouble(brlatE) && isValidDouble(brlngE)) {
             topLeftLat = Double.valueOf(tllatE);
             topLeftLng = Double.valueOf(tllngE);
             bottomRightLat = Double.valueOf(brlatE);
             bottomRightLng = Double.valueOf(brlngE);
 
             Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, "pk.eyJ1Ijoib25hIiwiYSI6IlVYbkdyclkifQ.0Bz-QOOXZZK01dq4MuMImQ");
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);//"Hp Invent " + UUID.randomUUID().toString());
@@ -175,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
             Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, "pk.eyJ1Ijoib25hIiwiYSI6IlVYbkdyclkifQ.0Bz-QOOXZZK01dq4MuMImQ");
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, "Map Dw : " + (++lastMapDownloadId));
@@ -225,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
+
     private void downloadMapBoxStyle(String mapboxStyleUrl) {
         MapBoxWebServiceApi mapBoxWebServiceApi = new MapBoxWebServiceApi(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapBoxWebServiceApi.retrieveStyleJSON(mapboxStyleUrl, new Response.Listener<String>() {
@@ -248,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(style)) {
             //Write the file to storage
             String sampleStyleString = readAssetFile(SAMPLE_JSON_FILE_NAME);
-            mapBoxStyleStorage.writeToFile("Dukto", SAMPLE_JSON_FILE_NAME,  sampleStyleString);
+            mapBoxStyleStorage.writeToFile("Dukto", SAMPLE_JSON_FILE_NAME, sampleStyleString);
         }
     }
 
