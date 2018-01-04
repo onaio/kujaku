@@ -128,6 +128,10 @@ android {
             }
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
