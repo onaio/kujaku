@@ -265,7 +265,7 @@ public class MapboxOfflineDownloaderServiceTest {
         mapboxOfflineDownloaderService.onError(reason, message);
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason + "\nMESSAGE: " + message, Constants.SERVICE_ACTION.DELETE_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, reason + ": " + message, Constants.SERVICE_ACTION.DELETE_MAP);
     }
 
     @Test
@@ -282,7 +282,7 @@ public class MapboxOfflineDownloaderServiceTest {
 
         latch.await();
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason, Constants.SERVICE_ACTION.DELETE_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, reason, Constants.SERVICE_ACTION.DELETE_MAP);
     }
 
     @Test
