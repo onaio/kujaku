@@ -192,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     // Extract kujaku meta-data
                     try {
                         sortFields = extractSortFields(mapboxStyleJSON);
-                        dataLayers = extractSourceNames(mapboxStyleJSON, sortFields);
+                        dataLayers = extractSourceNames(mapboxStyleJSON);
                         featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                         featuresMap = sortData(featuresMap, sortFields);
                         displayInitialFeatures(featuresMap);
