@@ -19,13 +19,23 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.1.4-info-window-click-action'
+version '0.2.1'
 project.version = this.version
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+artifacts {
+    archives sourceJar
+}
 
 publishing {
     publications {
         Production(MavenPublication) {
             artifact("$buildDir/outputs/aar/library-release.aar")
+            artifact(sourceJar)
             groupId 'io.ona.kujaku'
             artifactId 'library'
             version this.version
@@ -96,7 +106,7 @@ dependencies {
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
         transitive = true;
     }
-    compile('io.ona.kujaku:utils:0.1.4') {
+    compile('io.ona.kujaku:utils:0.2.1') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }

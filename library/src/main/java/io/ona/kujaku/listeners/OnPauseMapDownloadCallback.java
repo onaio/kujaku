@@ -17,9 +17,8 @@ public interface OnPauseMapDownloadCallback {
      * Called when a request to pause an Offline Region's download fails
      *
      * @param error
-     * @param message
      */
-    void onPauseError(String error, String message);
+    void onPauseError(String error);
 
     String
         MAP_COULD_NOT_BE_FOUND = "Map could not be found",
