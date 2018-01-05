@@ -74,7 +74,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
         return items.size();
     }
 
-    public void focusOnPosition(int position) {
+    public void focusOnPosition(int position, boolean informMapActivity) {
         currentSelectedPosition = position;
         if (lastSelectedPosition != position) {
             if (lastSelectedPosition > -1) {
@@ -83,7 +83,7 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
             lastSelectedPosition = position;
         }
         items.get(position).setFocused(true);
-        if (activity instanceof MapActivity) {
+        if (informMapActivity && activity instanceof MapActivity) {
             ((MapActivity) activity).focusOnFeature(position);
         }
     }

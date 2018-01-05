@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.activities;
 
+import android.app.Activity;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,8 +22,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.UUID;
-
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
@@ -43,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
             , bottomRightLngEd
             , mapNameEd;
 
+    protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
     private String[] basicPermissions = new String[]{
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
 
-        startActivity(intent);
+        startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
 
     private void downloadMap() {
@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
+  
     private void downloadMapBoxStyle(String mapboxStyleUrl) {
         MapBoxWebServiceApi mapBoxWebServiceApi = new MapBoxWebServiceApi(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapBoxWebServiceApi.retrieveStyleJSON(mapboxStyleUrl, new Response.Listener<String>() {
@@ -206,6 +207,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case MAP_ACTIVITY_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
+                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
+                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                    }
+                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
+                            .show();
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+  
     private void confirmSampleStyleAvailable() {
         MapBoxStyleStorage mapBoxStyleStorage = new MapBoxStyleStorage();
         String style = mapBoxStyleStorage.readStyle("file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json");

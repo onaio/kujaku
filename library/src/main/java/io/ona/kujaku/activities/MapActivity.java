@@ -2,6 +2,7 @@ package io.ona.kujaku.activities;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -69,14 +70,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private static final String TAG = MapActivity.class.getSimpleName();
 
     private LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
-    private ArrayList featureIdList = new ArrayList();
+    private ArrayList<String> featureIdList = new ArrayList<>();
     private MapboxMap mapboxMap;
     private boolean infoWindowDisplayed = false;
 
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
     private InfoWindowLayoutManager linearLayoutManager;
-    private int lastSelected = 0;
+    private int lastSelected = -1;
 
     private int animateToNewTargetDuration = 1000;
     private int animateToNewInfoWindowDuration = 300;
@@ -153,7 +154,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         // Extract kujaku meta-data
                         try {
                             sortFields = extractSortFields(mapboxStyleJSON);
-                            dataLayers = extractSourceNames(mapboxStyleJSON, sortFields);
+                            dataLayers = extractSourceNames(mapboxStyleJSON);
                             featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                             featuresMap = sortData(featuresMap, sortFields);
                             displayInitialFeatures(featuresMap);
@@ -255,7 +256,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
     }
 
-    private String[] extractSourceNames(@NonNull JSONObject jsonObject, @NonNull SortField[] sortFields) throws JSONException {
+    private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
         if (jsonObject.has("metadata")) {
             JSONObject metadata = jsonObject.getJSONObject("metadata");
             if (metadata.has("kujaku")) {
@@ -276,8 +277,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return null;
     }
 
-    private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, @NonNull String[] dataSourceNames) throws JSONException {
-        if (mapBoxStyleJSON.has("sources")) {
+    private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
+        if (dataSourceNames != null && mapBoxStyleJSON.has("sources")) {
             JSONObject sources = mapBoxStyleJSON.getJSONObject("sources");
             LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
             int counter = 0;
@@ -366,15 +367,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap,@NonNull SortField[] sortFields) throws JSONException {
-        //TODO: Add support for multiple sorts
+    private LinkedHashMap<String, InfoWindowObject> sortData(LinkedHashMap<String, InfoWindowObject> featuresMap, SortField[] sortFields) throws JSONException {
         int counter = 0;
-        if (sortFields.length > 0) {
+        if (sortFields != null && sortFields.length > 0) {
             SortField sortField = sortFields[0];
             if (sortField.getType() == SortField.FieldType.DATE) {
-                //Todo: Add sorter here
-                //Todo: Change the order of ids' in the featureIdsList
-                Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));
+                Sorter sorter = new Sorter(new ArrayList<>(featuresMap.values()));
                 ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() -1, sortField.getDataField(), sortField.getType());
 
                 featuresMap.clear();
@@ -471,6 +469,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         String id = feature.getProperty("id").getAsString();
                         if (featuresMap.containsKey(id)) {
                             focusOnFeature(id);
+                            break;
                         }
                     }
                 }
@@ -499,7 +498,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void scrollToInfoWindowPosition(final int position, boolean informInfoWindowAdapter) {
         if (position > -1) {
-            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position);
+            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position, false);
 
             // Supposed to scroll to the selected position
             final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
@@ -592,9 +591,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 return;
             }
 
-            id = (String) featureIdList.get(position);
+            id = featureIdList.get(position);
         }
-
 
         if (latLng == null) {
             latLng = getFeaturePoint(featuresMap.get(id)
@@ -605,10 +603,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-        centerMap(latLng);
+        if (lastSelected == position) {
+            performInfoWindowDoubleClickAction(featuresMap.get(id));
+        } else {
+            showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
+            centerMap(latLng);
+        }
+        lastSelected = position;
     }
-
 
     public void focusOnFeature(int position) {
         focusOnFeature(position, null, null, false);
@@ -663,5 +665,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
 
         return "";
+    }
+
+    private void performInfoWindowDoubleClickAction(InfoWindowObject infoWindowObject) {
+        //For now, this will be a return Result with the current GeoJSON Feature
+        Intent intent = new Intent();
+        intent.putExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE, infoWindowObject.getJsonObject().toString());
+
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 }
