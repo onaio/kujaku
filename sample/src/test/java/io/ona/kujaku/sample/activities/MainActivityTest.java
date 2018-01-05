@@ -36,7 +36,8 @@ public class MainActivityTest {
     @Before
     public void setupBeforeTest() {
         context = RuntimeEnvironment.application;
-        mainActivity = Robolectric.setupActivity(MainActivity.class);
+        mainActivity = Robolectric.buildActivity(MainActivity.class)
+                .get();
     }
 
     @Test
