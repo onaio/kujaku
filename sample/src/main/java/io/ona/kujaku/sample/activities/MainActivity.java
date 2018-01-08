@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.activities;
 
+import android.app.Activity;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -25,6 +26,8 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
@@ -39,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText topLeftLatEd, topLeftLngEd, bottomRightLatEd, bottomRightLngEd, mapNameEd;
 
+    protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
     private String[] basicPermissions = new String[]{
@@ -124,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
 
-        startActivity(intent);
+        startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
 
     private void downloadMap() {
@@ -234,6 +238,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case MAP_ACTIVITY_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
+                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
+                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                    }
+                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
+                            .show();
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+  
     private void confirmSampleStyleAvailable() {
         MapBoxStyleStorage mapBoxStyleStorage = new MapBoxStyleStorage();
         String style = mapBoxStyleStorage.readStyle("file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json");

@@ -33,13 +33,12 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.RealmDatabase;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
-
-import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -64,7 +63,6 @@ import utils.exceptions.OfflineMapDownloadException;
  *
  *          - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
  * </p>
- *
  * <p>
  *     The service posts updates through a Local Broadcast with action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}. The updates posted have:
  *     <ol>
@@ -74,8 +72,16 @@ import utils.exceptions.OfflineMapDownloadException;
  *         <li>{@code KEY_RESULTS_PARENT_ACTION} - {@code {@link SERVICE_ACTION }} being performed on the map</li>
  *     </ol>
  * </p>
- *
- *
+ * </li>
+ * </ol>
+ * Any broadcast has the:
+ * <ul>
+ * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Can be either a {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT#FAILED}</li>
+ * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - The error or success message</li>
+ * <li>{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - Can either be {@link MapboxOfflineDownloaderService.SERVICE_ACTION#DOWNLOAD_MAP} or {@link MapboxOfflineDownloaderService.SERVICE_ACTION#DELETE_MAP}</li>
+ * </p>
+ * <p>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
 
@@ -139,6 +145,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         performNextTask();
         return START_NOT_STICKY;
     }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -146,10 +153,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     *
      * @param intent Intent passed when the service was called {@link Context#startService(Intent)}
-     * @return {@code TRUE} if the OfflineMapTask was successfully saved
-     *          {@code FALSE} if the OfflineMapTask could not be saved
+     * @return {@code TRUE} if the OfflineMapTask was successfully saved, {@code FALSE} if the OfflineMapTask could not be saved
      */
     private boolean persistOfflineMapTask(@Nullable Intent intent) {
         if (intent == null) {
@@ -235,8 +240,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                 }
 
                                 @Override
-                                public void onPauseError(String error, String message) {
-                                    sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, String.format(getString(R.string.error_broadcast_for_download_pause), error, message));
+                                public void onPauseError(String error) {
+                                    sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, String.format(getString(R.string.error_broadcast_for_download_pause), error));
                                 }
                             });
                         } else {
@@ -290,6 +295,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                 .deleteMap(currentMapDownloadName, new OfflineRegion.OfflineRegionDeleteCallback() {
                                     @Override
                                     public void onDelete() {
+                                        sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, SERVICE_ACTION.DELETE_MAP, "Map deleted successfully!");
                                         persistCompletedStatus(mapBoxOfflineQueueTask);
                                         performNextTask();
                                     }
@@ -365,12 +371,26 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     * Sends a local broadcast with the result of a service operation & mapName except for {@code Constants.SERVICE_ACTION.DELETE_MAP}
-     * 
-     * 
+     * Sends a local broadcast with the result of a service operation & mapName. To capture the
+     * local broadcast messages, you need to use the {@link LocalBroadcastManager} to register a
+     * {@link android.content.BroadcastReceiver} for action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}
+     * <p>
+     * The broadcast has the following extras:
+     * <ol>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Either SUCCESSFUL or FAILED. Type {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}</li>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - User-friendly and/or descriptive message of the result. Type {@link String}</li>
+     * <li>{@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - The Map's unique name. Type {@code {@link String}}</li>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - The action that was performed to produce this result {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}</li>
+     * </ol>
+     * <p>
+     * <p>
+     * <h3>Sample Usage</h3>
+     * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
+     * </p>
+     *
      * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
-     * @param mapName Unique name of the map
-     * @param message Additional message/information about the result eg. For a {@link SERVICE_ACTION_RESULT#FAILED} result
+     * @param mapName             Unique name of the map
+     * @param message             Additional message/information about the result eg. For a {@link SERVICE_ACTION_RESULT#FAILED} result
      */
     private void sendBroadcast(@NonNull SERVICE_ACTION_RESULT serviceActionResult, @NonNull String mapName, SERVICE_ACTION serviceAction, @NonNull String message) {
         Intent intent = new Intent();
@@ -385,11 +405,26 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     * Sends a local broadcast with the result of a service operation & mapName except for {@code Constants.SERVICE_ACTION.DELETE_MAP}
-     *
+     * Sends a local broadcast with the result of a service operation & mapName. To capture the
+     * local broadcast messages, you need to use the {@link LocalBroadcastManager} to register a
+     * {@link android.content.BroadcastReceiver} for action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}
+     * <p>
+     * The broadcast has the following extras:
+     * <ol>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Either SUCCESSFUL or FAILED. Type {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}</li>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - User-friendly and/or descriptive message of the result. Type {@link String}</li>
+     * <li>{@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - The Map's unique name. Type {@code {@link String}}</li>
+     * <li>{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - The action that was performed to produce this result {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}</li>
+     * </ol>
+     * <p>
+     * <p>
+     * <h3>Sample Usage</h3>
+     * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
+     * </p>
      *
      * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
-     * @param mapName Unique name of the map
+     * @param mapName             Unique name of the map
+     * @see #sendBroadcast(SERVICE_ACTION_RESULT, String, SERVICE_ACTION)
      */
     private void sendBroadcast(@NonNull SERVICE_ACTION_RESULT serviceActionResult, @NonNull String mapName, @NonNull SERVICE_ACTION serviceAction) {
         sendBroadcast(serviceActionResult, mapName, serviceAction, "");
@@ -410,9 +445,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                     }
 
                     @Override
-                    public void onError(String errorReason, String errorMessage) {
-                        // We cant do much for now
-                        Log.e(TAG, errorReason + "\n" + errorMessage);
+                    public void onError(String error) {
+                        Log.e(TAG, error);
                     }
                 });
             }
@@ -442,8 +476,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * Asynchronously retrieves the referenced {@link OfflineRegion}'s {@link OfflineRegionStatus} which provides
      * information about the download progress & if currently downloading
      *
-     * @param mapBoxOfflineQueueTask the QueueTask with the {@link OfflineRegion} definition data
-     * @param mapBoxAccessToken the MapBox Access Token with which to download the map OR the map was downloaded
+     * @param mapBoxOfflineQueueTask      the QueueTask with the {@link OfflineRegion} definition data
+     * @param mapBoxAccessToken           the MapBox Access Token with which to download the map OR the map was downloaded
      * @param offlineRegionStatusCallback the callback to call once the {@link OfflineRegionStatus} is retrieved
      */
     private void getTaskStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask, @NonNull String mapBoxAccessToken, OfflineRegionStatusCallback offlineRegionStatusCallback) {
@@ -463,7 +497,9 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                     .getMapStatus(mapName, offlineRegionStatusCallback);
         } catch (MalformedDataException | JSONException e) {
             Log.e(TAG, Log.getStackTraceString(e));
-            offlineRegionStatusCallback.onError(e.getMessage());
+            if (offlineRegionStatusCallback != null) {
+                offlineRegionStatusCallback.onError(e.getMessage());
+            }
         }
     }
 
@@ -471,7 +507,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * Shows a non-removable progress notification with a default download icon, the Map Name & percentage
      * progress rounded of to 2 decimal places.
      *
-     * @param mapName the unique map name
+     * @param mapName            the unique map name
      * @param percentageProgress Download progress usually between 0-100%
      */
     private void showProgressNotification(@NonNull String mapName, double percentageProgress, boolean showAction) {
@@ -528,11 +564,15 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     * Shows a customisable & removable notification with a default download icon.
-     * This is called when a map download is completed
+     * Shows a customisable & removable notification with a default download icon. The notification
+     * provides information for the download such as the Map Name & Map Size.
+     * This is called when a map download is completed.
+     * <br/><br/>
+     * <p>
+     * <strong>NOTE: </strong> The Map Size is not the download size but what makes up the Offline Map.
+     * The download size might be smaller since already download tiles are not redownloaded<br/>
      *
-     *
-     * @param title title to be shown on the notification
+     * @param title       title to be shown on the notification
      * @param description description to be shown on the notification
      */
     private void showDownloadCompleteNotification(@NonNull String title, @NonNull String description) {
@@ -548,7 +588,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
     /**
      * Provides periodic updates about an ongoing {@link OfflineRegion} download.
-     *
+     * <p>
      * <h3>CAUTION::</h3>
      * <strong>Should only be called to observe an ongoing download. It will otherwise resume
      * download of the {@link OfflineRegion}</strong>
@@ -583,7 +623,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      *
      * @param mapBoxOfflineQueueTask
      */
-    private void persistCompletedStatus(MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+    private void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
@@ -599,7 +639,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     private boolean isNetworkConnectionPreferred(int connectionType) {
-        for(int preferredNetwork: PREFERRED_DOWNLOAD_NETWORKS) {
+        for (int preferredNetwork : PREFERRED_DOWNLOAD_NETWORKS) {
             if (preferredNetwork == connectionType) {
                 return true;
             }
@@ -622,7 +662,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     @Override
-    public void onStatusChanged(OfflineRegionStatus status, OfflineRegion offlineRegion) {
+    public void onStatusChanged(@NonNull OfflineRegionStatus status, @NonNull OfflineRegion offlineRegion) {
         double percentageDownload = (status.getRequiredResourceCount() >= 0) ? 100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount() : 0.0;
         sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, currentServiceAction, String.valueOf(percentageDownload));
 
@@ -637,14 +677,18 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     @Override
+    public void onError(String error) {
+        Log.e(TAG, error);
+        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, error);
+    }
+
+    @Override
     public void onError(@NonNull String reason, @Nullable String message) {
         String finalMessage = String.format(getString(R.string.error_broadcast_message_format_part_reason), reason);
         if (message != null && !message.isEmpty()) {
             finalMessage += String.format(getString(R.string.error_broadcast_message_format_part_message), message);
         }
-        Log.e(TAG, finalMessage);
-        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, finalMessage);
-
+        onError(finalMessage);
     }
 
     @Override

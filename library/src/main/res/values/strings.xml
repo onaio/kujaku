@@ -4,7 +4,7 @@
     <string name="map_delete_task_error">Map deleted but database task could not be deleted</string>
     <string name="notification_stopped_download_title">Download for %1$s stopped!</string>
     <string name="notification_stopped_download_content">All downloaded resources for the map have been deleted also</string>
-    <string name="error_broadcast_for_download_pause">Map download could not be paused for deletion: \nError: %1$s\nMessage: %2$s</string>
+    <string name="error_broadcast_for_download_pause">Map download could not be paused for deletion: \nError: %1$s</string>
     <string name="error_similar_map_exists_and_downloaded">Similar map with the name exists &amp; has already been downloaded</string>
     <string name="notification_download_progress_title">Offline Map Download Progress: %1$s</string>
     <string name="notification_download_progress_content">Downloading: %1$s &#37;</string>
@@ -13,4 +13,5 @@
     <string name="error_mapbox_tile_count_limit">MapBox Tile Count limit exceeded : %1$d while Downloading %2$s</string>
     <string name="error_broadcast_message_format_part_reason">REASON : %1$s</string>
     <string name="error_broadcast_message_format_part_message">\nMESSAGE: %1$s</string>
+    <string name="msg_could_not_find_your_location">Sorry but we could not get your GPS location</string>
 </resources>

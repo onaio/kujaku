@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="infoWindowItemSelected">#2979FF</color>
+    <color name="my_location_marker_color">#3498db</color>
+    <color name="white">#ffffff</color>
 </resources>
