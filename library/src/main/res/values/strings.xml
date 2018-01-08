@@ -7,7 +7,7 @@
     <string name="error_broadcast_for_download_pause">Map download could not be paused for deletion: \nError: %1$s\nMessage: %2$s</string>
     <string name="error_similar_map_exists_and_downloaded">Similar map with the name exists &amp; has already been downloaded</string>
     <string name="notification_download_progress_title">Offline Map Download Progress: %1$s</string>
-    <string name="notification_download_progress_content">Downloading: %1$s &#37;</string>
+    <string name="notification_download_progress_content">Downloading: %1$s %%</string>
     <string name="notification_download_complete_title">Download for %1$s Map Complete!</string>
     <string name="notification_download_complete_content">Downloaded %1$s</string>
     <string name="error_mapbox_tile_count_limit">MapBox Tile Count limit exceeded : %1$d while Downloading %2$s</string>
