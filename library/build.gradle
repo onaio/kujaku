@@ -19,7 +19,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.3'
+version '0.2.4'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -106,9 +106,11 @@ android {
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
                 } else {
                     println("One of the required config variables is not set in your local.properties");
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
                 }
             } else {
                 println("local.properties does not exist");
+                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
             }
         }
 
@@ -121,11 +123,19 @@ android {
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
                 } else {
                     println("One of the required config variables is not set in your local.properties");
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
                 }
             } else {
                 println("local.properties does not exist");
+                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
+
             }
         }
+
+    }
+
+    lintOptions {
+        abortOnError false
     }
 }
 
@@ -137,7 +147,7 @@ dependencies {
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
         transitive = true;
     }
-    compile('io.ona.kujaku:utils:0.2.3') {
+    compile('io.ona.kujaku:utils:0.2.4') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }

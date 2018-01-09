@@ -61,7 +61,7 @@ public class MapBoxOfflineResourcesDownloader {
 
     public static MapBoxOfflineResourcesDownloader getInstance(Context context, Mapbox mapbox) {
         if (instance == null) {
-            instance = new MapBoxOfflineResourcesDownloader(context, mapbox);
+            instance = new MapBoxOfflineResourcesDownloader(context.getApplicationContext(), mapbox);
         }
 
         return instance;

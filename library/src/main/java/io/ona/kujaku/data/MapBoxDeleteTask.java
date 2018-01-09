@@ -98,7 +98,7 @@ public class MapBoxDeleteTask {
             mapBoxOfflineQueueTask.setDateUpdated(new Date());
             mapBoxOfflineQueueTask.setTask(mapBoxDeleteTask.getJSONObject());
             mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
-            mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
+            mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DELETE);
 
             realm.commitTransaction();
 
