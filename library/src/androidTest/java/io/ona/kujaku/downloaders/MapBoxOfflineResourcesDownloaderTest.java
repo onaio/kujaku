@@ -13,7 +13,6 @@ import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,7 +27,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
-import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
@@ -207,7 +205,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             }
 
             @Override
-            public void onError(String errorReason, String errorMessage) {
+            public void onError(String errorReason) {
                 outputsFromCallbacks.add(new String(errorReason));
                 Assert.assertEquals("Map Already Exists", errorReason);
             }
@@ -285,7 +283,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             }
 
             @Override
-            public void onError(String errorReason, String errorMessage) {
+            public void onError(String errorReason) {
                 // Do nothing here, not testing this here
             }
         };
@@ -580,7 +578,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             }
 
             @Override
-            public void onError(String errorReason, String errorMessage) {
+            public void onError(String errorReason) {
                 outputsFromCallbacks.add(errorReason);
                 downLatch.countDown();
             }

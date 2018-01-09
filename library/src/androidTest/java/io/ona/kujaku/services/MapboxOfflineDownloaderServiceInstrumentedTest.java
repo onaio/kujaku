@@ -109,7 +109,7 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
 
         insertValueInPrivateField(mapboxOfflineDownloaderService, "currentMapBoxTask", mapBoxOfflineQueueTask);
 
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
 
 
@@ -118,7 +118,7 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
 
         //1. Make sure broadcast is sent
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "100.0", Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "100.0", MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
 
         //2. Make sure performNextTask() is called
         assertTrue(mapboxOfflineDownloaderService.performNextTaskCalled);
@@ -174,7 +174,7 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
 
     private Intent createSampleDownloadIntent(Intent serviceIntent) {
         // Data can be passed to the service via the Intent.
-        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapboxAccessToken);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, sampleValidMapboxStyleURL);
@@ -198,20 +198,20 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         return reflectedPrivateField.get(object);
     }
 
-    private void setMapNameAndDownloadAction(String mapName, Constants.SERVICE_ACTION serviceAction) throws NoSuchFieldException, IllegalAccessException {
+    private void setMapNameAndDownloadAction(String mapName, MapboxOfflineDownloaderService.SERVICE_ACTION serviceAction) throws NoSuchFieldException, IllegalAccessException {
         insertValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName", mapName);
         insertValueInPrivateField(mapboxOfflineDownloaderService, "currentServiceAction", serviceAction);
     }
 
-    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, Constants.SERVICE_ACTION parentServiceAction) {
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULT_STATUS));
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULT_MESSAGE));
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULTS_PARENT_ACTION));
+    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) {
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULT_STATUS));
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE));
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION));
         assertTrue(intent.hasExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
 
-        assertEquals(serviceActionResult.name(), intent.getStringExtra(MapboxOfflineDownloaderService.RESULT_STATUS));
-        assertEquals(resultMessage, intent.getStringExtra(MapboxOfflineDownloaderService.RESULT_MESSAGE));
-        assertEquals(parentServiceAction, intent.getSerializableExtra(MapboxOfflineDownloaderService.RESULTS_PARENT_ACTION));
+        assertEquals(serviceActionResult.name(), intent.getStringExtra(MapboxOfflineDownloaderService.KEY_RESULT_STATUS));
+        assertEquals(resultMessage, intent.getStringExtra(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE));
+        assertEquals(parentServiceAction, intent.getSerializableExtra(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION));
         assertEquals(mapName, intent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
     }
 

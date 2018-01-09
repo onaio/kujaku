@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -29,6 +30,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 
@@ -229,12 +231,12 @@ public class MapboxOfflineDownloaderServiceTest {
 
     @Test
     public void sendBroadcastShouldProduceValidIntentWhenGivenDownloadUpdate() {
-        assertValidBroadcastCreatedWhenSendBroadcastIsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "9.0%", Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        assertValidBroadcastCreatedWhenSendBroadcastIsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "9.0%", MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
     }
 
     @Test
     public void sendBroadcast2ShouldProduceValidIntentWhenGivenDownloadUpdate() {
-        assertValidBroadcastCreatedWhenSendBroadcast2IsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, Constants.SERVICE_ACTION.DELETE_MAP);
+        assertValidBroadcastCreatedWhenSendBroadcast2IsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
     }
 
     @Test
@@ -243,13 +245,13 @@ public class MapboxOfflineDownloaderServiceTest {
 
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
 
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         mapboxOfflineDownloaderService.mapboxTileCountLimitExceeded(60000);
 
         latch.await();
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded : 60000 while Downloading " + mapName, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded : 60000 while Downloading " + mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
     }
 
     @Test
@@ -260,12 +262,12 @@ public class MapboxOfflineDownloaderServiceTest {
         String message = "Some error message here";
 
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DELETE_MAP);
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
 
         mapboxOfflineDownloaderService.onError(reason, message);
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason + "\nMESSAGE: " + message, Constants.SERVICE_ACTION.DELETE_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason + "\nMESSAGE: " + message, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
     }
 
     @Test
@@ -276,25 +278,30 @@ public class MapboxOfflineDownloaderServiceTest {
         String message = "";
 
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DELETE_MAP);
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
 
         mapboxOfflineDownloaderService.onError(reason, message);
 
         latch.await();
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason, Constants.SERVICE_ACTION.DELETE_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "REASON : " + reason, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
     }
 
     @Test
-    public void onStatusChangedShouldShowProgressNotificationWhenGivenIncompleteOfflineRegionStatus() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void onStatusChangedShouldShowProgressNotificationWhenGivenIncompleteOfflineRegionStatus() throws NoSuchFieldException, IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
         latch = new CountDownLatch(1);
-        OfflineRegionStatus completeOfflineRegionStatus = createOfflineRegion(OfflineRegion.STATE_ACTIVE, 200, 98923, 898, 230909, 300, true, false);
+        OfflineRegionStatus incompleteOfflineRegionStatus = createOfflineRegion(OfflineRegion.STATE_ACTIVE, 200, 98923, 898, 230909, 300, true, false);
 
-        setMapNameAndDownloadAction(mapName, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
 
-        mapboxOfflineDownloaderService.onStatusChanged(completeOfflineRegionStatus, null);
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "serviceHandler", new Handler(mapboxOfflineDownloaderService.getApplication().getMainLooper()));
 
+        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("startDownloadProgressUpdater", null);
+        method.setAccessible(true);
+        method.invoke(mapboxOfflineDownloaderService, null);
+
+        mapboxOfflineDownloaderService.onStatusChanged(incompleteOfflineRegionStatus, null);
         latch.await();
 
         double percentage = 100.0 * 200l/300l;
@@ -302,14 +309,28 @@ public class MapboxOfflineDownloaderServiceTest {
         String contentText = "Downloading: " + NumberFormatter.formatDecimal(percentage) + " %";
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, String.valueOf(percentage), Constants.SERVICE_ACTION.DOWNLOAD_MAP );
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, String.valueOf(percentage), MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP );
 
         ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         Notification notification = shadowNotificationManager.getNotification(mapboxOfflineDownloaderService.PROGRESS_NOTIFICATION_ID);
+
+        assertEquals(null, notification);
+
+        Thread.sleep((Long) getValueInPrivateField(mapboxOfflineDownloaderService, "timeBetweenUpdates") * 2);
+
+        ShadowLooper.runUiThreadTasks();
+
+        notification = shadowNotificationManager.getNotification(mapboxOfflineDownloaderService.PROGRESS_NOTIFICATION_ID);
+
         ShadowNotification shadowNotification = Shadows.shadowOf(notification);
 
         assertEquals(contentTitle, shadowNotification.getContentTitle());
         assertEquals(contentText, shadowNotification.getContentText());
+
+        method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("stopDownloadProgressUpdater", null);
+        method.setAccessible(true);
+        method.invoke(mapboxOfflineDownloaderService, null);
+
     }
 
     @Test
@@ -394,7 +415,7 @@ public class MapboxOfflineDownloaderServiceTest {
     --------------------------
      */
 
-    private void assertValidBroadcastCreatedWhenSendBroadcastIsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, Constants.SERVICE_ACTION parentServiceAction) {
+    private void assertValidBroadcastCreatedWhenSendBroadcastIsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) {
         latch = new CountDownLatch(1);
         try {
 
@@ -431,12 +452,12 @@ public class MapboxOfflineDownloaderServiceTest {
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
 
-    private void invokeSendBroadcast(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, Constants.SERVICE_ACTION parentServiceAction) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void invokeSendBroadcast(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method sendBroadcastMethod = mapboxOfflineDownloaderService.getClass().getDeclaredMethod(
                 "sendBroadcast",
                 MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.class,
                 String.class,
-                Constants.SERVICE_ACTION.class,
+                MapboxOfflineDownloaderService.SERVICE_ACTION.class,
                 String.class);
         sendBroadcastMethod.setAccessible(true);
         sendBroadcastMethod.invoke(mapboxOfflineDownloaderService,
@@ -446,27 +467,27 @@ public class MapboxOfflineDownloaderServiceTest {
                 resultMessage);
     }
 
-    private void invokeSendBroadcast(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, Constants.SERVICE_ACTION parentServiceAction) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void invokeSendBroadcast(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         invokeSendBroadcast(serviceActionResult, mapName, "", parentServiceAction);
     }
 
-    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, Constants.SERVICE_ACTION parentServiceAction) {
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULT_STATUS));
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULT_MESSAGE));
-        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.RESULTS_PARENT_ACTION));
+    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, String resultMessage, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) {
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULT_STATUS));
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE));
+        assertTrue(intent.hasExtra(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION));
         assertTrue(intent.hasExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
 
-        assertEquals(serviceActionResult.name(), intent.getStringExtra(MapboxOfflineDownloaderService.RESULT_STATUS));
-        assertEquals(resultMessage, intent.getStringExtra(MapboxOfflineDownloaderService.RESULT_MESSAGE));
-        assertEquals(parentServiceAction, intent.getSerializableExtra(MapboxOfflineDownloaderService.RESULTS_PARENT_ACTION));
+        assertEquals(serviceActionResult.name(), intent.getStringExtra(MapboxOfflineDownloaderService.KEY_RESULT_STATUS));
+        assertEquals(resultMessage, intent.getStringExtra(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE));
+        assertEquals(parentServiceAction, intent.getSerializableExtra(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION));
         assertEquals(mapName, intent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
     }
 
-    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, Constants.SERVICE_ACTION parentServiceAction) {
+    private void assertBroadcastResults(Intent intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) {
         assertBroadcastResults(intent, serviceActionResult, mapName, "", parentServiceAction);
     }
 
-    private void assertValidBroadcastCreatedWhenSendBroadcast2IsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, Constants.SERVICE_ACTION parentServiceAction) {
+    private void assertValidBroadcastCreatedWhenSendBroadcast2IsCalled(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT serviceActionResult, String mapName, MapboxOfflineDownloaderService.SERVICE_ACTION parentServiceAction) {
         latch = new CountDownLatch(1);
 
         try {
@@ -492,7 +513,7 @@ public class MapboxOfflineDownloaderServiceTest {
         }
     }
 
-    private void setMapNameAndDownloadAction(String mapName, Constants.SERVICE_ACTION serviceAction) throws NoSuchFieldException, IllegalAccessException {
+    private void setMapNameAndDownloadAction(String mapName, MapboxOfflineDownloaderService.SERVICE_ACTION serviceAction) throws NoSuchFieldException, IllegalAccessException {
         insertValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName", mapName);
         insertValueInPrivateField(mapboxOfflineDownloaderService, "currentServiceAction", serviceAction);
     }
@@ -520,7 +541,7 @@ public class MapboxOfflineDownloaderServiceTest {
     private Intent createSampleDeleteIntent(Intent serviceIntent) {
 
         // Data can be passed to the service via the Intent.
-        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.DELETE_MAP);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapboxAccessToken);
 
@@ -529,7 +550,7 @@ public class MapboxOfflineDownloaderServiceTest {
 
     private Intent createSampleDownloadIntent(Intent serviceIntent) {
         // Data can be passed to the service via the Intent.
-        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.DOWNLOAD_MAP);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapboxAccessToken);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, sampleValidMapboxStyleURL);

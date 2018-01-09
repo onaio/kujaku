@@ -61,17 +61,17 @@ public class MapBoxOfflineResourcesDownloader {
 
     public static MapBoxOfflineResourcesDownloader getInstance(Context context, Mapbox mapbox) {
         if (instance == null) {
-            instance = new MapBoxOfflineResourcesDownloader(context.getApplicationContext(), mapbox);
+            instance = new MapBoxOfflineResourcesDownloader(context, mapbox);
         }
 
         return instance;
     }
 
     private MapBoxOfflineResourcesDownloader(Context context, Mapbox mapbox) {
-        this.context = context;
         this.mapbox = mapbox;
 
         if (context != null) {
+            this.context = context.getApplicationContext();
             offlineManager = OfflineManager.getInstance(context);
         }
     }

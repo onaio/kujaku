@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("io.ona.kujaku.ona.io.io.ona.kujaku", appContext.getPackageName());
+        assertEquals("io.ona.kujaku.test", appContext.getPackageName());
     }
 }
