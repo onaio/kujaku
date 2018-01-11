@@ -14,4 +14,8 @@
     <string name="error_broadcast_message_format_part_reason">REASON : %1$s</string>
     <string name="error_broadcast_message_format_part_message">\nMESSAGE: %1$s</string>
     <string name="msg_could_not_find_your_location">Sorry but we could not get your GPS location</string>
+    <string name="download_progress_channel_name">Offline Map Download Progress</string>
+    <string name="download_progress_channel_description">This channel shows notifications for offline map progress</string>
+    <string name="download_complete_channel_name">Offline Map Download Complete</string>
+    <string name="download_complete_channel_description">This channel shows notifications for complete offline map downloads</string>
 </resources>
