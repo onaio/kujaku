@@ -30,6 +30,7 @@ import org.json.JSONException;
 
 import java.text.DecimalFormat;
 
+import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
@@ -42,6 +43,8 @@ import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
 import io.ona.kujaku.utils.ObjectCoercer;
+import io.ona.kujaku.notifications.DownloadCompleteNotification;
+import io.ona.kujaku.notifications.DownloadProgressNotification;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
@@ -117,7 +120,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private SERVICE_ACTION currentServiceAction;
     private MapBoxOfflineQueueTask currentMapBoxTask;
 
-    private NotificationCompat.Builder progressNotificationBuilder;
+    private DownloadProgressNotification downloadProgressNotification;
     private Intent stopDownloadIntent;
     public static final int PROGRESS_NOTIFICATION_ID = 85;
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
@@ -528,55 +531,22 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param percentageProgress Download progress usually between 0-100%
      */
     private void showProgressNotification(@NonNull String mapName, double percentageProgress, boolean showAction) {
-        if (progressNotificationBuilder == null) {
-            progressNotificationBuilder = new NotificationCompat.Builder(MapboxOfflineDownloaderService.this)
-                    .setContentTitle(String.format(getString(R.string.notification_download_progress_title), mapName))
-                    .setSmallIcon(R.drawable.ic_stat_file_download);
-
-            if (showAction) {
-                stopDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapBoxAccessToken);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
-
-                PendingIntent stopDownloadPendingIntent = PendingIntent.getService(this, REQUEST_ID_STOP_MAP_DOWNLOAD, stopDownloadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                NotificationCompat.Action stopDownloadAction = new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, getString(R.string.stop_download), stopDownloadPendingIntent);
-
-                progressNotificationBuilder.mActions.clear();
-                progressNotificationBuilder.addAction(stopDownloadAction);
-            }
+        if (downloadProgressNotification == null) {
+            downloadProgressNotification = new DownloadProgressNotification(this);
+            downloadProgressNotification.createInitialNotification(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
         }
 
-        if (percentageProgress == 0 && showAction) {
-            progressNotificationBuilder.setContentTitle(String.format(getString(R.string.notification_download_progress_title), mapName));
-
-            stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-
-            PendingIntent stopDownloadPendingIntent = PendingIntent.getService(this, REQUEST_ID_STOP_MAP_DOWNLOAD, stopDownloadIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-            NotificationCompat.Action stopDownloadAction =  new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, getString(R.string.stop_download), stopDownloadPendingIntent);
-
-            progressNotificationBuilder.mActions.clear();
-            progressNotificationBuilder.addAction(stopDownloadAction);
-        }
-
-        // Remove all previous actions if showAction is false
-        if (!showAction) {
-            progressNotificationBuilder.mActions.clear();
-        }
-
-        progressNotificationBuilder.setContentText(String.format(getString(R.string.notification_download_progress_content), formatDecimal(percentageProgress)));
+        downloadProgressNotification.updateNotification(percentageProgress, mapName, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
 
         if (!shownForegroundNotification) {
-            startForeground(PROGRESS_NOTIFICATION_ID, progressNotificationBuilder.build());
+            downloadProgressNotification.displayForegroundNotification(PROGRESS_NOTIFICATION_ID);
             shownForegroundNotification = true;
         } else {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(PROGRESS_NOTIFICATION_ID, progressNotificationBuilder.build());
+            downloadProgressNotification.displayNotification(PROGRESS_NOTIFICATION_ID);
         }
     }
 
-    private void showProgressNotification(@NonNull String mapName, double percentageProgress) {
+    private void showProgressNotification(@NonNull String mapName,  double percentageProgress) {
         showProgressNotification(mapName, percentageProgress, true);
     }
 
@@ -593,14 +563,10 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param description description to be shown on the notification
      */
     private void showDownloadCompleteNotification(@NonNull String title, @NonNull String description) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MapboxOfflineDownloaderService.this)
-                .setContentTitle(title)
-                .setContentText(description)
-                .setSmallIcon(R.drawable.ic_stat_file_download);
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID++;
-        notificationManager.notify(LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID, builder.build());
+
+        DownloadCompleteNotification downloadCompleteNotification = new DownloadCompleteNotification(this);
+        downloadCompleteNotification.displayNotification(title, description, LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID);
     }
 
     /**
@@ -715,11 +681,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);
         Log.e(TAG, finalMessage);
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);
-    }
-
-    private String formatDecimal(double no) {
-        java.text.DecimalFormat twoDForm = new DecimalFormat("0.##");
-        return twoDForm.format(no);
     }
 
     private String getFriendlyFileSize(long bytes) {
