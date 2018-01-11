@@ -482,7 +482,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
                 .findAllSorted("dateUpdated", Sort.ASCENDING);
 
-        if (realmResults.size() > 1) {
+        if (realmResults.size() > 0) {
             return realmResults.first();
         }
 
