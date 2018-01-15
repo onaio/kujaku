@@ -34,6 +34,24 @@ abstract class KujakuNotification {
         createNotificationChannel(importance, channelName, channelId, description, NO_LED_COLOR, null);
     }
 
+    /**
+     * Creates a notification channel for the app using the given importance, channel name, channel id, description, LED color & vibration pattern.
+     * <br/>
+     * <br/>
+     * If you don't want an LED color, pass {@link KujakuNotification#NO_LED_COLOR} to ledColor parameter
+     * <br/>
+     * If you don't want vibration, pass {@code null} to vibrationPattern parameter
+     * <p>
+     * <br/>
+     * <strong>This only works on API 26</strong>
+     *
+     * @param importance
+     * @param channelName
+     * @param channelId
+     * @param description
+     * @param ledColor
+     * @param vibrationPattern
+     */
     public void createNotificationChannel(int importance, String channelName, String channelId, @Nullable String description, @ColorInt int ledColor, @Nullable long[] vibrationPattern) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel = new NotificationChannel(channelId, channelName, importance);
@@ -71,7 +89,7 @@ abstract class KujakuNotification {
     }
 
     public NotificationCompat.Builder createNotification(String title, @Nullable String content) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, null)
                 .setContentTitle(title)
                 .setSmallIcon(smallIcon);
 
@@ -95,7 +113,7 @@ abstract class KujakuNotification {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notificationBuilder.build());
     }
-    
+
     public void setSmallIcon(int icon) {
         this.smallIcon = icon;
     }
