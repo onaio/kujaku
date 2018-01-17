@@ -30,32 +30,14 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 29/12/2017.
  */
-@RunWith(AndroidJUnit4.class)
-public class RealmDatabaseTest {
+public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
 
-    private Context context;
     private String sampleMapBoxStyleURL = "mapbox://styles/user/i89lkjscd";
-    private ArrayList<MapBoxOfflineQueueTask> addedRecords = new ArrayList<>();
 
-    @Before
+    @Override
     public void setUp() throws Exception {
-        context = InstrumentationRegistry.getTargetContext();
+        super.setUp();
         insertValueInPrivateStaticField(RealmDatabase.class, "realmDatabase", null);
-
-        //Save the current Realm records here
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        //Delete the added Realm records here and/or restore the previous records
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        for (MapBoxOfflineQueueTask mapBoxOfflineQueueTask : addedRecords) {
-            if (mapBoxOfflineQueueTask.isValid()) {
-                mapBoxOfflineQueueTask.deleteFromRealm();
-            }
-        }
-        realm.commitTransaction();
     }
 
     @Test
@@ -146,27 +128,6 @@ public class RealmDatabaseTest {
 
     ---------------------------
      */
-    private void insertValueInPrivateField(Class classWithField, Object instance, String fieldName, Object newValue) throws IllegalAccessException, NoSuchFieldException {
-        Field instanceField = classWithField.getDeclaredField(fieldName);
-        if (!instanceField.isAccessible()) {
-            instanceField.setAccessible(true);
-        }
-
-        instanceField.set(instance, newValue);
-    }
-
-    private void insertValueInPrivateStaticField(Class classWithField, String fieldName, Object newValue) throws NoSuchFieldException, IllegalAccessException {
-        insertValueInPrivateField(classWithField, null, fieldName, newValue);
-    }
-
-    private Object getValueInPrivateField(Class classWithField, Object instance, String fieldName) throws IllegalAccessException, NoSuchFieldException {
-        Field instanceField = classWithField.getDeclaredField(fieldName);
-        if (!instanceField.isAccessible()) {
-            instanceField.setAccessible(true);
-        }
-
-        return instanceField.get(instance);
-    }
 
     private MapBoxDownloadTask createSampleDownloadTask(String packageName, String mapName, String mapBoxStyleURL) {
 

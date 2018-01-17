@@ -24,6 +24,7 @@ import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import utils.Constants;
 import utils.exceptions.MalformedDataException;
 import utils.exceptions.OfflineMapDownloadException;
 
@@ -43,10 +44,10 @@ import utils.exceptions.OfflineMapDownloadException;
  */
 public class MapBoxOfflineResourcesDownloader {
 
-    private static MapBoxOfflineResourcesDownloader instance = null;
+    protected static MapBoxOfflineResourcesDownloader instance = null;
     private Context context;
-    private Mapbox mapbox;
-    private OfflineManager offlineManager;
+    protected Mapbox mapbox;
+    protected OfflineManager offlineManager;
     private static final String TAG = MapBoxOfflineResourcesDownloader.class.getSimpleName();
 
     // JSON encoding/decoding
@@ -54,23 +55,23 @@ public class MapBoxOfflineResourcesDownloader {
     public static final String METADATA_JSON_FIELD_REGION_NAME = "FIELD_REGION_NAME";
 
 
-    public static MapBoxOfflineResourcesDownloader getInstance(Context context, String accessToken) {
+    public static MapBoxOfflineResourcesDownloader getInstance(@NonNull Context context, String accessToken) {
         return getInstance(context, Mapbox.getInstance(context, accessToken));
     }
 
     public static MapBoxOfflineResourcesDownloader getInstance(Context context, Mapbox mapbox) {
         if (instance == null) {
-            instance = new MapBoxOfflineResourcesDownloader(context.getApplicationContext(), mapbox);
+            instance = new MapBoxOfflineResourcesDownloader(context, mapbox);
         }
 
         return instance;
     }
 
     private MapBoxOfflineResourcesDownloader(Context context, Mapbox mapbox) {
-        this.context = context;
         this.mapbox = mapbox;
 
         if (context != null) {
+            this.context = context.getApplicationContext();
             offlineManager = OfflineManager.getInstance(context);
         }
     }
@@ -144,7 +145,7 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Invalid map name");
         }
 
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.contains("mapbox://")) {
+        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             throw new OfflineMapDownloadException("Invalid Style URL");
         }
 

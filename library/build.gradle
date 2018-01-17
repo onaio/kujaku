@@ -90,6 +90,7 @@ android {
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -127,6 +128,7 @@ android {
             } else {
                 println("local.properties does not exist");
                 buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
+
             }
         }
 
@@ -138,6 +140,7 @@ android {
 }
 
 dependencies {
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -163,4 +166,14 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.5.1'
+    testCompile 'org.robolectric:shadows-support-v4:3.4-rc2'
+
+    testCompile 'org.mockito:mockito-core:1.10.19'
+
+    testCompile "org.powermock:powermock-module-junit4:1.6.2"
+    testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
+    testCompile "org.powermock:powermock-api-mockito:1.6.2"
+    testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
+
+    androidTestCompile 'org.mockito:mockito-android:2.7.22'
 }
