@@ -41,7 +41,7 @@ public class KujakuApplication extends Application {
 
     private void resumeMapDownload(Context context) {
         Intent mapService = new Intent(context, MapboxOfflineDownloaderService.class);
-        mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.NETWORK_RESUME);
+        mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.NETWORK_RESUME);
 
         PendingIntent pendingIntent = PendingIntent.getService(this, Constants.MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE, mapService, 0);
         //Add the alarm here

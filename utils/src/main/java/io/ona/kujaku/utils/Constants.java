@@ -23,18 +23,16 @@ public class Constants {
     public static final String PARCELABLE_KEY_CAMERA_BEARING = "mapbox_camera_bearing";
     public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
     public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
+    public static final String PARCELABLE_KEY_GEOJSON_FEATURE = "geojson_feature";
 
     public static final String PARCELABLE_KEY_SERVICE_ACTION = "map_downloader_service";
     public static final String PARCELABLE_KEY_NETWORK_STATE = "active_network_state";
+
+    public static final String PARCELABLE_KEY_DELETE_TASK_TYPE = "offline_service_delete_action_task_type";
 
     public static int MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE = 8687;
     public static long MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 
     public static final String MAP_BOX_URL_FORMAT = "mapbox://styles/[A-Za-z0-9]+/[A-Za-z0-9]+";
 
-    public static enum SERVICE_ACTION {
-        DOWNLOAD_MAP,
-        DELETE_MAP,
-        NETWORK_RESUME
-    }
 }

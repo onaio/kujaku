@@ -36,7 +36,7 @@ public class KujakuNetworkChangeReceiver extends BroadcastReceiver {
 
     private void resumeMapDownload(Context context) {
         Intent mapService = new Intent(context, MapboxOfflineDownloaderService.class);
-        mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, Constants.SERVICE_ACTION.NETWORK_RESUME);
+        mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.NETWORK_RESUME);
         context.startService(mapService);
     }
 

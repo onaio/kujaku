@@ -7,6 +7,7 @@ allprojects {
 apply plugin: 'com.android.application'
 
 android {
+
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
 
@@ -21,6 +22,7 @@ android {
     }
 
     buildTypes {
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -32,11 +34,14 @@ android {
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
                 } else {
                     println("One of the required config variables is not set in your local.properties");
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
                 }
             } else {
                 println("local.properties does not exist");
+                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
             }
         }
+
         debug {
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
@@ -46,19 +51,21 @@ android {
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
                 } else {
                     println("One of the required config variables is not set in your local.properties");
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
                 }
             } else {
                 println("local.properties does not exist");
+                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
             }
         }
+    }
+
+    lintOptions {
+        abortOnError false
     }
 }
 
 dependencies {
-    /*compile('io.ona.kujaku:library:0.1') {
-        exclude group: 'com.google.code.findbugs', module: 'jsr305'
-        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
-    }*/
     compile (project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
@@ -66,11 +73,12 @@ dependencies {
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
         transitive = true;
     }
-//    compile fileTree(dir: 'libs', include: ['*.jar'])
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
     testCompile 'junit:junit:4.12'
+    testCompile 'org.robolectric:robolectric:3.5.1'
 }
