@@ -1,4 +1,4 @@
-package labs.ona.io.kujakuutils;
+package io.ona.kujaku.sample;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("labs.ona.io.kujakuutils.test", appContext.getPackageName());
+        assertEquals("io.ona.kujaku.sample", appContext.getPackageName());
     }
 }
