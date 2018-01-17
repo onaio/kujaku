@@ -48,6 +48,7 @@ public class RealmDatabaseTest {
     @After
     public void tearDown() throws Exception {
         //Delete the added Realm records here and/or restore the previous records
+        Realm.init(context);
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
         for (MapBoxOfflineQueueTask mapBoxOfflineQueueTask : addedRecords) {
