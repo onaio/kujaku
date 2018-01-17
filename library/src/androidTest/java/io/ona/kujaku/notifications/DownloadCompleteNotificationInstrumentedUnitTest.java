@@ -10,14 +10,12 @@ import org.junit.Test;
 import io.ona.kujaku.R;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
-
-public class DownloadCompleteNotificationTest extends BaseNotificationsTest {
+public class DownloadCompleteNotificationInstrumentedUnitTest extends BaseNotificationInstrumentedTest {
 
     @RequiresApi(26)
     @Test
@@ -41,7 +39,7 @@ public class DownloadCompleteNotificationTest extends BaseNotificationsTest {
         channelIdsAdded.add(downloadCompleteNotification.CHANNEL_ID);
 
         assertEquals(context.getString(R.string.download_complete_channel_name), notificationChannel.getName());
-        assertEquals(context.getString(R.string.download_complete_channel_description) ,notificationChannel.getDescription());
+        assertEquals(context.getString(R.string.download_complete_channel_description), notificationChannel.getDescription());
         assertTrue(notificationChannel.shouldVibrate());
         assertTrue(notificationChannel.shouldShowLights());
         assertEquals(NotificationManager.IMPORTANCE_DEFAULT, notificationChannel.getImportance());

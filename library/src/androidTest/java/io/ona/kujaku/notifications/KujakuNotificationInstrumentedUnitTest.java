@@ -6,16 +6,11 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -26,7 +21,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/01/2018.
  */
 @RunWith(AndroidJUnit4.class)
-public class KujakuNotificationTest extends BaseNotificationsTest {
+public class KujakuNotificationInstrumentedUnitTest extends BaseNotificationInstrumentedTest {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @Test
