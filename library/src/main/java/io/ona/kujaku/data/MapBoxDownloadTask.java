@@ -184,7 +184,7 @@ public class MapBoxDownloadTask {
      * @return {@link JSONObject} with the latitude & longitude from {@link LatLng}
      * @throws JSONException
      */
-    private static JSONObject constructLatLngJSONObject(LatLng latLng) throws JSONException {
+    public static JSONObject constructLatLngJSONObject(LatLng latLng) throws JSONException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(BOUND_LATITUDE, latLng.getLatitude());
         jsonObject.put(BOUND_LONGITUDE, latLng.getLongitude());
@@ -200,7 +200,7 @@ public class MapBoxDownloadTask {
      * @return similar {@link LatLng} to {@code jsonObject} passed
      * @throws JSONException
      */
-    private static LatLng constructLatLng(JSONObject jsonObject) throws JSONException {
+    public static LatLng constructLatLng(JSONObject jsonObject) throws JSONException {
         return new LatLng(jsonObject.getDouble(BOUND_LATITUDE), jsonObject.getDouble(BOUND_LONGITUDE));
     }
 

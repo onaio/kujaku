@@ -1,4 +1,4 @@
-package kujaku.ona.io.kujaku;
+package io.ona.kujaku;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -16,11 +16,12 @@ import static org.junit.Assert.*;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
+
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("io.ona.kujaku.ona.io.io.ona.kujaku", appContext.getPackageName());
+        assertEquals("io.ona.kujaku.utils.test", appContext.getPackageName());
     }
 }

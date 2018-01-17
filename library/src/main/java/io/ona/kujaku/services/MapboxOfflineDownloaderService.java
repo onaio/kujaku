@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -40,6 +41,7 @@ import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import io.ona.kujaku.utils.ObjectCoercer;
 import io.realm.Realm;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.exceptions.MalformedDataException;
@@ -121,6 +123,17 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
 
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public boolean onStartCommandCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public boolean persistOfflineMapTaskCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public boolean performNextTaskCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public boolean observeOfflineRegionCalled = false;
+    @RestrictTo(RestrictTo.Scope.TESTS)
+    public boolean persistCompletedStatusCalled = false;
+
     /* FOR THE DOWNLOAD PROGRESS UPDATE THREAD */
     private double mostRecentPercentageUpdate = 0;
     private String mostRecentMapNameUpdate = "";
@@ -141,6 +154,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         serviceHandler = new Handler(Looper.myLooper());
 
         super.onStartCommand(intent, flags, startId);
+        onStartCommandCalled = true;
         persistOfflineMapTask(intent);
         performNextTask();
         return START_NOT_STICKY;
@@ -156,7 +170,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param intent Intent passed when the service was called {@link Context#startService(Intent)}
      * @return {@code TRUE} if the OfflineMapTask was successfully saved, {@code FALSE} if the OfflineMapTask could not be saved
      */
-    private boolean persistOfflineMapTask(@Nullable Intent intent) {
+    protected boolean persistOfflineMapTask(@Nullable Intent intent) {
+        persistOfflineMapTaskCalled = true;
         if (intent == null) {
             return false;
         }
@@ -185,8 +200,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
                         downloadTask.setPackageName("kl");
                         downloadTask.setMapBoxStyleUrl(extras.getString(Constants.PARCELABLE_KEY_STYLE_URL));
-                        downloadTask.setMaxZoom(extras.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM));
-                        downloadTask.setMinZoom(extras.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM));
+                        downloadTask.setMaxZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MAX_ZOOM)));
+                        downloadTask.setMinZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MIN_ZOOM)));
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
 
@@ -275,6 +290,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * , IGNORED(thus FAILING if it does) or DOWNLOADED.
      */
     private void performNextTask() {
+        performNextTaskCalled = true;
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
@@ -388,6 +404,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
      * </p>
      *
+     *
      * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
      * @param mapName             Unique name of the map
      * @param message             Additional message/information about the result eg. For a {@link SERVICE_ACTION_RESULT#FAILED} result
@@ -465,7 +482,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
                 .findAllSorted("dateUpdated", Sort.ASCENDING);
 
-        if (realmResults.size() > 1) {
+        if (realmResults.size() > 0) {
             return realmResults.first();
         }
 
@@ -598,6 +615,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private void observeOfflineRegion(@NonNull final OfflineRegion offlineRegion) {
         //Do not remove the line below!!!
         offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);
+        observeOfflineRegionCalled = true;
         offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {
             @Override
             public void onStatusChanged(OfflineRegionStatus status) {
@@ -624,6 +642,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param mapBoxOfflineQueueTask
      */
     private void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+        persistCompletedStatusCalled = true;
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
 
