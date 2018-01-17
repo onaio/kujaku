@@ -8,6 +8,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'jacoco'
 apply plugin: 'io.fabric'
 
 
@@ -102,6 +103,8 @@ android {
         }
 
         debug {
+            testCoverageEnabled true
+
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
                 properties.load(project.rootProject.file("local.properties").newDataInputStream())
