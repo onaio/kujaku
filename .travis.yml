@@ -7,7 +7,7 @@ dist: precise
 
 env:
   matrix:
-    - ANDROID_TARGET=android-26 ANDROID_ABI=google_apis/armeabi-v71
+    - ANDROID_TARGET=android-26 ANDROID_ABI=google_apis/armeabi-v7a
   global:
     # wait up to 10 minutes for adb to connect to emulator
     - ADB_INSTALL_TIMEOUT=10
