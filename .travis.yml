@@ -19,10 +19,8 @@ android:
     - tools
     # The BuildTools version used by your project
     - build-tools-26.0.2
-    - tools
     # The SDK version used to compile your projects
     - android-26
-    - add-on
     # Additional components here
     - extra-google-google_play_services
     - extra-google-m2repository
@@ -31,7 +29,7 @@ android:
 
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-26
+    - sys-img-x86_64-google_apis-26
 
 addons:
   apt_packages:
