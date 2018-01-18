@@ -19,8 +19,10 @@ android:
     - tools
     # The BuildTools version used by your project
     - build-tools-26.0.2
+    - tools
     # The SDK version used to compile your projects
     - android-26
+    - add-on
     # Additional components here
     - extra-google-google_play_services
     - extra-google-m2repository
