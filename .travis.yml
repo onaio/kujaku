@@ -48,6 +48,8 @@ script:
   - echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"
   - chmod 755 gradlew
   - ls -la
+  # Run instrumented tests
+  - travis_wait ./gradlew clean cC
   # This is supposed to run the normal project build
   - travis_wait ./gradlew clean build --stacktrace
 
