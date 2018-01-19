@@ -34,6 +34,7 @@ import utils.exceptions.OfflineMapDownloadException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/12/2017.
@@ -188,85 +189,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void downloadMapShouldCallErrorMethod() throws OfflineMapDownloadException {
-        resetTestVariables();
-
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-        MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
-
-        MapBoxOfflineResourcesDownloader spyMapBoxOfflineResourcesDownloader = Mockito.spy(mapBoxOfflineResourcesDownloader);
-
-        //Mocked callback
-        OnDownloadMapListener mockedOnDownloadMapListener = new OnDownloadMapListener() {
-            @Override
-            public void onStatusChanged(OfflineRegionStatus offlineRegionStatus, OfflineRegion offlineRegion) {
-                // This should never be called
-                outputsFromCallbacks.add("");
-            }
-
-            @Override
-            public void onError(String errorReason) {
-                outputsFromCallbacks.add(new String(errorReason));
-                Assert.assertEquals("Map Already Exists", errorReason);
-            }
-        };
-
-        /*
-        - Spy on the downloadMap method & return the mockedDownloadListener (NOT NEEDED RIGHT NOW)
-        - Mock getMapStatus(OfflineRegion, int) call
-        - Mock offlineManager.createOfflineRegion **
-        - Mock offlineManager.listOfflineRegions **
-        - Mock the OfflineRegion ->
-                - getDefinition() &&
-                - getMetadata()
-        -
-         */
-
-        final OnDownloadMapListener spiedOnDownloadListener = Mockito.spy(mockedOnDownloadMapListener);
-
-        // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
-        OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
-        mapBoxOfflineResourcesDownloader.offlineManager = spiedOfflineManager;
-
-        // Mock OfflineManager.createOfflineRegion calls
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-
-                OfflineManager.CreateOfflineRegionCallback createOfflineRegionCallback = invocationOnMock.getArgument(2);
-
-                //Should never be null --> CreateOfflineRegionCallback
-                byte[] metadata = invocationOnMock.getArgument(1);
-                OfflineRegionDefinition offlineRegionDefinition = invocationOnMock.getArgument(0);
-                offlineRegionsList.add(metadata);
-
-                OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition);
-
-                offlineRegionArrayList.add(offlineRegion);
-                createOfflineRegionCallback.onCreate(offlineRegion);
-
-                return null;
-            }
-        }).when(spiedOfflineManager)
-                .createOfflineRegion(Mockito.any(OfflineRegionDefinition.class), Mockito.any(byte[].class), Mockito.any(OfflineManager.CreateOfflineRegionCallback.class));
-
-        // Mock OfflineManager.listOfflineRegions calls
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                OfflineManager.ListOfflineRegionsCallback listOfflineRegionsCallback = invocationOnMock.getArgument(0);
-                listOfflineRegionsCallback.onList(offlineRegionArrayList.toArray(new OfflineRegion[offlineRegionArrayList.size()]));
-
-                return null;
-            }
-        }).when(spiedOfflineManager)
-                .listOfflineRegions(Mockito.any(OfflineManager.ListOfflineRegionsCallback.class));
-
-        mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, spiedOnDownloadListener);
-        mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, spiedOnDownloadListener);
-    }
-
-    @Test
     public void downloadMapShouldChangeOfflineRegionDownloadState() throws OfflineMapDownloadException {
 
         mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
@@ -329,7 +251,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
                 int state = stateField.getInt(offlineRegion);
 
-                assertEquals(OfflineRegion.STATE_ACTIVE, state);
+                outputsFromCallbacks.add(state);
 
                 return null;
             }
@@ -349,6 +271,8 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 .listOfflineRegions(Mockito.any(OfflineManager.ListOfflineRegionsCallback.class));
 
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, spiedOnDownloadListener);
+
+        assertEquals(OfflineRegion.STATE_ACTIVE, outputsFromCallbacks.get(0));
     }
 
     @Test
@@ -390,37 +314,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
         // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
         OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
         mapBoxOfflineResourcesDownloader.offlineManager = spiedOfflineManager;
-
-        // Mock OfflineManager.createOfflineRegion calls
-        Mockito.doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-
-                OfflineManager.CreateOfflineRegionCallback createOfflineRegionCallback = invocationOnMock.getArgument(2);
-
-                //Should never be null --> CreateOfflineRegionCallback
-                byte[] metadata = invocationOnMock.getArgument(1);
-                OfflineRegionDefinition offlineRegionDefinition = invocationOnMock.getArgument(0);
-                offlineRegionsList.add(metadata);
-
-                OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition);
-
-                offlineRegionArrayList.add(offlineRegion);
-                createOfflineRegionCallback.onCreate(offlineRegion);
-
-                // Reflect to get the download state value
-                Class offlineRegionClass = Class.forName("com.mapbox.mapboxsdk.offline.OfflineRegion");
-                Field stateField = offlineRegionClass.getDeclaredField("state");
-                stateField.setAccessible(true);
-
-                int state = stateField.getInt(offlineRegion);
-
-                assertEquals(OfflineRegion.STATE_ACTIVE, state);
-
-                return null;
-            }
-        }).when(spiedOfflineManager)
-                .createOfflineRegion(Mockito.any(OfflineRegionDefinition.class), Mockito.any(byte[].class), Mockito.any(OfflineManager.CreateOfflineRegionCallback.class));
 
         // Mock OfflineManager.listOfflineRegions calls
         Mockito.doAnswer(new Answer() {

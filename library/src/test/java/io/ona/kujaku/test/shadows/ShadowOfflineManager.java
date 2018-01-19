@@ -1,4 +1,4 @@
-package io.ona.kujaku.shadows;
+package io.ona.kujaku.test.shadows;
 
 import android.content.Context;
 
@@ -16,10 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 
 @Implements(OfflineManager.class)
 public class ShadowOfflineManager {
-
-    private void __constructor__() {
-        // Do nothing
-    }
 
     @Implementation
     public static synchronized OfflineManager getInstance(Context context) {

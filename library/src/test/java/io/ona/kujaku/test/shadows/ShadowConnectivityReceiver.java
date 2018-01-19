@@ -1,8 +1,7 @@
-package io.ona.kujaku.shadows;
+package io.ona.kujaku.test.shadows;
 
 import android.content.Context;
 
-import com.mapbox.mapboxsdk.net.ConnectivityListener;
 import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 
 import org.robolectric.annotation.Implementation;

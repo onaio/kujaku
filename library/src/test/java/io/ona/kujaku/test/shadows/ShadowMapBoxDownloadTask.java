@@ -1,4 +1,4 @@
-package io.ona.kujaku.shadows;
+package io.ona.kujaku.test.shadows;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -11,7 +11,7 @@ import java.util.Date;
 
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
-import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
+import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 22/12/2017.
