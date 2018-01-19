@@ -29,17 +29,16 @@ import utils.exceptions.MalformedDataException;
 import utils.exceptions.OfflineMapDownloadException;
 
 /**
- *
  * This is a singleton
- *
+ * <p>
  * Basically wraps around the MapBox OfflineManager & enables:
- *  - Downloading a map for offline
- *  - Pausing a download
- *  - Resuming download
- *  - Deleting an offline map
- *  - Getting the map status {@link com.mapbox.mapboxsdk.offline.OfflineRegionStatus}
- *
- *
+ * - Downloading a map for offline
+ * - Pausing a download
+ * - Resuming download
+ * - Deleting an offline map
+ * - Getting the map status {@link com.mapbox.mapboxsdk.offline.OfflineRegionStatus}
+ * <p>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.
  */
 public class MapBoxOfflineResourcesDownloader {
@@ -79,13 +78,12 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Basically downloads/queues the map for download
      *
-     * @param mapBoxOfflineQueueTask    The {@link MapBoxOfflineQueueTask} object holding info on the MapBox style to download
-     * @param onDownloadMapListener     {@link OnDownloadMapListener} to provide updates/errors during MapDownload
-     *
+     * @param mapBoxOfflineQueueTask The {@link MapBoxOfflineQueueTask} object holding info on the MapBox style to download
+     * @param onDownloadMapListener  {@link OnDownloadMapListener} to provide updates/errors during MapDownload
      * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
-     *                                             - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
-     *                                             - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
-     *                                             - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
      */
     public void downloadMap(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask, OnDownloadMapListener onDownloadMapListener)
             throws MalformedDataException
@@ -100,11 +98,10 @@ public class MapBoxOfflineResourcesDownloader {
      *
      * @param mapBoxDownloadTask    The {@link MapBoxDownloadTask} object holding info on the MapBox style to download
      * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
-     *
      * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
-     *                                             - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
-     *                                             - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
-     *                                             - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
      */
     public void downloadMap(@NonNull MapBoxDownloadTask mapBoxDownloadTask, OnDownloadMapListener onDownloadMapListener)
             throws OfflineMapDownloadException {
@@ -120,22 +117,19 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Basically downloads/queues the map for download
      *
-     *
-     *
-     * @param name Unique name of the map
-     * @param styleUrl The Style URL on MapBox
-     * @param topLeftBound The top-left coordinate of the map
-     * @param bottomRightBound The bottom-right coordinate of the map
-     * @param minZoom The min-zoom of the map i.e among 0-22
-     * @param maxZoom The max-zoom of the map i.e. among 0-22. This should be greater than the {@code minZoom}
+     * @param name                  Unique name of the map
+     * @param styleUrl              The Style URL on MapBox
+     * @param topLeftBound          The top-left coordinate of the map
+     * @param bottomRightBound      The bottom-right coordinate of the map
+     * @param minZoom               The min-zoom of the map i.e among 0-22
+     * @param maxZoom               The max-zoom of the map i.e. among 0-22. This should be greater than the {@code minZoom}
      * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
-     *
      * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
-     *                                             - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
-     *                                             - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
-     *                                             - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
      */
-    private void downloadMap(final String name, final String styleUrl,@NonNull final LatLng topLeftBound,@NonNull final LatLng bottomRightBound, final double minZoom, final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
+    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng topLeftBound, @NonNull final LatLng bottomRightBound, final double minZoom, final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
             throws OfflineMapDownloadException {
         if (offlineManager == null) {
             throw new OfflineMapDownloadException("Context passed is null");
@@ -215,8 +209,7 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Deletes a specific offline map given the name
      *
-     *
-     * @param name Unique name of the map
+     * @param name                        Unique name of the map
      * @param offlineRegionDeleteCallback Callback in case the operation is SUCCESS or FAILURE {@see com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionDeleteCallback}
      *                                    Fails if the offline map with the give {@code name} does not exist
      */
@@ -250,7 +243,7 @@ public class MapBoxOfflineResourcesDownloader {
 
                         @Override
                         public void onError(String error) {
-                            Log.e(TAG, "ON DELETE MAP : " + name + " --> "+ error);
+                            Log.e(TAG, "ON DELETE MAP : " + name + " --> " + error);
                         }
                     };
                 } else {
@@ -272,7 +265,7 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Resumes download of an Offline map with the given name
      *
-     * @param name Unique name of the map
+     * @param name                  Unique name of the map
      * @param onDownloadMapListener Callback to give updates on download progress or errors
      */
     public void resumeMapDownload(@NonNull final String name, final OnDownloadMapListener onDownloadMapListener) {
@@ -339,7 +332,7 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Resumes download of an Offline map given the name
      *
-     * @param offlineRegion {@link OfflineRegion} to resume download
+     * @param offlineRegion         {@link OfflineRegion} to resume download
      * @param onDownloadMapListener {@link OnDownloadMapListener} Callback to receive map download updates or error description
      */
     public void resumeMapDownload(@NonNull final OfflineRegion offlineRegion, final OnDownloadMapListener onDownloadMapListener) {
@@ -386,7 +379,7 @@ public class MapBoxOfflineResourcesDownloader {
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
             public void onList(OfflineRegion[] offlineRegions) {
-                for(final OfflineRegion offlineRegion: offlineRegions) {
+                for (final OfflineRegion offlineRegion : offlineRegions) {
                     offlineRegion.getStatus(new OfflineRegion.OfflineRegionStatusCallback() {
                         @Override
                         public void onStatus(OfflineRegionStatus status) {
@@ -414,7 +407,8 @@ public class MapBoxOfflineResourcesDownloader {
 
     /**
      * Pauses a map download
-     * @param name Unique name of the map
+     *
+     * @param name                       Unique name of the map
      * @param onPauseMapDownloadCallback Callback which is called in case the operation is a SUCCESS or FAILURE
      */
     public void pauseMapDownload(@NonNull final String name, final OnPauseMapDownloadCallback onPauseMapDownloadCallback) {
@@ -483,7 +477,7 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Retrieves an Offline Map's status {@see OfflineRegionStatus}
      *
-     * @param name Unique name of the map
+     * @param name                        Unique name of the map
      * @param offlineRegionStatusCallback Callback called when map status is retrieved or the operation FAILS
      */
     public void getMapStatus(@NonNull final String name, final OfflineRegionStatusCallback offlineRegionStatusCallback) {
@@ -534,12 +528,12 @@ public class MapBoxOfflineResourcesDownloader {
     /**
      * Matches a given map name to an OfflineRegion given the OfflineRegions
      *
-     * @param name Unique name of the map
+     * @param name           Unique name of the map
      * @param offlineRegions OfflineRegions returned from {@link OfflineManager#listOfflineRegions(OfflineManager.ListOfflineRegionsCallback)}
      * @return {@link OfflineRegion} with the given name
      */
-    private OfflineRegion getOfflineRegion(@NonNull String name,@NonNull OfflineRegion[] offlineRegions) {
-        for (OfflineRegion offlineRegion: offlineRegions) {
+    private OfflineRegion getOfflineRegion(@NonNull String name, @NonNull OfflineRegion[] offlineRegions) {
+        for (OfflineRegion offlineRegion : offlineRegions) {
             try {
                 String json = new String(offlineRegion.getMetadata(), JSON_CHARSET);
                 JSONObject jsonObject = new JSONObject(json);
@@ -560,8 +554,51 @@ public class MapBoxOfflineResourcesDownloader {
         return null;
     }
 
-    public OfflineManager getOfflineManager() {
-        return offlineManager;
+    /**
+     * Deletes previously downloaded {@link OfflineRegion} with the given map name and excludes the one with the given ID
+     *
+     * @param mapName
+     * @param currentMapDownloadId
+     */
+    public void deletePreviousOfflineMapDownloads(final String mapName, final long currentMapDownloadId) {
+        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+                for (OfflineRegion offlineRegion : offlineRegions) {
+                    if (offlineRegion.getID() != currentMapDownloadId) {
+                        try {
+                            String json = new String(offlineRegion.getMetadata(), MapBoxOfflineResourcesDownloader.JSON_CHARSET);
+                            JSONObject jsonObject = new JSONObject(json);
+                            if (jsonObject.has(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME)) {
+                                String regionName = jsonObject.getString(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME);
+                                if (mapName.equals(regionName)) {
+                                    offlineRegion.delete(new OfflineRegion.OfflineRegionDeleteCallback() {
+                                        @Override
+                                        public void onDelete() {
+                                            Log.i(TAG, "Map deleted successfully!");
+                                        }
+
+                                        @Override
+                                        public void onError(String error) {
+                                            Log.e(TAG, error);
+                                        }
+                                    });
+                                }
+                            }
+
+                        } catch (UnsupportedEncodingException | JSONException e) {
+                            Log.e(TAG, Log.getStackTraceString(e));
+                            // Just move to the next map
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, error);
+            }
+        });
     }
 
 }

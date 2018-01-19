@@ -11,7 +11,6 @@ import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionDefinition;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +33,6 @@ import utils.exceptions.OfflineMapDownloadException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/12/2017.
@@ -49,8 +47,9 @@ public class MapBoxOfflineResourcesDownloaderTest {
     private CountDownLatch downLatch = new CountDownLatch(0);
     private ArrayList<Object> outputsFromCallbacks = new ArrayList<>();
 
-    private ArrayList<byte[]> offlineRegionsList = new ArrayList<>();
-    private ArrayList<OfflineRegion> offlineRegionArrayList = new ArrayList<>();
+    private ArrayList<byte[]> offlineRegionsMetadataList = new ArrayList<>();
+    private ArrayList<OfflineRegion> offlineRegionsList = new ArrayList<>();
+    private long lastId = 0;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -237,11 +236,11 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 //Should never be null --> CreateOfflineRegionCallback
                 byte[] metadata = invocationOnMock.getArgument(1);
                 OfflineRegionDefinition offlineRegionDefinition = invocationOnMock.getArgument(0);
-                offlineRegionsList.add(metadata);
+                offlineRegionsMetadataList.add(metadata);
 
                 OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition);
 
-                offlineRegionArrayList.add(offlineRegion);
+                offlineRegionsList.add(offlineRegion);
                 createOfflineRegionCallback.onCreate(offlineRegion);
 
                 // Reflect to get the download state value
@@ -263,7 +262,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 OfflineManager.ListOfflineRegionsCallback listOfflineRegionsCallback = invocationOnMock.getArgument(0);
-                listOfflineRegionsCallback.onList(offlineRegionArrayList.toArray(new OfflineRegion[offlineRegionArrayList.size()]));
+                listOfflineRegionsCallback.onList(offlineRegionsList.toArray(new OfflineRegion[offlineRegionsList.size()]));
 
                 return null;
             }
@@ -320,7 +319,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 OfflineManager.ListOfflineRegionsCallback listOfflineRegionsCallback = invocationOnMock.getArgument(0);
-                listOfflineRegionsCallback.onList(offlineRegionArrayList.toArray(new OfflineRegion[offlineRegionArrayList.size()]));
+                listOfflineRegionsCallback.onList(offlineRegionsList.toArray(new OfflineRegion[offlineRegionsList.size()]));
 
                 return null;
             }
@@ -370,11 +369,11 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 //Should never be null --> CreateOfflineRegionCallback
                 byte[] metadata = invocationOnMock.getArgument(1);
                 OfflineRegionDefinition offlineRegionDefinition = invocationOnMock.getArgument(0);
-                offlineRegionsList.add(metadata);
+                offlineRegionsMetadataList.add(metadata);
 
                 OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition);
 
-                offlineRegionArrayList.add(offlineRegion);
+                offlineRegionsList.add(offlineRegion);
                 createOfflineRegionCallback.onCreate(offlineRegion);
 
                 // Reflect to get the download state value
@@ -396,7 +395,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 OfflineManager.ListOfflineRegionsCallback listOfflineRegionsCallback = invocationOnMock.getArgument(0);
-                listOfflineRegionsCallback.onList(offlineRegionArrayList.toArray(new OfflineRegion[offlineRegionArrayList.size()]));
+                listOfflineRegionsCallback.onList(offlineRegionsList.toArray(new OfflineRegion[offlineRegionsList.size()]));
 
                 return null;
             }
@@ -483,6 +482,76 @@ public class MapBoxOfflineResourcesDownloaderTest {
         assertEquals("Context passed is null", outputsFromCallbacks.get(0));
     }
 
+    /*
+
+    This test requires a lot more attention since multiple maps need to be "downloaded" with different names & others with similar names
+
+    @Test
+    public void deletePreviousOfflineMapDownloadsShouldDeleteMapAndReserveCurrentMap() throws OfflineMapDownloadException {
+        long download1Id = 9;
+        long download2Id = 10;
+
+        downLatch = new CountDownLatch(1);
+        resetTestVariables();
+
+        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+
+        // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
+        OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
+        mapBoxOfflineResourcesDownloader.offlineManager = spiedOfflineManager;
+
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+
+                OfflineManager.CreateOfflineRegionCallback createOfflineRegionCallback = invocationOnMock.getArgument(2);
+
+                //Should never be null --> CreateOfflineRegionCallback
+                byte[] metadata = invocationOnMock.getArgument(1);
+                OfflineRegionDefinition offlineRegionDefinition = invocationOnMock.getArgument(0);
+                offlineRegionsMetadataList.add(metadata);
+
+                OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition, generateOfflineRegionId());
+
+                offlineRegionsList.add(offlineRegion);
+                createOfflineRegionCallback.onCreate(offlineRegion);
+
+                // Reflect to get the download state value
+                Class offlineRegionClass = Class.forName("com.mapbox.mapboxsdk.offline.OfflineRegion");
+                Field stateField = offlineRegionClass.getDeclaredField("state");
+                stateField.setAccessible(true);
+
+                int state = stateField.getInt(offlineRegion);
+
+                outputsFromCallbacks.add(state);
+
+                return null;
+            }
+        }).when(spiedOfflineManager)
+                .createOfflineRegion(Mockito.any(OfflineRegionDefinition.class), Mockito.any(byte[].class), Mockito.any(OfflineManager.CreateOfflineRegionCallback.class));
+
+        // Mock OfflineManager.listOfflineRegions calls
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                OfflineManager.ListOfflineRegionsCallback listOfflineRegionsCallback = invocationOnMock.getArgument(0);
+                listOfflineRegionsCallback.onList(offlineRegionsList.toArray(new OfflineRegion[offlineRegionsList.size()]));
+
+                return null;
+            }
+        }).when(spiedOfflineManager)
+                .listOfflineRegions(Mockito.any(OfflineManager.ListOfflineRegionsCallback.class));
+
+        MapBoxDownloadTask validMapBoxDownloadTask = createSampleDownloadTask();
+        mapBoxOfflineResourcesDownloader.downloadMap(validMapBoxDownloadTask, null);
+    }*/
+
+    /*
+    |
+    | HELPER METHODS
+    |
+    */
+
     private MapBoxDownloadTask createSampleDownloadTask() {
 
         return new MapBoxDownloadTask(
@@ -501,6 +570,14 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 ),
                 BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
         );
+    }
+
+    private OfflineRegion createMockOfflineRegion(byte[] metadata, OfflineRegionDefinition offlineRegionDefinition, long id) {
+        OfflineRegion offlineRegion = createMockOfflineRegion(metadata, offlineRegionDefinition);
+        Mockito.when(offlineRegion.getID())
+                .thenReturn(id);
+
+        return offlineRegion;
     }
 
     private OfflineRegion createMockOfflineRegion(byte[] metadata, OfflineRegionDefinition offlineRegionDefinition) {
@@ -539,6 +616,10 @@ public class MapBoxOfflineResourcesDownloaderTest {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
 
+                // Remove the offline region from the list
+                offlineRegionsMetadataList.remove(offlineRegion.getMetadata());
+                offlineRegionsList.remove(offlineRegion);
+
                 // Just call the callback directly if gotten to this point i.e. The OfflineRegion is not null
                 OfflineRegion.OfflineRegionDeleteCallback offlineRegionDeleteCallback = invocationOnMock.getArgument(0);
                 offlineRegionDeleteCallback.onDelete();
@@ -554,8 +635,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
     private void resetTestVariables() {
         outputsFromCallbacks.clear();
 
+        offlineRegionsMetadataList.clear();
         offlineRegionsList.clear();
-        offlineRegionArrayList.clear();
+    }
+
+    private long generateOfflineRegionId() {
+        return lastId++;
     }
 
 }
