@@ -22,12 +22,15 @@ import android.text.format.Formatter;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 
 import io.ona.kujaku.BuildConfig;
@@ -89,7 +92,6 @@ import utils.exceptions.OfflineMapDownloadException;
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
-
 public class MapboxOfflineDownloaderService extends Service implements OfflineRegionObserver, OnDownloadMapListener {
 
     public enum SERVICE_ACTION_RESULT {
@@ -119,6 +121,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private String currentMapDownloadName = "";
     private SERVICE_ACTION currentServiceAction;
     private MapBoxOfflineQueueTask currentMapBoxTask;
+    private long currentMapDownloadId;
 
     private DownloadProgressNotification downloadProgressNotification;
     private Intent stopDownloadIntent;
@@ -208,8 +211,10 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
 
-                        MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);
+                        RealmDatabase realmDatabase = RealmDatabase.init(this);
+                        realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(currentMapDownloadName);
 
+                        MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);
                         return true;
                     }
                 } else if (serviceAction == SERVICE_ACTION.DELETE_MAP){
@@ -302,6 +307,11 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 currentServiceAction = SERVICE_ACTION.DELETE_MAP;
             } else {
                 currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
+
+                if (mapBoxOfflineQueueTask.getTaskStatus() == MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED) {
+                    persistDownloadStartedStatus(mapBoxOfflineQueueTask);
+                }
+
             }
 
             getTaskStatus(mapBoxOfflineQueueTask, mapBoxAccessToken, new OfflineRegionStatusCallback() {
@@ -334,6 +344,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                         // TASK IS RUNNING
                         currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
                         currentMapBoxTask = mapBoxOfflineQueueTask;
+                        currentMapDownloadId = offlineRegion.getID();
                         startDownloadProgressUpdater();
                         observeOfflineRegion(offlineRegion);
                     } else {
@@ -341,6 +352,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             // TASK IS NOT RUNNING
                             currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
                             currentMapBoxTask = mapBoxOfflineQueueTask;
+                            currentMapDownloadId = offlineRegion.getID();
                             // Set the progress notification
                             startDownloadProgressUpdater();
                             queueDownloadProgressUpdate(currentMapDownloadName, 0.0);
@@ -474,7 +486,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_INCOMPLETE} {@link MapBoxOfflineQueueTask}
+     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED} {@link MapBoxOfflineQueueTask}
      *
      * @return
      */
@@ -482,7 +494,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         Realm realm = Realm.getDefaultInstance();
 
         RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .findAllSorted("dateUpdated", Sort.ASCENDING);
 
         if (realmResults.size() > 0) {
@@ -616,6 +628,46 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         realm.commitTransaction();
     }
 
+    private void persistDownloadStartedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_STARTED);
+
+        realm.commitTransaction();
+    }
+
+    private void deletePreviousOfflineMapDownloads(final String mapName, final long currentMapDownloadId) {
+        MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
+        mapBoxOfflineResourcesDownloader.getOfflineManager().listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+                for(OfflineRegion offlineRegion: offlineRegions) {
+                    if (offlineRegion.getID() != currentMapDownloadId) {
+                        try {
+                            String json = new String(offlineRegion.getMetadata(), MapBoxOfflineResourcesDownloader.JSON_CHARSET);
+                            JSONObject jsonObject = new JSONObject(json);
+                            if (jsonObject.has(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME)) {
+                                String regionName = jsonObject.getString(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME);
+                                if (mapName.equals(regionName)) {
+                                    offlineRegion.delete(null);
+                                }
+                            }
+
+                        } catch (UnsupportedEncodingException | JSONException e) {
+                            Log.e(TAG, Log.getStackTraceString(e));
+                            // Just move to the next map
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
+    }
+
     private int getConnectionType() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -654,6 +706,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         if (status.isComplete()) {
             stopDownloadProgressUpdater();
             showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_progress_content), getFriendlyFileSize(status.getCompletedResourceSize())) );
+            deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
             persistCompletedStatus(currentMapBoxTask);
             performNextTask();
         } else {
