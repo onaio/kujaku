@@ -47,12 +47,13 @@ import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
-import io.ona.kujaku.shadows.ShadowConnectivityReceiver;
-import io.ona.kujaku.shadows.ShadowMapBoxDeleteTask;
-import io.ona.kujaku.shadows.ShadowMapBoxDownloadTask;
-import io.ona.kujaku.shadows.ShadowOfflineManager;
-import io.ona.kujaku.shadows.ShadowRealm;
-import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
+import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDeleteTask;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDownloadTask;
+import io.ona.kujaku.test.shadows.ShadowOfflineManager;
+import io.ona.kujaku.test.shadows.ShadowRealm;
+import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
+import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
 import io.ona.kujaku.utils.NumberFormatter;
 import utils.Constants;
 
@@ -74,7 +75,8 @@ import static org.junit.Assert.fail;
                 ShadowMapBoxDownloadTask.class,
                 ShadowConnectivityReceiver.class,
                 ShadowRealm.class,
-                ShadowOfflineManager.class
+                ShadowOfflineManager.class,
+                ShadowRealmDatabase.class
 })
 public class MapboxOfflineDownloaderServiceTest {
 
