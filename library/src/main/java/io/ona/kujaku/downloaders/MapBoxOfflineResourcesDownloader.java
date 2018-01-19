@@ -160,14 +160,6 @@ public class MapBoxOfflineResourcesDownloader {
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
             public void onList(OfflineRegion[] offlineRegions) {
-                OfflineRegion similarOfflineRegion = getOfflineRegion(name, offlineRegions);
-                if (similarOfflineRegion != null) {
-                    if (onDownloadMapListener != null) {
-                        onDownloadMapListener.onError("Map Already Exists");
-                    }
-                    return;
-                }
-
                 // Download the map
                 byte[] metadata = new byte[0];
                 try {
@@ -566,6 +558,10 @@ public class MapBoxOfflineResourcesDownloader {
         }
 
         return null;
+    }
+
+    public OfflineManager getOfflineManager() {
+        return offlineManager;
     }
 
 }

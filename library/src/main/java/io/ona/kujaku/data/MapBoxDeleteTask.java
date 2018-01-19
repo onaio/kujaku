@@ -82,7 +82,7 @@ public class MapBoxDeleteTask {
 
     /**
      * Creates a valid {@link MapBoxOfflineQueueTask} given a {@link MapBoxDeleteTask} with default
-     * {@link MapBoxOfflineQueueTask#taskStatus} as {@link MapBoxOfflineQueueTask#TASK_STATUS_INCOMPLETE}
+     * {@link MapBoxOfflineQueueTask#taskStatus} as {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
      * of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DELETE}
      *
      * @param mapBoxDeleteTask
@@ -97,7 +97,7 @@ public class MapBoxDeleteTask {
             mapBoxOfflineQueueTask.setDateCreated(new Date());
             mapBoxOfflineQueueTask.setDateUpdated(new Date());
             mapBoxOfflineQueueTask.setTask(mapBoxDeleteTask.getJSONObject());
-            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
+            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);
             mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DELETE);
 
             realm.commitTransaction();

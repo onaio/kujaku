@@ -27,7 +27,7 @@ public class ShadowMapBoxDeleteTask {
             mapBoxOfflineQueueTask.setDateCreated(new Date());
             mapBoxOfflineQueueTask.setDateUpdated(new Date());
             mapBoxOfflineQueueTask.setTask(mapBoxDeleteTask.getJSONObject());
-            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
+            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);
             mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DELETE);
 
             RealmDbTestImplementation.add(mapBoxOfflineQueueTask.getId(), mapBoxOfflineQueueTask);

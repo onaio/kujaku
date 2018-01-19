@@ -178,7 +178,7 @@ public class MapboxOfflineDownloaderServiceTest {
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DELETE, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 
@@ -206,7 +206,7 @@ public class MapboxOfflineDownloaderServiceTest {
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 

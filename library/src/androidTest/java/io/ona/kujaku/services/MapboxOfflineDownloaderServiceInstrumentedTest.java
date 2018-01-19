@@ -230,7 +230,7 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         Realm realm = Realm.getDefaultInstance();
 
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .contains("task", mapName)
                 .findFirst();
 
