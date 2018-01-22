@@ -9,8 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;

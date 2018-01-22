@@ -79,15 +79,23 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
 
     @Test
     public void displayForegroundNotificationShouldStartForegroundNotification() {
-        DownloadProgressNotification downloadProgressNotification = new DownloadProgressNotification(context);
+        MapboxOfflineDownloaderService mapboxOfflineDownloaderService = Robolectric.buildService(MapboxOfflineDownloaderService.class).get();
+        ShadowService shadowService = Shadows.shadowOf(mapboxOfflineDownloaderService);
+
+        DownloadProgressNotification downloadProgressNotification = new DownloadProgressNotification(mapboxOfflineDownloaderService);
 
         String mapName = UUID.randomUUID().toString();
         String mapBoxAccessToken = "sample_access_token";
         int requestCode = 89238087;
-        double percentageProgress = 45d;
+        int notificationId = (int) (Math.random() * 100000);
 
         downloadProgressNotification.createInitialNotification(mapName, mapBoxAccessToken, requestCode, false);
-        downloadProgressNotification.updateNotification(percentageProgress, UUID.randomUUID().toString(), requestCode, false);
+        downloadProgressNotification.displayForegroundNotification(notificationId);
+
+        ShadowNotification shadowNotification = Shadows.shadowOf(shadowService.getLastForegroundNotification());
+
+        assertTrue(shadowNotification != null);
+        assertEquals(notificationId, shadowService.getLastForegroundNotificationId());
     }
 
     @Test

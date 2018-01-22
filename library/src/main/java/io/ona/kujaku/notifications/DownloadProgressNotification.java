@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
 import java.text.DecimalFormat;
@@ -161,7 +160,7 @@ public class DownloadProgressNotification extends KujakuNotification {
      * @return
      */
     protected static String formatDecimal(double no) {
-        java.text.DecimalFormat twoDForm = new DecimalFormat("0.##");
+        DecimalFormat twoDForm = new DecimalFormat("0.##");
         return twoDForm.format(no);
     }
 }

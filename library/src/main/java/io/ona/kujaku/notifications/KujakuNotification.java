@@ -2,18 +2,12 @@ package io.ona.kujaku.notifications;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
-
-import io.ona.kujaku.KujakuApplication;
-import io.ona.kujaku.R;
-import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.
