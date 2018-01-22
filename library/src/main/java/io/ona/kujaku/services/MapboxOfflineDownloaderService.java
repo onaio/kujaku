@@ -119,7 +119,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final String PREFERENCE_MAPBOX_ACCESS_TOKEN = "MAPBOX ACCESS TOKEN";
 
     private String mapBoxAccessToken = "";
-    private String currentMapDownloadName = "";
+    private String currentMapDownloadName;
     private SERVICE_ACTION currentServiceAction;
     private MapBoxOfflineQueueTask currentMapBoxTask;
     private long currentMapDownloadId;
