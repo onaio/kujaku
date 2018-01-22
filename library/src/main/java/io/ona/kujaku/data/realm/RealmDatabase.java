@@ -2,6 +2,7 @@ package io.ona.kujaku.data.realm;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 
@@ -114,7 +115,11 @@ public class RealmDatabase {
      * @param mapName
      * @return
      */
-    public boolean deletePendingOfflineMapDownloadsWithSimilarNames(String mapName) {
+    public boolean deletePendingOfflineMapDownloadsWithSimilarNames(@Nullable String mapName) {
+        if (mapName == null) {
+            return false;
+        }
+
         RealmResults<MapBoxOfflineQueueTask> realmResults = getPendingOfflineMapDownloadsWithSimilarNames(mapName);
 
         Realm realm = Realm.getDefaultInstance();
