@@ -24,8 +24,8 @@
         android:layout_marginRight="20dp"
         android:padding="5dp"
         android:background="@drawable/circle_button"
-        android:layout_above="@+id/rv_mapActivity_infoWindow"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_mapActivity_infoWindow"

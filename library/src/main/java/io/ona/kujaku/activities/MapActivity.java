@@ -16,9 +16,11 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,7 +34,6 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -497,6 +498,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {
         if (!infoWindowDisplayed) {
+
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
             infoWindowsRecyclerView.getViewTreeObserver()
@@ -507,6 +509,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
                         }
                     });
+
+            disableAlignBottomAndEnableAlignAbove(focusOnMyLocationImgBtn);
             infoWindowDisplayed = true;
         } else {
             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
@@ -691,6 +695,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         setResult(Activity.RESULT_OK, intent);
         finish();
+    }
+
+    private void disableAlignBottomAndEnableAlignAbove(View view) {
+        ViewGroup.LayoutParams viewGroupParams = view.getLayoutParams();
+
+        if (viewGroupParams instanceof RelativeLayout.LayoutParams) {
+            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) viewGroupParams;
+
+            relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+            relativeLayoutParams.addRule(RelativeLayout.ABOVE, R.id.rv_mapActivity_infoWindow);
+
+            view.setLayoutParams(relativeLayoutParams);
+        }
     }
 
     private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
