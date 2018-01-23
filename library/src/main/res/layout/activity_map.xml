@@ -15,7 +15,6 @@
         android:layout_alignParentLeft="true">
     </com.mapbox.mapboxsdk.maps.MapView>
 
-    <!-- Todo: Make the icon blink/turn blue when trying to center & stop blinking after it is done centering to the user's location, remains blue if my location is in focus -->
     <ImageButton
         android:id="@+id/ib_mapActivity_focusOnMyLocationIcon"
         android:layout_width="wrap_content"
@@ -26,7 +25,6 @@
         android:padding="5dp"
         android:background="@drawable/circle_button"
         android:layout_above="@+id/rv_mapActivity_infoWindow"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
 
     <android.support.v7.widget.RecyclerView

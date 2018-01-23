@@ -100,7 +100,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private InfoWindowAdapter infoWindowAdapter;
 
-    private double cameraZoom = -1;
     private double cameraTilt = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
@@ -159,9 +158,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
-                cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
-            }
 
             if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
                 cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
@@ -187,12 +183,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, cameraZoom, cameraTilt, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, cameraTilt, maxZoom, minZoom);
         }
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
-                               final double cameraZoom, final double cameraTilt,
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath, final double cameraTilt,
                                final double maxZoom, final double minZoom) {
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
@@ -236,10 +231,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
                 boolean cameraPositionChanged = false;
 
-                if (cameraZoom != -1) {
-                    cameraPositionBuilder.zoom(cameraZoom);
-                    cameraPositionChanged = true;
-                }
 
                 if (cameraTilt != -1) {
                     cameraPositionBuilder.tilt(cameraTilt);
