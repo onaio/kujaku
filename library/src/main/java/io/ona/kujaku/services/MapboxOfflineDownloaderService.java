@@ -130,6 +130,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
 
+    private boolean isDownloading = false;
+
     private RealmDatabase realmDatabase;
 
     @RestrictTo(RestrictTo.Scope.TESTS)
@@ -252,6 +254,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                                     } else {
                                                         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, getString(R.string.map_delete_task_error));
                                                     }
+                                                    isDownloading = false;
 
                                                     performNextTask();
                                                 }
@@ -299,9 +302,15 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      */
     private void performNextTask() {
         performNextTaskCalled = true;
+
+        if (isDownloading) {
+            return;
+        }
+
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
+            isDownloading = true;
             currentMapBoxTask = mapBoxOfflineQueueTask;
             if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {
                 currentServiceAction = SERVICE_ACTION.DELETE_MAP;
@@ -654,6 +663,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
             mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
 
             realmDatabase.persistCompletedStatus(currentMapBoxTask);
+            isDownloading = false;
             performNextTask();
         } else {
             queueDownloadProgressUpdate(currentMapDownloadName, percentageDownload);
@@ -679,6 +689,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void mapboxTileCountLimitExceeded(long limit) {
         String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);
         Log.e(TAG, finalMessage);
+        isDownloading = false;
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);
     }
 
