@@ -118,8 +118,6 @@ public class MapBoxStyleHelperTest {
         String sampleStyle = getSampleMapboxStyle();
         JSONObject mapboxStyleJSONObject = new JSONObject(sampleStyle);
 
-        Assert.assertFalse(mapboxStyleJSONObject.has(zoomKey));
-
         MapBoxStyleHelper mapBoxStyleHelper = new MapBoxStyleHelper(mapboxStyleJSONObject);
         mapBoxStyleHelper.setRootZoom(rootZoom);
 
