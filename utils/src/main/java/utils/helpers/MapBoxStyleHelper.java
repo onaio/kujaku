@@ -29,6 +29,7 @@ import utils.exceptions.InvalidMapBoxStyleException;
 public class MapBoxStyleHelper {
     private final JSONObject styleObject;
     public static final String KEY_MAP_CENTER = "center";
+    public static final String KEY_ROOT_ZOOM = "zoom";
 
     public MapBoxStyleHelper(JSONObject styleObject) {
         this.styleObject = styleObject;
@@ -184,6 +185,16 @@ public class MapBoxStyleHelper {
         jsonArray.put(mapCenter.getLatitude());
 
         styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);
+    }
+
+    /*
+     * Updates or adds the root zoom property to the Mapbox Style
+     *
+     * @param zoom
+     * @throws JSONException
+     */
+    public void setRootZoom(double zoom) throws JSONException {
+        styleObject.put(KEY_ROOT_ZOOM, zoom);
     }
 
     public JSONObject getStyleObject() {

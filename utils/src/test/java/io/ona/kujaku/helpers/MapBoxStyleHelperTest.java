@@ -23,6 +23,7 @@ import utils.helpers.MapBoxStyleHelper;
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class MapBoxStyleHelperTest {
+
     /**
      * Tests best case for adding GeoJson data source to MapBox style
      * 
@@ -89,6 +90,42 @@ public class MapBoxStyleHelperTest {
 
         Assert.assertEquals(mapCenter.getLongitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(0), 0);
         Assert.assertEquals(mapCenter.getLatitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(1), 0);
+    }
+
+    @Test
+    public void setZoomShouldAddZoomToStyle() throws JSONException {
+        String zoomKey = "zoom";
+        double rootZoom = 4.5d;
+        String sampleStyle = getSampleMapboxStyle();
+        JSONObject mapboxStyleJSONObject = new JSONObject(sampleStyle);
+
+        mapboxStyleJSONObject.remove(zoomKey);
+
+        Assert.assertFalse(mapboxStyleJSONObject.has(zoomKey));
+
+        MapBoxStyleHelper mapBoxStyleHelper = new MapBoxStyleHelper(mapboxStyleJSONObject);
+        mapBoxStyleHelper.setRootZoom(rootZoom);
+
+        JSONObject finalMapboxStyleJSONObject = mapBoxStyleHelper.getStyleObject();
+
+        Assert.assertEquals(rootZoom, finalMapboxStyleJSONObject.getDouble(zoomKey), 0);
+    }
+
+    @Test
+    public void setZoomShouldUpdateZoomToStyle() throws JSONException {
+        String zoomKey = MapBoxStyleHelper.KEY_ROOT_ZOOM;
+        double rootZoom = 4.5d;
+        String sampleStyle = getSampleMapboxStyle();
+        JSONObject mapboxStyleJSONObject = new JSONObject(sampleStyle);
+
+        Assert.assertFalse(mapboxStyleJSONObject.has(zoomKey));
+
+        MapBoxStyleHelper mapBoxStyleHelper = new MapBoxStyleHelper(mapboxStyleJSONObject);
+        mapBoxStyleHelper.setRootZoom(rootZoom);
+
+        JSONObject finalMapboxStyleJSONObject = mapBoxStyleHelper.getStyleObject();
+
+        Assert.assertEquals(rootZoom, finalMapboxStyleJSONObject.getDouble(zoomKey), 0);
     }
 
     private JSONObject getGeoJsonDataSource() throws JSONException {
