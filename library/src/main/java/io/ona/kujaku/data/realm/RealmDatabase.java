@@ -45,7 +45,7 @@ public class RealmDatabase {
 
         taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
                 .equalTo("taskType", taskType)
-                .contains("task", mapName)
+                .contains("task", "\"mapName\":\"" + mapName + "\"")
                 .findFirst();
 
         if (taskToDelete != null) {
@@ -103,6 +103,7 @@ public class RealmDatabase {
         RealmResults<MapBoxOfflineQueueTask> mapBoxOfflineQueueTaskRealmResults = realm.where(MapBoxOfflineQueueTask.class)
                 .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)
                 .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
+                .contains("task", "\"mapName\":\"" + mapName + "\"")
                 .findAll();
 
         return mapBoxOfflineQueueTaskRealmResults;
