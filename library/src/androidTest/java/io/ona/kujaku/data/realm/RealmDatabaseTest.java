@@ -1,23 +1,11 @@
 package io.ona.kujaku.data.realm;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.logging.Logger;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;

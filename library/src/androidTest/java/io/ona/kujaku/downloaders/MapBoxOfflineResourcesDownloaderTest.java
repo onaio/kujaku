@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import utils.exceptions.OfflineMapDownloadException;
@@ -482,15 +483,8 @@ public class MapBoxOfflineResourcesDownloaderTest {
         assertEquals("Context passed is null", outputsFromCallbacks.get(0));
     }
 
-    /*
-
-    This test requires a lot more attention since multiple maps need to be "downloaded" with different names & others with similar names
-
     @Test
     public void deletePreviousOfflineMapDownloadsShouldDeleteMapAndReserveCurrentMap() throws OfflineMapDownloadException {
-        long download1Id = 9;
-        long download2Id = 10;
-
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
@@ -503,7 +497,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-
                 OfflineManager.CreateOfflineRegionCallback createOfflineRegionCallback = invocationOnMock.getArgument(2);
 
                 //Should never be null --> CreateOfflineRegionCallback
@@ -520,10 +513,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 Class offlineRegionClass = Class.forName("com.mapbox.mapboxsdk.offline.OfflineRegion");
                 Field stateField = offlineRegionClass.getDeclaredField("state");
                 stateField.setAccessible(true);
-
-                int state = stateField.getInt(offlineRegion);
-
-                outputsFromCallbacks.add(state);
 
                 return null;
             }
@@ -542,9 +531,46 @@ public class MapBoxOfflineResourcesDownloaderTest {
         }).when(spiedOfflineManager)
                 .listOfflineRegions(Mockito.any(OfflineManager.ListOfflineRegionsCallback.class));
 
-        MapBoxDownloadTask validMapBoxDownloadTask = createSampleDownloadTask();
-        mapBoxOfflineResourcesDownloader.downloadMap(validMapBoxDownloadTask, null);
-    }*/
+        long idToExclude = 7;
+        int iterations = 10;
+
+        String myMapName = UUID.randomUUID().toString();
+        ArrayList<Integer> indexesToGiveDifferentMapName = new ArrayList();
+        indexesToGiveDifferentMapName.add(2);
+        indexesToGiveDifferentMapName.add(5);
+        indexesToGiveDifferentMapName.add(6);
+        indexesToGiveDifferentMapName.add(9);
+
+        for(int i = 0; i < iterations; i++) {
+            MapBoxDownloadTask validMapBoxDownloadTask;
+
+            if (indexesToGiveDifferentMapName.contains(i)) {
+                validMapBoxDownloadTask = createSampleDownloadTask(UUID.randomUUID().toString());
+            } else {
+                validMapBoxDownloadTask = createSampleDownloadTask(myMapName);
+            }
+
+            mapBoxOfflineResourcesDownloader.downloadMap(validMapBoxDownloadTask, null);
+        }
+
+        mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(myMapName, idToExclude);
+
+        mapBoxOfflineResourcesDownloader.offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+                outputsFromCallbacks.add(offlineRegions.length);
+                downLatch.countDown();
+            }
+
+            @Override
+            public void onError(String error) {
+                outputsFromCallbacks.add(-1);
+                downLatch.countDown();
+            }
+        });
+
+        assertEquals(5, outputsFromCallbacks.get(0));
+    }
 
     /*
     |
@@ -552,11 +578,11 @@ public class MapBoxOfflineResourcesDownloaderTest {
     |
     */
 
-    private MapBoxDownloadTask createSampleDownloadTask() {
+    private MapBoxDownloadTask createSampleDownloadTask(String mapName) {
 
         return new MapBoxDownloadTask(
                 "kl",
-                sampleMapName,
+                mapName,
                 "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m",
                 10d,
                 12d,
@@ -570,6 +596,10 @@ public class MapBoxOfflineResourcesDownloaderTest {
                 ),
                 BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
         );
+    }
+
+    private MapBoxDownloadTask createSampleDownloadTask() {
+        return createSampleDownloadTask(sampleMapName);
     }
 
     private OfflineRegion createMockOfflineRegion(byte[] metadata, OfflineRegionDefinition offlineRegionDefinition, long id) {
@@ -641,6 +671,10 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
     private long generateOfflineRegionId() {
         return lastId++;
+    }
+
+    private int getRandomInt(int upperLimit) {
+        return (int) (Math.random() * upperLimit);
     }
 
 }

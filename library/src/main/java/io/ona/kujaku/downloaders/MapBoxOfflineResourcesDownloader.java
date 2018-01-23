@@ -558,14 +558,14 @@ public class MapBoxOfflineResourcesDownloader {
      * Deletes previously downloaded {@link OfflineRegion} with the given map name and excludes the one with the given ID
      *
      * @param mapName
-     * @param currentMapDownloadId
+     * @param mapIdToExclude
      */
-    public void deletePreviousOfflineMapDownloads(final String mapName, final long currentMapDownloadId) {
+    public void deletePreviousOfflineMapDownloads(final String mapName, final long mapIdToExclude) {
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
             public void onList(OfflineRegion[] offlineRegions) {
                 for (OfflineRegion offlineRegion : offlineRegions) {
-                    if (offlineRegion.getID() != currentMapDownloadId) {
+                    if (offlineRegion.getID() != mapIdToExclude) {
                         try {
                             String json = new String(offlineRegion.getMetadata(), MapBoxOfflineResourcesDownloader.JSON_CHARSET);
                             JSONObject jsonObject = new JSONObject(json);
