@@ -220,13 +220,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
                             //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
 
-                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds)) {
-                                if (focusedOnOfMyLocation) {
-                                    focusedOnOfMyLocation = false;
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnOfMyLocation) {
+                                focusedOnOfMyLocation = false;
 
-                                    // Revert the icon to the non-focused grey one
-                                    changeTargetIcon(R.drawable.ic_my_location);
-                                }
+                                // Revert the icon to the non-focused grey one
+                                changeTargetIcon(R.drawable.ic_my_location);
                             }
                         }
                     }
@@ -782,7 +780,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Toast.makeText(this, R.string.msg_location_retrieval_taking_longer_than_expected, Toast.LENGTH_LONG)
+                .show();
     }
 
     @Override

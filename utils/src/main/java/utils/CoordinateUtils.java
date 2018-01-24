@@ -33,14 +33,10 @@ public class CoordinateUtils {
      * @return
      */
     public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, double latNorth, double latSouth, double lonEast, double lonWest) {
-        if (positionInQuestion.getLatitude() <= latNorth
+        return (positionInQuestion.getLatitude() <= latNorth
                 && positionInQuestion.getLatitude() >= latSouth
                 && positionInQuestion.getLongitude() <= lonEast
-                && positionInQuestion.getLongitude() >= lonWest) {
-            return true;
-        }
-
-        return false;
+                && positionInQuestion.getLongitude() >= lonWest);
     }
 
     /*public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, @NonNull LatLng topLeft, @NonNull LatLng topRight, @NonNull LatLng bottomRight, @NonNull LatLng bottomLeft) {
