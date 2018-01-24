@@ -3,6 +3,7 @@ package utils.helpers;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.services.commons.utils.TextUtils;
 
 import org.json.JSONArray;
@@ -27,6 +28,7 @@ import utils.exceptions.InvalidMapBoxStyleException;
 
 public class MapBoxStyleHelper {
     private final JSONObject styleObject;
+    public static final String KEY_MAP_CENTER = "center";
 
     public MapBoxStyleHelper(JSONObject styleObject) {
         this.styleObject = styleObject;
@@ -153,7 +155,45 @@ public class MapBoxStyleHelper {
         return true;
     }
 
+    /**
+     * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
+     * property of a map to the center of the bounds given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng)
+     *
+     * @param topLeft
+     * @param bottomRight
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng topLeft, @NonNull LatLng bottomRight) throws JSONException {
+        setMapCenter(getCenterFromBounds(topLeft, bottomRight));
+    }
+
+    /**
+     * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
+     * property of a map to the center of the {@link LatLng} given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng, LatLng)
+     *
+     * @param mapCenter
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng mapCenter) throws JSONException {
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(mapCenter.getLongitude());
+        jsonArray.put(mapCenter.getLatitude());
+
+        styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);
+    }
+
     public JSONObject getStyleObject() {
         return styleObject;
+    }
+
+    public LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
+        return new LatLng(
+                (topLeft.getLatitude() + bottomRight.getLatitude())/2,
+                (bottomRight.getLongitude() + topLeft.getLongitude())/2
+        );
     }
 }

@@ -122,8 +122,6 @@ public class MainActivity extends AppCompatActivity {
                 25.876589
         );
 
-        intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRight);
-        intent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeft);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_TILT, 80.0);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);

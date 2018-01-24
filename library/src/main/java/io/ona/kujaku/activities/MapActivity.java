@@ -5,10 +5,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -29,7 +29,6 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -52,7 +51,6 @@ import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.sorting.objects.SortField;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
-
 import utils.Constants;
 import utils.helpers.converters.GeoJSONFeature;
 
@@ -97,9 +95,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private InfoWindowAdapter infoWindowAdapter;
 
-    private LatLng topLeftBound;
-    private LatLng bottomRightBound;
-    private LatLng cameraTargetLatLng;
     private double cameraZoom = -1;
     private double cameraTilt = -1;
     private double cameraBearing = -1;
@@ -150,24 +145,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
             currentStylePath = "";
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
-                topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
-                    bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
-                }
-            }
-
             if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
                 maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
             }
 
             if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
-                cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
             }
 
             if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
@@ -202,14 +185,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, topLeftBound, bottomRightBound,
-                    cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
         }
     }
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
-                               @Nullable final LatLng topLeftBound, @Nullable final LatLng bottomRightBound,
-                               @Nullable final LatLng cameraTargetLatLng, final double cameraZoom, final double cameraTilt,
+                               final double cameraZoom, final double cameraTilt,
                                final double cameraBearing, final double maxZoom, final double minZoom) {
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
@@ -225,16 +206,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
 
-                if (topLeftBound != null && bottomRightBound != null) {
-                    waitingForLocation = false;
-                    LatLngBounds latLngBounds = new LatLngBounds.Builder()
-                            .include(topLeftBound)
-                            .include(bottomRightBound)
-                            .build();
-
-                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 50), 50);
-                }
-
                 if (minZoom != -1) {
                     mapboxMap.setMinZoomPreference(minZoom);
                 }
@@ -245,13 +216,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
                 boolean cameraPositionChanged = false;
-
-                if (cameraTargetLatLng != null) {
-                    waitingForLocation = false;
-                    cameraPositionBuilder.target(cameraTargetLatLng);
-                    mapboxMap.setLatLng(cameraTargetLatLng);
-                    cameraPositionChanged = true;
-                }
 
                 if (cameraZoom != -1) {
                     cameraPositionBuilder.zoom(cameraZoom);
@@ -269,11 +233,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
 
                 if (cameraPositionChanged) {
-
-                    if (bottomRightBound != null & topLeftBound != null) {
-                        cameraPositionBuilder.target(getBoundsCenter(topLeftBound, bottomRightBound));
-                    }
-
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
 
