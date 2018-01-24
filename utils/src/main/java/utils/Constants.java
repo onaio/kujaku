@@ -19,7 +19,6 @@ public class Constants {
     public static final String PARCELABLE_KEY_BOTTOM_RIGHT_BOUND = "offline_map_bottom_right_bound";
     public static final String PARCELABLE_KEY_CAMERA_ZOOM = "mapbox_camera_zoom";
     public static final String PARCELABLE_KEY_CAMERA_TILT = "mapbox_camera_tilt";
-    public static final String PARCELABLE_KEY_CAMERA_BEARING = "mapbox_camera_bearing";
     public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
     public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
     public static final String PARCELABLE_KEY_GEOJSON_FEATURE = "geojson_feature";

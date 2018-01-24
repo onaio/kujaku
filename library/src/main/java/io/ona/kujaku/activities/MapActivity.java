@@ -102,7 +102,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private double cameraZoom = -1;
     private double cameraTilt = -1;
-    private double cameraBearing = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
@@ -168,10 +167,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
             }
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
-                cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
-            }
-
             if (stylesArray != null) {
                 currentStylePath = stylesArray[0];
                 if (currentStylePath != null && !currentStylePath.isEmpty()) {
@@ -192,13 +187,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, cameraZoom, cameraTilt, maxZoom, minZoom);
         }
     }
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                final double cameraZoom, final double cameraTilt,
-                               final double cameraBearing, final double maxZoom, final double minZoom) {
+                               final double maxZoom, final double minZoom) {
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
@@ -248,11 +243,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 if (cameraTilt != -1) {
                     cameraPositionBuilder.tilt(cameraTilt);
-                    cameraPositionChanged = true;
-                }
-
-                if (cameraBearing != -1) {
-                    cameraPositionBuilder.bearing(cameraBearing);
                     cameraPositionChanged = true;
                 }
 

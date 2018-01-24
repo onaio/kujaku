@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_TILT, 80.0);
-        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
 
         startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
