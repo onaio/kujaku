@@ -673,8 +673,4 @@ public class MapBoxOfflineResourcesDownloaderTest {
         return lastId++;
     }
 
-    private int getRandomInt(int upperLimit) {
-        return (int) (Math.random() * upperLimit);
-    }
-
 }
