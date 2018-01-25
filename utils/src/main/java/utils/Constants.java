@@ -17,7 +17,6 @@ public class Constants {
     public static final String PARCELABLE_KEY_MAP_UNIQUE_NAME = "offline_map_unique_name";
     public static final String PARCELABLE_KEY_TOP_LEFT_BOUND = "offline_map_top_left_bound";
     public static final String PARCELABLE_KEY_BOTTOM_RIGHT_BOUND = "offline_map_bottom_right_bound";
-    public static final String PARCELABLE_KEY_CAMERA_TARGET_LATLNG = "mapbox_camera_target_latlng";
     public static final String PARCELABLE_KEY_CAMERA_ZOOM = "mapbox_camera_zoom";
     public static final String PARCELABLE_KEY_CAMERA_TILT = "mapbox_camera_tilt";
     public static final String PARCELABLE_KEY_CAMERA_BEARING = "mapbox_camera_bearing";
