@@ -9,16 +9,11 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        def jacocoVersion = '0.7.5.201505241946'
 
         classpath 'com.android.tools.build:gradle:3.2.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
         classpath 'io.fabric.tools:gradle:1.25.4'
-        /*classpath("org.jacoco:org.jacoco.core:$jacocoVersion")
-        classpath("org.jacoco:org.jacoco.report:$jacocoVersion")
-        classpath("org.jacoco:org.jacoco.agent:$jacocoVersion")
-        classpath("org.jacoco:org.jacoco.ant:$jacocoVersion")*/
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }

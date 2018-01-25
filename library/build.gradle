@@ -182,6 +182,10 @@ dependencies { configuration ->
     implementation "com.android.support:design:${supportVersion}"
     implementation 'org.simpleframework:simple-xml:2.7.1'
 
+    // JACOCO fix for missing Offline.class
+    def jacocoVersion = '0.7.5.201505241946'
+    compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)
     infoWindowDependencies(this, configuration)
