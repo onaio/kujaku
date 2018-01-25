@@ -70,11 +70,7 @@ public class InfoWindowConfig implements Config {
      */
     @Override
     public boolean isValid() {
-        if (visibleProperties != null && visibleProperties.length() > 0) {
-            return true;
-        }
-
-        return false;
+        return (visibleProperties != null && visibleProperties.length() > 0);
     }
 
     /**

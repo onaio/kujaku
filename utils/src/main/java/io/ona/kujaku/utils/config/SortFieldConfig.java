@@ -17,7 +17,6 @@ import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
  */
 
 public class SortFieldConfig implements Config {
-    private static final String TAG = SortFieldConfig.class.getSimpleName();
     public static final String KEY_DATA_FIELD = "data_field";
     public static final String KEY_TYPE = "type";
 
@@ -72,13 +71,9 @@ public class SortFieldConfig implements Config {
     }
 
     public static boolean isValidType(String type) {
-        if (FieldType.NUMBER.toString().equalsIgnoreCase(type)
+        return (FieldType.NUMBER.toString().equalsIgnoreCase(type)
                 || FieldType.DATE.toString().equalsIgnoreCase(type)
-                || FieldType.STRING.toString().equalsIgnoreCase(type)) {
-            return true;
-        }
-
-        return false;
+                || FieldType.STRING.toString().equalsIgnoreCase(type));
     }
 
     public String getDataField() {

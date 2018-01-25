@@ -5,7 +5,6 @@ import android.animation.ValueAnimator;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +26,6 @@ import io.ona.kujaku.utils.config.InfoWindowConfig;
 
 public class InfoWindowViewHolder extends RecyclerView.ViewHolder
         implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
-    private static final String TAG = InfoWindowViewHolder.class.getSimpleName();
     private static final float UNSELECTED_OPACITY = 0.5f;
     private static final float SELECTED_OPACITY = 1.0f;
     private static final long ANIMATION_DURATION = 200;
@@ -36,7 +34,6 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
     private final CardView cardView;
     private final ArrayList<TextView> propertyLabels;
     private final ArrayList<TextView> propertyValues;
-    private InfoWindowConfig infoWindowConfig;
     private InfoWindowObject currentInfoWindowObject;
     private LinearLayout canvasLayout;
 
@@ -57,9 +54,8 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
      * @param config    The new configuration to be applied
      * @throws JSONException If unable to parse the new configuration
      */
-    public void setInfoWindowConfig(@NonNull InfoWindowConfig config)
+    public void setInfoWindowConfig(@NonNull InfoWindowConfig infoWindowConfig)
             throws JSONException {
-        this.infoWindowConfig = config;
         removeDynamicViews();
         JSONArray visibleProperties = infoWindowConfig.getVisibleProperties();
         if (visibleProperties != null) {
@@ -255,7 +251,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
         startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_padding), new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                // Nothing to be done
             }
 
             @Override
@@ -267,12 +263,12 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
 
             @Override
             public void onAnimationCancel(Animator animation) {
-
+                // Nothing to be done
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-
+                // Nothing to be done
             }
         });
     }

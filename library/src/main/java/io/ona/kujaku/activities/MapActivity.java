@@ -59,7 +59,6 @@ import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.config.DataSourceConfig;
 import io.ona.kujaku.utils.config.KujakuConfig;
 import io.ona.kujaku.utils.config.SortFieldConfig;
-import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
@@ -203,7 +202,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         if (!styleHelper.getKujakuConfig().isValid()) {
                             showIncompleteStyleError();
                         }
-                        sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);;
+                        sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);
                         dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
                         featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                         featuresMap = sortData(featuresMap, sortFields);

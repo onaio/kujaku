@@ -152,7 +152,7 @@ public class SortFieldConfigTest {
                 .getString(SortFieldConfig.KEY_TYPE).toLowerCase(), type1.toString().toLowerCase());
         Assert.assertEquals(config1.toJsonObject()
                         .getString(SortFieldConfig.KEY_DATA_FIELD).toLowerCase(),
-                dataField1.toString().toLowerCase());
+                dataField1.toLowerCase());
 
         JSONObject object1 = new JSONObject();
         object1.put(SortFieldConfig.KEY_DATA_FIELD, dataField1);
