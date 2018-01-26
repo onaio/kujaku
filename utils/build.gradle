@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.4-55-1'
+version '0.2.4-55-2'
 project.version = this.version
 
 task sourceJar(type: Jar) {
