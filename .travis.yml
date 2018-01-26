@@ -7,7 +7,7 @@ dist: precise
 
 env:
   matrix:
-    - ANDROID_TARGET=android-26 ANDROID_ABI=x86_64
+    - ANDROID_TARGET=android-26 ANDROID_ABI=google_apis/x86_64
   global:
     # wait up to 10 minutes for adb to connect to emulator
     - ADB_INSTALL_TIMEOUT=10
@@ -40,7 +40,7 @@ before_script:
   - android list sdk --no-ui --all --extended
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
   - ls -la
-  - emulator -avd test -no-skin -no-audio -no-window &
+  - emulator64-x86 -avd test -no-skin -no-audio -no-window &
   - adb wait-for-device
   - adb shell input keyevent 82 &
 
