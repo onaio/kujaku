@@ -5,20 +5,26 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Bundle;
+import android.os.Build;
+
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,7 +38,7 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -56,6 +62,7 @@ import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.CoordinateUtils;
 import io.ona.kujaku.utils.config.DataSourceConfig;
 import io.ona.kujaku.utils.config.KujakuConfig;
 import io.ona.kujaku.utils.config.SortFieldConfig;
@@ -95,7 +102,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private InfoWindowLayoutManager linearLayoutManager;
     private HashMap<Integer, AlertDialog> alertDialogs;
     private int lastSelected = -1;
-
     private ImageButton focusOnMyLocationImgBtn;
 
     private int animateToNewTargetDuration = 1000;
@@ -104,12 +110,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private InfoWindowAdapter infoWindowAdapter;
 
-    private LatLng topLeftBound;
-    private LatLng bottomRightBound;
-    private LatLng cameraTargetLatLng;
-    private double cameraZoom = -1;
     private double cameraTilt = -1;
-    private double cameraBearing = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
@@ -120,6 +121,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private boolean googleApiClientInitialized = false;
 
     private Marker myLocationMarker;
+    private LatLng focusedLocation;
+    private boolean focusedOnOfMyLocation = false;
 
     //Todo: Move reading data to another Thread
 
@@ -157,14 +160,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
             currentStylePath = "";
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
-                topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
-                    bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
-                }
-            }
-
             if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
                 maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
             }
@@ -173,20 +168,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
-                cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
-                cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
-            }
 
             if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
                 cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
-                cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
             }
 
             if (stylesArray != null) {
@@ -213,8 +197,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, topLeftBound, bottomRightBound,
-                    cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, cameraTilt, maxZoom, minZoom);
         }
     }
 
@@ -231,10 +214,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }, -1, null);
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
-                               @Nullable final LatLng topLeftBound, @Nullable final LatLng bottomRightBound,
-                               @Nullable final LatLng cameraTargetLatLng, final double cameraZoom, final double cameraTilt,
-                               final double cameraBearing, final double maxZoom, final double minZoom) {
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath, final double cameraTilt,
+                               final double maxZoom, final double minZoom) {
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
@@ -248,16 +229,23 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
+                mapboxMap.setOnScrollListener(new MapboxMap.OnScrollListener() {
+                    @Override
+                    public void onScroll() {
+                        if (focusedLocation != null) {
+                            VisibleRegion mapsVisibleRegion = MapActivity.this.mapboxMap.getProjection().getVisibleRegion();
+                            //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
+                            //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
 
-                if (topLeftBound != null && bottomRightBound != null) {
-                    waitingForLocation = false;
-                    LatLngBounds latLngBounds = new LatLngBounds.Builder()
-                            .include(topLeftBound)
-                            .include(bottomRightBound)
-                            .build();
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnOfMyLocation) {
+                                focusedOnOfMyLocation = false;
 
-                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 50), 50);
-                }
+                                // Revert the icon to the non-focused grey one
+                                changeTargetIcon(R.drawable.ic_my_location);
+                            }
+                        }
+                    }
+                });
 
                 if (minZoom != -1) {
                     mapboxMap.setMinZoomPreference(minZoom);
@@ -270,34 +258,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
                 boolean cameraPositionChanged = false;
 
-                if (cameraTargetLatLng != null) {
-                    waitingForLocation = false;
-                    cameraPositionBuilder.target(cameraTargetLatLng);
-                    mapboxMap.setLatLng(cameraTargetLatLng);
-                    cameraPositionChanged = true;
-                }
-
-                if (cameraZoom != -1) {
-                    cameraPositionBuilder.zoom(cameraZoom);
-                    cameraPositionChanged = true;
-                }
 
                 if (cameraTilt != -1) {
                     cameraPositionBuilder.tilt(cameraTilt);
                     cameraPositionChanged = true;
                 }
 
-                if (cameraBearing != -1) {
-                    cameraPositionBuilder.bearing(cameraBearing);
-                    cameraPositionChanged = true;
-                }
-
                 if (cameraPositionChanged) {
-
-                    if (bottomRightBound != null & topLeftBound != null) {
-                        cameraPositionBuilder.target(getBoundsCenter(topLeftBound, bottomRightBound));
-                    }
-
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
 
@@ -570,6 +537,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {
         if (!infoWindowDisplayed) {
+
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
             infoWindowsRecyclerView.getViewTreeObserver()
@@ -580,6 +548,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
                         }
                     });
+
+            disableAlignBottomAndEnableAlignAbove(focusOnMyLocationImgBtn);
             infoWindowDisplayed = true;
         } else {
             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
@@ -766,9 +736,27 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         finish();
     }
 
+    private void disableAlignBottomAndEnableAlignAbove(View view) {
+        ViewGroup.LayoutParams viewGroupParams = view.getLayoutParams();
+
+        if (viewGroupParams instanceof RelativeLayout.LayoutParams) {
+            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) viewGroupParams;
+
+            relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+            relativeLayoutParams.addRule(RelativeLayout.ABOVE, R.id.rv_mapActivity_infoWindow);
+
+            view.setLayoutParams(relativeLayoutParams);
+        }
+    }
+
     private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
         if (lastLocation != null) {
             LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            focusedLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+            focusedOnOfMyLocation = true;
+
+            // Change the icon to the blue one
+            changeTargetIcon(R.drawable.ic_my_location_focused);
 
             CameraPosition newCameraPosition = new CameraPosition.Builder(mapboxMap.getCameraPosition())
                     .target(newTarget)
@@ -829,7 +817,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Toast.makeText(this, R.string.msg_location_retrieval_taking_longer_than_expected, Toast.LENGTH_LONG)
+                .show();
     }
 
     @Override
@@ -845,6 +834,30 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (waitingForLocation) {
             waitingForLocation = false;
             focusOnMyLocation(mapboxMap);
+        }
+    }
+
+    private void changeTargetIcon(int drawableIcon) {
+        changeDrawable(focusOnMyLocationImgBtn, drawableIcon);
+    }
+
+    private void changeDrawable(@NonNull View view, int drawableId) {
+        if (view instanceof ImageButton || view instanceof ImageView) {
+
+            Drawable focusedIcon;
+            if (Build.VERSION.SDK_INT >= 21) {
+                focusedIcon = getResources().getDrawable(drawableId, null);
+            } else {
+                focusedIcon = getResources().getDrawable(drawableId);
+            }
+
+            if (view instanceof ImageButton) {
+                ImageButton imageButton = (ImageButton) view;
+                imageButton.setImageDrawable(focusedIcon);
+            } else if (view instanceof ImageView) {
+                ImageView imageView = (ImageView) view;
+                imageView.setImageDrawable(focusedIcon);
+            }
         }
     }
 }

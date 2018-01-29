@@ -30,6 +30,7 @@ import org.json.JSONException;
 
 import java.text.DecimalFormat;
 
+import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
@@ -42,6 +43,8 @@ import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
 import io.ona.kujaku.utils.ObjectCoercer;
+import io.ona.kujaku.notifications.DownloadCompleteNotification;
+import io.ona.kujaku.notifications.DownloadProgressNotification;
 import io.realm.Realm;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.exceptions.MalformedDataException;
@@ -52,27 +55,27 @@ import io.realm.Sort;
 /**
  * Service performs Offline Map Download, Offline Map Deletion & Offline Map Download Resumption
  * <p>
- *     You need to pass the following in the Intent Extras:
- *          - {@link Constants#PARCELABLE_KEY_SERVICE_ACTION} - Required for all
- *          - Optional {@link Constants#PARCELABLE_KEY_NETWORK_STATE} - Required for {@link SERVICE_ACTION#NETWORK_RESUME}
- *          - Optional {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - Required for {@link SERVICE_ACTION#DELETE_MAP} & {@link SERVICE_ACTION#DOWNLOAD_MAP} & {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
- *          - Optional {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - Required for {@link SERVICE_ACTION#DELETE_MAP} & {@link SERVICE_ACTION#DOWNLOAD_MAP} & {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
- *          - Optional {@link Constants#PARCELABLE_KEY_STYLE_URL} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
- *          - Optional {@link Constants#PARCELABLE_KEY_MAX_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
- *          - Optional {@link Constants#PARCELABLE_KEY_MIN_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
- *          - Optional {@link Constants#PARCELABLE_KEY_TOP_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
- *          - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
- *
- *          - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * You need to pass the following in the Intent Extras:
+ * - {@link Constants#PARCELABLE_KEY_SERVICE_ACTION} - Required for all
+ * - Optional {@link Constants#PARCELABLE_KEY_NETWORK_STATE} - Required for {@link SERVICE_ACTION#NETWORK_RESUME}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - Required for {@link SERVICE_ACTION#DELETE_MAP} & {@link SERVICE_ACTION#DOWNLOAD_MAP} & {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - Required for {@link SERVICE_ACTION#DELETE_MAP} & {@link SERVICE_ACTION#DOWNLOAD_MAP} & {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * - Optional {@link Constants#PARCELABLE_KEY_STYLE_URL} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAX_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_MIN_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_TOP_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * <p>
+ * - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
  * </p>
  * <p>
- *     The service posts updates through a Local Broadcast with action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}. The updates posted have:
- *     <ol>
- *         <li>{@code KEY_RESULT_STATUS} - {@code {@link SERVICE_ACTION_RESULT#SUCCESSFUL}} or {@code {@link SERVICE_ACTION_RESULT#FAILED}}</li>
- *         <li>{@code KEY_RESULT_MESSAGE} - The simple message eg. download percentage, task failure message</li>
- *         <li>{@code {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME}} - The map name</li>
- *         <li>{@code KEY_RESULTS_PARENT_ACTION} - {@code {@link SERVICE_ACTION }} being performed on the map</li>
- *     </ol>
+ * The service posts updates through a Local Broadcast with action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}. The updates posted have:
+ * <ol>
+ * <li>{@code KEY_RESULT_STATUS} - {@code {@link SERVICE_ACTION_RESULT#SUCCESSFUL}} or {@code {@link SERVICE_ACTION_RESULT#FAILED}}</li>
+ * <li>{@code KEY_RESULT_MESSAGE} - The simple message eg. download percentage, task failure message</li>
+ * <li>{@code {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME}} - The map name</li>
+ * <li>{@code KEY_RESULTS_PARENT_ACTION} - {@code {@link SERVICE_ACTION }} being performed on the map</li>
+ * </ol>
  * </p>
  * </li>
  * </ol>
@@ -86,13 +89,13 @@ import io.realm.Sort;
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
-
 public class MapboxOfflineDownloaderService extends Service implements OfflineRegionObserver, OnDownloadMapListener {
 
     public enum SERVICE_ACTION_RESULT {
         SUCCESSFUL,
         FAILED
     }
+
     public enum SERVICE_ACTION {
         DOWNLOAD_MAP,
         DELETE_MAP,
@@ -113,15 +116,20 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final String PREFERENCE_MAPBOX_ACCESS_TOKEN = "MAPBOX ACCESS TOKEN";
 
     private String mapBoxAccessToken = "";
-    private String currentMapDownloadName = "";
+    private String currentMapDownloadName;
     private SERVICE_ACTION currentServiceAction;
     private MapBoxOfflineQueueTask currentMapBoxTask;
+    private long currentMapDownloadId;
 
-    private NotificationCompat.Builder progressNotificationBuilder;
+    private DownloadProgressNotification downloadProgressNotification;
     private Intent stopDownloadIntent;
     public static final int PROGRESS_NOTIFICATION_ID = 85;
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
+
+    private boolean isDownloading = false;
+
+    private RealmDatabase realmDatabase;
 
     @RestrictTo(RestrictTo.Scope.TESTS)
     public boolean onStartCommandCalled = false;
@@ -131,8 +139,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public boolean performNextTaskCalled = false;
     @RestrictTo(RestrictTo.Scope.TESTS)
     public boolean observeOfflineRegionCalled = false;
-    @RestrictTo(RestrictTo.Scope.TESTS)
-    public boolean persistCompletedStatusCalled = false;
 
     /* FOR THE DOWNLOAD PROGRESS UPDATE THREAD */
     private double mostRecentPercentageUpdate = 0;
@@ -152,6 +158,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         serviceHandler = new Handler(Looper.myLooper());
+        realmDatabase = RealmDatabase.init(this);
 
         super.onStartCommand(intent, flags, startId);
         onStartCommandCalled = true;
@@ -205,11 +212,12 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
 
-                        MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);
+                        realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(currentMapDownloadName);
 
+                        MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);
                         return true;
                     }
-                } else if (serviceAction == SERVICE_ACTION.DELETE_MAP){
+                } else if (serviceAction == SERVICE_ACTION.DELETE_MAP) {
                     MapBoxDeleteTask deleteTask = new MapBoxDeleteTask();
                     deleteTask.setMapBoxAccessToken(mapBoxAccessToken);
                     deleteTask.setMapName(mapUniqueName);
@@ -243,6 +251,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                                     } else {
                                                         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, getString(R.string.map_delete_task_error));
                                                     }
+                                                    isDownloading = false;
 
                                                     performNextTask();
                                                 }
@@ -275,7 +284,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
     private boolean deleteTaskFromRealmDatabase(@NonNull String taskType, @NonNull String mapUniqueName) {
         boolean isDownloadTask = taskType.equals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
-        RealmDatabase realmDatabase = RealmDatabase.init(this);
         return realmDatabase.deleteTask(mapUniqueName, isDownloadTask);
     }
 
@@ -291,14 +299,25 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      */
     private void performNextTask() {
         performNextTaskCalled = true;
+
+        if (isDownloading) {
+            return;
+        }
+
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
+            isDownloading = true;
             currentMapBoxTask = mapBoxOfflineQueueTask;
             if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {
                 currentServiceAction = SERVICE_ACTION.DELETE_MAP;
             } else {
                 currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
+
+                if (mapBoxOfflineQueueTask.getTaskStatus() == MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED) {
+                    realmDatabase.persistDownloadStartedStatus(mapBoxOfflineQueueTask);
+                }
+
             }
 
             getTaskStatus(mapBoxOfflineQueueTask, mapBoxAccessToken, new OfflineRegionStatusCallback() {
@@ -312,7 +331,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                     @Override
                                     public void onDelete() {
                                         sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, SERVICE_ACTION.DELETE_MAP, "Map deleted successfully!");
-                                        persistCompletedStatus(mapBoxOfflineQueueTask);
+                                        realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                                         performNextTask();
                                     }
 
@@ -320,7 +339,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                     public void onError(String error) {
                                         MapboxOfflineDownloaderService.this.onError(error, null);
                                         // An error means this cannot be solved even at a later time THUS persist the task as DONE
-                                        persistCompletedStatus(mapBoxOfflineQueueTask);
+                                        realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                                         performNextTask();
                                     }
                                 });
@@ -331,6 +350,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                         // TASK IS RUNNING
                         currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
                         currentMapBoxTask = mapBoxOfflineQueueTask;
+                        currentMapDownloadId = offlineRegion.getID();
                         startDownloadProgressUpdater();
                         observeOfflineRegion(offlineRegion);
                     } else {
@@ -338,6 +358,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             // TASK IS NOT RUNNING
                             currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;
                             currentMapBoxTask = mapBoxOfflineQueueTask;
+                            currentMapDownloadId = offlineRegion.getID();
                             // Set the progress notification
                             startDownloadProgressUpdater();
                             queueDownloadProgressUpdate(currentMapDownloadName, 0.0);
@@ -346,7 +367,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                     .resumeMapDownload(offlineRegion, MapboxOfflineDownloaderService.this);
                         } else {
                             // IGNORE IT AND SEND A BROADCAST HERE
-                            persistCompletedStatus(mapBoxOfflineQueueTask);
+                            realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                             MapboxOfflineDownloaderService.this.onError(getString(R.string.error_similar_map_exists_and_downloaded), null);
                         }
                     }
@@ -370,7 +391,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             }
                         } else {
                             // An error means this cannot be solved even at a later time THUS persist the task as DONE
-                            persistCompletedStatus(mapBoxOfflineQueueTask);
+                            realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                             performNextTask();
                         }
                     } else {
@@ -403,7 +424,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * <h3>Sample Usage</h3>
      * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
      * </p>
-     *
      *
      * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
      * @param mapName             Unique name of the map
@@ -471,7 +491,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     /**
-     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_INCOMPLETE} {@link MapBoxOfflineQueueTask}
+     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED} {@link MapBoxOfflineQueueTask}
      *
      * @return
      */
@@ -479,7 +499,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         Realm realm = Realm.getDefaultInstance();
 
         RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .findAllSorted("dateUpdated", Sort.ASCENDING);
 
         if (realmResults.size() > 0) {
@@ -528,55 +548,22 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param percentageProgress Download progress usually between 0-100%
      */
     private void showProgressNotification(@NonNull String mapName, double percentageProgress, boolean showAction) {
-        if (progressNotificationBuilder == null) {
-            progressNotificationBuilder = new NotificationCompat.Builder(MapboxOfflineDownloaderService.this)
-                    .setContentTitle(String.format(getString(R.string.notification_download_progress_title), mapName))
-                    .setSmallIcon(R.drawable.ic_stat_file_download);
-
-            if (showAction) {
-                stopDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapBoxAccessToken);
-                stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
-
-                PendingIntent stopDownloadPendingIntent = PendingIntent.getService(this, REQUEST_ID_STOP_MAP_DOWNLOAD, stopDownloadIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                NotificationCompat.Action stopDownloadAction = new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, getString(R.string.stop_download), stopDownloadPendingIntent);
-
-                progressNotificationBuilder.mActions.clear();
-                progressNotificationBuilder.addAction(stopDownloadAction);
-            }
+        if (downloadProgressNotification == null) {
+            downloadProgressNotification = new DownloadProgressNotification(this);
+            downloadProgressNotification.createInitialNotification(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
         }
 
-        if (percentageProgress == 0 && showAction) {
-            progressNotificationBuilder.setContentTitle(String.format(getString(R.string.notification_download_progress_title), mapName));
-
-            stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-
-            PendingIntent stopDownloadPendingIntent = PendingIntent.getService(this, REQUEST_ID_STOP_MAP_DOWNLOAD, stopDownloadIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-            NotificationCompat.Action stopDownloadAction =  new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, getString(R.string.stop_download), stopDownloadPendingIntent);
-
-            progressNotificationBuilder.mActions.clear();
-            progressNotificationBuilder.addAction(stopDownloadAction);
-        }
-
-        // Remove all previous actions if showAction is false
-        if (!showAction) {
-            progressNotificationBuilder.mActions.clear();
-        }
-
-        progressNotificationBuilder.setContentText(String.format(getString(R.string.notification_download_progress_content), formatDecimal(percentageProgress)));
+        downloadProgressNotification.updateNotification(percentageProgress, mapName, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
 
         if (!shownForegroundNotification) {
-            startForeground(PROGRESS_NOTIFICATION_ID, progressNotificationBuilder.build());
+            downloadProgressNotification.displayForegroundNotification(PROGRESS_NOTIFICATION_ID);
             shownForegroundNotification = true;
         } else {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(PROGRESS_NOTIFICATION_ID, progressNotificationBuilder.build());
+            downloadProgressNotification.displayNotification(PROGRESS_NOTIFICATION_ID);
         }
     }
 
-    private void showProgressNotification(@NonNull String mapName, double percentageProgress) {
+    private void showProgressNotification(@NonNull String mapName,  double percentageProgress) {
         showProgressNotification(mapName, percentageProgress, true);
     }
 
@@ -593,14 +580,10 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
      * @param description description to be shown on the notification
      */
     private void showDownloadCompleteNotification(@NonNull String title, @NonNull String description) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MapboxOfflineDownloaderService.this)
-                .setContentTitle(title)
-                .setContentText(description)
-                .setSmallIcon(R.drawable.ic_stat_file_download);
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID++;
-        notificationManager.notify(LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID, builder.build());
+
+        DownloadCompleteNotification downloadCompleteNotification = new DownloadCompleteNotification(this);
+        downloadCompleteNotification.displayNotification(title, description, LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID);
     }
 
     /**
@@ -632,22 +615,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 MapboxOfflineDownloaderService.this.mapboxTileCountLimitExceeded(limit);
             }
         });
-    }
-
-    /**
-     * Saves a {@link MapBoxOfflineQueueTask} as {@link MapBoxOfflineQueueTask#TASK_STATUS_DONE}<br/>
-     * This means the {@link OfflineRegion} can no longer be resumed if it was incomplete.<br/>
-     * This also means that a {@link OfflineRegion} will still be in storage if it was not successfully deleted
-     *
-     * @param mapBoxOfflineQueueTask
-     */
-    private void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
-        persistCompletedStatusCalled = true;
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-
-        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
-        realm.commitTransaction();
     }
 
     private int getConnectionType() {
@@ -687,8 +654,13 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
         if (status.isComplete()) {
             stopDownloadProgressUpdater();
-            showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_progress_content), getFriendlyFileSize(status.getCompletedResourceSize())) );
-            persistCompletedStatus(currentMapBoxTask);
+            showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_progress_content), getFriendlyFileSize(status.getCompletedResourceSize())));
+
+            MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
+            mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
+
+            realmDatabase.persistCompletedStatus(currentMapBoxTask);
+            isDownloading = false;
             performNextTask();
         } else {
             queueDownloadProgressUpdate(currentMapDownloadName, percentageDownload);
@@ -714,12 +686,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void mapboxTileCountLimitExceeded(long limit) {
         String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);
         Log.e(TAG, finalMessage);
+        isDownloading = false;
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);
-    }
-
-    private String formatDecimal(double no) {
-        java.text.DecimalFormat twoDForm = new DecimalFormat("0.##");
-        return twoDForm.format(no);
     }
 
     private String getFriendlyFileSize(long bytes) {

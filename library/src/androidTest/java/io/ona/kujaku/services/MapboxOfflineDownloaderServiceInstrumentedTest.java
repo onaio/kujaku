@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
 import utils.Constants;
@@ -101,6 +102,9 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
 
         String mapName = sampleServiceIntent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);
+
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", realmDatabase);
 
         mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
 
@@ -230,7 +234,7 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         Realm realm = Realm.getDefaultInstance();
 
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .contains("task", mapName)
                 .findFirst();
 

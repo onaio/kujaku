@@ -122,11 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 25.876589
         );
 
-        intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRight);
-        intent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeft);
         intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_TILT, 80.0);
-        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_BEARING, 34.33);
-        intent.putExtra(Constants.PARCELABLE_KEY_CAMERA_ZOOM, 13.6);
 
         startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
@@ -173,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, "Map Dw : " + (++lastMapDownloadId));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);//"Map Dw : " + (++lastMapDownloadId));
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(37.7897, -119.5073));

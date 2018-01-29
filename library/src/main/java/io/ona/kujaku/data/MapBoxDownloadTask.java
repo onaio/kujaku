@@ -206,7 +206,7 @@ public class MapBoxDownloadTask {
 
     /**
      * Creates a valid {@link MapBoxOfflineQueueTask} given a {@link MapBoxDownloadTask} with default
-     * {@link MapBoxOfflineQueueTask#taskStatus} = {@link MapBoxOfflineQueueTask#TASK_STATUS_INCOMPLETE}
+     * {@link MapBoxOfflineQueueTask#taskStatus} = {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
      * & adds it to the queue
      *
      * @param mapBoxDownloadTask to add to the queue
@@ -222,7 +222,7 @@ public class MapBoxDownloadTask {
             mapBoxOfflineQueueTask.setDateCreated(new Date());
             mapBoxOfflineQueueTask.setDateUpdated(new Date());
             mapBoxOfflineQueueTask.setTask(mapBoxDownloadTask.getJSONObject());
-            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
+            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);
             mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
 
             realm.commitTransaction();

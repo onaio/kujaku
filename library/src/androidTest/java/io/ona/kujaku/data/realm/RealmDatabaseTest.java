@@ -1,27 +1,17 @@
 package io.ona.kujaku.data.realm;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.logging.Logger;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -95,7 +85,7 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
         MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
         addedRecords.add(MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask));
 
-        MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(deleteMapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(deleteMapName, sampleMapBoxStyleURL);
         addedRecords.add(MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask));
 
         assertFalse(realmDatabase.deleteTask(downloadMapName, false));
@@ -111,7 +101,7 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
         MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
         MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
 
-        MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(deleteMapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(deleteMapName, sampleMapBoxStyleURL);
         MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
 
         assertTrue(realmDatabase.deleteTask(downloadMapName, true));
@@ -119,6 +109,107 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
 
         assertTrue(realmDatabase.deleteTask(deleteMapName, false));
         assertFalse(realmDatabase.deleteTask(deleteMapName, false));
+    }
+
+    @Test
+    public void persistCompletedStatus() {
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+
+        String downloadMapName = UUID.randomUUID().toString();
+
+        MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+        addedRecords.add(mapBoxOfflineQueueTask);
+
+        realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
+
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_DONE, mapBoxOfflineQueueTask.getTaskStatus());
+    }
+
+    @Test
+    public void persistDownloadStartedStatus() {
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+
+        String downloadMapName = UUID.randomUUID().toString();
+
+        MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+        addedRecords.add(mapBoxOfflineQueueTask);
+
+        realmDatabase.persistDownloadStartedStatus(mapBoxOfflineQueueTask);
+
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_STARTED, mapBoxOfflineQueueTask.getTaskStatus());
+    }
+
+    @Test
+    public void getPendingOfflineMapDownloadsWithSimilarNames() {
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+
+        String downloadMapName = UUID.randomUUID().toString();
+
+        MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+
+        MapBoxDownloadTask mapBoxDownloadTask1 = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask1 = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask1);
+
+        addedRecords.add(mapBoxOfflineQueueTask);
+        addedRecords.add(mapBoxOfflineQueueTask1);
+
+        RealmResults<MapBoxOfflineQueueTask> realmResults = realmDatabase.getPendingOfflineMapDownloadsWithSimilarNames(downloadMapName);
+
+        assertEquals(2, realmResults.size());
+    }
+
+    @Test
+    public void deletePendingOfflineMapDownloadsWithSimilarNames() {
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+
+        String downloadMapName = UUID.randomUUID().toString();
+
+        MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+
+        MapBoxDownloadTask mapBoxDownloadTask1 = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask1 = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask1);
+
+        MapBoxDownloadTask mapBoxDownloadTask2 = createSampleDownloadTask("kl", downloadMapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask2 = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask2);
+
+        MapBoxDownloadTask mapBoxDownloadTask3 = createSampleDownloadTask("kl", "Market curve", sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask mapBoxOfflineQueueTask3 = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask3);
+
+        realmDatabase.persistDownloadStartedStatus(mapBoxOfflineQueueTask1);
+
+        addedRecords.add(mapBoxOfflineQueueTask);
+        addedRecords.add(mapBoxOfflineQueueTask1);
+        addedRecords.add(mapBoxOfflineQueueTask2);
+        addedRecords.add(mapBoxOfflineQueueTask3);
+
+        String id1 = mapBoxOfflineQueueTask.getId();
+        String id2 = mapBoxOfflineQueueTask2.getId();
+
+        boolean isDeleted = realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(downloadMapName);
+
+        assertTrue(isDeleted);
+
+        Realm realm = Realm.getDefaultInstance();
+
+        RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
+                .equalTo("id", id1)
+                .or()
+                .equalTo("id", id2)
+                .findAll();
+
+        assertEquals(0, realmResults.size());
+
+        realmResults = realm.where(MapBoxOfflineQueueTask.class)
+                .equalTo("id", mapBoxOfflineQueueTask1.getId())
+                .or()
+                .equalTo("id", mapBoxOfflineQueueTask3.getId())
+                .findAll();
+
+        assertEquals(2, realmResults.size());
     }
 
     /*
@@ -145,7 +236,7 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
                         -17.875469,
                         25.876589
                 ),
-                BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
+                sampleMapBoxStyleURL
         );
     }
 }

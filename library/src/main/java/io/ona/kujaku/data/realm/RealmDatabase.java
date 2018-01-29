@@ -2,16 +2,18 @@ package io.ona.kujaku.data.realm;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import io.ona.kujaku.data.MapBoxDownloadTask;
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
+
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 11/20/17.
  */
-
 public class RealmDatabase {
     protected static final long VERSION = 1l;
     protected static final String NAME = "kujaku.realm";
@@ -43,7 +45,7 @@ public class RealmDatabase {
 
         taskToDelete = realm.where(MapBoxOfflineQueueTask.class)
                 .equalTo("taskType", taskType)
-                .contains("task", mapName)
+                .contains("task", "\"mapName\":\"" + mapName + "\"")
                 .findFirst();
 
         if (taskToDelete != null) {
@@ -57,5 +59,77 @@ public class RealmDatabase {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Saves a {@link MapBoxOfflineQueueTask} as {@link MapBoxOfflineQueueTask#TASK_STATUS_DONE}<br/>
+     * This means the {@link OfflineRegion} can no longer be resumed if it was incomplete.<br/>
+     * This also means that a {@link OfflineRegion} will still be in storage if it was not successfully deleted
+     *
+     * @param mapBoxOfflineQueueTask
+     */
+    public void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+
+        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
+        realm.commitTransaction();
+    }
+
+    /**
+     * Updates the {@link MapBoxOfflineQueueTask} status as {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}<br/>
+     * This means that subsequent Offline Region download calls with a similar map name will not result in this task being deleted.
+     *
+     * @param mapBoxOfflineQueueTask
+     */
+    public void persistDownloadStartedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_STARTED);
+
+        realm.commitTransaction();
+    }
+
+    /**
+     * Retrieves the {@link MapBoxOfflineQueueTask}s of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD}
+     * which are pending i.e. their downloads have not started. Their status is {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
+     *
+     * @param mapName
+     * @return
+     */
+    protected RealmResults<MapBoxOfflineQueueTask> getPendingOfflineMapDownloadsWithSimilarNames(String mapName) {
+        Realm realm = Realm.getDefaultInstance();
+
+        RealmResults<MapBoxOfflineQueueTask> mapBoxOfflineQueueTaskRealmResults = realm.where(MapBoxOfflineQueueTask.class)
+                .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
+                .contains("task", "\"mapName\":\"" + mapName + "\"")
+                .findAll();
+
+        return mapBoxOfflineQueueTaskRealmResults;
+    }
+
+    /**
+     * Deletes all {@link MapBoxOfflineQueueTask}s of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD}
+     * whose download has not started
+     *
+     * @param mapName
+     * @return
+     */
+    public boolean deletePendingOfflineMapDownloadsWithSimilarNames(@Nullable String mapName) {
+        if (mapName == null) {
+            return false;
+        }
+
+        RealmResults<MapBoxOfflineQueueTask> realmResults = getPendingOfflineMapDownloadsWithSimilarNames(mapName);
+
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+
+        boolean isDeleted = realmResults.deleteAllFromRealm();
+
+        realm.commitTransaction();
+
+        return isDeleted;
     }
 }

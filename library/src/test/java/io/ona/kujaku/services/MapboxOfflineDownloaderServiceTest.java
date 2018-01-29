@@ -45,14 +45,16 @@ import java.util.concurrent.CountDownLatch;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
-import io.ona.kujaku.shadows.ShadowConnectivityReceiver;
-import io.ona.kujaku.shadows.ShadowMapBoxDeleteTask;
-import io.ona.kujaku.shadows.ShadowMapBoxDownloadTask;
-import io.ona.kujaku.shadows.ShadowOfflineManager;
-import io.ona.kujaku.shadows.ShadowRealm;
-import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
+import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDeleteTask;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDownloadTask;
+import io.ona.kujaku.test.shadows.ShadowOfflineManager;
+import io.ona.kujaku.test.shadows.ShadowRealm;
+import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
+import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
 import io.ona.kujaku.utils.NumberFormatter;
 import utils.Constants;
 
@@ -74,7 +76,8 @@ import static org.junit.Assert.fail;
                 ShadowMapBoxDownloadTask.class,
                 ShadowConnectivityReceiver.class,
                 ShadowRealm.class,
-                ShadowOfflineManager.class
+                ShadowOfflineManager.class,
+                ShadowRealmDatabase.class
 })
 public class MapboxOfflineDownloaderServiceTest {
 
@@ -110,13 +113,13 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnFalseWhenGivenNullIntent() {
+    public void persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntent() {
         Intent sampleExtra = null;
         assertEquals(false, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleExtra));
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnFalseWhenGivenNullIntentExtras() {
+    public void persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntentExtras() {
         Intent sampleExtra = new Intent();
         assertEquals(false, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleExtra));
 
@@ -125,7 +128,7 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnTrueWhenGivenValidDeleteTask() {
+    public void persistOfflineMapTaskShouldReturnTrueWhenGivenValidDeleteTask() {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDeleteIntent(sampleServiceIntent);
 
@@ -133,10 +136,11 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnTrueWhenGivenValidDownloadTask() {
+    public void persistOfflineMapTaskShouldReturnTrueWhenGivenValidDownloadTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
 
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
     }
 
@@ -168,17 +172,18 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDeleteTask() {
+    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDeleteTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDeleteIntent(sampleServiceIntent);
 
         Calendar calendar = Calendar.getInstance();
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DELETE, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 
@@ -196,17 +201,18 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDownloadTask() {
+    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDownloadTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
 
         Calendar calendar = Calendar.getInstance();
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 
@@ -297,9 +303,9 @@ public class MapboxOfflineDownloaderServiceTest {
 
         insertValueInPrivateField(mapboxOfflineDownloaderService, "serviceHandler", new Handler(mapboxOfflineDownloaderService.getApplication().getMainLooper()));
 
-        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("startDownloadProgressUpdater", null);
+        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("startDownloadProgressUpdater");
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, null);
+        method.invoke(mapboxOfflineDownloaderService);
 
         mapboxOfflineDownloaderService.onStatusChanged(incompleteOfflineRegionStatus, null);
         latch.await();
@@ -327,9 +333,9 @@ public class MapboxOfflineDownloaderServiceTest {
         assertEquals(contentTitle, shadowNotification.getContentTitle());
         assertEquals(contentText, shadowNotification.getContentText());
 
-        method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("stopDownloadProgressUpdater", null);
+        method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("stopDownloadProgressUpdater");
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, null);
+        method.invoke(mapboxOfflineDownloaderService);
 
     }
 

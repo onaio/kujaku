@@ -3,6 +3,7 @@ package io.ona.kujaku.utils.helpers;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.services.commons.utils.TextUtils;
 
 import org.json.JSONArray;
@@ -30,6 +31,8 @@ public class MapBoxStyleHelper {
     public static final String KEY_KUJAKU = "kujaku";
     private final JSONObject styleObject;
     private final KujakuConfig kujakuConfig;
+    public static final String KEY_MAP_CENTER = "center";
+    public static final String KEY_ROOT_ZOOM = "zoom";
 
     public MapBoxStyleHelper(JSONObject styleObject) throws JSONException, InvalidMapBoxStyleException {
         this.styleObject = styleObject;
@@ -159,4 +162,55 @@ public class MapBoxStyleHelper {
         return true;
     }
 
+    /**
+     * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
+     * property of a map to the center of the bounds given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng)
+     *
+     * @param topLeft
+     * @param bottomRight
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng topLeft, @NonNull LatLng bottomRight) throws JSONException {
+        setMapCenter(getCenterFromBounds(topLeft, bottomRight));
+    }
+
+    /**
+     * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
+     * property of a map to the center of the {@link LatLng} given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng, LatLng)
+     *
+     * @param mapCenter
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng mapCenter) throws JSONException {
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(mapCenter.getLongitude());
+        jsonArray.put(mapCenter.getLatitude());
+
+        styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);
+    }
+
+    /*
+     * Updates or adds the root zoom property to the Mapbox Style
+     *
+     * @param zoom
+     * @throws JSONException
+     */
+    public void setRootZoom(double zoom) throws JSONException {
+        styleObject.put(KEY_ROOT_ZOOM, zoom);
+    }
+
+    public JSONObject getStyleObject() {
+        return styleObject;
+    }
+
+    public LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
+        return new LatLng(
+                (topLeft.getLatitude() + bottomRight.getLatitude())/2,
+                (bottomRight.getLongitude() + topLeft.getLongitude())/2
+        );
+    }
 }

@@ -21,7 +21,8 @@ public class MapBoxOfflineQueueTask extends RealmObject {
             , TASK_TYPE_DELETE = "TASK TYPE DELETE";
 
     public static final int TASK_STATUS_DONE = 1
-            , TASK_STATUS_INCOMPLETE = 2;
+            , TASK_STATUS_NOT_STARTED = 2
+            , TASK_STATUS_STARTED = 3;
 
     @PrimaryKey
     private String id = UUID.randomUUID().toString();

@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 public class MapBoxDownloadTaskTest {
 
     @Test
-    public void constructorShouldCreateValidObject() {
+    public void constructorShouldCreateValidObject() throws JSONException, MalformedDataException {
         String mapName = "sample map name";
         String mapboxAccessToken = "90sd09jio(#@";
         String packageName = "package.com.io";
@@ -38,23 +38,27 @@ public class MapBoxDownloadTaskTest {
         bottomRightBound.setLongitude(Math.random() * 90);
 
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(MapBoxDeleteTask.MAP_NAME, mapName);
-            jsonObject.put(MapBoxDeleteTask.MAP_BOX_ACCESS_TOKEN, mapboxAccessToken);
 
-            MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(jsonObject);
+        jsonObject.put(MapBoxDownloadTask.MAP_NAME, mapName);
+        jsonObject.put(MapBoxDownloadTask.MAPBOX_ACCESS_TOKEN, mapboxAccessToken);
+        jsonObject.put(MapBoxDownloadTask.PACKAGE_NAME, packageName);
+        jsonObject.put(MapBoxDownloadTask.MAPBOX_STYLE_URL, mapboxStyleUrl);
+        jsonObject.put(MapBoxDownloadTask.MAX_ZOOM, maxZoom);
+        jsonObject.put(MapBoxDownloadTask.MIN_ZOOM, minZoom);
+        jsonObject.put(MapBoxDownloadTask.TOP_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topLeftBound));
+        jsonObject.put(MapBoxDownloadTask.BOTTOM_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomRightBound));
 
-            assertEquals(mapName, mapBoxDownloadTask.getMapName());
-            assertEquals(mapboxAccessToken, mapBoxDownloadTask.getMapBoxAccessToken());
-            assertEquals(packageName, mapBoxDownloadTask.getPackageName());
-            assertEquals(mapboxStyleUrl, mapBoxDownloadTask.getMapBoxStyleUrl());
-            assertEquals(minZoom, mapBoxDownloadTask.getMinZoom(), 0.0);
-            assertEquals(maxZoom, mapBoxDownloadTask.getMaxZoom(), 0.0);
-            assertEquals(bottomRightBound, mapBoxDownloadTask.getBottomRightBound());
-            assertEquals(topLeftBound, mapBoxDownloadTask.getTopLeftBound());
-        } catch (JSONException | MalformedDataException e) {
-            e.printStackTrace();
-        }
+        MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(jsonObject);
+
+        assertEquals(mapName, mapBoxDownloadTask.getMapName());
+        assertEquals(mapboxAccessToken, mapBoxDownloadTask.getMapBoxAccessToken());
+        assertEquals(packageName, mapBoxDownloadTask.getPackageName());
+        assertEquals(mapboxStyleUrl, mapBoxDownloadTask.getMapBoxStyleUrl());
+        assertEquals(minZoom, mapBoxDownloadTask.getMinZoom(), 0.0);
+        assertEquals(maxZoom, mapBoxDownloadTask.getMaxZoom(), 0.0);
+        assertEquals(bottomRightBound, mapBoxDownloadTask.getBottomRightBound());
+        assertEquals(topLeftBound, mapBoxDownloadTask.getTopLeftBound());
+
     }
 
 }
