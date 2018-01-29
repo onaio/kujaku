@@ -60,6 +60,7 @@ import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import utils.Constants;
 import utils.CoordinateUtils;
+import utils.helpers.MapBoxStyleHelper;
 import utils.helpers.converters.GeoJSONFeature;
 
 /**
@@ -241,6 +242,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 if (cameraPositionChanged) {
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
+                }
+
+                if (mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+                    waitingForLocation = false;
                 }
 
                 lastLocation = null;
