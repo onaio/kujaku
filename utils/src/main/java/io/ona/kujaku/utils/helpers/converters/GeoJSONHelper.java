@@ -24,7 +24,6 @@ import org.json.JSONObject;
  */
 
 public class GeoJSONHelper {
-    private static final String TAG = GeoJSONHelper.class.getSimpleName();
     public static final String MAPBOX_GEOJSON_DATASOURCE_TYPE = "geojson";
     public static final JSONObject DEFAULT_FEATURE_COLLECTION;
     static {
