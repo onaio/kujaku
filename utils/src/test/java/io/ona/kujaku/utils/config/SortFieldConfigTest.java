@@ -162,7 +162,7 @@ public class SortFieldConfigTest {
                 .getString(SortFieldConfig.KEY_TYPE).toLowerCase(), type1.toString().toLowerCase());
         Assert.assertEquals(config2.toJsonObject()
                         .getString(SortFieldConfig.KEY_DATA_FIELD).toLowerCase(),
-                dataField1.toString().toLowerCase());
+                dataField1.toLowerCase());
         Assert.assertNotSame(object1, config2.toJsonObject());
     }
 
