@@ -60,6 +60,7 @@ import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.CoordinateUtils;
@@ -190,9 +191,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
                         featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                         featuresMap = sortData(featuresMap, sortFields);
-                        displayInitialFeatures(featuresMap);
+                        displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
                     } catch (JSONException e) {
                         Log.e(TAG, Log.getStackTraceString(e));
+                    } catch (InvalidMapBoxStyleException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -302,25 +305,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             for (AlertDialog curDialog : alertDialogs.values()) {
                 if (curDialog.isShowing()) {
                     curDialog.dismiss();
-                }
-            }
-        }
-    }
-
-    private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
-        if (jsonObject.has("metadata")) {
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
-            if (metadata.has("kujaku")) {
-                JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("data_source_names")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("data_source_names");
-                    String[] dataLayers = new String[jsonArray.length()];
-
-                    for(int i = 0; i < dataLayers.length; i++) {
-                        dataLayers[i] = jsonArray.getString(i);
-                    }
-
-                    return dataLayers;
                 }
             }
         }

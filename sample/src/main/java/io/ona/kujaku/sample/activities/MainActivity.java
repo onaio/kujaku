@@ -26,8 +26,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;

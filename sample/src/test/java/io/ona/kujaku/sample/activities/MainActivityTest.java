@@ -16,7 +16,7 @@ import org.robolectric.shadows.ShadowToast;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.sample.TestApplication;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.*;
 
