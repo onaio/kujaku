@@ -82,8 +82,9 @@ abstract class KujakuNotification {
         return notificationChannel;
     }
 
+    @SuppressWarnings("deprecation")
     public NotificationCompat.Builder createNotification(String title, @Nullable String content) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, null)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setContentTitle(title)
                 .setSmallIcon(smallIcon);
 
