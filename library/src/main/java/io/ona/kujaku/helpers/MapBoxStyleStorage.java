@@ -245,6 +245,7 @@ public class MapBoxStyleStorage {
             }
             br.close();
         } catch (IOException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
             return null;
         }
 
