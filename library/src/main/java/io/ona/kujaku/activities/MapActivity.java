@@ -192,10 +192,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                         featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                         featuresMap = sortData(featuresMap, sortFields);
                         displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
-                    } catch (JSONException e) {
+                    } catch (JSONException | InvalidMapBoxStyleException e) {
                         Log.e(TAG, Log.getStackTraceString(e));
-                    } catch (InvalidMapBoxStyleException e) {
-                        e.printStackTrace();
                     }
                 }
             }

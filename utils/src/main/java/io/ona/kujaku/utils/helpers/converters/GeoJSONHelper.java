@@ -1,5 +1,7 @@
 package io.ona.kujaku.utils.helpers.converters;
 
+import android.util.Log;
+
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.FeatureCollection;
 import com.cocoahero.android.geojson.GeoJSON;
@@ -24,6 +26,7 @@ import org.json.JSONObject;
  */
 
 public class GeoJSONHelper {
+    private static final String TAG = GeoJSONHelper.class.getSimpleName();
     public static final String MAPBOX_GEOJSON_DATASOURCE_TYPE = "geojson";
     public static final JSONObject DEFAULT_FEATURE_COLLECTION;
     static {
@@ -32,7 +35,7 @@ public class GeoJSONHelper {
             DEFAULT_FEATURE_COLLECTION.put("type", GeoJSON.TYPE_FEATURE_COLLECTION);
             DEFAULT_FEATURE_COLLECTION.put("features", new JSONArray());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.d(TAG, Log.getStackTraceString(e));
         }
     }
     private FeatureCollection featureCollection;
@@ -54,7 +57,7 @@ public class GeoJSONHelper {
             try {
                 featureCollection.addFeature(getFeature(geoJSONFeature));
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.d(TAG, Log.getStackTraceString(e));
             }
         }
     }
