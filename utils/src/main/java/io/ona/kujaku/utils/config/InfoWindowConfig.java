@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
+ * Holds configurations for the info-window UI element.
+ * <p>
  * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
  */
 public class InfoWindowConfig implements Config {

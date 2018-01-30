@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
+ * Holds Kujaku specific configurations for MapBox data sources. Currently, creating a config for a
+ * data-source means that data in the data-source will be rendered on the map.
+ * <p>
  * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
  */
 

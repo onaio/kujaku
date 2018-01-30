@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
+ * Holds configurations specific to Kujaku (not handled by MapBox style specification).
+ * <p>
  * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
  */
 public class KujakuConfig implements Config {
@@ -33,7 +35,7 @@ public class KujakuConfig implements Config {
         } else {
             infoWindowConfig = new InfoWindowConfig();
         }
-        
+
         sortFieldConfigs = new ArrayList<>();
         if (config.has(KEY_SORT_FIELDS)) {
             JSONArray array = config.getJSONArray(KEY_SORT_FIELDS);
@@ -103,7 +105,7 @@ public class KujakuConfig implements Config {
         }
 
         if (infoWindowConfig != null) {
-            return  infoWindowConfig.isValid();
+            return infoWindowConfig.isValid();
         }
 
         return false;

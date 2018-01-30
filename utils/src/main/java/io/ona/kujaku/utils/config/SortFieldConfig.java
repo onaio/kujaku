@@ -13,6 +13,9 @@ import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
 /**
+ * Holds configuration for the fields to be used to sort data in the MapBox data-sources to be used
+ * to render data.
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 24/11/2017.
  */
 
