@@ -185,7 +185,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                     && extras.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)) {
                 final String mapUniqueName = extras.getString(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);
                 mapBoxAccessToken = extras.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
-                //saveAccessToken(mapboxAccessToken);
+
+                Mapbox.getInstance(this, mapBoxAccessToken);
 
                 MapBoxDownloadTask downloadTask = new MapBoxDownloadTask();
                 downloadTask.setMapName(mapUniqueName);
