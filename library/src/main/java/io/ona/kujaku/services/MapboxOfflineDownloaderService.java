@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
@@ -115,12 +116,11 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private long currentMapDownloadId;
 
     private DownloadProgressNotification downloadProgressNotification;
-    private Intent stopDownloadIntent;
     public static final int PROGRESS_NOTIFICATION_ID = 85;
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
     public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
 
-    private boolean isDownloading = false;
+    private boolean isPerformingTask = false;
 
     private RealmDatabase realmDatabase;
 
@@ -244,7 +244,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                                     } else {
                                                         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, getString(R.string.map_delete_task_error));
                                                     }
-                                                    isDownloading = false;
+                                                    releaseQueueToPerformOtherJobs();
 
                                                     performNextTask();
                                                 }
@@ -293,14 +293,14 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private void performNextTask() {
         performNextTaskCalled = true;
 
-        if (isDownloading) {
+        if (isPerformingTask) {
             return;
         }
 
         final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realmDatabase.getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
-            isDownloading = true;
+            placeQueueOnHold();
             currentMapBoxTask = mapBoxOfflineQueueTask;
             if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {
                 currentServiceAction = SERVICE_ACTION.DELETE_MAP;
@@ -324,6 +324,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                     @Override
                                     public void onDelete() {
                                         sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, SERVICE_ACTION.DELETE_MAP, "Map deleted successfully!");
+                                        releaseQueueToPerformOtherJobs();
                                         realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                                         performNextTask();
                                     }
@@ -332,6 +333,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                     public void onError(String error) {
                                         MapboxOfflineDownloaderService.this.onError(error, null);
                                         // An error means this cannot be solved even at a later time THUS persist the task as DONE
+                                        releaseQueueToPerformOtherJobs();
                                         realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                                         performNextTask();
                                     }
@@ -362,6 +364,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             // IGNORE IT AND SEND A BROADCAST HERE
                             realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                             MapboxOfflineDownloaderService.this.onError(getString(R.string.error_similar_map_exists_and_downloaded), null);
+                            releaseQueueToPerformOtherJobs();
                         }
                     }
                 }
@@ -381,14 +384,17 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                 showProgressNotification(currentMapDownloadName, 0.0);
                             } catch (MalformedDataException | JSONException | OfflineMapDownloadException e) {
                                 Log.e(TAG, Log.getStackTraceString(e));
+                                releaseQueueToPerformOtherJobs();
                             }
                         } else {
                             // An error means this cannot be solved even at a later time THUS persist the task as DONE
+                            releaseQueueToPerformOtherJobs();
                             realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                             performNextTask();
                         }
                     } else {
                         MapboxOfflineDownloaderService.this.onError(error, null);
+                        releaseQueueToPerformOtherJobs();
                     }
                 }
             });
@@ -634,7 +640,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
             mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
 
             realmDatabase.persistCompletedStatus(currentMapBoxTask);
-            isDownloading = false;
+            releaseQueueToPerformOtherJobs();
             performNextTask();
         } else {
             queueDownloadProgressUpdate(currentMapDownloadName, percentageDownload);
@@ -660,7 +666,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void mapboxTileCountLimitExceeded(long limit) {
         String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);
         Log.e(TAG, finalMessage);
-        isDownloading = false;
+        releaseQueueToPerformOtherJobs();
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);
     }
 
@@ -711,6 +717,14 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         if (!progressUpdateThread.isAlive()) {
             progressUpdateThread.start();
         }
+    }
+
+    private void placeQueueOnHold() {
+        isPerformingTask = false;
+    }
+
+    private void releaseQueueToPerformOtherJobs() {
+        isPerformingTask = true;
     }
 
     private void stopDownloadProgressUpdater() {
