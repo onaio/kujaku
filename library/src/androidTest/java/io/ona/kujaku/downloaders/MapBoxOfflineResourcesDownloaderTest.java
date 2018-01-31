@@ -30,7 +30,7 @@ import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
-import utils.exceptions.OfflineMapDownloadException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

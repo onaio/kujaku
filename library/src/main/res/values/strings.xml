@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Kujaku</string>
+    <string name="error_kujaku_config">Kujaku Configuration Error</string>
+    <string name="error_kujaku_config_description">There\'s an error in the Kujaku configuration provided. Some features might not work properly.</string>
+    <string name="ok">Okay</string>
     <string name="stop_download">Stop Download</string>
     <string name="map_delete_task_error">Map deleted but database task could not be deleted</string>
     <string name="notification_stopped_download_title">Download for %1$s stopped!</string>

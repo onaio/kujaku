@@ -1,4 +1,4 @@
-package utils.exceptions;
+package io.ona.kujaku.utils.exceptions;
 
 /**
  * Thrown when a MapBox style object is invalid or has missing required data.

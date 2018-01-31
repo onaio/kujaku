@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.snatik.storage.Storage;
@@ -15,17 +16,17 @@ import java.util.UUID;
 
 import io.ona.kujaku.activities.MapActivity;
 
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * Helps add the MapBox Style to the MapBox MapView when provided as string since the MapBox API only allows
  * urls i.e. assets, network & storage. Mapbox style should follow the <a href="">Mapbox Style Spec</a><br/><br/>
- *
+ * <p>
  * Basically stores the style on shared External Storage<br/><br/>
- *
+ * <p>
  * HOW TO USE<br/>
  * ----------<br/>
- *
+ * <p>
  * {@code MapBoxStyleStorage mapboxStyleStorage = new MapBoxStyleStorage()}
  * {@code mapboxStyleStorage.getStyleURL("file:///storage/Downloads/style.json")}
  * {@code mapboxStyleStorage.getStyleURL("asset://town_style.json")}
@@ -34,7 +35,7 @@ import utils.Constants;
  * {@code mapboxStyleStorage.deleteFile("json.style", false)}
  * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style", true)}
  * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style")}
- *
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 09/11/2017.
  */
 
@@ -50,7 +51,7 @@ public class MapBoxStyleStorage {
      * @param stylePathOrJSON Mapbox Style Path or Mapbox Style JSON String
      * @return Path to the MapBox Style in the format {@code file://[Path_to_file] }
      */
-    public String getStyleURL(String stylePathOrJSON) {
+    public String getStyleURL(@NonNull String stylePathOrJSON) {
         if (stylePathOrJSON.startsWith("file:")
                 || stylePathOrJSON.startsWith("asset:")
                 || stylePathOrJSON.startsWith("http:")
@@ -64,7 +65,7 @@ public class MapBoxStyleStorage {
         while (!fileCreated) {
             fileName = UUID.randomUUID().toString() + ".json";
             fileName = writeToFile(DIRECTORY, fileName, stylePathOrJSON);
-            fileCreated = !fileName.isEmpty();
+            fileCreated = !TextUtils.isEmpty(fileName);
         }
 
         return "file://" + fileName;
@@ -74,10 +75,10 @@ public class MapBoxStyleStorage {
      * Writes content to a file on local storage
      *
      * @param folderName Folder name(s) eg. AppFiles where to create file
-     * @param fileName Filename with extension
-     * @param content String content to be written to the file
-     * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... OR "" is the operation FAILS
-     *          This operation fails if the file exists, permissions denied, invalid
+     * @param fileName   Filename with extension
+     * @param content    String content to be written to the file
+     * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... or NULL is the operation FAILS
+     * This operation fails if the file exists, permissions denied, invalid
      */
     public String writeToFile(String folderName, String fileName, String content) {
         File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);
@@ -98,17 +99,17 @@ public class MapBoxStyleStorage {
             }
         }
 
-        return "";
+        return null;
     }
 
     /**
      * Deletes a file on external/shared storage given the path or file name
      * This should be called on {@link MapActivity#onDestroy()} so as to clean up the resources created
      *
-     * @param filePath Path to the file eg. /emulated/storage/style.json, style.json
+     * @param filePath       Path to the file eg. /emulated/storage/style.json, style.json
      * @param isCompletePath Flag indicating whether the Path is complete
      *                       eg. /emulated/storage/style.json is a complete path
-     *                              style.json is not a complete path & will be resolved to /sdcard/{@link MapBoxStyleStorage#DIRECTORY}/styles.json
+     *                       style.json is not a complete path & will be resolved to /sdcard/{@link MapBoxStyleStorage#DIRECTORY}/styles.json
      * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
      */
     public boolean deleteFile(String filePath, boolean isCompletePath) {
@@ -141,18 +142,16 @@ public class MapBoxStyleStorage {
      * @param mapBoxUrl
      * @param mapBoxStyleJSON
      * @return <p>- {@code TRUE} if the style is cached successfully<br/>
-     *          - {@code FALSE} if the style is not cached successfully</p>
+     * - {@code FALSE} if the style is not cached successfully</p>
      */
-    public boolean cacheStyle(@NonNull String mapBoxUrl,@NonNull String mapBoxStyleJSON) {
+    public boolean cacheStyle(@NonNull String mapBoxUrl, @NonNull String mapBoxStyleJSON) {
         if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
-            String folder =  mapBoxPaths[0];
+            String folder = mapBoxPaths[0];
             String filename = mapBoxPaths[1];
 
             String fileAbsolutePath = writeToFile(DIRECTORY + File.separator + folder, filename, mapBoxStyleJSON);
-            if (fileAbsolutePath != null && !fileAbsolutePath.isEmpty()) {
-                return true;
-            }
+            return !TextUtils.isEmpty(fileAbsolutePath);
         }
 
         return false;
@@ -163,30 +162,30 @@ public class MapBoxStyleStorage {
      *
      * @param mapBoxUrl
      * @return <p>- The cached style JSON String, if it exists on local storage<br>
-     *          - Empty String("") if the style is not cached</p>
+     * - Empty String("") if the style is not cached</p>
      */
     public String getCachedStyle(String mapBoxUrl) {
         if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             String[] mapBoxPaths = mapBoxUrl.replace("mapbox://styles/", "").split("/");
-            String folder =  mapBoxPaths[0];
+            String folder = mapBoxPaths[0];
             String filename = mapBoxPaths[1];
 
             return readFile(folder, filename);
         }
-        return "";
+        return null;
     }
 
     /**
      * Reads a style on local storage given the path using the format {@literal file://{file_path}}
      *
      * @param protocolledFilePath
-     * @return <p>- Empty String("") if the file does not exist<br/>
-     *          - The style's JSON String if the file exists</p>
+     * @return <p>- NULL if the file does not exist<br/>
+     * - The style's JSON String if the file exists</p>
      */
     public String readStyle(@NonNull String protocolledFilePath) {
         String fileProtocolOrSth = "file://";
         if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {
-            return "";
+            return null;
         }
         String folders = "";
 
@@ -207,6 +206,14 @@ public class MapBoxStyleStorage {
         return readFile(folders, filename, false);
     }
 
+    /**
+     * Reads the contents of a file, returns them as a string
+     *
+     * @param folders        The directory hierarchy for the file
+     * @param filename       The name of the file to read
+     * @param isPathComplete
+     * @return NULL if unable to read the file or a String containing the contents of the file
+     */
     private String readFile(String folders, String filename, boolean isPathComplete) {
         File fileFolders;
 
@@ -238,14 +245,11 @@ public class MapBoxStyleStorage {
             }
             br.close();
         } catch (IOException e) {
-            return "";
+            Log.e(TAG, Log.getStackTraceString(e));
+            return null;
         }
 
         return text.toString();
 
     }
-
-    /*private String readFile(String path) {
-        return readFile()
-    }*/
 }

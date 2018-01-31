@@ -1,4 +1,4 @@
-package utils.helpers;
+package io.ona.kujaku.utils.helpers;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 
 /**
  * Helps manipulate the contents of a MapBox Style object.
@@ -23,37 +24,38 @@ import utils.exceptions.InvalidMapBoxStyleException;
  * https://www.mapbox.com/mapbox-gl-js/style-spec/
  * <p>
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
- * Created by Ephraim Kigamba - ekigamba@ona.io on 11/7/17/
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/7/17.
  */
 
 public class MapBoxStyleHelper {
+    public static final String KEY_KUJAKU = "kujaku";
     private final JSONObject styleObject;
+    private final KujakuConfig kujakuConfig;
     public static final String KEY_MAP_CENTER = "center";
     public static final String KEY_ROOT_ZOOM = "zoom";
 
-    public MapBoxStyleHelper(JSONObject styleObject) {
+    public MapBoxStyleHelper(JSONObject styleObject) throws JSONException, InvalidMapBoxStyleException {
         this.styleObject = styleObject;
+        if (this.styleObject.has("metadata")
+                && this.styleObject.getJSONObject("metadata").has(KEY_KUJAKU)) {
+            this.kujakuConfig = new KujakuConfig(this.styleObject.getJSONObject("metadata").getJSONObject(KEY_KUJAKU));
+        }
+        else {
+            this.kujakuConfig = new KujakuConfig();
+        }
     }
 
-    /**
-     * Adds Kujaku's configuration to the MapBox style's metadata object
-     * 
-     * @param kujakuConfig
-     * @return
-     * @throws JSONException
-     */
-    public boolean insertKujakuConfig(@NonNull JSONObject kujakuConfig) throws JSONException {
-        if (styleObject != null) {
+    public JSONObject build() throws InvalidMapBoxStyleException, JSONException {
+        if (kujakuConfig.isValid()) {
             if (!styleObject.has("metadata")) {
                 styleObject.put("metadata", new JSONObject());
             }
-
-            styleObject.getJSONObject("metadata").put("kujaku", kujakuConfig);
-
-            return true;
+            styleObject.getJSONObject("metadata").put(KEY_KUJAKU, kujakuConfig.toJsonObject());
+        } else {
+            throw new InvalidMapBoxStyleException("The Kujaku configuraiton in the MapBox style is incomplete");
         }
 
-        return false;
+        return styleObject;
     }
 
     public boolean insertGeoJsonDataSource(@NonNull String sourceName, JSONObject geoJson, @NonNull String layerId)
@@ -72,15 +74,19 @@ public class MapBoxStyleHelper {
         return false;
     }
 
+    public KujakuConfig getKujakuConfig() {
+        return kujakuConfig;
+    }
+
     /**
      * Links MapBox data-source to a pre-existing MapBox layer
      *
-     * @param sourceName    Name of the MapBox datasource
-     * @param layerId       Id of the MapBox layer
-     * @param sourceLayer   Layer on the vector tile source to use
-     * @return  {@code TRUE} if able to associate the data-source with the layer
-     * @throws JSONException                If unable to parse the style object
-     * @throws InvalidMapBoxStyleException  If the style object is missing required components
+     * @param sourceName  Name of the MapBox datasource
+     * @param layerId     Id of the MapBox layer
+     * @param sourceLayer Layer on the vector tile source to use
+     * @return {@code TRUE} if able to associate the data-source with the layer
+     * @throws JSONException               If unable to parse the style object
+     * @throws InvalidMapBoxStyleException If the style object is missing required components
      */
     public boolean linkDataSourceToLayer(@NonNull String sourceName, @NonNull String layerId, @Nullable String sourceLayer)
             throws JSONException, InvalidMapBoxStyleException {
@@ -122,7 +128,7 @@ public class MapBoxStyleHelper {
      * @throws InvalidMapBoxStyleException If the style object is missing required components
      */
     public boolean disableLayers(@Nullable String[] layerIds)
-            throws JSONException, InvalidMapBoxStyleException{
+            throws JSONException, InvalidMapBoxStyleException {
         if (layerIds == null || layerIds.length < 1 || styleObject == null) {
             return false;
         }
@@ -134,7 +140,7 @@ public class MapBoxStyleHelper {
             for (int i = 0; i < layers.length(); i++) {
                 JSONObject currentLayer = layers.getJSONObject(i);
                 if (currentLayer.has("id") && !currentLayer.getString("id").isEmpty()) {
-                    for (Iterator<String> layerIdIterator = layerIdsList.iterator(); layerIdIterator.hasNext();) {
+                    for (Iterator<String> layerIdIterator = layerIdsList.iterator(); layerIdIterator.hasNext(); ) {
                         String layerId = layerIdIterator.next();
                         if (layerId.equals(currentLayer.getString("id"))) {
                             JSONObject layout = new JSONObject();

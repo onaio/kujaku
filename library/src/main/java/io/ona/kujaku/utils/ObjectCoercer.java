@@ -1,7 +1,5 @@
 package io.ona.kujaku.utils;
 
-import android.support.annotation.NonNull;
-
 /**
  * Provides helper methods to coerce and/or convert objects to certain types. This especially applies
  * for Extras where documentation on the required type might not be available or vague.

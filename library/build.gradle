@@ -20,7 +20,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.4-56-2'
+version '0.2.6-11-3'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -151,10 +151,11 @@ dependencies {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
     }
-    compile('io.ona.kujaku:utils:0.2.5-56-2') {
+    compile('io.ona.kujaku:utils:0.2.6-11-3') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'appcompat-v7'
     }
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.cocoahero.android:geojson:1.0.1@jar'

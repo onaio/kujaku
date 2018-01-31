@@ -10,7 +10,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.BuildConfig;
-import utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
 import static org.junit.Assert.*;
 

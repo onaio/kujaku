@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
-import utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
 /**
  * Holds an Offline Map delete task definition<br/>

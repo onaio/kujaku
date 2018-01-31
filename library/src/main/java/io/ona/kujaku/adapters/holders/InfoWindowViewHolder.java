@@ -1,100 +1,131 @@
 package io.ona.kujaku.adapters.holders;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.utils.Views;
+import io.ona.kujaku.utils.config.InfoWindowConfig;
 
-public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
-    private final InfoWindowAdapter adapter;
+public class InfoWindowViewHolder extends RecyclerView.ViewHolder
+        implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
+    private static final String TAG = InfoWindowViewHolder.class.getSimpleName();
     private static final float UNSELECTED_OPACITY = 0.5f;
     private static final float SELECTED_OPACITY = 1.0f;
-    private static final int SELECTED_SIZE_DIFFERENCE_DP = 10;
-    private static final int ANIMATE_RESIZE_DURATION = 1000;
+    private static final long ANIMATION_DURATION = 200;
 
+    private final InfoWindowAdapter adapter;
+    private final CardView cardView;
+    private final ArrayList<TextView> propertyLabels;
+    private final ArrayList<TextView> propertyValues;
     private InfoWindowObject currentInfoWindowObject;
-    private CardView cardView;
-    private TextView nameTv;
-    private TextView ageTv;
-    private TextView weightTv;
-    private TextView vaccineTv;
-    private TextView labelNameTv;
-    private TextView labelAgeTv;
-    private TextView labelWeightTv;
-    private TextView labelVaccineTv;
+    private LinearLayout canvasLayout;
 
-    public InfoWindowViewHolder(@NonNull InfoWindowAdapter adapter, CardView cardView) {
+    public InfoWindowViewHolder(@NonNull InfoWindowAdapter adapter, @NonNull CardView cardView) {
         super(cardView);
-
         this.adapter = adapter;
         this.cardView = cardView;
-        nameTv = cardView.findViewById(R.id.tv_bottomInfoWindow_name);
-        ageTv = cardView.findViewById(R.id.tv_bottomInfoWindow_age);
-        weightTv = cardView.findViewById(R.id.tv_bottomInfoWindow_weight);
-        vaccineTv = cardView.findViewById(R.id.tv_bottomInfoWindow_vaccine);
-        labelNameTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelName);
-        labelAgeTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelAge);
-        labelWeightTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelWeight);
-        labelVaccineTv = cardView.findViewById(R.id.tv_bottomInfoWindow_labelVaccine);
+        this.propertyLabels = new ArrayList<>();
+        this.propertyValues = new ArrayList<>();
+        canvasLayout = cardView.findViewById(R.id.ll_canvas_layout);
+
         this.cardView.setOnClickListener(this);
+    }
+
+    /**
+     * Resets the stored configuration as well as all the views affected by the configuration.
+     *
+     * @param config    The new configuration to be applied
+     * @throws JSONException If unable to parse the new configuration
+     */
+    public void setInfoWindowConfig(@NonNull InfoWindowConfig infoWindowConfig)
+            throws JSONException {
+        removeDynamicViews();
+        JSONArray visibleProperties = infoWindowConfig.getVisibleProperties();
+        if (visibleProperties != null) {
+            for (int i = 0; i < visibleProperties.length(); i++) {
+                createPropertyViews(visibleProperties.getJSONObject(i));
+            }
+        }
+    }
+
+    private void removeDynamicViews() {
+        canvasLayout.removeAllViews();
+        propertyLabels.clear();
+        propertyValues.clear();
+    }
+
+    /**
+     * Creates views for a GeoJSON property meant to be visible, as defined in the
+     * {@link utils.config.InfoWindowConfig}
+     *
+     * @param property The GeoJSON property to be displayed as defined in
+     *                 {@code utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.addVisibleProperty}
+     */
+    private void createPropertyViews(JSONObject property) throws JSONException {
+        String label = property
+                .getString(InfoWindowConfig.KEY_VP_LABEL);
+        String id = property.getString(InfoWindowConfig.KEY_VP_ID);
+
+        LinearLayout itemCanvas = (LinearLayout) LayoutInflater
+                .from(adapter.getContext()).inflate(R.layout.item_info_window, canvasLayout, true);
+        itemCanvas.setId(Views.generateViewId());
+
+        TextView labelTV = (TextView) itemCanvas.findViewById(R.id.tv_label);
+        labelTV.setId(Views.generateViewId());
+        labelTV.setText(label + ":");
+        labelTV.setTag(id);
+        propertyLabels.add(labelTV);
+
+        TextView valueTV = (TextView) itemCanvas.findViewById(R.id.tv_value);
+        valueTV.setId(Views.generateViewId());
+        valueTV.setTag(id);
+        propertyValues.add(valueTV);
     }
 
     public void setData(InfoWindowObject infoWindowObject) throws JSONException {
         this.currentInfoWindowObject = infoWindowObject;
         this.currentInfoWindowObject.setOnFocusChangeListener(this);
-        String[] priorityFields = new String[]{
-                "first_name",
-                "Birth_Weight",
-                "Place_Birth",
-                "zeir_id"
-        };
-        TextView[] tvs = new TextView[]{nameTv, ageTv, weightTv, vaccineTv};
-        TextView[] tvLabels = new TextView[]{labelNameTv, labelAgeTv, labelWeightTv, labelVaccineTv};
-        int fromPriorityFieldIndex = 0;
-
         JSONObject jsonObject = infoWindowObject.getJsonObject();
 
         if (jsonObject.has("properties")) {
             JSONObject propertiesJSON = jsonObject.getJSONObject("properties");
 
-            for (int i = 0; i < tvs.length; i++) {
-                TextView tv = tvs[i];
-                TextView labelTv = tvLabels[i];
-
-                for (int j = fromPriorityFieldIndex; j < priorityFields.length; j++) {
-                    String priorityField = priorityFields[j];
-
-                    if (propertiesJSON.has(priorityField)) {
-                        labelTv.setText(humanizeFieldName(priorityField) + ": ");
-                        tv.setText(propertiesJSON.getString(priorityField));
-                        fromPriorityFieldIndex = j + 1;
-                        break;
-                    } else {
-                        // Select a substitude field or disable the TextView(s)
-                        labelTv.setVisibility(View.GONE);
-                        tv.setVisibility(View.GONE);
-                    }
-
+            for (TextView curField : propertyValues) {
+                String propertyId = (String) curField.getTag();
+                if (propertyId != null && propertiesJSON.has(propertyId)) {
+                    curField.setText(propertiesJSON.getString(propertyId));
+                } else {
+                    curField.setText(null);
                 }
             }
         }
+
         updateFocusViews();
     }
 
-    private void startCardViewWidthAnimation(int endWidth) {
+    private void startCardViewWidthAnimation(int endWidth,
+                                             Animator.AnimatorListener animatorListener) {
         final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
-        ValueAnimator anim = ValueAnimator.ofInt(layoutParams.width, endWidth);
+        final ValueAnimator anim = ValueAnimator.ofInt(layoutParams.width, endWidth);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -103,11 +134,15 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
                 cardView.setLayoutParams(layoutParams);
             }
         });
-        anim.setDuration(200);
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
         anim.start();
     }
 
-    private void startCardViewAlphaAnimation(float endAlpha) {
+    private void startCardViewAlphaAnimation(float endAlpha,
+                                             Animator.AnimatorListener animatorListener) {
         ValueAnimator anim = ValueAnimator.ofFloat(cardView.getAlpha(), endAlpha);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -116,11 +151,15 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
                 cardView.setAlpha(val);
             }
         });
-        anim.setDuration(200);
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
         anim.start();
     }
 
-    private void startCardViewHeightAnimation(int endHeight) {
+    private void startCardViewHeightAnimation(int endHeight,
+                                              Animator.AnimatorListener animatorListener) {
         final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();
         ValueAnimator anim = ValueAnimator.ofInt(layoutParams.height, endHeight);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -131,12 +170,17 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
                 cardView.setLayoutParams(layoutParams);
             }
         });
-        anim.setDuration(200);
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
         anim.start();
     }
 
-    private void startCardViewVMarginAnimation(int endMargin) {
-        final ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) cardView.getLayoutParams();
+    private void startCardViewVMarginAnimation(int endMargin,
+                                               Animator.AnimatorListener animatorListener) {
+        final ViewGroup.MarginLayoutParams layoutParams =
+                (ViewGroup.MarginLayoutParams) cardView.getLayoutParams();
         ValueAnimator anim = ValueAnimator.ofInt(layoutParams.bottomMargin, endMargin);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -147,51 +191,119 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder implements Inf
                 cardView.setLayoutParams(layoutParams);
             }
         });
-        anim.setDuration(200);
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
         anim.start();
     }
 
+    private void startTextSizeAnimation(float endTextSize,
+                                        Animator.AnimatorListener animatorListener) {
+        ValueAnimator anim =
+                ValueAnimator.ofFloat(propertyLabels.get(0).getPaint().getTextSize(), endTextSize);
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float animatedValue = (Float) valueAnimator.getAnimatedValue();
+                for (TextView curTextView : propertyLabels) {
+                    curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);
+                }
+
+                for (TextView curTextView : propertyValues) {
+                    curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);
+                }
+            }
+        });
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
+        anim.start();
+    }
+
+    private void startCanvasPaddingAnimation(int endPadding,
+                                             Animator.AnimatorListener animatorListener) {
+        ValueAnimator anim = ValueAnimator.ofInt(canvasLayout.getPaddingTop(), endPadding);
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                int animatedValue = (Integer) valueAnimator.getAnimatedValue();
+                canvasLayout.setPadding(animatedValue, animatedValue, animatedValue, animatedValue);
+            }
+        });
+        if (animatorListener != null) {
+            anim.addListener(animatorListener);
+        }
+        anim.setDuration(ANIMATION_DURATION);
+        anim.start();
+    }
+
+    private void moveCardToCenterScreen() {
+        adapter.getRecyclerView().scrollToPosition(currentInfoWindowObject.getPosition());
+    }
+
     public void select() {
-        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_width));
-        startCardViewAlphaAnimation(SELECTED_OPACITY);
-        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_height));
-        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_v_margin));
+        moveCardToCenterScreen();
+        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_width), null);
+        startCardViewAlphaAnimation(SELECTED_OPACITY, null);
+        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_height), null);
+        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_v_margin), null);
+        startTextSizeAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_text_size), null);
+        startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_padding), new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                Log.d(TAG, "Info window selected animation started");
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (!currentInfoWindowObject.isFocused()) {
+                    unselect();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                Log.d(TAG, "Info windo selected animation canceled");
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+                Log.d(TAG, "Info window selected animation repeating");
+            }
+        });
     }
 
     public void unselect() {
-        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_width));
-        startCardViewAlphaAnimation(UNSELECTED_OPACITY);
-        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_height));
-        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_v_margin));
-    }
+        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_width), null);
+        startCardViewAlphaAnimation(UNSELECTED_OPACITY, null);
+        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_height), null);
+        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_v_margin), null);
+        startTextSizeAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_text_size), null);
+        startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_padding), new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                Log.d(TAG, "Info window unselected animation started");
+            }
 
-    private int getPx(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, cardView.getResources().getDisplayMetrics());
-    }
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (currentInfoWindowObject.isFocused()) {
+                    select();
+                }
+            }
 
-    private String humanizeFieldName(String fieldName) {
-        // Replace underscores with spaces
-        // Capitalize the words
-        fieldName = fieldName.replace("_", " ");
-        fieldName = capitalize(fieldName);
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                Log.d(TAG, "Info window unselected animation canceled");
+            }
 
-        // Todo: Capitalize all words
-
-        // Change abbreviations to Uppercase
-        String[] abbreviations = new String[]{
-                "id",
-                "zeir"
-        };
-
-        for (String abbreviation : abbreviations) {
-            fieldName = fieldName.replace(abbreviation, abbreviation.toUpperCase());
-        }
-
-        return fieldName;
-    }
-
-    private String capitalize(String name) {
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+                Log.d(TAG, "Info window unselected animation repeated");
+            }
+        });
     }
 
     private void updateFocusViews() {

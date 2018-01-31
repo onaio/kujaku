@@ -12,7 +12,7 @@ import java.text.DecimalFormat;
 import io.ona.kujaku.R;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * Creates the appropriate channel for download progress notifications. Displays download progress

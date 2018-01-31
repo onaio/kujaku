@@ -2,6 +2,7 @@ package io.ona.kujaku.activities;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
@@ -11,9 +12,11 @@ import android.os.Build;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -55,25 +59,28 @@ import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
-import io.ona.kujaku.sorting.objects.SortField;
 import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
-import utils.Constants;
-import utils.CoordinateUtils;
-import utils.helpers.MapBoxStyleHelper;
-import utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.CoordinateUtils;
+import io.ona.kujaku.utils.config.DataSourceConfig;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
  * These are passed as:
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
- *
- *
- *      <p>
- *      - MapBox Styles - String array containing <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/">valid MapBox Style</a> at index 0
- *      <p>
- *
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
+ * <p>
+ * <p>
+ * <p>
+ * - MapBox Styles - String array containing <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/">valid MapBox Style</a> at index 0
+ * <p>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
 public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -81,7 +88,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private MapView mapView;
     private String currentStylePath;
 
-    private SortField[] sortFields;
+    private SortFieldConfig[] sortFields;
     private String[] dataLayers;
     private JSONObject mapboxStyleJSON;
     private static final String TAG = MapActivity.class.getSimpleName();
@@ -94,6 +101,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
     private InfoWindowLayoutManager linearLayoutManager;
+    private HashMap<Integer, AlertDialog> alertDialogs;
     private int lastSelected = -1;
     private ImageButton focusOnMyLocationImgBtn;
 
@@ -171,12 +179,16 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                     // Extract kujaku meta-data
                     try {
-                        sortFields = extractSortFields(mapboxStyleJSON);
-                        dataLayers = extractSourceNames(mapboxStyleJSON);
+                        MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(mapboxStyleJSON);
+                        if (!styleHelper.getKujakuConfig().isValid()) {
+                            showIncompleteStyleError();
+                        }
+                        sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);
+                        dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
                         featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
                         featuresMap = sortData(featuresMap, sortFields);
-                        displayInitialFeatures(featuresMap);
-                    } catch (JSONException e) {
+                        displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
+                    } catch (JSONException | InvalidMapBoxStyleException e) {
                         Log.e(TAG, Log.getStackTraceString(e));
                     }
                 }
@@ -184,6 +196,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
             initMapBoxSdk(savedInstanceState, currentStylePath, maxZoom, minZoom);
         }
+    }
+
+    private void showIncompleteStyleError() {
+        showAlertDialog(
+                R.string.error_kujaku_config,
+                R.string.error_kujaku_config_description,
+                R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }, -1, null);
     }
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
@@ -256,35 +281,26 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         double lngDifference = bottomRightBound.getLongitude() - topLeftBound.getLongitude();
 
         return new LatLng(
-                bottomRightBound.getLatitude() + (latDifference/2),
-                topLeftBound.getLongitude() + (lngDifference/2)
+                bottomRightBound.getLatitude() + (latDifference / 2),
+                topLeftBound.getLongitude() + (lngDifference / 2)
         );
     }
 
     private void initializeViews() {
+        dismissAllDialogs();
+        alertDialogs = new HashMap<>();
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
         focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapActivity_focusOnMyLocationIcon);
     }
 
-    private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
-        if (jsonObject.has("metadata")) {
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
-            if (metadata.has("kujaku")) {
-                JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("data_source_names")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("data_source_names");
-                    String[] dataLayers = new String[jsonArray.length()];
-
-                    for(int i = 0; i < dataLayers.length; i++) {
-                        dataLayers[i] = jsonArray.getString(i);
-                    }
-
-                    return dataLayers;
+    private void dismissAllDialogs() {
+        if (alertDialogs != null) {
+            for (AlertDialog curDialog : alertDialogs.values()) {
+                if (curDialog.isShowing()) {
+                    curDialog.dismiss();
                 }
             }
         }
-
-        return null;
     }
 
     private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
@@ -293,18 +309,18 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
             int counter = 0;
 
-            for(String dataSourceName: dataSourceNames) {
+            for (String dataSourceName : dataSourceNames) {
                 if (sources.has(dataSourceName)) {
                     JSONObject jsonObject = sources.getJSONObject(dataSourceName);
                     if (jsonObject.has("data")) {
                         JSONObject sourceDataJSONObject = jsonObject.getJSONObject("data");
                         if (sourceDataJSONObject.has("features")) {
                             JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
-                            for(int i = 0; i < featuresJSONArray.length(); i++) {
+                            for (int i = 0; i < featuresJSONArray.length(); i++) {
                                 JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 
                                 String id = getFeatureId(featureJSON);
-                                if (!id.isEmpty()) {
+                                if (!TextUtils.isEmpty(id)) {
                                     //Todo: Should check for errors here & print them in LogCat or notify the dev somehow
                                     featuresMap.put(id, new InfoWindowObject(counter, featureJSON));
                                     featureIdList.add(id);
@@ -317,27 +333,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
 
             return featuresMap;
-        }
-
-        return null;
-    }
-
-    private SortField[] extractSortFields(@NonNull JSONObject jsonObject) throws JSONException {
-        if (jsonObject.has("metadata")) {
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
-            if (metadata.has("kujaku")) {
-                JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("sort_fields")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("sort_fields");
-                    SortField[] sortFields = new SortField[jsonArray.length()];
-
-                    for(int i = 0; i < sortFields.length; i++) {
-                        sortFields[i] = SortField.extract(jsonArray.getJSONObject(i));
-                    }
-
-                    return sortFields;
-                }
-            }
         }
 
         return null;
@@ -367,9 +362,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap) {
+    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull KujakuConfig kujakuConfig) {
         if (!featuresMap.isEmpty()) {
-            infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView);
+            infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView, kujakuConfig);
             infoWindowsRecyclerView.setHasFixedSize(true);
             linearLayoutManager = new InfoWindowLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
             infoWindowsRecyclerView.setLayoutManager(linearLayoutManager);
@@ -377,19 +372,20 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private LinkedHashMap<String, InfoWindowObject> sortData(LinkedHashMap<String, InfoWindowObject> featuresMap, SortField[] sortFields) throws JSONException {
+    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull SortFieldConfig[] sortFields) throws JSONException {
+        //TODO: Add support for multiple sorts
         int counter = 0;
-        if (sortFields != null && sortFields.length > 0) {
-            SortField sortField = sortFields[0];
-            if (sortField.getType() == SortField.FieldType.DATE) {
-                Sorter sorter = new Sorter(new ArrayList<>(featuresMap.values()));
-                ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() -1, sortField.getDataField(), sortField.getType());
+        if (sortFields.length > 0) {
+            SortFieldConfig sortField = sortFields[0];
+            if (sortField.getType() == SortFieldConfig.FieldType.DATE) {
+                Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));
+                ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() - 1, sortField.getDataField(), sortField.getType());
 
                 featuresMap.clear();
 
-                for(InfoWindowObject infoWindowObject: infoWindowObjectArrayList) {
+                for (InfoWindowObject infoWindowObject : infoWindowObjectArrayList) {
                     String id = getFeatureId(infoWindowObject);
-                    if (!id.isEmpty()) {
+                    if (!TextUtils.isEmpty(id)) {
                         infoWindowObject.setPosition(counter);
                         featuresMap.put(id, infoWindowObject);
                         counter++;
@@ -399,6 +395,29 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
 
         return featuresMap;
+    }
+
+    public void showAlertDialog(int title, int message,
+                                int posButtonText,
+                                @Nullable DialogInterface.OnClickListener posOnClickListener,
+                                int negButtonText,
+                                @Nullable DialogInterface.OnClickListener negOnClickListener) {
+        if (!alertDialogs.containsKey(message)
+                || !alertDialogs.get(message).isShowing()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(title);
+            builder.setMessage(message);
+            builder.setCancelable(true);
+            if (posOnClickListener != null) {
+                builder.setPositiveButton(posButtonText, posOnClickListener);
+                builder.setCancelable(false);
+            }
+            if (negOnClickListener != null) {
+                builder.setNegativeButton(negButtonText, negOnClickListener);
+                builder.setCancelable(false);
+            }
+            alertDialogs.put(message, builder.show());
+        }
     }
 
     @Override
@@ -476,7 +495,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         // Get the first feature within the list if one exist
         if (features.size() > 0) {
-            for(Feature feature: features) {
+            for (Feature feature : features) {
 
                 // Ensure the feature has properties defined
                 if (feature.getProperties() != null) {
@@ -534,8 +553,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             if (infoWindowViewHolder != null) {
                                 View v = infoWindowViewHolder.itemView;
 
-                                int offset = (screenWidth/2) - (v.getWidth()/2);
-                                linearLayoutManager.scrollToPositionWithOffset(position,  offset);
+                                int offset = (screenWidth / 2) - (v.getWidth() / 2);
+                                linearLayoutManager.scrollToPositionWithOffset(position, offset);
 
                                 infoWindowViewHolder.select();
                             }
@@ -565,7 +584,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
         final int left = view.getLeft();
-        final int offset = (screenWidth/2) - (view.getWidth()/2);
+        final int offset = (screenWidth / 2) - (view.getWidth() / 2);
         final float totalOffset = offset - left;
 
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(totalOffset);
@@ -682,7 +701,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        return "";
+        return null;
     }
 
     private void performInfoWindowDoubleClickAction(InfoWindowObject infoWindowObject) {

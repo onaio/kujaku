@@ -13,8 +13,9 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.utils.BuildConfig;
-import utils.exceptions.InvalidMapBoxStyleException;
-import utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
@@ -26,12 +27,12 @@ public class MapBoxStyleHelperTest {
 
     /**
      * Tests best case for adding GeoJson data source to MapBox style
-     * 
+     *
      * @throws JSONException
      * @throws InvalidMapBoxStyleException
      */
     @Test
-    public void insertGeoJsonDataSource() throws JSONException, InvalidMapBoxStyleException {
+    public void testInsertGeoJsonDataSource() throws JSONException, InvalidMapBoxStyleException {
         JSONObject style = new JSONObject();
         style.put("layers", new JSONArray());
         JSONObject layer0 = new JSONObject();
@@ -46,19 +47,22 @@ public class MapBoxStyleHelperTest {
         String geoJsonSourceName = "geojson0";
 
         MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(style);
+        addValidKujakuConfig(styleHelper);
         styleHelper.insertGeoJsonDataSource(geoJsonSourceName, geoJsonDataSource, layerId);
-        JSONObject returnedData = styleHelper.getStyleObject();
+        JSONObject returnedData = styleHelper.build();
 
         Assert.assertTrue(returnedData.has("sources"));
         Assert.assertTrue(returnedData.getJSONObject("sources").has(geoJsonSourceName));
-        Assert.assertEquals(returnedData.getJSONObject("sources").getJSONObject(geoJsonSourceName).toString(),
+        Assert.assertEquals(
+                returnedData.getJSONObject("sources").getJSONObject(geoJsonSourceName).toString(),
                 getGeoJsonDataSource().toString());
         Assert.assertTrue(returnedData.getJSONArray("layers").getJSONObject(0).has("source"));
-        Assert.assertTrue(returnedData.getJSONArray("layers").getJSONObject(0).getString("source").equals(geoJsonSourceName));
+        Assert.assertTrue(returnedData.getJSONArray("layers").getJSONObject(0).getString("source")
+                .equals(geoJsonSourceName));
     }
 
     @Test
-    public void setMapCenterWhenGivenCenterPoint() throws JSONException {
+    public void setMapCenterWhenGivenCenterPoint() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = MapBoxStyleHelper.KEY_MAP_CENTER;
         LatLng mapCenter = new LatLng(23.89454, 57.909234);
         String sampleStyle = getSampleMapboxStyle();
@@ -74,7 +78,7 @@ public class MapBoxStyleHelperTest {
     }
 
     @Test
-    public void setMapCenterWhenGivenBounds() throws JSONException {
+    public void setMapCenterWhenGivenBounds() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = MapBoxStyleHelper.KEY_MAP_CENTER;
         LatLng topLeft = new LatLng(20.0, -20.0);
         LatLng bottomRight = new LatLng(-10.0, 10.0);
@@ -93,7 +97,7 @@ public class MapBoxStyleHelperTest {
     }
 
     @Test
-    public void setZoomShouldAddZoomToStyle() throws JSONException {
+    public void setZoomShouldAddZoomToStyle() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = "zoom";
         double rootZoom = 4.5d;
         String sampleStyle = getSampleMapboxStyle();
@@ -112,7 +116,7 @@ public class MapBoxStyleHelperTest {
     }
 
     @Test
-    public void setZoomShouldUpdateZoomToStyle() throws JSONException {
+    public void setZoomShouldUpdateZoomToStyle() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = MapBoxStyleHelper.KEY_ROOT_ZOOM;
         double rootZoom = 4.5d;
         String sampleStyle = getSampleMapboxStyle();
@@ -147,6 +151,14 @@ public class MapBoxStyleHelperTest {
                 "        \"type\": \"FeatureCollection\"\n" +
                 "  }\n" +
                 "}");
+    }
+
+    private MapBoxStyleHelper addValidKujakuConfig(MapBoxStyleHelper helper)
+            throws JSONException, InvalidMapBoxStyleException {
+        helper.getKujakuConfig().getInfoWindowConfig().addVisibleProperty("test", "test");
+        helper.getKujakuConfig().addDataSourceConfig("test");
+        helper.getKujakuConfig().addSortFieldConfig(SortFieldConfig.FieldType.STRING.toString(), "test");
+        return helper;
     }
 
     private String getSampleMapboxStyle() {

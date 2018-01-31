@@ -56,7 +56,7 @@ import io.ona.kujaku.test.shadows.ShadowRealm;
 import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
 import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
 import io.ona.kujaku.utils.NumberFormatter;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

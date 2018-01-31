@@ -10,7 +10,7 @@ import android.os.SystemClock;
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.data.realm.RealmDatabase;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * This application class should be extended for all apps especially if you expect your app to be

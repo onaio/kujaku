@@ -28,7 +28,7 @@ import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

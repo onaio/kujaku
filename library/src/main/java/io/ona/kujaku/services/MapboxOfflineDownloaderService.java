@@ -1,7 +1,6 @@
 package io.ona.kujaku.services;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +14,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -27,8 +25,6 @@ import com.mapbox.mapboxsdk.offline.OfflineRegionError;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
 import org.json.JSONException;
-
-import java.text.DecimalFormat;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
@@ -46,11 +42,11 @@ import io.ona.kujaku.utils.ObjectCoercer;
 import io.ona.kujaku.notifications.DownloadCompleteNotification;
 import io.ona.kujaku.notifications.DownloadProgressNotification;
 import io.realm.Realm;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
 import io.realm.RealmResults;
 import io.realm.Sort;
-import utils.Constants;
-import utils.exceptions.MalformedDataException;
-import utils.exceptions.OfflineMapDownloadException;
 
 /**
  * Service performs Offline Map Download, Offline Map Deletion & Offline Map Download Resumption

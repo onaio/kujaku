@@ -2,6 +2,7 @@ package io.ona.kujaku.utils;
 
 import org.json.JSONObject;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**

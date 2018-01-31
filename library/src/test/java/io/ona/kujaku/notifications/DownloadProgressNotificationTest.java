@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
