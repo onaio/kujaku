@@ -200,8 +200,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void showIncompleteStyleError() {
         showAlertDialog(
-                R.string.kujaku_config,
                 R.string.error_kujaku_config,
+                R.string.error_kujaku_config_description,
                 R.string.ok,
                 new DialogInterface.OnClickListener() {
                     @Override

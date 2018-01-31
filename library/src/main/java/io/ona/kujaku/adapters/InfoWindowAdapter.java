@@ -62,8 +62,8 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
             Log.e(TAG, Log.getStackTraceString(e));
             if (activity instanceof MapActivity) {
                 ((MapActivity)activity).showAlertDialog(
-                        R.string.kujaku_config,
                         R.string.error_kujaku_config,
+                        R.string.error_kujaku_config_description,
                         R.string.ok,
                         new DialogInterface.OnClickListener() {
                             @Override
