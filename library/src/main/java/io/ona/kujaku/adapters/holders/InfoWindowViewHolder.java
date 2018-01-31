@@ -253,7 +253,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
         startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_padding), new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-                Log.d(TAG, "Canvas padding animation started");
+                Log.d(TAG, "Info window selected animation started");
             }
 
             @Override
@@ -265,12 +265,12 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                Log.d(TAG, "Canvas padding animation canceled");
+                Log.d(TAG, "Info windo selected animation canceled");
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-                Log.d(TAG, "Canvas padding animation repeating");
+                Log.d(TAG, "Info window selected animation repeating");
             }
         });
     }
@@ -284,7 +284,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
         startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_padding), new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                Log.d(TAG, "Info window unselected animation started");
             }
 
             @Override
@@ -296,12 +296,12 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
 
             @Override
             public void onAnimationCancel(Animator animation) {
-
+                Log.d(TAG, "Info window unselected animation canceled");
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-
+                Log.d(TAG, "Info window unselected animation repeated");
             }
         });
     }
