@@ -111,7 +111,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private InfoWindowAdapter infoWindowAdapter;
 
-    private double cameraTilt = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
@@ -170,9 +169,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
 
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
-                cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
-            }
 
             if (stylesArray != null) {
                 currentStylePath = stylesArray[0];
@@ -198,7 +194,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, cameraTilt, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, maxZoom, minZoom);
         }
     }
 
@@ -215,7 +211,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }, -1, null);
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath, final double cameraTilt,
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                final double maxZoom, final double minZoom) {
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
@@ -260,13 +256,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 boolean cameraPositionChanged = false;
 
 
-                if (cameraTilt != -1) {
-                    cameraPositionBuilder.tilt(cameraTilt);
-                    cameraPositionChanged = true;
-                }
-
                 if (cameraPositionChanged) {
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
+                }
+
+                if (mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+                    waitingForLocation = false;
                 }
 
                 lastLocation = null;
