@@ -193,6 +193,14 @@ public class MapBoxStyleHelper {
         styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);
     }
 
+    /**
+     * Removes the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
+     * property of a map from the Mapbox Style JSON if it exists
+     */
+    public void removeMapCenter() {
+        styleObject.remove(KEY_MAP_CENTER);
+    }
+
     /*
      * Updates or adds the root zoom property to the Mapbox Style
      *
