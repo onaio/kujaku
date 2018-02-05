@@ -39,6 +39,19 @@ public class RealmDatabase {
         Realm.setDefaultConfiguration(configuration);
     }
 
+    /**
+     * Retrieves all {@link MapBoxOfflineQueueTask} records in ASCENDING order of the date created
+     *
+     * @return list of {@link MapBoxOfflineQueueTask} records
+     */
+    public RealmResults<MapBoxOfflineQueueTask> getTasks() {
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
+                .findAll();
+
+        return realmResults.sort("dateCreated", Sort.ASCENDING);
+    }
+
     public boolean deleteTask(@NonNull String mapName, boolean isDownloadTask) {
         Realm realm = Realm.getDefaultInstance();
         MapBoxOfflineQueueTask taskToDelete;

@@ -1,7 +1,7 @@
 package io.ona.kujaku.sample.activities;
 
-import android.app.Activity;
 import android.Manifest;
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,39 +9,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.mapbox.mapboxsdk.offline.OfflineManager;
-import com.mapbox.mapboxsdk.offline.OfflineRegion;
-import com.mapbox.mapboxsdk.offline.OfflineRegionError;
-import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
@@ -49,10 +32,10 @@ import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.Permissions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseNavigationDrawerActivity {
 
     private EditText topLeftLatEd, topLeftLngEd, bottomRightLatEd, bottomRightLngEd, mapNameEd;
 
@@ -65,15 +48,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private int lastNotificationId = 200;
-    private int lastMapDownloadId = 1;
-
     private final static String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        setContentView(R.layout.activity_main);
         requestBasicPermissions();
 
         bottomRightLatEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlatitude);
@@ -117,6 +98,18 @@ public class MainActivity extends AppCompatActivity {
                 downloadMapBoxStyle(mapBoxStyleUrl.getText().toString());
             }
         });
+
+        setTitle(R.string.main_activity_title);
+    }
+
+    @Override
+    protected int getContentView() {
+        return R.layout.activity_main;
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_main_activity;
     }
 
     private void callLibrary() {
@@ -126,22 +119,11 @@ public class MainActivity extends AppCompatActivity {
         });
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        LatLng bottomRight = new LatLng(
-                -17.854564,
-                25.854782
-        );
-
-        LatLng topLeft = new LatLng(
-                -17.875469,
-                25.876589
-        );
-
-
         startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
 
     private void downloadMap() {
-        double topLeftLat = -1.29020515, topLeftLng = 36.78702772, bottomRightLat = -1.29351951, bottomRightLng = 36.79288566;
+        double topLeftLat = 37.7897, topLeftLng = -119.5073, bottomRightLat = 37.6744, bottomRightLng = -119.6815;
 
         String tllatE = topLeftLatEd.getText().toString();
         String tllngE = topLeftLngEd.getText().toString();
@@ -165,13 +147,11 @@ public class MainActivity extends AppCompatActivity {
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);//"Hp Invent " + UUID.randomUUID().toString());
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-            /*mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(37.7897, -119.5073));//new LatLngParcelable(-1.29020515, 36.78702772)); //new LatLngParcelable(-1.2920646, 36.7846043));
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(37.6744, -119.6815));//new LatLngParcelable(-1.29351951, 36.79288566));//new LatLngParcelable(-2.2920646, 38.7846043));*/
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng)); //new LatLngParcelable(-1.2920646, 36.7846043));
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));//new LatLngParcelable(-2.2920646, 38.7846043));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
 
             startService(mapDownloadIntent);
         } else {
@@ -182,11 +162,11 @@ public class MainActivity extends AppCompatActivity {
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);//"Map Dw : " + (++lastMapDownloadId));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(37.7897, -119.5073));
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(37.6744, -119.6815));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
 
             startService(mapDownloadIntent);
         }
@@ -228,160 +208,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
-    }
-
-    private void showOfflineRegions() {
-        //Init mapbox SDK
-        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-
-        ListView listView = (ListView) findViewById(R.id.lv_mainActivity_offlineRegionsStatus);
-        getOfflineDownloadedRegions(listView);
-    }
-
-    private String offlineRegionInfo = "";
-    private void getOfflineDownloadedRegions(final ListView listView) {
-        OfflineManager offlineManager = OfflineManager.getInstance(MainActivity.this);
-        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
-            @Override
-            public void onList(final OfflineRegion[] offlineRegions) {
-                /*listView.setAdapter(new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, android.R.id.text1, offlineRegions){
-                    @NonNull
-                    @Override
-                    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                        if (convertView == null) {
-                            convertView = getLayoutInflater().inflate(android.R.layout.simple_list_item_1, parent, false);
-                        }
-                        offlineRegionInfo = "";
-                        TextView textView = (TextView) convertView;
-
-
-
-                        textView.setText(offlineRegionInfo);
-
-                        return convertView;
-                    }
-                });*/
-                getOfflineRegionsInfo(offlineRegions, listView);
-            }
-
-            @Override
-            public void onError(String error) {
-                Log.e(TAG, "ERROR :: "  + error);
-            }
-        });
-    }
-
-    int position = 0;
-    int remainingCallbacks = 0;
-    private boolean activated = false;
-    private String currentText = "";
-    private void getOfflineRegionsInfo(final OfflineRegion[] offlineRegions, final ListView listView) {
-        final String[] offlineInfo = new String[offlineRegions.length + 1];
-        remainingCallbacks = offlineRegions.length;
-
-        for(position = 0; position < offlineRegions.length; position++) {
-
-            //Add name
-            //Add percentage downloaded
-            //Add date & other details
-            //Add unique id
-            offlineRegionInfo = "";
-            byte[] metadataBytes = offlineRegions[position].getMetadata();
-            try {
-                JSONObject jsonObject = new JSONObject(new String(metadataBytes));
-                if (jsonObject.has("FIELD_REGION_NAME")) {
-                    offlineRegionInfo += "REGION NAME: " + jsonObject.getString("FIELD_REGION_NAME");
-                }
-
-                if (jsonObject.has("JSON_FIELD_REGION_NAME")) {
-                    offlineRegionInfo += "\nREGION NAME: " + jsonObject.getString("JSON_FIELD_REGION_NAME");
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            offlineRegions[position].getStatus(new OfflineRegion.OfflineRegionStatusCallback() {
-                @Override
-                public void onStatus(OfflineRegionStatus status) {
-                    offlineInfo[MainActivity.this.position] += "\nDOWNLOADED SIZE : " + (status.getCompletedResourceSize() / 1e6) + " MB";
-                    double percentageDownload = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
-
-                    offlineInfo[MainActivity.this.position] += "\nDOWNLOADED %: " + percentageDownload + "%";
-                    offlineInfo[position] += "\nCOMPLETED RESOURCES : " + status.getCompletedResourceCount();
-                    offlineInfo[position] += "\nREQUIRED RESOURCES : " + status.getRequiredResourceCount();
-                    offlineInfo[position] += "\n";
-
-                    Log.i(TAG, offlineRegionInfo);
-                    remainingCallbacks--;
-
-                    listView.setAdapter(new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, offlineInfo){
-                        @NonNull
-                        @Override
-                        public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                            if (convertView == null) {
-                                convertView = getLayoutInflater().inflate(android.R.layout.simple_list_item_1, parent, false);
-                            }
-
-                            final TextView textView = (TextView) convertView;
-                            textView.setText(offlineInfo[position]);
-                            textView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if (!activated) {
-                                        offlineRegions[position].setDownloadState(OfflineRegion.STATE_ACTIVE);
-                                    } else {
-                                        offlineRegions[position].setDownloadState(OfflineRegion.STATE_INACTIVE);
-                                    }
-
-                                    activated = !activated;
-
-                                    //Register a listener to update the list item
-                                    if (currentText.isEmpty()) {
-                                        currentText = textView.getText().toString();
-                                    }
-
-                                    offlineRegions[position].setObserver(new OfflineRegion.OfflineRegionObserver() {
-                                        @Override
-                                        public void onStatusChanged(OfflineRegionStatus status) {
-                                            double progress = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
-
-                                            textView.setText(currentText + "\nPROGRESS : " + progress + "%");
-                                        }
-
-                                        @Override
-                                        public void onError(OfflineRegionError error) {
-                                            textView.setText(currentText + "\nError : " + error.getReason() + "\n" + error.getMessage());
-                                        }
-
-                                        @Override
-                                        public void mapboxTileCountLimitExceeded(long limit) {
-                                            textView.setText(currentText + "\nMapbox tile limit count exceeded");
-                                        }
-                                    });
-
-                                }
-                            });
-
-                            return textView;
-                        }
-                    });
-
-                    /*if (remainingCallbacks == 1) {
-                        listView.setAdapter(new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, offlineInfo));
-                    }*/
-                }
-
-                @Override
-                public void onError(String error) {
-                    offlineInfo[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
-                    Log.e(TAG, "OFFLINE REGION STATUS : " + error);
-                }
-            });
-
-            offlineRegionInfo += "\nID: " + offlineRegions[position].getID();
-            offlineInfo[position] = offlineRegionInfo;
-        }
     }
 
     private void downloadMapBoxStyle(String mapboxStyleUrl) {
@@ -431,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String readAssetFile(String inFile) {
-        String tContents = "";
+        String fileStringContents = "";
 
         try {
             InputStream stream = getAssets().open(inFile);
@@ -440,13 +266,12 @@ public class MainActivity extends AppCompatActivity {
             byte[] buffer = new byte[size];
             stream.read(buffer);
             stream.close();
-            tContents = new String(buffer);
+            fileStringContents = new String(buffer);
         } catch (IOException e) {
-            // Handle exceptions here
+            Log.e(TAG, Log.getStackTraceString(e));
         }
 
-        return tContents;
-
+        return fileStringContents;
     }
 
     private void requestBasicPermissions() {
@@ -462,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
             Permissions.request(this, notGivenPermissions.toArray(new String[notGivenPermissions.size()]), PERMISSIONS_REQUEST_CODE);
         } else {
             confirmSampleStyleAvailable();
-            showOfflineRegions();
         }
     }
 
@@ -475,7 +299,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void showInfoNotification(String title, String content) {
         lastNotificationId++;
-
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle(title)
                 .setContentText(content)
