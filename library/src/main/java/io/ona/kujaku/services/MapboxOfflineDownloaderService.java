@@ -205,7 +205,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
 
-                        realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(currentMapDownloadName);
+                        realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(mapUniqueName);
 
                         MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);
                         return true;

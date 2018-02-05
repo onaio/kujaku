@@ -1,5 +1,16 @@
 <resources>
     <string name="app_name">Kujaku Sample</string>
-    <string name="mapbox_access_token"></string>
     <string name="error_msg_could_not_retrieve_chosen_feature">Sorry! It seems we could not retrieve the feature chosen</string>
+    <string name="title_activity_navigation_drawer">NavigationDrawerActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="main_activity_title">Main Activity</string>
+    <string name="offline_regions_activity_title">Offline Regions</string>
+    <string name="task_queue_activity_title">Task Queue</string>
+
+    <string name="task_item_display_template">\n\nTask Type:  %1$s\nTask Details: %2$s\nTask Status: %3$s\nDate created: %4$s\n\n</string>
+    <string name="error_msg_json_exception">Sorry! An error occurred due to the JSON format</string>
 </resources>

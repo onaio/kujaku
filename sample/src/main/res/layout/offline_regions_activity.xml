@@ -15,7 +15,10 @@
 
         <include layout="@layout/app_bar"/>
 
-        <include layout="@layout/content_main_activity"/>
+        <ListView
+            android:id="@+id/lv_offlineRegionsActivity_mapsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     </LinearLayout>
 
