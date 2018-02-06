@@ -123,7 +123,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     }
 
     private void downloadMap() {
-        double topLeftLat = 37.7897, topLeftLng = -119.5073, bottomRightLat = 37.6744, bottomRightLng = -119.6815;
+        double topLeftLat = 37.7897;
+        double topLeftLng = -119.5073;
+        double bottomRightLat = 37.6744;
+        double bottomRightLng = -119.6815;
 
         String tllatE = topLeftLatEd.getText().toString();
         String tllngE = topLeftLngEd.getText().toString();
