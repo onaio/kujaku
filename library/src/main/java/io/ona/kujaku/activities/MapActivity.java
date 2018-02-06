@@ -58,6 +58,7 @@ import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
+import io.ona.kujaku.location.GoogleLocationClient;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
@@ -83,7 +84,7 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
-public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener{
     private static final int PERMISSIONS_REQUEST_CODE = 342;
     private MapView mapView;
     private String currentStylePath;
@@ -115,7 +116,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double minZoom = -1;
     private Bundle savedInstanceState;
 
-    private GoogleApiClient googleApiClient;
     private Location lastLocation;
     private boolean waitingForLocation = true;
     private boolean googleApiClientInitialized = false;
@@ -124,14 +124,27 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private LatLng focusedLocation;
     private boolean focusedOnOfMyLocation = false;
 
+    private GoogleLocationClient googleLocationClient;
+
     //Todo: Move reading data to another Thread
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        initializeViews();
+        googleLocationClient = new GoogleLocationClient(this, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                lastLocation = location;
 
+                if (waitingForLocation) {
+                    focusOnMyLocation(mapboxMap);
+                    waitingForLocation = false;
+                }
+            }
+        });
+
+        initializeViews();
         screenWidth = getScreenWidth(this);
 
         Bundle bundle = getIntentExtras();
@@ -167,8 +180,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
-
-
 
             if (stylesArray != null) {
                 currentStylePath = stylesArray[0];
@@ -265,7 +276,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
 
                 lastLocation = null;
-                initGoogleApiClient();
+                googleApiClientInitialized = true;
+                googleLocationClient.initGoogleApiClient();
                 focusOnMyLocationImgBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -424,7 +436,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onResume() {
         super.onResume();
         if (mapView != null) mapView.onResume();
-        if (googleApiClientInitialized) initGoogleApiClient();
+        if (googleApiClientInitialized) {
+            googleApiClientInitialized = true;
+            googleLocationClient.initGoogleApiClient();
+        }
     }
 
     @Override
@@ -443,7 +458,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onPause() {
         super.onPause();
         if (mapView != null) mapView.onPause();
-        disconnectGoogleApiClient();
+        googleLocationClient.disconnectGoogleApiClient();
     }
 
     @Override
@@ -752,65 +767,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         } else {
             waitingForLocation = true;
-        }
-    }
-
-    private void initGoogleApiClient() {
-        googleApiClientInitialized = true;
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        googleApiClient.connect();
-    }
-
-    private void disconnectGoogleApiClient() {
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
-    }
-
-    // GPS - Location Stuff
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        } catch (SecurityException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-            Toast.makeText(this, "Sorry but we could not get your location since the app does not have permissions to access your Location", Toast.LENGTH_LONG)
-                    .show();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(this, R.string.msg_location_retrieval_taking_longer_than_expected, Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(this, R.string.msg_could_not_find_your_location, Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        lastLocation = location;
-
-        if (waitingForLocation) {
-            waitingForLocation = false;
-            focusOnMyLocation(mapboxMap);
         }
     }
 
