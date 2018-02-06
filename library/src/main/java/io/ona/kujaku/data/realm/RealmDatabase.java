@@ -10,6 +10,7 @@ import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
+import io.realm.Sort;
 
 /**
  * Created by Jason Rogena - jrogena@ona.io on 11/20/17.
@@ -131,5 +132,24 @@ public class RealmDatabase {
         realm.commitTransaction();
 
         return isDeleted;
+    }
+
+    /**
+     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED} {@link MapBoxOfflineQueueTask}
+     *
+     * @return
+     */
+    public MapBoxOfflineQueueTask getNextTask() {
+        Realm realm = Realm.getDefaultInstance();
+
+        RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
+                .findAllSorted("dateUpdated", Sort.ASCENDING);
+
+        if (realmResults.size() > 0) {
+            return realmResults.first();
+        }
+
+        return null;
     }
 }

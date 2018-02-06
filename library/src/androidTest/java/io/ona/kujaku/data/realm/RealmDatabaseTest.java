@@ -2,8 +2,11 @@ package io.ona.kujaku.data.realm;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.json.JSONException;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import io.ona.kujaku.data.MapBoxDeleteTask;
@@ -212,6 +215,72 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
         assertEquals(2, realmResults.size());
     }
 
+    @Test
+    public void getNextTaskShouldReturnValidTask() throws JSONException {
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+
+        // First change the status for the current next tasks unit there is not other
+        ArrayList<Object[]> currentNotStartedTasks = new ArrayList();
+        Realm realm = Realm.getDefaultInstance();
+
+        while (true) {
+            MapBoxOfflineQueueTask nextTask = realmDatabase.getNextTask();
+
+            if (nextTask == null) {
+                break;
+            } else {
+                currentNotStartedTasks.add(new Object[]{nextTask.getTaskStatus(), nextTask.getId(), nextTask});
+
+                realm.beginTransaction();
+                nextTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
+                realm.commitTransaction();
+            }
+        }
+
+        MapBoxOfflineQueueTask deleteTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(new MapBoxDeleteTask(UUID.randomUUID().toString(), UUID.randomUUID().toString()));
+        realm.beginTransaction();
+        deleteTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_STARTED);
+        realm.commitTransaction();
+        addedRecords.add(deleteTask);
+
+        String mapName = UUID.randomUUID().toString();
+        MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask("com.android.developer", mapName, sampleMapBoxStyleURL);
+        MapBoxOfflineQueueTask expectedNextTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+
+        MapBoxOfflineQueueTask completedTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(createSampleDownloadTask("com.android.developer", UUID.randomUUID().toString(), sampleMapBoxStyleURL));
+        MapBoxOfflineQueueTask startedTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(createSampleDownloadTask("com.android.developer", UUID.randomUUID().toString(), sampleMapBoxStyleURL));
+
+        addedRecords.add(expectedNextTask);
+        addedRecords.add(completedTask);
+        addedRecords.add(startedTask);
+
+        realm.beginTransaction();
+
+        completedTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);
+        startedTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_STARTED);
+
+        realm.commitTransaction();
+
+        MapBoxOfflineQueueTask nextTask = realmDatabase.getNextTask();
+
+        assertEquals(expectedNextTask.getId(), nextTask.getId());
+        assertEquals(expectedNextTask.getTask().toString(), nextTask.getTask().toString());
+        assertEqualsDate(expectedNextTask.getDateCreated(), nextTask.getDateCreated());
+        assertEqualsDate(expectedNextTask.getDateUpdated(), expectedNextTask.getDateUpdated());
+
+        //Revert the task status
+        for(Object[] taskSummary: currentNotStartedTasks) {
+            int taskStatus = (int) taskSummary[0];
+            String id = (String) taskSummary[1];
+
+            MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) taskSummary[2];
+            realm.beginTransaction();
+            task.setTaskStatus(taskStatus);
+            realm.commitTransaction();
+        }
+
+    }
+
     /*
     ---------------------------
 
@@ -219,6 +288,10 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
 
     ---------------------------
      */
+
+    private void assertEqualsDate(Date expectedDate, Date actualDate) {
+        assertEquals(expectedDate.getTime(), actualDate.getTime());
+    }
 
     private MapBoxDownloadTask createSampleDownloadTask(String packageName, String mapName, String mapBoxStyleURL) {
 

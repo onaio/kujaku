@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //callLibrary();
 
         requestBasicPermissions();
 
@@ -68,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
         Button startOfflineDownload = (Button) findViewById(R.id.btn_mainActivity_startOfflineDownload);
         Button openMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
-
 
         startOfflineDownload.setOnClickListener(new View.OnClickListener() {
             @Override

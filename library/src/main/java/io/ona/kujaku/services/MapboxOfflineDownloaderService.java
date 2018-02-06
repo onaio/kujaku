@@ -38,15 +38,12 @@ import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
-import io.ona.kujaku.utils.ObjectCoercer;
 import io.ona.kujaku.notifications.DownloadCompleteNotification;
 import io.ona.kujaku.notifications.DownloadProgressNotification;
-import io.realm.Realm;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.ObjectCoercer;
 import io.ona.kujaku.utils.exceptions.MalformedDataException;
 import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
-import io.realm.RealmResults;
-import io.realm.Sort;
 
 /**
  * Service performs Offline Map Download, Offline Map Deletion & Offline Map Download Resumption
@@ -300,7 +297,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
             return;
         }
 
-        final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getNextTask();
+        final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realmDatabase.getNextTask();
 
         if (mapBoxOfflineQueueTask != null) {
             isDownloading = true;
@@ -484,25 +481,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 });
             }
         }
-    }
-
-    /**
-     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED} {@link MapBoxOfflineQueueTask}
-     *
-     * @return
-     */
-    private MapBoxOfflineQueueTask getNextTask() {
-        Realm realm = Realm.getDefaultInstance();
-
-        RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
-                .findAllSorted("dateUpdated", Sort.ASCENDING);
-
-        if (realmResults.size() > 0) {
-            return realmResults.first();
-        }
-
-        return null;
     }
 
     /**
