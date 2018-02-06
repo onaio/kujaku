@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
@@ -66,6 +67,57 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
 
         assertEquals(RealmDatabase.NAME, realmConfiguration.getRealmFileName());
         assertEquals(RealmDatabase.VERSION, realmConfiguration.getSchemaVersion());
+    }
+
+    @Test
+    public void getTasksShouldReturnCurrentRecordsWithAddedRecords() throws JSONException {
+        Realm.init(context);
+
+        int downloadAndDeleteTasksLen = 30;
+        MapBoxOfflineQueueTask[] tasks = new MapBoxOfflineQueueTask[downloadAndDeleteTasksLen];
+        String packageName = "com.sample.sub";
+
+        for(int i = 0; i < downloadAndDeleteTasksLen; i++) {
+            boolean isDownload = ((int) (Math.random() * 2)) == 1;
+
+            String mapName = UUID.randomUUID().toString();
+
+            MapBoxOfflineQueueTask mapBoxOfflineQueueTask;
+            if (isDownload) {
+                MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask(packageName, mapName, sampleMapBoxStyleURL);
+                mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
+            } else {
+                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+                mapBoxOfflineQueueTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
+            }
+
+            addedRecords.add(mapBoxOfflineQueueTask);
+            tasks[i] = mapBoxOfflineQueueTask;
+        }
+
+        RealmResults<MapBoxOfflineQueueTask> realmResults = RealmDatabase.init(context)
+                .getTasks();
+
+        for(int i = 0; i < downloadAndDeleteTasksLen; i++) {
+            MapBoxOfflineQueueTask task = tasks[i];
+
+            boolean found = false;
+            for(MapBoxOfflineQueueTask mapBoxOfflineQueueTask: realmResults) {
+                if (mapBoxOfflineQueueTask.getTask().toString().equals(task.getTask().toString())) {
+
+                    assertEquals(task.getDateCreated().getTime(), mapBoxOfflineQueueTask.getDateCreated().getTime());
+                    assertEquals(task.getDateUpdated().getTime(), mapBoxOfflineQueueTask.getDateUpdated().getTime());
+                    assertEquals(task.getId(), mapBoxOfflineQueueTask.getId());
+                    assertEquals(task.getTaskStatus(), mapBoxOfflineQueueTask.getTaskStatus());
+                    assertEquals(task.getTaskType(), mapBoxOfflineQueueTask.getTaskType());
+
+                    found = true;
+                    break;
+                }
+            }
+
+            assertTrue(found);
+        }
     }
 
     @Test
