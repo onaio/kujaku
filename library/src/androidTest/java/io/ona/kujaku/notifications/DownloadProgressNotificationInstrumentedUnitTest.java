@@ -17,7 +17,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/01/2018.
  */
-@Ignore
 public class DownloadProgressNotificationInstrumentedUnitTest extends BaseNotificationInstrumentedTest {
 
     @Test

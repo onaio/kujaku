@@ -19,7 +19,6 @@ import java.util.ArrayList;
  *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
-@Ignore
 @RunWith(AndroidJUnit4.class)
 public abstract class BaseNotificationInstrumentedTest {
 

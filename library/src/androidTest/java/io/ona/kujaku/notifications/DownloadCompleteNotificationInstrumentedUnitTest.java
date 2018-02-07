@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
-@Ignore
 public class DownloadCompleteNotificationInstrumentedUnitTest extends BaseNotificationInstrumentedTest {
 
     @RequiresApi(26)
