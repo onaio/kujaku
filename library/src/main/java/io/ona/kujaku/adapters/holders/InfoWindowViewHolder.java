@@ -53,7 +53,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
     /**
      * Resets the stored configuration as well as all the views affected by the configuration.
      *
-     * @param config    The new configuration to be applied
+     * @param infoWindowConfig    The new configuration to be applied
      * @throws JSONException If unable to parse the new configuration
      */
     public void setInfoWindowConfig(@NonNull InfoWindowConfig infoWindowConfig)
@@ -75,7 +75,7 @@ public class InfoWindowViewHolder extends RecyclerView.ViewHolder
 
     /**
      * Creates views for a GeoJSON property meant to be visible, as defined in the
-     * {@link utils.config.InfoWindowConfig}
+     * {@link InfoWindowConfig}
      *
      * @param property The GeoJSON property to be displayed as defined in
      *                 {@code utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.addVisibleProperty}

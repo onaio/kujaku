@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private int lastNotificationId = 200;
-    private int lastMapDownloadId = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,17 +107,6 @@ public class MainActivity extends AppCompatActivity {
         });
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        LatLng bottomRight = new LatLng(
-                -17.854564,
-                25.854782
-        );
-
-        LatLng topLeft = new LatLng(
-                -17.875469,
-                25.876589
-        );
-
-
         startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
     }
 
@@ -176,11 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isValidDouble(String doubleString) {
         String doubleRegex = "[+-]{0,1}[0-9]*.{0,1}[0-9]*";
-        if (!doubleString.isEmpty() && doubleString.matches(doubleRegex)) {
-            return true;
-        }
-
-        return false;
+        return (!doubleString.isEmpty() && doubleString.matches(doubleRegex));
     }
 
     private void registerLocalBroadcastReceiver() {
