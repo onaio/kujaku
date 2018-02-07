@@ -8,6 +8,7 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
  *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
+@Ignore
 @RunWith(AndroidJUnit4.class)
 public abstract class BaseNotificationInstrumentedTest {
 
