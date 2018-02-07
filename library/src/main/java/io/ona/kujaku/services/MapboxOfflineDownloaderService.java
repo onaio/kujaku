@@ -101,10 +101,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final String KEY_RESULT_MESSAGE = "RESULT MESSAGE";
     public static final String KEY_RESULTS_PARENT_ACTION = "RESULTS PARENT ACTION";
     private static final String TAG = MapboxOfflineDownloaderService.class.getSimpleName();
-    public static final int[] PREFERRED_DOWNLOAD_NETWORKS = {
-            ConnectivityManager.TYPE_WIFI,
-            ConnectivityManager.TYPE_MOBILE
-    };
 
     public static final String MY_PREFERENCES = "KUJAKU PREFERENCES";
     public static final String PREFERENCE_MAPBOX_ACCESS_TOKEN = "MAPBOX ACCESS TOKEN";
@@ -467,29 +463,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         sendBroadcast(serviceActionResult, mapName, serviceAction, "");
     }
 
-    private void onNetworkResume(int networkType) {
-        if (isNetworkConnectionPreferred(networkType)) {
-            String mapBoxAccessToken = getSavedAccessToken();
-            if (!mapBoxAccessToken.isEmpty()) {
-                final MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(getApplicationContext(), mapBoxAccessToken);
-                mapBoxOfflineResourcesDownloader.getIncompleteMapDownloads(new IncompleteMapDownloadCallback() {
-                    @Override
-                    public void incompleteMap(OfflineRegion offlineRegion, OfflineRegionStatus offlineRegionStatus) {
-                        if (offlineRegionStatus.getDownloadState() != OfflineRegion.STATE_ACTIVE) {
-                            mapBoxOfflineResourcesDownloader.resumeMapDownload(offlineRegion, null);
-                            Log.i(TAG, "Resuming Map Download ID: " + offlineRegion.getID());
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Log.e(TAG, error);
-                    }
-                });
-            }
-        }
-    }
-
     /**
      * Asynchronously retrieves the referenced {@link OfflineRegion}'s {@link OfflineRegionStatus} which provides
      * information about the download progress & if currently downloading
@@ -596,36 +569,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 MapboxOfflineDownloaderService.this.mapboxTileCountLimitExceeded(limit);
             }
         });
-    }
-
-    private int getConnectionType() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork.getType();
-    }
-
-    private boolean isNetworkConnectionPreferred(int connectionType) {
-        for (int preferredNetwork : PREFERRED_DOWNLOAD_NETWORKS) {
-            if (preferredNetwork == connectionType) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private String getSavedAccessToken() {
-        SharedPreferences sharedPreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
-        return sharedPreferences.getString(PREFERENCE_MAPBOX_ACCESS_TOKEN, "");
-    }
-
-    private boolean saveAccessToken(@NonNull String mapBoxAccessToken) {
-        SharedPreferences sharedPreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        editor.putString(PREFERENCE_MAPBOX_ACCESS_TOKEN, mapBoxAccessToken);
-        return editor.commit();
     }
 
     @Override

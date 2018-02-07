@@ -5,8 +5,6 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.snatik.storage.Storage;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
