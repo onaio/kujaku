@@ -33,7 +33,6 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
     private final KujakuConfig kujakuConfig;
 
     private int lastSelectedPosition = -1;
-    private int currentSelectedPosition = -1;
 
     public InfoWindowAdapter(@NonNull Activity activity,
                              @NonNull LinkedHashMap<String, InfoWindowObject> items,
@@ -100,7 +99,6 @@ public class InfoWindowAdapter extends RecyclerView.Adapter<InfoWindowViewHolder
     }
 
     public void focusOnPosition(int position, boolean informMapActivity) {
-        currentSelectedPosition = position;
         if (lastSelectedPosition != position) {
             if (lastSelectedPosition > -1) {
                 items.get(lastSelectedPosition).setFocused(false);

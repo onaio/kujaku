@@ -177,11 +177,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private boolean isValidDouble(String doubleString) {
         String doubleRegex = "[+-]{0,1}[0-9]*.{0,1}[0-9]*";
-        if (!doubleString.isEmpty() && doubleString.matches(doubleRegex)) {
-            return true;
-        }
-
-        return false;
+        return (!doubleString.isEmpty() && doubleString.matches(doubleRegex));
     }
 
     private void registerLocalBroadcastReceiver() {
