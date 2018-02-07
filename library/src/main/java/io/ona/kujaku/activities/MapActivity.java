@@ -498,13 +498,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             for (Feature feature : features) {
 
                 // Ensure the feature has properties defined
-                if (feature.getProperties() != null) {
-                    if (feature.hasProperty("id")) {
-                        String id = feature.getProperty("id").getAsString();
-                        if (featuresMap.containsKey(id)) {
-                            focusOnFeature(id);
-                            break;
-                        }
+                if (feature.getProperties() != null && feature.hasProperty("id")) {
+                    String id = feature.getProperty("id").getAsString();
+                    if (featuresMap.containsKey(id)) {
+                        focusOnFeature(id);
+                        break;
                     }
                 }
             }
@@ -665,15 +663,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (featureJSON.has("geometry")) {
             try {
                 JSONObject featureGeometry = featureJSON.getJSONObject("geometry");
-                if (featureGeometry.has("type") && GeoJSONFeature.Type.POINT.toString().equalsIgnoreCase(featureGeometry.getString("type"))) {
-                    if (featureGeometry.has("coordinates")) {
-                        JSONArray coordinatesArray = featureGeometry.getJSONArray("coordinates");
-                        if (coordinatesArray.length() > 2) {
-                            double lng = coordinatesArray.getDouble(0);
-                            double lat = coordinatesArray.getDouble(1);
+                if (featureGeometry.has("type") && GeoJSONFeature.Type.POINT.toString().equalsIgnoreCase(featureGeometry.getString("type")) && featureGeometry.has("coordinates")) {
+                    JSONArray coordinatesArray = featureGeometry.getJSONArray("coordinates");
+                    if (coordinatesArray.length() > 2) {
+                        double lng = coordinatesArray.getDouble(0);
+                        double lat = coordinatesArray.getDouble(1);
 
-                            return (new LatLng(lat, lng));
-                        }
+                        return (new LatLng(lat, lng));
                     }
                 }
             } catch (JSONException e) {

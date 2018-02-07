@@ -340,18 +340,6 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void isNetworkConnectionPreferred() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("isNetworkConnectionPreferred", int.class);
-        method.setAccessible(true);
-        boolean isPreferred = (boolean) method.invoke(mapboxOfflineDownloaderService, 2);
-
-        assertFalse(isPreferred);
-        assertTrue((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_WIFI));
-        assertTrue((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_MOBILE));
-        assertFalse((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_MOBILE_DUN));
-    }
-
-    @Test
     public void observeOfflineRegionShouldChangeOfflineRegionStatus() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
         OfflineRegion offlineRegion = createMockOfflineRegion(null, null, OfflineRegion.STATE_INACTIVE);
 
