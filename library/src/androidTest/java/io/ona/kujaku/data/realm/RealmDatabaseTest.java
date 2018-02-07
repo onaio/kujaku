@@ -271,7 +271,6 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
         //Revert the task status
         for(Object[] taskSummary: currentNotStartedTasks) {
             int taskStatus = (int) taskSummary[0];
-            String id = (String) taskSummary[1];
 
             MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) taskSummary[2];
             realm.beginTransaction();
