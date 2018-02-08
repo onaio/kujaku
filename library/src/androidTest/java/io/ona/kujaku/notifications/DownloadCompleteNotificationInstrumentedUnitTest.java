@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.support.annotation.RequiresApi;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.ona.kujaku.R;

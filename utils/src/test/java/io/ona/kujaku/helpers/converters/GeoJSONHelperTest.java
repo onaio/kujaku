@@ -13,15 +13,12 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONHelper;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba on 06/11/2017.
