@@ -3,9 +3,8 @@ package io.ona.kujaku.utils;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/02/2018.
