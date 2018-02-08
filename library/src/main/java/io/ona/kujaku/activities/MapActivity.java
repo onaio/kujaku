@@ -38,10 +38,10 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Projection;
 import com.mapbox.services.commons.geojson.Feature;
 
 import org.json.JSONArray;
@@ -122,7 +122,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private Marker myLocationMarker;
     private LatLng focusedLocation;
-    private boolean focusedOnOfMyLocation = false;
+    private boolean focusedOnMyLocation = false;
 
     //Todo: Move reading data to another Thread
 
@@ -222,7 +222,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(MapboxMap mapboxMap) {
+            public void onMapReady(final MapboxMap mapboxMap) {
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.setOnMapClickListener(MapActivity.this);
@@ -230,12 +230,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     @Override
                     public void onScroll() {
                         if (focusedLocation != null) {
-                            VisibleRegion mapsVisibleRegion = MapActivity.this.mapboxMap.getProjection().getVisibleRegion();
-                            //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
-                            //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
+                            LatLng[] mapBounds = getMapBounds(mapboxMap, mapView);
 
-                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnOfMyLocation) {
-                                focusedOnOfMyLocation = false;
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapBounds[0], mapBounds[1], mapBounds[2], mapBounds[3]) && focusedOnMyLocation) {
+                                focusedOnMyLocation = false;
 
                                 // Revert the icon to the non-focused grey one
                                 changeTargetIcon(R.drawable.ic_my_location);
@@ -604,7 +602,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         });
 
         valueAnimator.start();
-        //Todo Figure out how to handle another item being selected while this one is being animated
     }
 
     private int getScreenWidth(Activity activity) {
@@ -730,7 +727,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (lastLocation != null) {
             LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             focusedLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            focusedOnOfMyLocation = true;
+            focusedOnMyLocation = true;
 
             // Change the icon to the blue one
             changeTargetIcon(R.drawable.ic_my_location_focused);
@@ -836,5 +833,26 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 imageView.setImageDrawable(focusedIcon);
             }
         }
+    }
+
+    public LatLng[] getMapBounds(MapboxMap mapboxMap, MapView mapView) {
+        float left = 0;
+        float right = mapView.getWidth();
+        float top = 0;
+        float bottom = mapView.getHeight();
+
+        Projection projection = mapboxMap.getProjection();
+
+        LatLng topLeft = projection.fromScreenLocation(new PointF(left, top));
+        LatLng topRight = projection.fromScreenLocation(new PointF(right, top));
+        LatLng bottomRight = projection.fromScreenLocation(new PointF(right, bottom));
+        LatLng bottomLeft = projection.fromScreenLocation(new PointF(left, bottom));
+
+        return new LatLng[]{
+                topLeft,
+                topRight,
+                bottomRight,
+                bottomLeft
+        };
     }
 }

@@ -151,7 +151,7 @@ dependencies {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
     }
-    compile('io.ona.kujaku:utils:0.2.6-11-3') {
+    compile(project(":utils")) {//('io.ona.kujaku:utils:0.2.6-11-3') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
