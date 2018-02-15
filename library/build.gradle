@@ -20,7 +20,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.4-89-10'
+version '0.2.4-86-1'
 project.version = this.version
 
 task sourceJar(type: Jar) {
