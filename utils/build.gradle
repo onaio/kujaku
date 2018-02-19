@@ -47,10 +47,10 @@ bintray {
     pkg {
         repo = 'kujaku'
         name = project.name
-        userOrg = 'jasonrogena'
+        userOrg = 'ona'
         licenses = ['Apache-2.0']
         desc = 'Kujaku utils'
-        websiteUrl = "https://github.com/jasonrogena"
+        websiteUrl = "https://ona.io"
         publish = true
         vcsUrl = "https://github.com/onaio/kujaku.git"
         version {

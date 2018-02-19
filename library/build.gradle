@@ -12,7 +12,7 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://dl.google.com/dl/android/maven2/" }
-        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+        maven { url "http://dl.bintray.com/ona/kujaku" }
     }
 }
 
@@ -65,10 +65,10 @@ bintray {
     pkg {
         repo = 'kujaku'
         name = project.name
-        userOrg = 'jasonrogena'
+        userOrg = 'ona'
         licenses = ['Apache-2.0']
         desc = 'Kujaku library'
-        websiteUrl = "https://github.com/jasonrogena"
+        websiteUrl = "https://ona.io"
         publish = true
         vcsUrl = "https://github.com/onaio/kujaku.git"
         version {
