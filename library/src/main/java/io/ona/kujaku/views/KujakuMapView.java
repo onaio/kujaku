@@ -49,12 +49,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public void enableAddPoint(boolean canAddPoint, OnLocationChanged onLocationChanged) {
+    public void enableAddPoint(boolean canAddPoint, @NonNull OnLocationChanged onLocationChanged) {
 
     }
 
     @Override
-    public JSONObject dropPoint(LatLng latLng) {
+    public JSONObject dropPoint() {
+        return null;
+    }
+
+    @Override
+    public JSONObject dropPoint(@Nullable LatLng latLng) {
         return null;
     }
 }
