@@ -8,7 +8,16 @@ import org.json.JSONObject;
 
 public interface AddPointCallback {
 
+    /**
+     * Called when the user selects a specific point on the UI.
+     *
+     * @param jsonObject
+     */
     void onPointAdd(JSONObject jsonObject);
 
+    /**
+     * This method is called if & when the user cancels the <strong>Add Point</strong> operation.
+     *
+     */
     void onCancel();
 }
