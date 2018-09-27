@@ -101,6 +101,8 @@ dependencies {
     compile 'com.cocoahero.android:geojson:1.0.1@jar'
     compile('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-fragment'
     }
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.5.1'
