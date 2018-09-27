@@ -85,6 +85,12 @@ android {
 
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
@@ -140,46 +146,59 @@ android {
     }
 }
 
-dependencies {
-
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-
+dependencies { configuration ->
     compile 'com.android.support:support-v4:26.1.0'
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
+    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
     }
-    compile('io.ona.kujaku:utils:0.2.6-87-1') {
+
+    compile(project(":utils")) {
+    //compile('io.ona.kujaku:utils:0.2.6-87-1') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
     }
     compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.cocoahero.android:geojson:1.0.1@jar'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'com.snatik:storage:2.1.0'
-    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
 
-    // Info Window dependencies
-    compile 'com.android.support:cardview-v7:26.+'
-    compile 'com.android.support:recyclerview-v7:26.+'
+    customDependencies(configuration)
+    infoWindowDependencies(configuration)
+    locationDependencies(configuration)
+    testDependencies(configuration)
+}
 
-    compile 'com.google.android.gms:play-services-maps:8.4.0'
-    compile 'com.google.android.gms:play-services-location:8.4.0'
+private static void testDependencies(configuration) {
+    configuration.testCompile 'junit:junit:4.12'
+    configuration.testCompile 'org.robolectric:robolectric:3.5.1'
+    configuration.testCompile 'org.robolectric:shadows-support-v4:3.4-rc2'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
-    testCompile 'org.robolectric:shadows-support-v4:3.4-rc2'
+    configuration.testCompile 'org.mockito:mockito-core:1.10.19'
 
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    configuration.testCompile "org.powermock:powermock-module-junit4:1.6.2"
+    configuration.testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
+    configuration.testCompile "org.powermock:powermock-api-mockito:1.6.2"
+    configuration.testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
 
-    testCompile "org.powermock:powermock-module-junit4:1.6.2"
-    testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
-    testCompile "org.powermock:powermock-api-mockito:1.6.2"
-    testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
+    configuration.androidTestCompile 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
 
-    androidTestCompile 'org.mockito:mockito-android:2.7.22'
+private static void infoWindowDependencies(configuration) {
+    configuration.compile 'com.android.support:cardview-v7:26.+'
+    configuration.compile 'com.android.support:recyclerview-v7:26.+'
+}
+
+private static void customDependencies(configuration) {
+    configuration.compile 'com.cocoahero.android:geojson:1.0.1@jar'
+    configuration.compile 'com.android.volley:volley:1.0.0'
+    configuration.compile 'com.snatik:storage:2.1.0'
+    configuration.compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
+}
+
+private static void locationDependencies(configuration) {
+    configuration.compile 'com.google.android.gms:play-services-maps:8.4.0'
+    configuration.compile 'com.google.android.gms:play-services-location:8.4.0'
 }
