@@ -34,6 +34,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertEquals(channelId, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
+    @Config(sdk = 25)
     @Test
     public void createNotificationShouldCreateValidNotifcationBuilderWithTextOnly() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
@@ -64,6 +65,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertEquals(channelId, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
+    @Config(sdk = 25)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithoutTextOrChannelId() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
