@@ -72,24 +72,24 @@ android {
 }
 
 dependencies {
-    compile(project(":library")) {
+    implementation (project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }
 
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.robolectric:robolectric:3.5.1'
 }
