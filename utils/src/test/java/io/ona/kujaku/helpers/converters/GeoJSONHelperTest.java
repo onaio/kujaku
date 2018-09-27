@@ -2,8 +2,8 @@ package io.ona.kujaku.helpers.converters;
 
 import com.cocoahero.android.geojson.GeoJSON;
 import com.mapbox.mapboxsdk.BuildConfig;
+import com.mapbox.mapboxsdk.constants.GeometryConstants;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.services.android.telemetry.constants.GeoConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -189,8 +189,8 @@ public class GeoJSONHelperTest {
 
     private LatLng generateLatLng() {
         return new LatLng(
-                (Math.random() * (GeoConstants.MAX_LATITUDE - GeoConstants.MIN_LATITUDE)) + GeoConstants.MIN_LATITUDE,
-                (Math.random() * (GeoConstants.MAX_LONGITUDE - GeoConstants.MIN_LONGITUDE)) + GeoConstants.MIN_LONGITUDE
+                (Math.random() * (GeometryConstants.MAX_LATITUDE - GeometryConstants.MIN_LATITUDE)) + GeometryConstants.MIN_LATITUDE,
+                (Math.random() * (GeometryConstants.MAX_LONGITUDE - GeometryConstants.MIN_LONGITUDE)) + GeometryConstants.MIN_LONGITUDE
         );
     }
 
