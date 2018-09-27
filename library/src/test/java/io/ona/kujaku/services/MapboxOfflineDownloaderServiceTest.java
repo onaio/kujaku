@@ -6,12 +6,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionDefinition;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
@@ -47,6 +47,7 @@ import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
 import io.ona.kujaku.test.shadows.ShadowMapBoxDeleteTask;
@@ -59,7 +60,6 @@ import io.ona.kujaku.utils.NumberFormatter;
 import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -376,9 +376,17 @@ public class MapboxOfflineDownloaderServiceTest {
         String expectedMapName = UUID.randomUUID().toString();
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(createSampleDownloadTask("kl", expectedMapName, sampleValidMapboxStyleURL));
 
+        // Set the offlineManager to null
+        MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, "");
+        OfflineManager offlineManager = (OfflineManager) getValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager");
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", null);
+
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
         method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
         assertEquals(expectedMapName, (String) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName"));
     }
@@ -392,9 +400,17 @@ public class MapboxOfflineDownloaderServiceTest {
         );
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
 
+        // Set the offlineManager to null
+        MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, "");
+        OfflineManager offlineManager = (OfflineManager) getValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager");
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", null);
+
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
         method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
         assertEquals(expectedMapName, (String) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName"));
     }

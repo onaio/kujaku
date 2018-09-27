@@ -37,6 +37,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'android.arch.lifecycle:runtime:1.1.0'
+
     compile (project(':library')) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
@@ -45,4 +48,5 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.1.0'
     testCompile 'junit:junit:4.12'
+
 }
