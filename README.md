@@ -10,6 +10,18 @@ For instructions on how to run the sample app see [these instructions](./sample/
 
 ### Importing the Library
 
+### How to publish artifacts
+
+To publish new versions to the **Bintray/JFrog** account, run:
+
+```
+export BINTRAY_USER=johndoe
+export BINTRAY_KEY=98sdfkmykeyhere90sdckl
+./gradlew clean assembleRelease :library:bintrayUpload
+./gradlew clean assembleRelease :utils:bintrayUpload
+
+```
+
 ## License
 
 This software is provided under the Apache 2 license, see the LICENSE file for further details.
