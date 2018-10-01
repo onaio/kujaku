@@ -39,7 +39,7 @@ public interface IKujakuMapViewLowLevel {
      *
      * @return
      */
-    JSONObject dropPoint();
+    @Nullable JSONObject dropPoint();
 
     /**
      * This should be called after calling {@link #enableAddPoint(boolean, OnLocationChanged)} with {@code true} thus
@@ -49,5 +49,5 @@ public interface IKujakuMapViewLowLevel {
      * @param latLng
      * @return
      */
-    JSONObject dropPoint(@Nullable LatLng latLng);
+    @Nullable JSONObject dropPoint(@Nullable LatLng latLng);
 }
