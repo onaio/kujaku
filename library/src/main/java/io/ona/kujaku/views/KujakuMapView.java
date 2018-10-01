@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
@@ -40,17 +39,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback) {
-
+        // Implementation for adding a point
     }
 
     @Override
     public void enableAddPoint(boolean canAddPoint) {
-
+        // Implementation for enableAddPoint(boolean)
     }
 
     @Override
     public void enableAddPoint(boolean canAddPoint, @NonNull OnLocationChanged onLocationChanged) {
-
+        // Implementation for enableAddPoint(boolean, OnLocationChanged)
     }
 
     @Override
