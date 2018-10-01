@@ -22,4 +22,5 @@
     <string name="download_complete_channel_name">Offline Map Download Complete</string>
     <string name="download_complete_channel_description">This channel shows notifications for complete offline map downloads</string>
     <string name="msg_location_retrieval_taking_longer_than_expected">Whoops! It seems that retrieving your location is going to take longer than expected!</string>
+    <string name="done">DONE</string>
 </resources>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:visibility="gone"/>
+
+    <FrameLayout
+        android:id="@+id/markerViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:contentDescription="@null"/>
+
+    <com.mapbox.mapboxsdk.maps.widgets.MyLocationView
+        android:id="@+id/userLocationView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/mapbox_myLocationViewContentDescription"/>
+
+    <com.mapbox.mapboxsdk.maps.widgets.CompassView
+        android:id="@+id/compassView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/mapbox_compassContentDescription"/>
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/logoView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null"
+        android:src="@drawable/mapbox_logo_icon"/>
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/attributionView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="@string/mapbox_attributionsIconContentDescription"
+        android:src="@drawable/mapbox_info_bg_selector"/>
+
+
+    <ImageView
+        android:id="@+id/iv_mapview_locationSelectionMarker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:src="@drawable/mapbox_markerview_icon_default"/>
+
+    <Button
+        android:id="@+id/btn_mapview_locationSelectionBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/done_btn_bg"
+        android:textColor="@color/white"
+        android:textSize="19sp"
+        android:visibility="gone"
+        android:text="@string/done"/>
+
+</merge>
