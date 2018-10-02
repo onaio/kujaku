@@ -14,4 +14,5 @@
     <string name="task_item_display_template">\n\nTask Type:  %1$s\nTask Details: %2$s\nTask Status: %3$s\nDate created: %4$s\n\n</string>
     <string name="error_msg_json_exception">Sorry! An error occurred due to the JSON format</string>
     <string name="low_level_add_point">Low-level Add Point</string>
+    <string name="high_level_add_point">High-level Add Point</string>
 </resources>

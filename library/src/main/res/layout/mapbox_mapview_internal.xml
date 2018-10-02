@@ -55,16 +55,40 @@
         android:visibility="gone"
         android:src="@drawable/mapbox_markerview_icon_default"/>
 
-    <Button
-        android:id="@+id/btn_mapview_locationSelectionBtn"
+
+    <LinearLayout
+        android:id="@+id/ll_mapview_addBtnsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:layout_gravity="bottom"
-        android:background="@drawable/done_btn_bg"
-        android:textColor="@color/white"
-        android:textSize="19sp"
-        android:visibility="gone"
-        android:text="@string/done"/>
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_mapview_locationAdditionBtn"
+            android:background="@drawable/done_btn_bg"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:visibility="gone"
+            android:layout_weight="1"
+            android:text="@string/add"
+            android:layout_margin="20dp"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_mapview_locationSelectionBtn"
+            android:background="@drawable/done_btn_bg"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:visibility="gone"
+            android:layout_weight="1"
+            android:text="@string/done"
+            android:layout_margin="20dp"/>
+
+    </LinearLayout>
 
 </merge>

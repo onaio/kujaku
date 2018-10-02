@@ -323,6 +323,11 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 startActivity(new Intent(this, LowLevelMapView.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
+
+            case R.id.nav_high_level_add_point:
+                startActivity(new Intent(this, HighLevelMapView.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
         }
         return super.onNavigationItemSelected(item);
     }
