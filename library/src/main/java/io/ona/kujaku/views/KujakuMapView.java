@@ -5,9 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
@@ -42,7 +44,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private boolean canAddPoint = false;
     private ImageView markerlayout;
     private Button doneAddingPoint;
+    private Button addPoint;
     private MapboxMap mapboxMap;
+
+    private LinearLayout addPointButtonsLayout;
 
     private SymbolLayer pointsLayer;
     private GeoJsonSource pointsSource;
@@ -72,6 +77,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private void init() {
         markerlayout = (ImageView) findViewById(R.id.iv_mapview_locationSelectionMarker);
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
+        addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
+        addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
 
         markerlayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -85,8 +92,36 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback) {
+    public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
         // Implementation for adding a point
+        if (useGPS) {
+            // Todo: Finish the GPS implementation
+        } else {
+            // Enable the marker layout
+            enableAddPoint(true);
+
+            doneAddingPoint.setVisibility(VISIBLE);
+            addPoint.setVisibility(VISIBLE);
+            addPointButtonsLayout.setVisibility(VISIBLE);
+
+            addPoint.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    JSONObject jsonObject = dropPoint();
+                    addPointCallback.onPointAdd(jsonObject);
+                }
+            });
+            doneAddingPoint.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    enableAddPoint(false);
+                    addPointCallback.onCancel();
+
+                    doneAddingPoint.setVisibility(GONE);
+                    addPoint.setVisibility(GONE);
+                }
+            });
+        }
     }
 
     @Override
@@ -112,9 +147,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public @Nullable JSONObject dropPoint() {
         if (mapboxMap != null && canAddPoint) {
             com.mapbox.mapboxsdk.geometry.LatLng latLng = mapboxMap.getCameraPosition().target;
-
-            ArrayList<com.mapbox.mapboxsdk.geometry.LatLng> points = new ArrayList<>();
-            points.add(latLng);
 
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));

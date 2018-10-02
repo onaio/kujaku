@@ -29,8 +29,6 @@ public class LowLevelMapView extends AppCompatActivity {
         kujakuMapView = findViewById(R.id.kmv_lowLevelMapView_mapView);
         kujakuMapView.enableAddPoint(true);
 
-
-
         Button button = findViewById(R.id.btn_lowLevelMapView_doneBtn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
