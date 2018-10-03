@@ -3,7 +3,7 @@ package io.ona.kujaku.interfaces;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.gms.maps.model.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONObject;
 

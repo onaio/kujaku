@@ -5,10 +5,8 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Build;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -39,7 +36,6 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
-import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.services.commons.geojson.Feature;
@@ -60,6 +56,7 @@ import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.Views;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.utils.Constants;
@@ -69,6 +66,7 @@ import io.ona.kujaku.utils.config.KujakuConfig;
 import io.ona.kujaku.utils.config.SortFieldConfig;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.views.KujakuMapView;
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
@@ -85,7 +83,7 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
  */
 public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
-    private MapView mapView;
+    private KujakuMapView mapView;
     private String currentStylePath;
 
     private SortFieldConfig[] sortFields;
@@ -122,7 +120,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private Marker myLocationMarker;
     private LatLng focusedLocation;
-    private boolean focusedOnOfMyLocation = false;
+    private boolean focusedOnMyLocation = false;
 
     //Todo: Move reading data to another Thread
 
@@ -168,8 +166,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
 
-
-
             if (stylesArray != null) {
                 currentStylePath = stylesArray[0];
                 if (currentStylePath != null && !currentStylePath.isEmpty()) {
@@ -213,7 +209,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                final double maxZoom, final double minZoom) {
-        mapView = (MapView) findViewById(R.id.map_view);
+        mapView = (KujakuMapView) findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
         if (!mapBoxStylePath.isEmpty()) {
@@ -234,8 +230,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
                             //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
 
-                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnOfMyLocation) {
-                                focusedOnOfMyLocation = false;
+                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnMyLocation) {
+                                focusedOnMyLocation = false;
 
                                 // Revert the icon to the non-focused grey one
                                 changeTargetIcon(R.drawable.ic_my_location);
@@ -290,7 +286,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         dismissAllDialogs();
         alertDialogs = new HashMap<>();
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
-        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapActivity_focusOnMyLocationIcon);
+        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
     }
 
     private void dismissAllDialogs() {
@@ -570,16 +566,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void centerMap(@NonNull LatLng point) {
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(point)
-                .build();
-
-        if (mapboxMap != null) {
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);
-        }
-    }
-
     private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
         final int left = view.getLeft();
         final int offset = (screenWidth / 2) - (view.getWidth() / 2);
@@ -642,7 +628,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             performInfoWindowDoubleClickAction(featuresMap.get(id));
         } else {
             showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-            centerMap(latLng);
+            mapView.centerMap(latLng, animateToNewTargetDuration);
         }
         lastSelected = position;
     }
@@ -726,7 +712,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (lastLocation != null) {
             LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
             focusedLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            focusedOnOfMyLocation = true;
+            focusedOnMyLocation = true;
 
             // Change the icon to the blue one
             changeTargetIcon(R.drawable.ic_my_location_focused);
@@ -811,26 +797,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     }
 
     private void changeTargetIcon(int drawableIcon) {
-        changeDrawable(focusOnMyLocationImgBtn, drawableIcon);
-    }
-
-    private void changeDrawable(@NonNull View view, int drawableId) {
-        if (view instanceof ImageButton || view instanceof ImageView) {
-
-            Drawable focusedIcon;
-            if (Build.VERSION.SDK_INT >= 21) {
-                focusedIcon = getResources().getDrawable(drawableId, null);
-            } else {
-                focusedIcon = getResources().getDrawable(drawableId);
-            }
-
-            if (view instanceof ImageButton) {
-                ImageButton imageButton = (ImageButton) view;
-                imageButton.setImageDrawable(focusedIcon);
-            } else if (view instanceof ImageView) {
-                ImageView imageView = (ImageView) view;
-                imageView.setImageDrawable(focusedIcon);
-            }
-        }
+        Views.changeDrawable(focusOnMyLocationImgBtn, drawableIcon);
     }
 }

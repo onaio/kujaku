@@ -14,7 +14,7 @@ import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
-public class LowLevelMapView extends AppCompatActivity {
+public class LowLevelManualAddPointMapView extends AppCompatActivity {
 
     private KujakuMapView kujakuMapView;
     private boolean canAddPoint = true;
@@ -22,14 +22,14 @@ public class LowLevelMapView extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_low_level_map_view);
+        setContentView(R.layout.activity_low_level_manual_add_point_map_view);
 
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        kujakuMapView = findViewById(R.id.kmv_lowLevelMapView_mapView);
+        kujakuMapView = findViewById(R.id.kmv_lowLevelManualAddPointMapView_mapView);
         kujakuMapView.enableAddPoint(true);
 
-        Button button = findViewById(R.id.btn_lowLevelMapView_doneBtn);
+        Button button = findViewById(R.id.btn_lowLevelManualAddPointMapView_doneBtn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
