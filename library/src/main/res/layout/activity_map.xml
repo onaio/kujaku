@@ -7,25 +7,13 @@
     android:layout_height="match_parent"
     tools:context="io.ona.kujaku.activities.MapActivity">
 
-    <com.mapbox.mapboxsdk.maps.MapView
+    <io.ona.kujaku.views.KujakuMapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true">
-    </com.mapbox.mapboxsdk.maps.MapView>
-
-    <ImageButton
-        android:id="@+id/ib_mapActivity_focusOnMyLocationIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_my_location"
-        android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp"
-        android:padding="5dp"
-        android:background="@drawable/circle_button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"/>
+    </io.ona.kujaku.views.KujakuMapView>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_mapActivity_infoWindow"

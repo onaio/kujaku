@@ -319,8 +319,13 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.nav_low_level_add_point:
-                startActivity(new Intent(this, LowLevelMapView.class));
+            case R.id.nav_low_level_manual_add_point:
+                startActivity(new Intent(this, LowLevelManualAddPointMapView.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+
+            case R.id.nav_low_level_location_add_point:
+                startActivity(new Intent(this, LowLevelLocationAddPointMapView.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
 

@@ -16,7 +16,7 @@
     <string name="error_mapbox_tile_count_limit">MapBox Tile Count limit exceeded : %1$d while Downloading %2$s</string>
     <string name="error_broadcast_message_format_part_reason">REASON : %1$s</string>
     <string name="error_broadcast_message_format_part_message">\nMESSAGE: %1$s</string>
-    <string name="msg_could_not_find_your_location">Sorry but we could not get your GPS location</string>
+    <string name="msg_could_not_find_your_location">Sorry but we could not get your location! Try Again</string>
     <string name="download_progress_channel_name">Offline Map Download Progress</string>
     <string name="download_progress_channel_description">This channel shows notifications for offline map progress</string>
     <string name="download_complete_channel_name">Offline Map Download Complete</string>
@@ -24,4 +24,5 @@
     <string name="msg_location_retrieval_taking_longer_than_expected">Whoops! It seems that retrieving your location is going to take longer than expected!</string>
     <string name="done">DONE</string>
     <string name="add">ADD</string>
+    <string name="location_disabled_location_permissions_not_granted">Sorry but we could not get your location since the app does not have permissions to access your Location</string>
 </resources>

@@ -55,6 +55,19 @@
         android:visibility="gone"
         android:src="@drawable/mapbox_markerview_icon_default"/>
 
+    <ImageButton
+        android:id="@+id/ib_mapview_focusOnMyLocationIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_my_location"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_gravity="bottom|right"
+        android:padding="5dp"
+        android:background="@drawable/circle_button"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"/>
+
 
     <LinearLayout
         android:id="@+id/ll_mapview_addBtnsLayout"

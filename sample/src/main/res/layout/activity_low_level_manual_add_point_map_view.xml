@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.LowLevelMapView">
+    tools:context=".activities.LowLevelManualAddPointMapView">
 
     <Button
-        android:id="@+id/btn_lowLevelMapView_doneBtn"
+        android:id="@+id/btn_lowLevelManualAddPointMapView_doneBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -21,7 +21,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <io.ona.kujaku.views.KujakuMapView
-        android:id="@+id/kmv_lowLevelMapView_mapView"
+        android:id="@+id/kmv_lowLevelManualAddPointMapView_mapView"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
