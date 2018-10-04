@@ -58,6 +58,7 @@ import io.ona.kujaku.utils.Views;
 public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final String TAG = KujakuMapView.class.getName();
+    public static final double LOCATION_FOCUS_ZOOM = 20d;
 
     private boolean canAddPoint = false;
 
@@ -193,7 +194,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                             // Focus on the new location
                             centerMap(new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
-                                    , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION);
+                                    , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
                         }
                     });
                 }
@@ -240,7 +241,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public @Nullable JSONObject dropPoint(@Nullable com.mapbox.mapboxsdk.geometry.LatLng latLng) {
-        if (mapboxMap != null && canAddPoint) {
+        if (latLng != null && mapboxMap != null && canAddPoint) {
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
 
@@ -248,7 +249,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 JSONObject jsonObject = feature.toJSON();
 
                 // Add a layer with the current point
-                centerMap(latLng, ANIMATE_TO_LOCATION_DURATION);
+                centerMap(latLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM)));
                 dropPointOnMap(latLng);
 
                 enableAddPoint(false);
@@ -334,13 +335,37 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         Views.changeDrawable(myLocationBtn, drawableIcon);
     }
 
-    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration) {
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(point)
-                .build();
+    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration, double newZoom) {
+        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
+                .target(point);
+        if (newZoom != -1d) {
+            cameraPositionBuilder.zoom(newZoom);
+        }
+
+        CameraPosition cameraPosition = cameraPositionBuilder.build();
 
         if (mapboxMap != null) {
             mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);
+        }
+    }
+
+    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration) {
+        centerMap(point, animateToNewTargetDuration, -1d);
+    }
+
+    private double getZoomToUse(@NonNull MapboxMap mapboxMap, double zoomLevel) {
+        return mapboxMap.getCameraPosition().zoom > zoomLevel ? -1d : zoomLevel;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Clean up location services
+        if (locationClient != null && locationClient.isMonitoringLocation()) {
+            locationClient.setListener(null);
+            locationClient.stopLocationUpdates();
+            locationClient = null;
         }
     }
 }

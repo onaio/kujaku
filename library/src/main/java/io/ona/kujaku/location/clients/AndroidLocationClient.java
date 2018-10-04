@@ -82,6 +82,7 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (waitingForConnection) {
+            waitingForConnection = false;
             if (getLocationListener() != null) {
                 requestLocationUpdates(getLocationListener());
             }
@@ -113,30 +114,26 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
     @Override
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener) {
-        if (waitingForConnection || !isMonitoringLocation()) {
-            setLocationListener(locationListener);
-            if (!googleApiClient.isConnected() || googleApiClient.isConnecting()) {
-                if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
-                    initGoogleApiClient();
-                }
+        setLocationListener(locationListener);
+        if (!googleApiClient.isConnected() || googleApiClient.isConnecting()) {
+            if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
+                initGoogleApiClient();
+            }
 
-                waitingForConnection = true;
-            } else {
-                waitingForConnection = false;
-                LocationRequest locationRequest = new LocationRequest();
-                locationRequest.setInterval(updateInterval);
-                locationRequest.setFastestInterval(fastestUpdateInterval);
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            waitingForConnection = true;
+        } else {
+            LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setInterval(updateInterval);
+            locationRequest.setFastestInterval(fastestUpdateInterval);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                try {
-                    LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-                    lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-                } catch (SecurityException e) {
-                    // TODO: Might never reach here --> Fix this
-                    Log.e(TAG, Log.getStackTraceString(e));
-                    Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
-                            .show();
-                }
+            try {
+                LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+                lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+            } catch (SecurityException e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+                Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
+                        .show();
             }
         }
     }
