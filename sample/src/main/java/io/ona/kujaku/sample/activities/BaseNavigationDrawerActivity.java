@@ -86,25 +86,31 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
             case R.id.nav_low_level_manual_add_point:
                 startActivity(new Intent(this, LowLevelManualAddPointMapView.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
+                finish();
                 return true;
 
             case R.id.nav_low_level_location_add_point:
                 startActivity(new Intent(this, LowLevelLocationAddPointMapView.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
+                finish();
                 return true;
 
             case R.id.nav_high_level_add_point:
                 startActivity(new Intent(this, HighLevelMapView.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
+                finish();
                 return true;
             case R.id.nav_offline_regions:
                 startActivity(new Intent(this, OfflineRegionsActivity.class));
+                finish();
                 return true;
             case R.id.nav_task_queue:
                 startActivity(new Intent(this, TaskQueueActivity.class));
+                finish();
                 return true;
             case R.id.nav_main_activity:
                 startActivity(new Intent(this, MainActivity.class));
+                finish();
                 return true;
         }
 
