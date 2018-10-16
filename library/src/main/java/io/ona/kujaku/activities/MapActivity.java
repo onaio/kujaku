@@ -29,6 +29,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -38,7 +39,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.services.commons.geojson.Feature;
+//import com.mapbox.services.commons.geojson.Feature;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -494,7 +495,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             for (Feature feature : features) {
 
                 // Ensure the feature has properties defined
-                if (feature.getProperties() != null && feature.hasProperty("id")) {
+                if (feature.properties() != null && feature.hasProperty("id")) {
                     String id = feature.getProperty("id").getAsString();
                     if (featuresMap.containsKey(id)) {
                         focusOnFeature(id);

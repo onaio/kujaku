@@ -20,7 +20,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.6-87-1'
+version '0.3.0'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -84,7 +84,13 @@ bintray {
 android {
 
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "28.0.2"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
@@ -138,49 +144,75 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
-dependencies {
-
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-
-    compile 'com.android.support:support-v4:26.1.0'
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
+dependencies { configuration ->
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-fragment'
     }
-    compile('io.ona.kujaku:utils:0.2.6-87-1') {
+
+    implementation (project(":utils")) {
+    //implementation('io.ona.kujaku:utils:0.2.6-87-1') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
     }
-    compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.cocoahero.android:geojson:1.0.1@jar'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'com.snatik:storage:2.1.0'
-    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
 
-    // Info Window dependencies
-    compile 'com.android.support:cardview-v7:26.+'
-    compile 'com.android.support:recyclerview-v7:26.+'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
 
-    compile 'com.google.android.gms:play-services-maps:8.4.0'
-    compile 'com.google.android.gms:play-services-location:8.4.0'
+    customDependencies(configuration)
+    infoWindowDependencies(configuration)
+    locationDependencies(configuration)
+    testDependencies(configuration)
+}
+
+private static void testDependencies(configuration) {
+    configuration.testImplementation 'junit:junit:4.12'
+    configuration.testImplementation 'org.robolectric:robolectric:3.5.1'
+    configuration.testImplementation 'org.robolectric:shadows-support-v4:3.4-rc2'
+
+    configuration.testImplementation 'org.mockito:mockito-core:1.10.19'
+
+    configuration.testImplementation "org.powermock:powermock-module-junit4:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-module-junit4-rule:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-api-mockito:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-classloading-xstream:1.6.2"
+
+    configuration.testImplementation 'junit:junit:4.12'
+    configuration.testImplementation 'org.robolectric:robolectric:3.5.1'
+    configuration.testImplementation 'org.robolectric:shadows-support-v4:3.4-rc2'
+
+    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
 
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
-    testCompile 'org.robolectric:shadows-support-v4:3.4-rc2'
+private static void infoWindowDependencies(configuration) {
+    configuration.implementation 'com.android.support:cardview-v7:26.+'
+    configuration.implementation 'com.android.support:recyclerview-v7:26.+'
+}
 
-    testCompile 'org.mockito:mockito-core:1.10.19'
+private static void customDependencies(configuration) {
+    configuration.implementation 'com.cocoahero.android:geojson:1.0.1@jar'
+    configuration.implementation 'com.android.volley:volley:1.0.0'
+    configuration.implementation 'com.snatik:storage:2.1.0'
+    configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
+}
 
-    testCompile "org.powermock:powermock-module-junit4:1.6.2"
-    testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
-    testCompile "org.powermock:powermock-api-mockito:1.6.2"
-    testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
-
-    androidTestCompile 'org.mockito:mockito-android:2.7.22'
+private static void locationDependencies(configuration) {
+    configuration.implementation 'com.google.android.gms:play-services-maps:8.4.0'
+    configuration.implementation 'com.google.android.gms:play-services-location:8.4.0'
 }

@@ -120,7 +120,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
 
         assertTrue(shadowNotification != null);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
-        assertEquals("", shadowNotification.getContentText());
+        assertEquals(null, shadowNotification.getContentText());
 
         assertEquals(notificationId, shadowService.getLastForegroundNotificationId());
     }
@@ -144,7 +144,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
 
         assertTrue(shadowNotification != null);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
-        assertEquals("", shadowNotification.getContentText());
+        assertEquals(null, shadowNotification.getContentText());
     }
 
     @Test
