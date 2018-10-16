@@ -2,9 +2,7 @@ package io.ona.kujaku.views;
 
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -19,7 +17,6 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
-import com.google.android.gms.maps.model.LatLng;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -33,7 +30,6 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
@@ -66,7 +62,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private Button doneAddingPoint;
     private Button addPoint;
     private MapboxMap mapboxMap;
-    private ImageButton myLocationBtn;
+    private ImageButton currentLocationBtn;
 
     private LinearLayout addPointButtonsLayout;
 
@@ -106,7 +102,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
         addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
-        myLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+        currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
         markerlayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -332,7 +328,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(myLocationBtn, drawableIcon);
+        Views.changeDrawable(currentLocationBtn, drawableIcon);
     }
 
     public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration, double newZoom) {
@@ -367,5 +363,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             locationClient.stopLocationUpdates();
             locationClient = null;
         }
+    }
+
+    @Override
+    public void showCurrentLocationBtn(boolean isVisible) {
+       currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
     }
 }

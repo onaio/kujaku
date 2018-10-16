@@ -21,4 +21,5 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback);
 
+    void showCurrentLocationBtn(boolean isVisible);
 }
