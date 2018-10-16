@@ -1,6 +1,7 @@
 package io.ona.kujaku.views;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -30,6 +31,8 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
@@ -79,26 +82,26 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
-        init();
+        init(null);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(attrs);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(attrs);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
         super(context, options);
-        init();
+        init(null);
     }
 
-    private void init() {
-        markerlayout = (ImageView) findViewById(R.id.iv_mapview_locationSelectionMarker);
+    private void init(@Nullable AttributeSet attributeSet) {
+        markerlayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
         addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
@@ -113,6 +116,29 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 markerlayout.setY(markerlayout.getY() - (height/2));
             }
         });
+
+        Map<String, Object> attributes = extractStyleValues(attributeSet);
+        String key = getContext().getString(R.string.current_location_btn_visibility);
+        if (attributes.containsKey(key)) {
+            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
+            showCurrentLocationBtn(isCurrentLocationBtnVisible);
+        }
+    }
+
+    private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
+        Map<String, Object> attributes = new HashMap<>();
+        if (attrs != null) {
+            TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.KujakuMapView, 0, 0);
+            try {
+                boolean isCurrentLocationBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_current_location_btn_visibility, false);
+                attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);
+            } catch (Exception e) {
+                Log.d(TAG, e.getMessage());
+            } finally {
+                typedArray.recycle();
+            }
+        }
+        return attributes;
     }
 
     @Override
