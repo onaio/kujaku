@@ -10,12 +10,11 @@ import com.mapbox.mapboxsdk.Mapbox;
 
 import org.json.JSONObject;
 
-import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
-public class LowLevelManualAddPointMapView extends AppCompatActivity {
+public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
     private boolean canAddPoint = true;
@@ -23,8 +22,6 @@ public class LowLevelManualAddPointMapView extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_low_level_manual_add_point_map_view);
-
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelManualAddPointMapView_mapView);
@@ -50,6 +47,16 @@ public class LowLevelManualAddPointMapView extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected int getContentView() {
+        return R.layout.activity_low_level_manual_add_point_map_view;
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_low_level_manual_add_point;
     }
 
     @Override
@@ -93,4 +100,5 @@ public class LowLevelManualAddPointMapView extends AppCompatActivity {
         super.onLowMemory();
         if (kujakuMapView != null) kujakuMapView.onLowMemory();
     }
+
 }

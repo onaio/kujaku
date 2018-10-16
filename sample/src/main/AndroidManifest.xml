@@ -27,9 +27,15 @@
             android:name=".activities.TaskQueueActivity"
             android:label="@string/title_activity_navigation_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.LowLevelManualAddPointMapView"></activity>
-        <activity android:name=".activities.LowLevelLocationAddPointMapView"></activity>
-        <activity android:name=".activities.HighLevelMapView"></activity>
+        <activity
+            android:name=".activities.LowLevelManualAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".activities.LowLevelLocationAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".activities.HighLevelMapView"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

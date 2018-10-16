@@ -14,6 +14,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -59,8 +61,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
         requestBasicPermissions();
 
         bottomRightLatEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlatitude);
@@ -106,9 +106,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
 
         setTitle(R.string.main_activity_title);
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
     }
 
     @Override
@@ -314,26 +311,5 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(lastNotificationId, notificationBuilder.build());
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.nav_low_level_manual_add_point:
-                startActivity(new Intent(this, LowLevelManualAddPointMapView.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-
-            case R.id.nav_low_level_location_add_point:
-                startActivity(new Intent(this, LowLevelLocationAddPointMapView.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-
-            case R.id.nav_high_level_add_point:
-                startActivity(new Intent(this, HighLevelMapView.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-        }
-        return super.onNavigationItemSelected(item);
     }
 }

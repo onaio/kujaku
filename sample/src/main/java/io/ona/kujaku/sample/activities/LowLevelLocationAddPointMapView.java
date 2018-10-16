@@ -2,7 +2,6 @@ package io.ona.kujaku.sample.activities;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +18,7 @@ import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
-public class LowLevelLocationAddPointMapView extends AppCompatActivity {
+public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
     private boolean canAddPoint = true;
@@ -43,6 +42,7 @@ public class LowLevelLocationAddPointMapView extends AppCompatActivity {
                 if (!kujakuMapView.isCanAddPoint()) {
                     Toasty.info(getApplicationContext(), getString(R.string.click_go_to_my_location_msg), Toast.LENGTH_LONG, true).show();
                 }
+
                 if (kujakuMapView.isCanAddPoint() && location != null) {
                     JSONObject featurePoint = kujakuMapView.dropPoint(new LatLng(location.getLatitude(), location.getLongitude()));
                     if (featurePoint != null) {
@@ -64,6 +64,16 @@ public class LowLevelLocationAddPointMapView extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    @Override
+    protected int getContentView() {
+        return R.layout.activity_low_level_location_add_point_map_view;
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_low_level_location_add_point;
     }
 
     @Override
