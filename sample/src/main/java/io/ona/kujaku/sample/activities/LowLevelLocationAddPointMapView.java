@@ -6,12 +6,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONObject;
 
+import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -38,6 +40,9 @@ public class LowLevelLocationAddPointMapView extends AppCompatActivity {
         doneBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!kujakuMapView.isCanAddPoint()) {
+                    Toasty.info(getApplicationContext(), getString(R.string.click_go_to_my_location_msg), Toast.LENGTH_LONG, true).show();
+                }
                 if (kujakuMapView.isCanAddPoint() && location != null) {
                     JSONObject featurePoint = kujakuMapView.dropPoint(new LatLng(location.getLatitude(), location.getLongitude()));
                     if (featurePoint != null) {
