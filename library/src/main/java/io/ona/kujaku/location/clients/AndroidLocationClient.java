@@ -2,6 +2,7 @@ package io.ona.kujaku.location.clients;
 
 import android.content.Context;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,6 +38,7 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
     public AndroidLocationClient(@NonNull Context context) {
         this.context = context;
+        locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         initGoogleApiClient();
     }
 
@@ -77,8 +79,7 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
             googleApiClient.disconnect();
         }
     }
-
-    // GPS - Location Stuff
+    
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (waitingForConnection) {
@@ -115,26 +116,31 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
     @Override
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener) {
         setLocationListener(locationListener);
-        if (!googleApiClient.isConnected() || googleApiClient.isConnecting()) {
-            if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
-                initGoogleApiClient();
-            }
+        if (isProviderEnabled()) {
+            if (!googleApiClient.isConnected() || googleApiClient.isConnecting()) {
+                if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
+                    initGoogleApiClient();
+                }
 
-            waitingForConnection = true;
+                waitingForConnection = true;
+            } else {
+                LocationRequest locationRequest = new LocationRequest();
+                locationRequest.setInterval(updateInterval);
+                locationRequest.setFastestInterval(fastestUpdateInterval);
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                try {
+                    LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+                    lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+                } catch (SecurityException e) {
+                    Log.e(TAG, Log.getStackTraceString(e));
+                    Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
         } else {
-            LocationRequest locationRequest = new LocationRequest();
-            locationRequest.setInterval(updateInterval);
-            locationRequest.setFastestInterval(fastestUpdateInterval);
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-            try {
-                LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-                lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-            } catch (SecurityException e) {
-                Log.e(TAG, Log.getStackTraceString(e));
-                Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
-                        .show();
-            }
+            setLocationListener(null);
+            Log.e(TAG, "The provider (" + getProvider() + ") is not enabled");
         }
     }
 
@@ -147,5 +153,17 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
     @Override
     public boolean isMonitoringLocation() {
         return getLocationListener() != null;
+    }
+
+    @Override
+    public String getProvider() {
+        // TODO: This requires a bit more research and testing
+        return LocationManager.NETWORK_PROVIDER;
+    }
+
+    @Override
+    public boolean isProviderEnabled() {
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 }
