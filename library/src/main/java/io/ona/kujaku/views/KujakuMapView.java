@@ -29,8 +29,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.PropertyValue;
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
@@ -67,7 +65,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private boolean canAddPoint = false;
 
-    private ImageView markerlayout;
+    private ImageView markerLayout;
     private Button doneAddingPoint;
     private Button addPoint;
     private MapboxMap mapboxMap;
@@ -114,19 +112,19 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
-        markerlayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
+        markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
         addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
-        markerlayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                markerlayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                markerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-                int height = markerlayout.getMeasuredHeight();
-                markerlayout.setY(markerlayout.getY() - (height/2));
+                int height = markerLayout.getMeasuredHeight();
+                markerLayout.setY(markerLayout.getY() - (height/2));
             }
         });
 
@@ -247,10 +245,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     locationClient.requestLocationUpdates(new BaseLocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
-                            if (onLocationChanged != null) {
-                                onLocationChanged.onLocationChanged(location);
+                            if (KujakuMapView.this.onLocationChanged != null) {
+                                KujakuMapView.this.onLocationChanged.onLocationChanged(location);
                             }
-
                             // 1. Focus on the location for the first time is a must
                             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
                             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
@@ -385,11 +382,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void showMarkerLayout() {
-        markerlayout.setVisibility(VISIBLE);
+        markerLayout.setVisibility(VISIBLE);
     }
 
     private void hideMarkerLayout() {
-        markerlayout.setVisibility(GONE);
+        markerLayout.setVisibility(GONE);
     }
 
     private void getMapboxMap() {
@@ -440,10 +437,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         currentlyShownToast = Toast.makeText(getContext(), text, length);
         currentlyShownToast.show();
-    }
-
-    private void showToast(String text) {
-        showToast(text, Toast.LENGTH_LONG, false);
     }
 
     private void changeTargetIcon(int drawableIcon) {

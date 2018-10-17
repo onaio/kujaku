@@ -1,6 +1,5 @@
 package io.ona.kujaku.location.clients;
 
-import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,7 +21,6 @@ public class GPSLocationClient extends BaseLocationClient implements LocationLis
     private Location lastLocation;
 
     private long updateInterval;
-    private long fastestUpdateInterval;
 
     public GPSLocationClient(@NonNull Context context) {
         this.context = context;
@@ -63,8 +61,7 @@ public class GPSLocationClient extends BaseLocationClient implements LocationLis
 
     @Override
     public void setUpdateIntervals(long updateInterval, long fastestUpdateInterval) {
-        this.updateInterval = updateInterval;
-        this.fastestUpdateInterval = fastestUpdateInterval;
+        this.updateInterval = fastestUpdateInterval;
     }
 
     @Override

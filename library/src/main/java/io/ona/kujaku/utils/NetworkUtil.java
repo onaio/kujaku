@@ -18,7 +18,7 @@ public abstract class NetworkUtil {
         try {
             InetAddress ipAddr = InetAddress.getByName("google.com");
             //You can replace it with your name
-            return !ipAddr.equals("");
+            return !"".equals(ipAddr);
 
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
