@@ -213,7 +213,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                         locationClient = new AndroidLocationClient(getContext());
                     } else {
                         // Use the GPS hardware
-                        locationClient = new GPSLocationClient();
+                        locationClient = new GPSLocationClient(getContext());
                     }
 
                     locationClient.requestLocationUpdates(new BaseLocationListener() {
