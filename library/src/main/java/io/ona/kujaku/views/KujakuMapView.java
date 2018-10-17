@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -85,6 +86,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private Toast currentlyShownToast;
     private OnLocationChanged onLocationChanged;
 
+    private boolean isCurrentLocationBtnClicked = false;
+    private boolean isMapScrolled = false;
+
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
     public KujakuMapView(@NonNull Context context) {
@@ -121,6 +125,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 int height = markerlayout.getMeasuredHeight();
                 markerlayout.setY(markerlayout.getY() - (height/2));
+            }
+        });
+
+        this.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                isMapScrolled = true;
+                return false;
             }
         });
 
@@ -195,6 +207,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void enableAddPoint(boolean canAddPoint, @NonNull final OnLocationChanged onLocationChanged) {
+        isCurrentLocationBtnClicked = false;
+        isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
         if (canAddPoint) {
             this.onLocationChanged = onLocationChanged;
@@ -229,8 +243,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                                     , location.getLongitude());
                             updateUserLocationLayer(userLatLng);
 
-                            // Focus on the new location
-                            centerMap(userLatLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+                            if (!isCurrentLocationBtnClicked || !isMapScrolled) {
+                                // Focus on the new location
+                                centerMap(new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
+                                        , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+                                isCurrentLocationBtnClicked = true;
+                            }
                         }
                     });
                 }
