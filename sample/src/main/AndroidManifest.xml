@@ -36,6 +36,9 @@
         <activity
             android:name=".activities.HighLevelMapView"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".activities.HighLevelLocationAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

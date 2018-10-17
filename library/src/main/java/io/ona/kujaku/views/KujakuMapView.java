@@ -91,6 +91,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
+    private Location latestLocation;
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -162,34 +164,46 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
+
         if (useGPS) {
-            // Todo: Finish the GPS implementation
+            enableAddPoint(true, null);
+            doneAddingPoint.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    enableAddPoint(false, null);
+                    showAddPointLayout(false);
+                }
+            });
         } else {
             // Enable the marker layout
             enableAddPoint(true);
-
-            doneAddingPoint.setVisibility(VISIBLE);
-            addPoint.setVisibility(VISIBLE);
-            addPointButtonsLayout.setVisibility(VISIBLE);
-
-            addPoint.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    JSONObject jsonObject = dropPoint();
-                    addPointCallback.onPointAdd(jsonObject);
-                }
-            });
             doneAddingPoint.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     enableAddPoint(false);
                     addPointCallback.onCancel();
 
-                    doneAddingPoint.setVisibility(GONE);
-                    addPoint.setVisibility(GONE);
+                    showAddPointLayout(false);
                 }
             });
         }
+
+        showAddPointLayout(true);
+        addPoint.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject feature = dropPoint();
+                addPointCallback.onPointAdd(feature);
+            }
+        });
+    }
+
+    private void showAddPointLayout(boolean showLayout) {
+        int visible = showLayout ? VISIBLE : GONE;
+
+        doneAddingPoint.setVisibility(visible);
+        addPoint.setVisibility(visible);
+        addPointButtonsLayout.setVisibility(visible);
     }
 
     @Override
@@ -206,7 +220,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public void enableAddPoint(boolean canAddPoint, @NonNull final OnLocationChanged onLocationChanged) {
+    public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
         isCurrentLocationBtnClicked = false;
         isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
@@ -233,7 +247,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     locationClient.requestLocationUpdates(new BaseLocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
-                            onLocationChanged.onLocationChanged(location);
+                            if (onLocationChanged != null) {
+                                onLocationChanged.onLocationChanged(location);
+                            }
 
                             // 1. Focus on the location for the first time is a must
                             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
@@ -264,7 +280,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             this.onLocationChanged = null;
 
             if (locationClient != null) {
-                locationClient.setListener(null);
                 locationClient.stopLocationUpdates();
             }
         }
@@ -454,7 +469,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private double getZoomToUse(@NonNull MapboxMap mapboxMap, double zoomLevel) {
-        return mapboxMap.getCameraPosition().zoom > zoomLevel ? -1d : zoomLevel;
+        return mapboxMap == null ? zoomLevel : mapboxMap.getCameraPosition().zoom > zoomLevel ? -1d : zoomLevel;
     }
 
     @Override
