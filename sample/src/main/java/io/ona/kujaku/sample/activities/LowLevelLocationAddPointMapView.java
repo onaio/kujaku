@@ -27,8 +27,6 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_low_level_location_add_point_map_view);
-
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelLocationAddPointMapView_mapView);
