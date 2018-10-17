@@ -25,8 +25,6 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
-    private boolean waitingForLocation = true;
-    private boolean googleApiClientInitialized = false;
 
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
@@ -61,7 +59,6 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
 
     private void initGoogleApiClient() {
-        googleApiClientInitialized = true;
         if (googleApiClient == null) {
             googleApiClient = new GoogleApiClient.Builder(context)
                     .addApi(LocationServices.API)
