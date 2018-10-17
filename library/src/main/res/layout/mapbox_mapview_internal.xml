@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/surfaceView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="@null"
-        android:visibility="gone"/>
-
+    <!-- THIS IS THE MAPBOX VIEW XML -->
     <FrameLayout
         android:id="@+id/markerViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         android:contentDescription="@null"/>
-
-    <com.mapbox.mapboxsdk.maps.widgets.MyLocationView
-        android:id="@+id/userLocationView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="@string/mapbox_myLocationViewContentDescription"/>
 
     <com.mapbox.mapboxsdk.maps.widgets.CompassView
         android:id="@+id/compassView"
@@ -46,7 +34,10 @@
         android:contentDescription="@string/mapbox_attributionsIconContentDescription"
         android:src="@drawable/mapbox_info_bg_selector"/>
 
+    <!-- END OF MAPBOX VIEW XML -->
 
+    <!-- START OF CUSTOM VIEWS ADDED TO KujakuMapView -->
+    <!-- This is the drop point layout used to simulate the position on which the user wants to drop a point -->
     <ImageView
         android:id="@+id/iv_mapview_locationSelectionMarker"
         android:layout_width="wrap_content"
@@ -55,6 +46,7 @@
         android:visibility="gone"
         android:src="@drawable/mapbox_markerview_icon_default"/>
 
+    <!-- This is the target button shown on the bottom-right -->
     <ImageButton
         android:id="@+id/ib_mapview_focusOnMyLocationIcon"
         android:layout_width="wrap_content"
@@ -68,7 +60,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:visibility="gone"/>
-
 
     <LinearLayout
         android:id="@+id/ll_mapview_addBtnsLayout"
@@ -105,4 +96,5 @@
 
     </LinearLayout>
 
+    <!-- END OF CUSTOM VIEWS ADDED TO KujakuMapView.java -->
 </merge>
