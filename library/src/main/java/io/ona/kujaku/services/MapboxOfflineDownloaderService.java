@@ -58,7 +58,9 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * - Optional {@link Constants#PARCELABLE_KEY_MAX_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_MIN_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_TOP_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_TOP_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * <p>
  * - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
  * </p>
@@ -193,14 +195,18 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             && extras.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)
                             && extras.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)
                             && extras.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)
-                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
+                            && extras.containsKey(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND)
+                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)
+                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND)) {
 
                         downloadTask.setPackageName("kl");
                         downloadTask.setMapBoxStyleUrl(extras.getString(Constants.PARCELABLE_KEY_STYLE_URL));
                         downloadTask.setMaxZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MAX_ZOOM)));
                         downloadTask.setMinZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MIN_ZOOM)));
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
+                        downloadTask.setTopRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
+                        downloadTask.setBottomLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND));
 
                         realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(mapUniqueName);
 

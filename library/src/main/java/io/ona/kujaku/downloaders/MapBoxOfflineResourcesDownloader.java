@@ -109,7 +109,9 @@ public class MapBoxOfflineResourcesDownloader {
         downloadMap(mapBoxDownloadTask.getMapName(),
                 mapBoxDownloadTask.getMapBoxStyleUrl(),
                 mapBoxDownloadTask.getTopLeftBound(),
+                mapBoxDownloadTask.getTopRightBound(),
                 mapBoxDownloadTask.getBottomRightBound(),
+                mapBoxDownloadTask.getBottomLeftBound(),
                 mapBoxDownloadTask.getMinZoom(),
                 mapBoxDownloadTask.getMaxZoom(),
                 onDownloadMapListener);
@@ -121,7 +123,9 @@ public class MapBoxOfflineResourcesDownloader {
      * @param name                  Unique name of the map
      * @param styleUrl              The Style URL on MapBox
      * @param topLeftBound          The top-left coordinate of the map
+     * @param topRightBound          The top-right coordinate of the map
      * @param bottomRightBound      The bottom-right coordinate of the map
+     * @param bottomLeftBound      The bottom-left coordinate of the map
      * @param minZoom               The min-zoom of the map i.e among 0-22
      * @param maxZoom               The max-zoom of the map i.e. among 0-22. This should be greater than the {@code minZoom}
      * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
@@ -130,7 +134,10 @@ public class MapBoxOfflineResourcesDownloader {
      *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
      *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
      */
-    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng topLeftBound, @NonNull final LatLng bottomRightBound, final double minZoom, final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
+    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng  topLeftBound
+            , @NonNull final LatLng  topRightBound, @NonNull final LatLng bottomRightBound
+            , @NonNull final LatLng bottomLeftBound, final double minZoom
+            , final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
             throws OfflineMapDownloadException {
         if (offlineManager == null) {
             throw new OfflineMapDownloadException("Context passed is null");
@@ -164,7 +171,9 @@ public class MapBoxOfflineResourcesDownloader {
 
                     LatLngBounds latLngBounds = new LatLngBounds.Builder()
                             .include(topLeftBound)
+                            .include(topRightBound)
                             .include(bottomRightBound)
+                            .include(bottomLeftBound)
                             .build();
 
                     OfflineTilePyramidRegionDefinition offlineMapDefinition = new OfflineTilePyramidRegionDefinition(
