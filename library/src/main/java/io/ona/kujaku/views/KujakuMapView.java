@@ -21,12 +21,17 @@ import com.cocoahero.android.geojson.Point;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.style.sources.Source;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,9 +74,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private LinearLayout addPointButtonsLayout;
 
-    private SymbolLayer pointsLayer;
+    private CircleLayer userLocationInnerCircle;
+    private CircleLayer userLocationOuterCircle;
     private GeoJsonSource pointsSource;
-    private String pointsLayerId = UUID.randomUUID().toString();
+    private String pointsInnerLayerId = UUID.randomUUID().toString();
+    private String pointsOuterLayerId = pointsInnerLayerId + "2";
     private String pointsSourceId = UUID.randomUUID().toString();
 
     private ILocationClient locationClient;
@@ -214,9 +221,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                         public void onLocationChanged(Location location) {
                             onLocationChanged.onLocationChanged(location);
 
+                            // 1. Focus on the location for the first time is a must
+                            // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
+                            // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
+
+                            LatLng userLatLng = new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
+                                    , location.getLongitude());
+                            updateUserLocationLayer(userLatLng);
+
                             // Focus on the new location
-                            centerMap(new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
-                                    , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+                            centerMap(userLatLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
                         }
                     });
                 }
@@ -234,6 +248,52 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             if (locationClient != null) {
                 locationClient.setListener(null);
                 locationClient.stopLocationUpdates();
+            }
+        }
+    }
+
+    private void updateUserLocationLayer(@NonNull LatLng latLng) {
+        com.mapbox.geojson.Feature feature =
+                com.mapbox.geojson.Feature.fromGeometry(
+                        com.mapbox.geojson.Point.fromLngLat(
+                                latLng.getLongitude(), latLng.getLatitude()
+                        )
+                );
+
+        if (userLocationOuterCircle == null || userLocationInnerCircle == null || pointsSource == null) {
+            pointsSource = new GeoJsonSource(pointsSourceId);
+            pointsSource.setGeoJson(feature);
+
+            if (mapboxMap != null && mapboxMap.getSource(pointsSourceId) == null) {
+                mapboxMap.addSource(pointsSource);
+
+                userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
+                userLocationInnerCircle.setProperties(
+                        PropertyFactory.circleColor("#4387f4"),
+                        PropertyFactory.circleRadius(5f),
+                        PropertyFactory.circleStrokeWidth(1f),
+                        PropertyFactory.circleStrokeColor("#dde2e4")
+                );
+
+                userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
+                userLocationOuterCircle.setProperties(
+                        PropertyFactory.circleColor("#deeaf2"),
+                        PropertyFactory.circleRadius(25f),
+                        PropertyFactory.circleStrokeWidth(3f),
+                        PropertyFactory.circleStrokeColor("#cfdeed"),
+                        PropertyFactory.circleOpacity(0.72f)
+                );
+
+                mapboxMap.addLayer(userLocationOuterCircle);
+                mapboxMap.addLayer(userLocationInnerCircle);
+            }
+            // TODO: What if the map already has a source layer with this source layer id
+        } else {
+            // Get the layer and update it
+            Source source = mapboxMap.getSource(pointsSourceId);
+
+            if (source instanceof GeoJsonSource) {
+                ((GeoJsonSource) source).setGeoJson(feature);
             }
         }
     }
@@ -325,7 +385,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             if (mapboxMap != null) {
                 mapboxMap.addSource(pointsSource);
 
-                pointsLayer = new SymbolLayer(pointsLayerId, pointsSourceId);
+                pointsLayer = new SymbolLayer(pointsInnerLayerId, pointsSourceId);
                 pointsLayer.
             }
         }*/
