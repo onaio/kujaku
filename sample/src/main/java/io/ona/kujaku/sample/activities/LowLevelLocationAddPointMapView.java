@@ -42,7 +42,7 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
                 }
 
                 if (kujakuMapView.isCanAddPoint() && location != null) {
-                    JSONObject featurePoint = kujakuMapView.dropPoint(new LatLng(location.getLatitude(), location.getLongitude()));
+                    JSONObject featurePoint = kujakuMapView.dropPoint();
                     if (featurePoint != null) {
                         Log.e("FEATURE POINT", featurePoint.toString());
                     }
