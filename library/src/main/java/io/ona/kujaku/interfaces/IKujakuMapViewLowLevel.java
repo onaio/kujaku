@@ -30,7 +30,7 @@ public interface IKujakuMapViewLowLevel {
      * @param canAddPoint
      * @param onLocationChanged
      */
-    void enableAddPoint(boolean canAddPoint, @NonNull OnLocationChanged onLocationChanged);
+    void enableAddPoint(boolean canAddPoint, @Nullable OnLocationChanged onLocationChanged);
 
     /**
      * This should be called after calling {@link #enableAddPoint(boolean)} with {@code true} thus

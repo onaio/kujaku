@@ -112,6 +112,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
                 return true;
+
+            case R.id.nav_high_level_location_add_point:
+                startActivity(new Intent(this, HighLevelLocationAddPointMapView.class));
+                finish();
+                return true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
