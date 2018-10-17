@@ -1,7 +1,8 @@
 package io.ona.kujaku.location.clients;
 
+import android.app.Activity;
 import android.location.LocationListener;
-import android.support.annotation.NonNull;
+import android.location.LocationManager;
 import android.support.annotation.Nullable;
 
 import io.ona.kujaku.interfaces.ILocationClient;
@@ -15,6 +16,8 @@ public abstract class BaseLocationClient implements ILocationClient {
 
     private LocationClientListener locationClientListener;
     private LocationListener locationListener;
+    protected LocationManager locationManager;
+    protected Activity context;
 
     @Override
     public void setListener(LocationClientListener locationClientListener) {
@@ -36,5 +39,16 @@ public abstract class BaseLocationClient implements ILocationClient {
     @Override
     public LocationListener getLocationListener() {
         return locationListener;
+    }
+
+    @Override
+    public boolean isProviderEnabled() {
+        return locationManager != null && locationManager.isProviderEnabled(getProvider());
+    }
+
+    @Override
+    public void close() {
+        locationManager = null;
+        context = null;
     }
 }

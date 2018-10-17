@@ -30,4 +30,14 @@ public interface ILocationClient {
     void setUpdateIntervals(long updateInterval, long fastestUpdateInterval);
 
     boolean isMonitoringLocation();
+
+    String getProvider();
+
+    boolean isProviderEnabled();
+
+    /**
+     * This removes references to contexts from the class and LocationManager
+     *
+     */
+    void close();
 }
