@@ -24,7 +24,7 @@ public class GPSLocationClient extends BaseLocationClient implements LocationLis
     private long updateInterval;
     private long fastestUpdateInterval;
 
-    public GPSLocationClient(@NonNull Activity context) {
+    public GPSLocationClient(@NonNull Context context) {
         this.context = context;
         locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
     }
@@ -48,14 +48,8 @@ public class GPSLocationClient extends BaseLocationClient implements LocationLis
         setLocationListener(locationListener);
         if (isProviderEnabled()) {
             try {
-                context.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, GPSLocationClient.this);
-                        lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    }
-                });
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, updateInterval, 0, GPSLocationClient.this);
+                lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             } catch (SecurityException e) {
                 Log.e(TAG, Log.getStackTraceString(e));
                 Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)

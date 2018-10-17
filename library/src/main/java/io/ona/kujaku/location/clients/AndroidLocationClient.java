@@ -31,7 +31,6 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
 
-    private Context context;
     private boolean waitingForConnection = false;
 
     private static final String TAG = AndroidLocationClient.class.getName();
