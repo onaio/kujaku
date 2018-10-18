@@ -60,7 +60,9 @@ public class MapBoxDownloadTask {
                               @NonNull String mapBoxStyleUrl,
                               double minZoom, double maxZoom,
                               @NonNull LatLng topLeftBound,
+                              @NonNull LatLng topRightBound,
                               @NonNull LatLng bottomRightBound,
+                              @NonNull LatLng bottomLeftBound,
                               @NonNull String mapBoxAccessToken) {
         this.packageName = packageName;
         this.mapName = mapName;
@@ -68,7 +70,9 @@ public class MapBoxDownloadTask {
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
         this.topLeftBound = topLeftBound;
+        this.topRightBound = topRightBound;
         this.bottomRightBound = bottomRightBound;
+        this.bottomLeftBound = bottomLeftBound;
         this.mapBoxAccessToken = mapBoxAccessToken;
     }
 

@@ -139,25 +139,7 @@ public class MapBoxOfflineResourcesDownloader {
             , @NonNull final LatLng bottomLeftBound, final double minZoom
             , final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
             throws OfflineMapDownloadException {
-        if (offlineManager == null) {
-            throw new OfflineMapDownloadException("Context passed is null");
-        }
-
-        if (name == null || name.isEmpty()) {
-            throw new OfflineMapDownloadException("Invalid map name");
-        }
-
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
-            throw new OfflineMapDownloadException("Invalid Style URL");
-        }
-
-        if (minZoom < 0 || minZoom > 22 || maxZoom < 0 || maxZoom > 22) {
-            throw new OfflineMapDownloadException("maxZoom & minZoom should be among 0-22");
-        }
-
-        if (minZoom > maxZoom) {
-            throw new OfflineMapDownloadException("minZoom should be lower than maxZoom");
-        }
+        checkDownloadMapParams(name, styleUrl, minZoom, maxZoom);
 
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
@@ -214,6 +196,29 @@ public class MapBoxOfflineResourcesDownloader {
             }
         });
 
+    }
+
+    private void checkDownloadMapParams(String name, String styleUrl, double minZoom, double maxZoom)
+            throws OfflineMapDownloadException {
+        if (offlineManager == null) {
+            throw new OfflineMapDownloadException("Context passed is null");
+        }
+
+        if (name == null || name.isEmpty()) {
+            throw new OfflineMapDownloadException("Invalid map name");
+        }
+
+        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+            throw new OfflineMapDownloadException("Invalid Style URL");
+        }
+
+        if (minZoom < 0 || minZoom > 22 || maxZoom < 0 || maxZoom > 22) {
+            throw new OfflineMapDownloadException("maxZoom & minZoom should be among 0-22");
+        }
+
+        if (minZoom > maxZoom) {
+            throw new OfflineMapDownloadException("minZoom should be lower than maxZoom");
+        }
     }
 
     /**

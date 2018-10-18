@@ -37,6 +37,14 @@ public class MapBoxDownloadTaskTest {
         bottomRightBound.setLatitude(Math.random() * 90);
         bottomRightBound.setLongitude(Math.random() * 90);
 
+        LatLng topRightBound = new LatLng();
+        topLeftBound.setLongitude(Math.random() * 90);
+        topLeftBound.setLatitude(Math.random() * 90);
+
+        LatLng bottomLeftBound = new LatLng();
+        bottomRightBound.setLatitude(Math.random() * 90);
+        bottomRightBound.setLongitude(Math.random() * 90);
+
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put(MapBoxDownloadTask.MAP_NAME, mapName);
@@ -46,7 +54,9 @@ public class MapBoxDownloadTaskTest {
         jsonObject.put(MapBoxDownloadTask.MAX_ZOOM, maxZoom);
         jsonObject.put(MapBoxDownloadTask.MIN_ZOOM, minZoom);
         jsonObject.put(MapBoxDownloadTask.TOP_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topLeftBound));
+        jsonObject.put(MapBoxDownloadTask.TOP_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topRightBound));
         jsonObject.put(MapBoxDownloadTask.BOTTOM_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomRightBound));
+        jsonObject.put(MapBoxDownloadTask.BOTTOM_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomLeftBound));
 
         MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(jsonObject);
 

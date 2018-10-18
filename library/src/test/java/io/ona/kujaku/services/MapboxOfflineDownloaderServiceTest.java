@@ -92,7 +92,9 @@ public class MapboxOfflineDownloaderServiceTest {
     private float minZoom = 22;
     private float maxZoom = 10;
     private LatLng topLeftBound = new LatLng(9.1, 9.1);
+    private LatLng topRightBound = new LatLng(9.1, 20.5);
     private LatLng bottomRightBound = new LatLng(1.1, 20.5);
+    private LatLng bottomLeftBound = new LatLng(9.1, 1.1);
 
     private CountDownLatch latch;
     private ArrayList<Object> resultsToCheck = new ArrayList<>();
@@ -226,7 +228,9 @@ public class MapboxOfflineDownloaderServiceTest {
             jsonObject.put(MapBoxDownloadTask.MIN_ZOOM, minZoom);
             jsonObject.put(MapBoxDownloadTask.MAX_ZOOM, maxZoom);
             jsonObject.put(MapBoxDownloadTask.TOP_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topLeftBound));
+            jsonObject.put(MapBoxDownloadTask.TOP_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topRightBound));
             jsonObject.put(MapBoxDownloadTask.BOTTOM_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomRightBound));
+            jsonObject.put(MapBoxDownloadTask.BOTTOM_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomLeftBound));
 
             assertEquals(jsonObject.toString(), task.getTask().toString());
         } catch (JSONException e) {
@@ -567,7 +571,9 @@ public class MapboxOfflineDownloaderServiceTest {
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeftBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
 
         return serviceIntent;
     }
@@ -670,8 +676,16 @@ public class MapboxOfflineDownloaderServiceTest {
                         25.854782
                 ),
                 new LatLng(
+                        -17.854564,
+                        25.876589
+                ),
+                new LatLng(
                         -17.875469,
                         25.876589
+                ),
+                new LatLng(
+                        -17.875469,
+                        25.854782
                 ),
                 BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
         );
