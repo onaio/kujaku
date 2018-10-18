@@ -20,6 +20,4 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      *                         if the user cancels the operation
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback);
-
-    void showCurrentLocationBtn(boolean isVisible);
 }

@@ -66,8 +66,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private boolean canAddPoint = false;
 
     private ImageView markerLayout;
-    private Button doneAddingPoint;
-    private Button addPoint;
+    private Button doneAddingPointBtn;
+    private Button addPointBtn;
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
 
@@ -113,9 +113,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private void init(@Nullable AttributeSet attributeSet) {
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
-        doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
+        doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
-        addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
+        addPointBtn = findViewById(R.id.btn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
         markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -140,7 +140,19 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         String key = getContext().getString(R.string.current_location_btn_visibility);
         if (attributes.containsKey(key)) {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
-            showCurrentLocationBtn(isCurrentLocationBtnVisible);
+            setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
+        }
+
+        key = getContext().getString(R.string.add_btn_visibility);
+        if (attributes.containsKey(key)) {
+            boolean isAddPointBtnVisible = (boolean) attributes.get(key);
+            setVisibility(addPointBtn, isAddPointBtnVisible);
+        }
+
+        key = getContext().getString(R.string.done_btn_visibility);
+        if (attributes.containsKey(key)) {
+            boolean isDoneAddingPointBtnVisible = (boolean) attributes.get(key);
+            setVisibility(doneAddingPointBtn, isDoneAddingPointBtnVisible);
         }
     }
 
@@ -151,6 +163,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             try {
                 boolean isCurrentLocationBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_current_location_btn_visibility, false);
                 attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);
+
+                boolean isAddPointBtnVisible  = typedArray.getBoolean(R.styleable.KujakuMapView_add_btn_visibility, false);
+                attributes.put(getContext().getString(R.string.add_btn_visibility), isAddPointBtnVisible);
+
+                boolean isDoneAddingPointBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_done_btn_visibility, false);
+                attributes.put(getContext().getString(R.string.done_btn_visibility), isDoneAddingPointBtnVisible);
             } catch (Exception e) {
                 Log.d(TAG, e.getMessage());
             } finally {
@@ -165,7 +183,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         if (useGPS) {
             enableAddPoint(true, null);
-            doneAddingPoint.setOnClickListener(new OnClickListener() {
+            doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     enableAddPoint(false, null);
@@ -175,7 +193,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         } else {
             // Enable the marker layout
             enableAddPoint(true);
-            doneAddingPoint.setOnClickListener(new OnClickListener() {
+            doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     enableAddPoint(false);
@@ -187,7 +205,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
 
         showAddPointLayout(true);
-        addPoint.setOnClickListener(new OnClickListener() {
+        addPointBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 JSONObject feature = dropPoint();
@@ -199,8 +217,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private void showAddPointLayout(boolean showLayout) {
         int visible = showLayout ? VISIBLE : GONE;
 
-        doneAddingPoint.setVisibility(visible);
-        addPoint.setVisibility(visible);
+        doneAddingPointBtn.setVisibility(visible);
+        addPointBtn.setVisibility(visible);
         addPointButtonsLayout.setVisibility(visible);
     }
 
@@ -477,8 +495,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    @Override
-    public void showCurrentLocationBtn(boolean isVisible) {
-       currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
+    public void setVisibility(View view, boolean isVisible) {
+       view.setVisibility(isVisible ? VISIBLE : GONE);
     }
 }

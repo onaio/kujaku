@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -84,7 +85,7 @@ import io.ona.kujaku.views.KujakuMapView;
  */
 public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
-    private KujakuMapView mapView;
+    private KujakuMapView kujakuMapView;
     private String currentStylePath;
 
     private SortFieldConfig[] sortFields;
@@ -210,14 +211,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                final double maxZoom, final double minZoom) {
-        mapView = (KujakuMapView) findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+
+        kujakuMapView.onCreate(savedInstanceState);
 
         if (!mapBoxStylePath.isEmpty()) {
-            mapView.setStyleUrl(mapBoxStylePath);
+            kujakuMapView.setStyleUrl(mapBoxStylePath);
         }
-
-        mapView.getMapAsync(new OnMapReadyCallback() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 //Set listener for markers
@@ -288,6 +288,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         alertDialogs = new HashMap<>();
         infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
         focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        kujakuMapView = (KujakuMapView) findViewById(R.id.map_view);
+        kujakuMapView.enableAddPoint(true);
+        Button locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);
+        locationAdditionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (kujakuMapView.isCanAddPoint()) {
+                    JSONObject featurePoint = kujakuMapView.dropPoint();
+                    Log.e("FEATURE POINT", featurePoint.toString());
+                }
+            }
+        });
     }
 
     private void dismissAllDialogs() {
@@ -420,26 +433,26 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     protected void onResume() {
         super.onResume();
-        if (mapView != null) mapView.onResume();
+        if (kujakuMapView != null) kujakuMapView.onResume();
         if (googleApiClientInitialized) initGoogleApiClient();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (mapView != null) mapView.onStart();
+        if (kujakuMapView != null) kujakuMapView.onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mapView != null) mapView.onStop();
+        if (kujakuMapView != null) kujakuMapView.onStop();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mapView != null) mapView.onPause();
+        if (kujakuMapView != null) kujakuMapView.onPause();
         disconnectGoogleApiClient();
     }
 
@@ -452,19 +465,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     .deleteFile(currentStylePath.replace("file://", ""), true);
         }
 
-        if (mapView != null) mapView.onDestroy();
+        if (kujakuMapView != null) kujakuMapView.onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mapView != null) mapView.onSaveInstanceState(outState);
+        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (mapView != null) mapView.onLowMemory();
+        if (kujakuMapView != null) kujakuMapView.onLowMemory();
     }
 
     @Override
@@ -629,7 +642,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             performInfoWindowDoubleClickAction(featuresMap.get(id));
         } else {
             showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-            mapView.centerMap(latLng, animateToNewTargetDuration);
+            kujakuMapView.centerMap(latLng, animateToNewTargetDuration);
         }
         lastSelected = position;
     }
