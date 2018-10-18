@@ -89,8 +89,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
-    private Location latestLocation;
-
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -252,14 +250,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
                             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
 
-                            LatLng userLatLng = new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
+                            LatLng userLatLng = new LatLng(location.getLatitude()
                                     , location.getLongitude());
                             updateUserLocationLayer(userLatLng);
 
                             if (!isCurrentLocationBtnClicked || !isMapScrolled) {
                                 // Focus on the new location
-                                centerMap(new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
-                                        , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+                                centerMap(userLatLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
                                 isCurrentLocationBtnClicked = true;
                             }
                         }
@@ -331,7 +328,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public @Nullable JSONObject dropPoint() {
         if (mapboxMap != null && canAddPoint) {
-            com.mapbox.mapboxsdk.geometry.LatLng latLng = mapboxMap.getCameraPosition().target;
+            LatLng latLng = mapboxMap.getCameraPosition().target;
 
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
@@ -352,7 +349,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public @Nullable JSONObject dropPoint(@Nullable com.mapbox.mapboxsdk.geometry.LatLng latLng) {
+    public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
         if (latLng != null && mapboxMap != null && canAddPoint) {
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
@@ -400,26 +397,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    private void dropPointOnMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng latLng) {
-        /*if (pointsLayer == null || pointsSource == null) {
-            pointsSource = new GeoJsonSource(pointsSourceId);
-
-            com.mapbox.services.commons.geojson.Feature feature =
-                    com.mapbox.services.commons.geojson.Feature.fromGeometry(
-                            com.mapbox.services.commons.geojson.Point.fromCoordinates(
-                                    new double[]{latLng.getLongitude(), latLng.getLatitude()}
-                                    )
-                    );
-            pointsSource.setGeoJson(feature);
-
-            if (mapboxMap != null) {
-                mapboxMap.addSource(pointsSource);
-
-                pointsLayer = new SymbolLayer(pointsInnerLayerId, pointsSourceId);
-                pointsLayer.
-            }
-        }*/
-
+    private void dropPointOnMap(@NonNull LatLng latLng) {
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng);
         mapboxMap.addMarker(markerOptions);
@@ -439,11 +417,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         currentlyShownToast.show();
     }
 
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
-    }
-
-    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration, double newZoom) {
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration, double newZoom) {
         CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
                 .target(point);
         if (newZoom != -1d) {
@@ -457,7 +431,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration) {
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration) {
         centerMap(point, animateToNewTargetDuration, -1d);
     }
 

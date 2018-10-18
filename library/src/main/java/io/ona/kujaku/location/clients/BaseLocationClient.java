@@ -1,6 +1,5 @@
 package io.ona.kujaku.location.clients;
 
-import android.app.Activity;
 import android.content.Context;
 import android.location.LocationListener;
 import android.location.LocationManager;
