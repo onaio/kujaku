@@ -22,6 +22,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -111,13 +113,32 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     }
 
     private void callLibrary() {
-        Intent intent = new Intent(this, MapActivity.class);
-        intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                "file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json"
-        });
-        intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+        try {
+            Intent intent = new Intent(this, MapActivity.class);
+            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
+                    readInputStreamAsString(getAssets().open("sample-point-file.json"))
+            });
+            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
+            startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+        } catch (IOException exception) {
+            Log.e(TAG, Log.getStackTraceString(exception));
+        }
+    }
+
+    public static String readInputStreamAsString(InputStream in)
+            throws IOException {
+
+        BufferedInputStream bis = new BufferedInputStream(in);
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int result = bis.read();
+        while(result != -1) {
+            byte b = (byte)result;
+            buf.write(b);
+            result = bis.read();
+        }
+        return buf.toString();
     }
 
     private void downloadMap() {

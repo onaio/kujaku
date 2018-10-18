@@ -39,7 +39,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-//import com.mapbox.services.commons.geojson.Feature;
 
 import org.json.JSONArray;
 import org.json.JSONException;

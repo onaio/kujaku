@@ -139,6 +139,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
         }
+
+        getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                KujakuMapView.this.mapboxMap = mapboxMap;
+            }
+        });
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
