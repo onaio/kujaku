@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import io.ona.kujaku.KujakuApplication;
 import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
@@ -298,6 +299,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 if (kujakuMapView.isCanAddPoint()) {
                     JSONObject featurePoint = kujakuMapView.dropPoint();
                     Log.e("FEATURE POINT", featurePoint.toString());
+                    KujakuApplication.getInstance().getHostApplication().savePoint(featurePoint);
                 }
             }
         });

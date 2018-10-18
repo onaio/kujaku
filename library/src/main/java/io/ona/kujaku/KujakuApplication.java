@@ -11,6 +11,7 @@ import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.views.BaseHostApplication;
 
 /**
  * This application class should be extended for all apps especially if you expect your app to be
@@ -21,10 +22,17 @@ import io.ona.kujaku.utils.Constants;
  */
 
 public class KujakuApplication extends Application {
-    private final boolean enableMapDownloadResume;
+    private boolean enableMapDownloadResume;
+    private BaseHostApplication hostApplication;
+    private static KujakuApplication kujakuApplication;
 
-    public KujakuApplication(boolean enableMapDownloadResume) {
-        this.enableMapDownloadResume = enableMapDownloadResume;
+    private KujakuApplication() {}
+
+    public static KujakuApplication getInstance() {
+        if (kujakuApplication == null) {
+            kujakuApplication = new KujakuApplication();
+        }
+        return kujakuApplication;
     }
 
     @Override
@@ -51,5 +59,19 @@ public class KujakuApplication extends Application {
                 , SystemClock.elapsedRealtime() + Constants.MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL
                 , Constants.MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL
                 , pendingIntent);
+    }
+
+    public void setHostApplication(BaseHostApplication hostApplication) { this.hostApplication = hostApplication; }
+
+    public BaseHostApplication getHostApplication() {
+        return hostApplication;
+    }
+
+    public boolean isEnableMapDownloadResume() {
+        return enableMapDownloadResume;
+    }
+
+    public void setEnableMapDownloadResume(boolean enableMapDownloadResume) {
+        this.enableMapDownloadResume = enableMapDownloadResume;
     }
 }

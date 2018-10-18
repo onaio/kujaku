@@ -418,7 +418,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    private void dropPointOnMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng latLng) {
+    public void dropPointOnMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng latLng) {
         /*if (pointsLayer == null || pointsSource == null) {
             pointsSource = new GeoJsonSource(pointsSourceId);
 
