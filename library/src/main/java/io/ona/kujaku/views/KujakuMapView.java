@@ -52,7 +52,6 @@ import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
-import io.ona.kujaku.utils.Views;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
