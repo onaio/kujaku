@@ -61,26 +61,27 @@
         android:layout_alignParentBottom="true"
         android:visibility="gone"/>
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="20dp"
+        android:id="@+id/imgBtn_mapview_locationAdditionBtn"
+        android:background="@drawable/circle_button_black_border"
+        android:src="@drawable/ic_add"
+        android:padding="10dp"
+        android:textColor="@color/white"
+        android:visibility="gone"/>
+
     <LinearLayout
-        android:id="@+id/ll_mapview_addBtnsLayout"
+        android:id="@+id/ll_mapview_locationSelectionBtns"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:layout_gravity="bottom"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:weightSum="2">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_mapview_locationAdditionBtn"
-            android:background="@drawable/done_btn_bg"
-            android:textColor="@color/white"
-            android:textSize="19sp"
-            android:visibility="gone"
-            android:layout_weight="1"
-            android:text="@string/add"
-            android:layout_margin="20dp"/>
 
         <Button
             android:layout_width="wrap_content"
@@ -89,10 +90,19 @@
             android:background="@drawable/done_btn_bg"
             android:textColor="@color/white"
             android:textSize="19sp"
-            android:visibility="gone"
             android:layout_weight="1"
-            android:text="@string/done"
-            android:layout_margin="20dp"/>
+            android:text="@string/done"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:id="@+id/btn_mapview_locationSelectionCancelBtn"
+            android:background="@drawable/cancel_btn_bg"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:layout_weight="1"
+            android:text="@string/cancel"/>
 
     </LinearLayout>
 
