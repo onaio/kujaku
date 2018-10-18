@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.offline.OfflineManager;
@@ -19,6 +20,7 @@ import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 
@@ -29,17 +31,20 @@ import io.ona.kujaku.sample.R;
 public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
 
     private static final String TAG = OfflineRegionsActivity.class.getName();
+    private String offlineRegionInfo = "";
+    private int position = 0;
+    private boolean activated = false;
+    private String currentText = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.offline_regions_activity_title);
 
-        ListView listView = (ListView) findViewById(R.id.lv_offlineRegionsActivity_mapsList);
+        ListView listView = findViewById(R.id.lv_offlineRegionsActivity_mapsList);
         getOfflineDownloadedRegions(listView);
     }
 
-    private String offlineRegionInfo = "";
     private void getOfflineDownloadedRegions(final ListView listView) {
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
@@ -47,6 +52,12 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
             public void onList(final OfflineRegion[] offlineRegions) {
+
+                if (offlineRegions == null || offlineRegions.length < 1) {
+                    Toasty.info(OfflineRegionsActivity.this, getString(R.string.you_do_not_have_offline_regions), Toast.LENGTH_LONG)
+                            .show();
+                }
+
                 getOfflineRegionsInfo(offlineRegions, listView);
             }
 
@@ -57,13 +68,8 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         });
     }
 
-    int position = 0;
-    int remainingCallbacks = 0;
-    private boolean activated = false;
-    private String currentText = "";
     private void getOfflineRegionsInfo(final OfflineRegion[] offlineRegions, final ListView listView) {
         final String[] offlineInfo = new String[offlineRegions.length + 1];
-        remainingCallbacks = offlineRegions.length;
 
         for(position = 0; position < offlineRegions.length; position++) {
 
@@ -99,7 +105,6 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                     offlineInfo[position] += "\n";
 
                     Log.i(TAG, offlineRegionInfo);
-                    remainingCallbacks--;
 
                     listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, android.R.layout.simple_list_item_1, offlineInfo){
                         @NonNull
