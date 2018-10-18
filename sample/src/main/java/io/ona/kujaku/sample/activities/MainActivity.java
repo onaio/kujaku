@@ -53,8 +53,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
         requestBasicPermissions();
 
         bottomRightLatEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlatitude);

@@ -14,6 +14,22 @@
         <item
             android:id="@+id/nav_task_queue"
             android:title="@string/task_queue_activity_title" />
+
+        <item
+            android:id="@+id/nav_low_level_manual_add_point"
+            android:title="@string/low_level_manual_add_point"/>
+
+        <item
+            android:id="@+id/nav_low_level_location_add_point"
+            android:title="@string/low_level_location_add_point"/>
+
+        <item
+            android:id="@+id/nav_high_level_add_point"
+            android:title="@string/high_level_add_point"/>
+
+        <item
+            android:id="@+id/nav_high_level_location_add_point"
+            android:title="@string/high_level_location_add_point"/>
     </group>
 
 </menu>
