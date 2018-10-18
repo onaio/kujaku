@@ -22,4 +22,5 @@
     <string name="click_go_to_my_location_msg">Please first click GO TO MY LOCATION button</string>
     <string name="no_offline_download_tasks">There are no offline download tasks!</string>
     <string name="you_do_not_have_offline_regions">You do not have any offline regions</string>
+    <string name="geospatial_widget_examples">Geo-spatial widget examples</string>
 </resources>
