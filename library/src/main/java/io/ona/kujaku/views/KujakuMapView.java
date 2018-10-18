@@ -66,11 +66,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private ImageView markerLayout;
     private Button doneAddingPoint;
-    private Button addPoint;
+    private Button cancelAddingPoint;
+    private ImageButton addPoint;
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
 
-    private LinearLayout addPointButtonsLayout;
+    private LinearLayout buttonsLayout;
 
     private CircleLayer userLocationInnerCircle;
     private CircleLayer userLocationOuterCircle;
@@ -111,9 +112,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private void init(@Nullable AttributeSet attributeSet) {
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
-        addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
-        addPoint = findViewById(R.id.btn_mapview_locationAdditionBtn);
+        cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
+
+        addPoint = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        buttonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
 
         markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -166,36 +170,56 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
-
-        if (useGPS) {
-            enableAddPoint(true, null);
-            doneAddingPoint.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    enableAddPoint(false, null);
-                    showAddPointLayout(false);
-                }
-            });
-        } else {
-            // Enable the marker layout
-            enableAddPoint(true);
-            doneAddingPoint.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    enableAddPoint(false);
-                    addPointCallback.onCancel();
-
-                    showAddPointLayout(false);
-                }
-            });
-        }
-
-        showAddPointLayout(true);
+        addPoint.setVisibility(VISIBLE);
         addPoint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONObject feature = dropPoint();
-                addPointCallback.onPointAdd(feature);
+                addPoint.setVisibility(GONE);
+                buttonsLayout.setVisibility(VISIBLE);
+
+                if (useGPS) {
+                    enableAddPoint(true, null);
+                    doneAddingPoint.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            JSONObject featureJSON = dropPoint();
+                            addPointCallback.onPointAdd(featureJSON);
+
+                            enableAddPoint(false, null);
+
+                            buttonsLayout.setVisibility(GONE);
+                            addPoint.setVisibility(VISIBLE);
+                        }
+                    });
+                } else {
+                    enableAddPoint(true);
+                    doneAddingPoint.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            JSONObject featureJSON = dropPoint();
+                            addPointCallback.onPointAdd(featureJSON);
+
+                            enableAddPoint(false);
+
+                            buttonsLayout.setVisibility(GONE);
+                            addPoint.setVisibility(VISIBLE);
+                        }
+                    });
+                }
+
+                cancelAddingPoint.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (useGPS) {
+                            enableAddPoint(false, null);
+                        } else {
+                            enableAddPoint(false);
+                        }
+
+                        buttonsLayout.setVisibility(GONE);
+                        addPoint.setVisibility(VISIBLE);
+                    }
+                });
             }
         });
     }
@@ -205,7 +229,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         doneAddingPoint.setVisibility(visible);
         addPoint.setVisibility(visible);
-        addPointButtonsLayout.setVisibility(visible);
     }
 
     @Override
@@ -228,7 +251,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         this.enableAddPoint(canAddPoint);
         if (canAddPoint) {
             this.onLocationChanged = onLocationChanged;
-            showMarkerLayout();
             GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
                 @Override
                 public Object[] call() throws Exception {
