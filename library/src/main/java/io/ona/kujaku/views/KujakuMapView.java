@@ -52,6 +52,7 @@ import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
+import io.ona.kujaku.utils.Views;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -445,12 +446,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             @Override
             public void onMove(@NonNull MoveGestureDetector detector) {
-
+                // We are not going to do anything here
             }
 
             @Override
             public void onMoveEnd(@NonNull MoveGestureDetector detector) {
-
+                // We are also not going to do anything here
             }
         });
     }
