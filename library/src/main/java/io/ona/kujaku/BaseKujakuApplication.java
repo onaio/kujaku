@@ -7,43 +7,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 
+import org.json.JSONObject;
+
+import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.utils.Constants;
-import io.ona.kujaku.views.BaseHostApplication;
 
 /**
  * This application class should be extended for all apps especially if you expect your app to be
  * used in Android Nougat(7) API 24 so that the SDK can receive Connectivity State changes and resume
  * download of incomplete maps
  *
- * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
- */
+ * Created by Ephraim Kigamba and Vincent Karuri
+*/
 
-public class KujakuApplication extends Application {
+public abstract class BaseKujakuApplication extends Application {
+
     private boolean enableMapDownloadResume;
-    private BaseHostApplication hostApplication;
-    private static KujakuApplication kujakuApplication;
+    private BaseKujakuApplication hostApplication;
 
-    private KujakuApplication() {}
+    protected void init(BaseKujakuApplication application) {
+        KujakuLibrary.getInstance().setHostApplication(application);
+        setHostApplication(application);
 
-    public static KujakuApplication getInstance() {
-        if (kujakuApplication == null) {
-            kujakuApplication = new KujakuApplication();
-        }
-        return kujakuApplication;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        RealmDatabase.init(this);
-
-        if (enableMapDownloadResume) {
-            KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(getApplicationContext());
-            resumeMapDownload(this);
+        RealmDatabase.init(getHostApplication());
+        if (isEnableMapDownloadResume()) {
+            KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(getHostApplication());
+            resumeMapDownload(getHostApplication());
         }
     }
 
@@ -51,7 +42,7 @@ public class KujakuApplication extends Application {
         Intent mapService = new Intent(context, MapboxOfflineDownloaderService.class);
         mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.NETWORK_RESUME);
 
-        PendingIntent pendingIntent = PendingIntent.getService(this, Constants.MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE, mapService, 0);
+        PendingIntent pendingIntent = PendingIntent.getService(getHostApplication(), Constants.MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE, mapService, 0);
         //Add the alarm here
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setInexactRepeating(
@@ -61,11 +52,7 @@ public class KujakuApplication extends Application {
                 , pendingIntent);
     }
 
-    public void setHostApplication(BaseHostApplication hostApplication) { this.hostApplication = hostApplication; }
-
-    public BaseHostApplication getHostApplication() {
-        return hostApplication;
-    }
+    public abstract void processFeatureJSON(JSONObject points);
 
     public boolean isEnableMapDownloadResume() {
         return enableMapDownloadResume;
@@ -73,5 +60,13 @@ public class KujakuApplication extends Application {
 
     public void setEnableMapDownloadResume(boolean enableMapDownloadResume) {
         this.enableMapDownloadResume = enableMapDownloadResume;
+    }
+
+    protected BaseKujakuApplication getHostApplication() {
+        return hostApplication;
+    }
+
+    protected void setHostApplication(BaseKujakuApplication hostApplication) {
+        this.hostApplication = hostApplication;
     }
 }

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.PointF;
 import android.location.Location;
 import android.os.Bundle;
-
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -40,7 +39,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-//import com.mapbox.services.commons.geojson.Feature;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,25 +49,27 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import io.ona.kujaku.KujakuApplication;
+import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
-import io.ona.kujaku.utils.Permissions;
-import io.ona.kujaku.utils.Views;
-import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
-import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.CoordinateUtils;
+import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.Views;
 import io.ona.kujaku.utils.config.DataSourceConfig;
 import io.ona.kujaku.utils.config.KujakuConfig;
 import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.views.KujakuMapView;
+
+//import com.mapbox.services.commons.geojson.Feature;
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
@@ -299,7 +299,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 if (kujakuMapView.isCanAddPoint()) {
                     JSONObject featurePoint = kujakuMapView.dropPoint();
                     Log.e("FEATURE POINT", featurePoint.toString());
-                    KujakuApplication.getInstance().getHostApplication().savePoint(featurePoint);
+                    KujakuLibrary.getInstance().sendFeatureJSONToHostApp(featurePoint);
                 }
             }
         });

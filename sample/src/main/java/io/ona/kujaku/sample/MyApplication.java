@@ -5,12 +5,10 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.ona.kujaku.KujakuApplication;
-import io.ona.kujaku.interfaces.IKujakuApplication;
+import io.ona.kujaku.BaseKujakuApplication;
 import io.ona.kujaku.sample.domain.Point;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
-import io.ona.kujaku.views.BaseHostApplication;
 
 import static io.ona.kujaku.utils.Constants.DATABASE_NAME;
 
@@ -18,34 +16,26 @@ import static io.ona.kujaku.utils.Constants.DATABASE_NAME;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
  */
 
-public class MyApplication extends BaseHostApplication {
-
+public class MyApplication extends BaseKujakuApplication {
 
     private static final String TAG = MyApplication.class.getName();
-
-    private MyApplication myApplication;
 
     private KujakuRepository repository;
 
     private PointsRepository pointsRepository;
 
-    private MyApplication() { ;
-        KujakuApplication.getInstance().setEnableMapDownloadResume(false);
-    }
+    private static MyApplication application;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        application = this;
+        setEnableMapDownloadResume(false);
+        init(this); // must initialize base application
         getRepository();
     }
 
-    public MyApplication getInstance() {
-        if (myApplication == null) {
-            myApplication = new MyApplication();
-            KujakuApplication.getInstance().setHostApplication(this);
-        }
-        return myApplication;
-    }
+    public static MyApplication getInstance() { return application; }
 
     public KujakuRepository getRepository() {
         try {
@@ -66,7 +56,7 @@ public class MyApplication extends BaseHostApplication {
     }
 
     @Override
-    public void savePoint(JSONObject featurePoint) {
+    public void processFeatureJSON(JSONObject featurePoint) {
         try {
             JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
             getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
