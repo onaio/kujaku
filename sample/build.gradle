@@ -80,9 +80,11 @@ android {
 
 dependencies {
     implementation (project(":library")) {
+        transitive = true
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
     }
+    implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
     implementation (project(":utils")) {
         //implementation('io.ona.kujaku:utils:0.2.6-87-1') {
