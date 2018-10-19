@@ -53,7 +53,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onList(final OfflineRegion[] offlineRegions) {
 
-                if (offlineRegions == null || offlineRegions.length < 1) {
+                if (offlineRegions == null || offlineRegions.length == 0) {
                     Toasty.info(OfflineRegionsActivity.this, getString(R.string.you_do_not_have_offline_regions), Toast.LENGTH_LONG)
                             .show();
                 }

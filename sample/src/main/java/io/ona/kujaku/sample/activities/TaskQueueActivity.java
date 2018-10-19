@@ -46,7 +46,7 @@ public class TaskQueueActivity extends BaseNavigationDrawerActivity {
     }
 
     private void displayQueueTasks(@NonNull ListView listView, @NonNull final RealmResults<MapBoxOfflineQueueTask> realmResults) {
-        if (realmResults.size() < 1) {
+        if (realmResults.size() == 0) {
             Toasty.info(this, getString(R.string.no_offline_download_tasks), Toast.LENGTH_LONG)
                     .show();
         }
