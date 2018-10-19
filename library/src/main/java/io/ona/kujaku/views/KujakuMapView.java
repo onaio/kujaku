@@ -336,11 +336,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
                 userLocationOuterCircle.setProperties(
-                        PropertyFactory.circleColor("#deeaf2"),
+                        PropertyFactory.circleColor("#81c2ee"),
                         PropertyFactory.circleRadius(25f),
-                        PropertyFactory.circleStrokeWidth(3f),
-                        PropertyFactory.circleStrokeColor("#cfdeed"),
-                        PropertyFactory.circleOpacity(0.72f)
+                        PropertyFactory.circleStrokeWidth(1f),
+                        PropertyFactory.circleStrokeColor("#74b7f6"),
+                        PropertyFactory.circleOpacity(0.3f),
+                        PropertyFactory.circleStrokeOpacity(0.6f)
                 );
 
                 mapboxMap.addLayer(userLocationOuterCircle);
