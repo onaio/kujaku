@@ -48,6 +48,10 @@ public class GPSLocationClient extends BaseLocationClient implements LocationLis
             try {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, updateInterval, 0, GPSLocationClient.this);
                 lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                if (lastLocation != null) {
+                    onLocationChanged(lastLocation);
+                }
             } catch (SecurityException e) {
                 Log.e(TAG, Log.getStackTraceString(e));
                 Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
