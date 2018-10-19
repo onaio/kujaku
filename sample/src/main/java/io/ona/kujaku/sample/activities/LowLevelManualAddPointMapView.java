@@ -25,6 +25,7 @@ public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity 
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelManualAddPointMapView_mapView);
+        kujakuMapView.showCurrentLocationBtn(true);
         kujakuMapView.enableAddPoint(true);
 
         Button button = findViewById(R.id.btn_lowLevelManualAddPointMapView_doneBtn);
