@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_my_location"
-        android:layout_marginBottom="20dp"
+        android:layout_marginBottom="86dp"
         android:layout_marginRight="20dp"
         android:layout_gravity="bottom|right"
         android:padding="10dp"

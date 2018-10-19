@@ -41,6 +41,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
@@ -194,6 +195,20 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             mapView.setStyleUrl(mapBoxStylePath);
         }
 
+
+        mapView.showCurrentLocationBtn(true);
+        mapView.addPoint(false, new AddPointCallback() {
+            @Override
+            public void onPointAdd(JSONObject jsonObject) {
+                //
+            }
+
+            @Override
+            public void onCancel() {
+                // Just do nothing
+            }
+        });
+
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -211,7 +226,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
                 boolean cameraPositionChanged = false;
-
 
                 if (cameraPositionChanged) {
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
