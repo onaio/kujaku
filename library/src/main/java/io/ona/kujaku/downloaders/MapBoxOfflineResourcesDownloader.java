@@ -212,6 +212,10 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Invalid Style URL");
         }
 
+        checkMapZoomParams(minZoom, maxZoom);
+    }
+
+    private void checkMapZoomParams(double minZoom, double maxZoom) throws OfflineMapDownloadException {
         if (minZoom < 0 || minZoom > 22 || maxZoom < 0 || maxZoom > 22) {
             throw new OfflineMapDownloadException("maxZoom & minZoom should be among 0-22");
         }
