@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONObject;
 
@@ -20,9 +20,8 @@ import io.ona.kujaku.views.KujakuMapView;
 
 public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivity {
 
+    private static final String TAG = LowLevelLocationAddPointMapView.class.getName();
     private KujakuMapView kujakuMapView;
-    private boolean canAddPoint = true;
-    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +40,11 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
                     Toasty.info(getApplicationContext(), getString(R.string.click_go_to_my_location_msg), Toast.LENGTH_LONG, true).show();
                 }
 
-                if (kujakuMapView.isCanAddPoint() && location != null) {
+                if (kujakuMapView.isCanAddPoint()) {
                     JSONObject featurePoint = kujakuMapView.dropPoint();
                     if (featurePoint != null) {
                         Log.e("FEATURE POINT", featurePoint.toString());
                     }
-                    location = null;
                 }
             }
         });
@@ -57,7 +55,7 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
                 kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
                     @Override
                     public void onLocationChanged(Location location) {
-                        LowLevelLocationAddPointMapView.this.location = location;
+                        Log.d(TAG, new Gson().toJson(location));
                     }
                 });
             }
