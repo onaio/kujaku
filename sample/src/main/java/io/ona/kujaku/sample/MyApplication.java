@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import io.ona.kujaku.BaseKujakuApplication;
-import io.ona.kujaku.sample.domain.Point;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
 

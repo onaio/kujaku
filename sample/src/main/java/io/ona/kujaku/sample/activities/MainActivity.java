@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
@@ -43,7 +44,7 @@ import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
-import io.ona.kujaku.sample.domain.Point;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.PointsRepository;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.tasks.GenericAsyncTask;
@@ -91,7 +92,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         openMapActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callLibrary();
+//                callLibrary();
+                // should probably be in an async task
+                List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
+                KujakuLibrary.getInstance().lauchMapActivity(points);
             }
         });
         registerLocalBroadcastReceiver();
@@ -100,7 +104,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         launchKujakuMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callLibrary();
+               // callLibrary();
+                // should probably be in an async task
+                List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
+                KujakuLibrary.getInstance().lauchMapActivity(points);
             }
         });
 
@@ -186,7 +193,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         List<Point> points = pointsRepository.getAllPoints();
         GeoJSONHelper geoJSONHelper;
 
-        ArrayList<GeoJSONFeature> geoJSONFeatures = new ArrayList<>();
+        List<GeoJSONFeature> geoJSONFeatures = new ArrayList<>();
 
         for (Point point: points) {
             GeoJSONFeature geoJSONFeature = new GeoJSONFeature();

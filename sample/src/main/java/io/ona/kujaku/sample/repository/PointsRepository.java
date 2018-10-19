@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import io.ona.kujaku.sample.domain.Point;
+import io.ona.kujaku.domain.Point;
 
 import static io.ona.kujaku.utils.Constants.INSERT_OR_REPLACE;
 

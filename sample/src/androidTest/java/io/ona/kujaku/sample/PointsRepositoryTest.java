@@ -4,10 +4,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.ona.kujaku.sample.domain.Point;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.PointsRepository;
 
-import static io.ona.kujaku.sample.repository.PointsRepository.POINTS_TABLE;
 import static io.ona.kujaku.utils.Constants.DATABASE_NAME;
 import static junit.framework.Assert.assertEquals;
 

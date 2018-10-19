@@ -1,4 +1,4 @@
-package io.ona.kujaku.sample.domain;
+package io.ona.kujaku.domain;
 
 /**
  * @author Vincent Karuri

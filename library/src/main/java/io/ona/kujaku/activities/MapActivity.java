@@ -54,6 +54,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
@@ -303,6 +304,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             }
         });
+        // restore dropped pins
+        List<Point> points = KujakuLibrary.getInstance().getMapActivityPoints();
+        kujakuMapView.setDroppedPoints(points);
     }
 
     private void dismissAllDialogs() {
@@ -437,6 +441,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         super.onResume();
         if (kujakuMapView != null) kujakuMapView.onResume();
         if (googleApiClientInitialized) initGoogleApiClient();
+        initializeViews();
     }
 
     @Override

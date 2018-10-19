@@ -36,6 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -89,6 +90,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
+    private List<io.ona.kujaku.domain.Point> droppedPoints;
+
     private Location latestLocation;
 
     public KujakuMapView(@NonNull Context context) {
@@ -117,6 +120,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
         addPointBtn = findViewById(R.id.btn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        getMapboxMap();
 
         markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -413,6 +418,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
+                    if (droppedPoints != null) {
+                        for (io.ona.kujaku.domain.Point point : droppedPoints) {
+                            dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+                        }
+                    }
                 }
             });
         }
@@ -440,7 +450,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng);
-        mapboxMap.addMarker(markerOptions);
+        if (mapboxMap != null) {
+            mapboxMap.addMarker(markerOptions);
+        }
     }
 
     public boolean isCanAddPoint() {
@@ -497,5 +509,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     public void setVisibility(View view, boolean isVisible) {
        view.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
+    public List<io.ona.kujaku.domain.Point> getDroppedPoints() {
+        return droppedPoints;
+    }
+
+    public void setDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
+        this.droppedPoints = droppedPoints;
     }
 }
