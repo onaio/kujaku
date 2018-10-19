@@ -33,9 +33,9 @@ public class PointsRepository extends BaseRepository {
 
             "CREATE TABLE " + POINTS_TABLE
             + "("
-                    + ID + " INTEGER PRIMARY KEY,"
+                    + ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + LAT + " REAL NOT NULL,"
-                    + LNG + " REAL NOT NULL"
+                    + LNG + " REAL NOT NULL,"
                     + DATE_UPDATED + "INTEGER"
             + ")";
 
@@ -88,6 +88,8 @@ public class PointsRepository extends BaseRepository {
         Cursor cursor = null;
         try {
             cursor = getReadableDatabase().rawQuery("SELECT * " + " FROM " + POINTS_TABLE + " WHERE " + ID + "=?", new String[]{id});
+            List<Point> points = readPoints(cursor);
+            point = points.size() > 0 ? points.get(0) : null;
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
         } finally {

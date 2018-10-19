@@ -19,6 +19,7 @@ public class KujakuRepository extends SQLiteOpenHelper {
 
     public KujakuRepository(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, null, version);
+        SQLiteDatabase.loadLibs(context); // this must be added
     }
 
     @Override
