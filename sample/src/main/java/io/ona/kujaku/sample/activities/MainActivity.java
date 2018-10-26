@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -23,8 +22,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import org.json.JSONException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,12 +34,9 @@ import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
-import io.ona.kujaku.sample.repository.PointsRepository;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
-import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
-import io.ona.kujaku.utils.helpers.converters.GeoJSONHelper;
 
 public class MainActivity extends BaseNavigationDrawerActivity {
 
@@ -124,32 +118,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     protected int getSelectedNavigationItem() {
         return R.id.nav_main_activity;
     }
-
-    @Nullable
-    private String createJSONFeaturesFromPoints() {
-        PointsRepository pointsRepository = MyApplication.getInstance().getPointsRepository();
-
-        List<Point> points = pointsRepository.getAllPoints();
-        GeoJSONHelper geoJSONHelper;
-
-        List<GeoJSONFeature> geoJSONFeatures = new ArrayList<>();
-
-        for (Point point: points) {
-            GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
-            geoJSONFeature.addPoint(new LatLng(point.getLat(), point.getLng()));
-            geoJSONFeatures.add(geoJSONFeature);
-        }
-
-        geoJSONHelper = new GeoJSONHelper(geoJSONFeatures.toArray(new GeoJSONFeature[geoJSONFeatures.size()]));
-
-        try {
-            return geoJSONHelper.getGeoJsonData();
-        } catch (JSONException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-            return null;
-        }
-    }
-
 
     private void downloadMap() {
         double topLeftLat = 37.7897;

@@ -53,7 +53,6 @@ import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
-import io.ona.kujaku.utils.Views;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -68,11 +67,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private ImageView markerLayout;
     private Button doneAddingPointBtn;
-    private Button addPointBtn;
+    private ImageButton addPointBtn;
+    private Button cancelAddingPoint;
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
-
-    private LinearLayout addPointButtonsLayout;
 
     private CircleLayer userLocationInnerCircle;
     private CircleLayer userLocationOuterCircle;
@@ -84,6 +82,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
     private OnLocationChanged onLocationChanged;
+
+    private LinearLayout addPointButtonsLayout;
 
     private boolean isCurrentLocationBtnClicked = false;
     private boolean isMapScrolled = false;
@@ -116,12 +116,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private void init(@Nullable AttributeSet attributeSet) {
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
+
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
-        addPointButtonsLayout = findViewById(R.id.ll_mapview_addBtnsLayout);
-        addPointBtn = findViewById(R.id.btn_mapview_locationAdditionBtn);
+        addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
+        addPointBtn = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
         getMapboxMap();
+        cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
 
         markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -159,6 +161,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isDoneAddingPointBtnVisible = (boolean) attributes.get(key);
             setVisibility(doneAddingPointBtn, isDoneAddingPointBtnVisible);
         }
+
+        getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                KujakuMapView.this.mapboxMap = mapboxMap;
+            }
+        });
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -186,42 +195,63 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
 
-        if (useGPS) {
-            enableAddPoint(true, null);
-            doneAddingPointBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    enableAddPoint(false, null);
-                    showAddPointLayout(false);
-                }
-            });
-        } else {
-            // Enable the marker layout
-            enableAddPoint(true);
-            doneAddingPointBtn.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    enableAddPoint(false);
-                    addPointCallback.onCancel();
-
-                    showAddPointLayout(false);
-                }
-            });
-        }
-
-        showAddPointLayout(true);
+        addPointBtn.setVisibility(VISIBLE);
         addPointBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONObject feature = dropPoint();
-                addPointCallback.onPointAdd(feature);
+                addPointBtn.setVisibility(GONE);
+                showAddPointLayout(true);
+
+                if (useGPS) {
+                    enableAddPoint(true, null);
+                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            JSONObject featureJSON = dropPoint();
+                            addPointCallback.onPointAdd(featureJSON);
+
+                            enableAddPoint(false, null);
+
+                            showAddPointLayout(false);
+                            addPointBtn.setVisibility(VISIBLE);
+                        }
+                    });
+                } else {
+                    // Enable the marker layout
+                    enableAddPoint(true);
+                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            JSONObject featureJSON = dropPoint();
+                            addPointCallback.onPointAdd(featureJSON);
+
+                            enableAddPoint(false);
+
+                            showAddPointLayout(false);
+                            addPointBtn.setVisibility(VISIBLE);
+                        }
+                    });
+                }
+            }
+        });
+
+        cancelAddingPoint.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (useGPS) {
+                    enableAddPoint(false, null);
+                } else {
+                    enableAddPoint(false);
+                }
+
+                showAddPointLayout(false);
+                addPointBtn.setVisibility(VISIBLE);
             }
         });
     }
 
     private void showAddPointLayout(boolean showLayout) {
         int visible = showLayout ? VISIBLE : GONE;
-
         doneAddingPointBtn.setVisibility(visible);
         addPointBtn.setVisibility(visible);
         addPointButtonsLayout.setVisibility(visible);
@@ -247,7 +277,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         this.enableAddPoint(canAddPoint);
         if (canAddPoint) {
             this.onLocationChanged = onLocationChanged;
-            showMarkerLayout();
             GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
                 @Override
                 public Object[] call() throws Exception {
@@ -275,14 +304,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
                             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
 
-                            LatLng userLatLng = new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
+                            LatLng userLatLng = new LatLng(location.getLatitude()
                                     , location.getLongitude());
                             updateUserLocationLayer(userLatLng);
 
                             if (!isCurrentLocationBtnClicked || !isMapScrolled) {
                                 // Focus on the new location
-                                centerMap(new com.mapbox.mapboxsdk.geometry.LatLng(location.getLatitude()
-                                        , location.getLongitude()), ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+                                centerMap(userLatLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
                                 isCurrentLocationBtnClicked = true;
                             }
                         }
@@ -354,7 +382,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public @Nullable JSONObject dropPoint() {
         if (mapboxMap != null && canAddPoint) {
-            com.mapbox.mapboxsdk.geometry.LatLng latLng = mapboxMap.getCameraPosition().target;
+            LatLng latLng = mapboxMap.getCameraPosition().target;
 
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
@@ -375,7 +403,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public @Nullable JSONObject dropPoint(@Nullable com.mapbox.mapboxsdk.geometry.LatLng latLng) {
+    public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
         if (latLng != null && mapboxMap != null && canAddPoint) {
             Feature feature = new Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
@@ -428,26 +456,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    public void dropPointOnMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng latLng) {
-        /*if (pointsLayer == null || pointsSource == null) {
-            pointsSource = new GeoJsonSource(pointsSourceId);
 
-            com.mapbox.services.commons.geojson.Feature feature =
-                    com.mapbox.services.commons.geojson.Feature.fromGeometry(
-                            com.mapbox.services.commons.geojson.Point.fromCoordinates(
-                                    new double[]{latLng.getLongitude(), latLng.getLatitude()}
-                                    )
-                    );
-            pointsSource.setGeoJson(feature);
-
-            if (mapboxMap != null) {
-                mapboxMap.addSource(pointsSource);
-
-                pointsLayer = new SymbolLayer(pointsInnerLayerId, pointsSourceId);
-                pointsLayer.
-            }
-        }*/
-
+    private void dropPointOnMap(@NonNull LatLng latLng) {
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng);
         if (mapboxMap != null) {
@@ -469,11 +479,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         currentlyShownToast.show();
     }
 
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
-    }
-
-    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration, double newZoom) {
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration, double newZoom) {
         CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
                 .target(point);
         if (newZoom != -1d) {
@@ -487,7 +493,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    public void centerMap(@NonNull com.mapbox.mapboxsdk.geometry.LatLng point, int animateToNewTargetDuration) {
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration) {
         centerMap(point, animateToNewTargetDuration, -1d);
     }
 
@@ -519,3 +525,4 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         this.droppedPoints = droppedPoints;
     }
 }
+

@@ -1,6 +1,5 @@
 package io.ona.kujaku.sample.activities;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -16,7 +15,6 @@ import io.ona.kujaku.views.KujakuMapView;
 public class HighLevelLocationAddPointMapView extends BaseNavigationDrawerActivity {
 
     private static final String TAG = HighLevelLocationAddPointMapView.class.getName();
-
     private KujakuMapView kujakuMapView;
 
     @Override
@@ -25,7 +23,6 @@ public class HighLevelLocationAddPointMapView extends BaseNavigationDrawerActivi
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_highLevelLocationAddPointMapView_mapView);
-
         kujakuMapView.addPoint(true, new AddPointCallback() {
             @Override
             public void onPointAdd(JSONObject jsonObject) {
@@ -47,7 +44,7 @@ public class HighLevelLocationAddPointMapView extends BaseNavigationDrawerActivi
 
     @Override
     protected int getSelectedNavigationItem() {
-        return R.id.nav_low_level_location_add_point;
+        return R.id.nav_high_level_location_add_point;
     }
 
     @Override

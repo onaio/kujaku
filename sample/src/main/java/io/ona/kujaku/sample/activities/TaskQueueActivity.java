@@ -3,13 +3,13 @@ package io.ona.kujaku.sample.activities;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
+import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.sample.R;
@@ -45,6 +46,11 @@ public class TaskQueueActivity extends BaseNavigationDrawerActivity {
     }
 
     private void displayQueueTasks(@NonNull ListView listView, @NonNull final RealmResults<MapBoxOfflineQueueTask> realmResults) {
+        if (realmResults.size() == 0) {
+            Toasty.info(this, getString(R.string.no_offline_download_tasks), Toast.LENGTH_LONG)
+                    .show();
+        }
+
         listView.setAdapter(new ArrayAdapter(TaskQueueActivity.this, android.R.layout.simple_list_item_1, new String[realmResults.size()]) {
             @NonNull
             @Override
@@ -80,29 +86,31 @@ public class TaskQueueActivity extends BaseNavigationDrawerActivity {
 
     private String getTaskDetails(MapBoxOfflineQueueTask mapBoxOfflineQueueTask) throws JSONException {
         JSONObject downloadTask = mapBoxOfflineQueueTask.getTask();
-        String toPrint = "\n\n";
 
         Iterator<String> taskKeys =  downloadTask.keys();
 
-        while(taskKeys.hasNext()) {
+        StringBuilder stringBuilder = new StringBuilder("\n\n");
+        while (taskKeys.hasNext()) {
             String key = taskKeys.next();
-            toPrint += "\t" + key;
+            stringBuilder.append("\t");
+            stringBuilder.append(key);
 
             Object value = downloadTask.get(key);
-            toPrint += ": ";
+            stringBuilder.append(": ");
 
-            if (value instanceof String || value instanceof Integer || value instanceof Double || value instanceof Float || value instanceof Long) {
-                toPrint += value;
+            if (value instanceof String || value instanceof Integer || value instanceof Double
+                    || value instanceof Float || value instanceof Long) {
+                stringBuilder.append(value);
             } else {
                 Gson gson = new Gson();
-                toPrint += gson.toJson(value);
+                stringBuilder.append(gson.toJson(value));
             }
 
-            toPrint += "\n";
+            stringBuilder.append("\n");
         }
-        toPrint += "\n";
+        stringBuilder.append("\n");
 
-        return toPrint;
+        return stringBuilder.toString();
     }
 
     @Override

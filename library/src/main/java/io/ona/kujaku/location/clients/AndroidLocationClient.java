@@ -54,7 +54,7 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
     @Override
     public Location getLastLocation() {
-        return null;
+        return lastLocation;
     }
 
 
