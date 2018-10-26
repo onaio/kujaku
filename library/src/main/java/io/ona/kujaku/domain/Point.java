@@ -5,10 +5,10 @@ package io.ona.kujaku.domain;
  */
 public class Point {
 
-    Integer id;
-    double lat;
-    double lng;
-    Long dateUpdated;
+    private Integer id;
+    private double lat;
+    private double lng;
+    private Long dateUpdated;
 
     public Point(Integer id, double lat, double lng) {
         this.id = id;

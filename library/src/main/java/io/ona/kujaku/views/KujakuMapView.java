@@ -92,8 +92,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private List<io.ona.kujaku.domain.Point> droppedPoints;
 
-    private Location latestLocation;
-
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -455,7 +453,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             });
         }
     }
-
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
         MarkerOptions markerOptions = new MarkerOptions()
