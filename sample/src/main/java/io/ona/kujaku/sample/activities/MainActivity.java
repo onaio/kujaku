@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,30 +23,22 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.KujakuLibrary;
-import io.ona.kujaku.activities.MapActivity;
-import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
-import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
-import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.PointsRepository;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
-import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
@@ -95,7 +86,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 //                callLibrary();
                 // should probably be in an async task
                 List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().lauchMapActivity(points);
+                KujakuLibrary.getInstance().launchMapActivity(points);
             }
         });
         registerLocalBroadcastReceiver();
@@ -107,7 +98,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                // callLibrary();
                 // should probably be in an async task
                 List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().lauchMapActivity(points);
+                KujakuLibrary.getInstance().launchMapActivity(points);
             }
         });
 
@@ -132,58 +123,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected int getSelectedNavigationItem() {
         return R.id.nav_main_activity;
-    }
-
-    private void callLibrary() {
-        createFinalStyleUsingSavedPoints(new OnFinishedListener() {
-            @Override
-            public void onSuccess(Object[] objects) {
-                JSONObject mapboxStyleJSON = (JSONObject) objects[0];
-
-                if (mapboxStyleJSON != null) {
-                    Intent intent = new Intent(MainActivity.this, MapActivity.class);
-                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                            mapboxStyleJSON.toString()
-                    });
-                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-
-                    startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
-                }
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, Log.getStackTraceString(e));
-            }
-        });
-    }
-
-    private void createFinalStyleUsingSavedPoints(OnFinishedListener onFinishedListener) {
-        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
-            @Override
-            public Object[] call() throws Exception {
-                String style = readInputStreamAsString(getAssets().open("2017-nov-27-kujaku-metadata.json"));
-
-                JSONObject mapboxStyleJSON = new JSONObject(style);
-                JSONArray jsonArray = mapboxStyleJSON.getJSONArray("layers");
-
-                jsonArray.put(new JSONObject("{\n" +
-                        "            \"id\": \"new-points-layer\",\n" +
-                        "            \"type\": \"symbol\",\n" +
-                        "            \"source\": \"new-points-source\",\n" +
-                        "            \"layout\": {\"icon-image\": \"marker-15\"},\n" +
-                        "            \"paint\": {}\n" +
-                        "        }"));
-
-                //JSON
-
-                mapboxStyleJSON.getJSONObject("sources").put("new-points-source", new JSONObject(createJSONFeaturesFromPoints()));
-
-                return new Object[]{mapboxStyleJSON};
-            }
-        });
-        genericAsyncTask.setOnFinishedListener(onFinishedListener);
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Nullable
@@ -211,19 +150,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         }
     }
 
-    public static String readInputStreamAsString(InputStream in)
-            throws IOException {
-
-        BufferedInputStream bis = new BufferedInputStream(in);
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int result = bis.read();
-        while(result != -1) {
-            byte b = (byte)result;
-            buf.write(b);
-            result = bis.read();
-        }
-        return buf.toString();
-    }
 
     private void downloadMap() {
         double topLeftLat = 37.7897;
