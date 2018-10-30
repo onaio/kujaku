@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
 import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
@@ -107,6 +109,9 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
 
         setTitle(R.string.main_activity_title);
+
+        Fabric.with(this, new Crashlytics());
+        throw new RuntimeException("Testing crashlytics integration!!!");
     }
 
     @Override
