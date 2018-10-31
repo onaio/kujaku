@@ -12,7 +12,7 @@ apply plugin: 'io.fabric'
 
 android {
 
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion "28.0.2"
 
     compileOptions {
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "io.ona.kujaku.sample"
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
 
@@ -80,6 +80,8 @@ android {
     }
 }
 
+def supportVersion = '27.1.1'
+
 dependencies {
     implementation(project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
@@ -113,8 +115,8 @@ dependencies {
         transitive = true;
     }
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:design:${supportVersion}"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }

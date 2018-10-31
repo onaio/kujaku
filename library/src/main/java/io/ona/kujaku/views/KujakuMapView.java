@@ -1,5 +1,7 @@
 package io.ona.kujaku.views;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.location.Location;
@@ -18,6 +20,8 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -50,6 +54,7 @@ import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
 import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Views;
@@ -112,6 +117,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
+        checkPermissions();
+
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
         doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
         cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
@@ -533,10 +540,26 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         Views.changeDrawable(currentLocationBtn, drawableIcon);
     }
 
+    private void checkPermissions() {
+        if (getContext() instanceof Activity) {
+            final Activity activity = (Activity) getContext();
+            PermissionListener dialogPermissionListener = new LocationPermissionListener(activity);
+
+            Dexter.withActivity(activity)
+                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    .withListener(dialogPermissionListener)
+                    .check();
+        } else {
+            Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
+        }
+    }
+
     @Override
     public void onPause() {
-        locationClient.stopLocationUpdates();
-        locationClient.close();
+        if (locationClient != null) {
+            locationClient.stopLocationUpdates();
+            locationClient.close();
+        }
     }
 
     @Override
