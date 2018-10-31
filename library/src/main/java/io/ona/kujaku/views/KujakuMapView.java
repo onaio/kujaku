@@ -181,7 +181,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                                 , location.getLongitude());
 
                         if (onLocationChanged != null) {
-//                            onLocationChanged(location);
+                            onLocationChanged.onLocationChanged(location);
                         }
 
                         if (updateUserLocationOnMap) {
@@ -274,6 +274,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void enableAddPoint(boolean canAddPoint) {
         this.canAddPoint = canAddPoint;
+
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
             showMarkerLayout();
@@ -281,7 +282,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             hideMarkerLayout();
         }
     }
-
 
     public void setViewVisibility(View view, boolean isVisible) {
         view.setVisibility(isVisible ? VISIBLE : GONE);
