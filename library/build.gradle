@@ -1,3 +1,5 @@
+import groovy.transform.Field
+
 apply plugin: 'com.android.library'
 
 buildscript {
@@ -83,7 +85,7 @@ bintray {
 
 android {
 
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion "28.0.2"
 
     compileOptions {
@@ -93,7 +95,7 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -152,9 +154,10 @@ android {
     }
 }
 
+@Field def supportVersion = '27.1.1'
 
 dependencies { configuration ->
-    implementation 'com.android.support:support-v4:26.1.0'
+    implementation "com.android.support:support-v4:${supportVersion}"
     implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
@@ -170,11 +173,12 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'appcompat-v7'
     }
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:design:${supportVersion}"
 
     customDependencies(configuration)
-    infoWindowDependencies(configuration)
+    appPermissionsDependencies(configuration)
+    infoWindowDependencies(this, configuration)
     locationDependencies(configuration)
     testDependencies(configuration)
 }
@@ -197,9 +201,9 @@ private static void testDependencies(configuration) {
     })
 }
 
-private static void infoWindowDependencies(configuration) {
-    configuration.implementation 'com.android.support:cardview-v7:26.+'
-    configuration.implementation 'com.android.support:recyclerview-v7:26.+'
+private static void infoWindowDependencies(instance, configuration) {
+    configuration.implementation "com.android.support:cardview-v7:${instance.supportVersion}"
+    configuration.implementation "com.android.support:recyclerview-v7:${instance.supportVersion}"
 }
 
 private static void customDependencies(configuration) {
@@ -207,6 +211,10 @@ private static void customDependencies(configuration) {
     configuration.implementation 'com.android.volley:volley:1.0.0'
     configuration.implementation 'com.snatik:storage:2.1.0'
     configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
+}
+
+private static void appPermissionsDependencies(configuration) {
+    configuration.implementation 'com.karumi:dexter:5.0.0'
 }
 
 private static void locationDependencies(configuration) {

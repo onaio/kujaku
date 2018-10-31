@@ -27,4 +27,6 @@
     <string name="add">ADD</string>
     <string name="location_disabled_location_permissions_not_granted">Sorry but we could not get your location since the app does not have permissions to access your Location</string>
     <string name="current_location_btn_visibility">current_location_btn_visibility</string>
+    <string name="location_permission">Location Permission</string>
+    <string name="location_permission_reason">We need the location permission to focus on your location in the map</string>
 </resources>
