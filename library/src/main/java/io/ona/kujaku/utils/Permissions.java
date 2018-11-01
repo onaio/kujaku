@@ -17,7 +17,6 @@ import java.util.List;
 
 public class Permissions {
     private static final String[] CRITICAL_PERMISSIONS = new String[]{
-            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };

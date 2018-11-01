@@ -57,6 +57,7 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
+import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
 
 /**
@@ -567,6 +568,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         super.onResume();
 
         getMapboxMap();
-        warmUpLocationServices();
+
+        // This prevents an overlay issue the first time when requesting for permissions
+        if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+            warmUpLocationServices();
+        }
     }
 }
