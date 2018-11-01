@@ -12,8 +12,8 @@ apply plugin: 'io.fabric'
 
 android {
 
-    compileSdkVersion 27
-    buildToolsVersion "28.0.2"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId "io.ona.kujaku.sample"
         minSdkVersion 16
-        targetSdkVersion 27
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -80,8 +80,6 @@ android {
     }
 }
 
-def supportVersion = '27.1.1'
-
 dependencies {
     implementation(project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
@@ -96,7 +94,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'appcompat-v7'
     }
 
-    implementation 'com.android.volley:volley:1.1.1'
+    implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
     implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
@@ -115,8 +113,8 @@ dependencies {
         transitive = true;
     }
 
-    implementation "com.android.support:appcompat-v7:${supportVersion}"
-    implementation "com.android.support:design:${supportVersion}"
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
+    implementation "com.android.support:design:${rootProject.ext.supportVersion}"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }
