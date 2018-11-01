@@ -426,7 +426,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
-
+                    mapboxMap.getUiSettings().setLogoGravity(10);
+                    mapboxMap.getUiSettings().setAttributionGravity(10);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
                 }
