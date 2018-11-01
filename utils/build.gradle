@@ -65,8 +65,8 @@ bintray {
 
 android {
 
-    compileSdkVersion 27
-    buildToolsVersion "28.0.2"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -75,7 +75,7 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 27
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -93,13 +93,11 @@ android {
     }
 }
 
-def supportVersion = '27.1.1'
-
 dependencies {
     androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
     implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true
