@@ -109,9 +109,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
 
         setTitle(R.string.main_activity_title);
-
+        // initialize fabric
         Fabric.with(this, new Crashlytics());
-        throw new RuntimeException("Testing crashlytics integration!!!");
     }
 
     @Override
