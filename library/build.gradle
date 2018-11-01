@@ -208,7 +208,7 @@ private static void infoWindowDependencies(instance, configuration) {
 
 private static void customDependencies(configuration) {
     configuration.implementation 'com.cocoahero.android:geojson:1.0.1@jar'
-    configuration.implementation 'com.android.volley:volley:1.0.0'
+    configuration.implementation 'com.android.volley:volley:1.1.1'
     configuration.implementation 'com.snatik:storage:2.1.0'
     configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
 }

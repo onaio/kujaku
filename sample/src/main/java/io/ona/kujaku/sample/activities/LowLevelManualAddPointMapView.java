@@ -1,6 +1,5 @@
 package io.ona.kujaku.sample.activities;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +24,7 @@ public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity 
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelManualAddPointMapView_mapView);
+        kujakuMapView.onCreate(savedInstanceState);
         kujakuMapView.showCurrentLocationBtn(true);
         kujakuMapView.enableAddPoint(true);
 
