@@ -23,6 +23,7 @@ public class HighLevelLocationAddPointMapView extends BaseNavigationDrawerActivi
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_highLevelLocationAddPointMapView_mapView);
+        kujakuMapView.onCreate(savedInstanceState);
         kujakuMapView.addPoint(true, new AddPointCallback() {
             @Override
             public void onPointAdd(JSONObject jsonObject) {
