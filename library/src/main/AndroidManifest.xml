@@ -13,8 +13,6 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="io.fabric.ApiKey"
-            android:value="3f94f9c3caeff331b3a2bd8c2182b663ad6a955a" />
         <activity android:name=".activities.MapActivity"
             android:exported="false" />
         <service android:name=".services.MapboxOfflineDownloaderService"/>
