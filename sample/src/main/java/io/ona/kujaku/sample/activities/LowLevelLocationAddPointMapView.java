@@ -1,19 +1,13 @@
 package io.ona.kujaku.sample.activities;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
 
 import org.json.JSONObject;
 
-import es.dmoral.toasty.Toasty;
-import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
@@ -30,34 +24,18 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelLocationAddPointMapView_mapView);
 
-        Button doneBtn = findViewById(R.id.btn_lowLevelLocationAddPointMapView_doneBtn);
-        Button goToMyLocationBtn = findViewById(R.id.btn_lowLevelLocationAddPointMapView_myLocationBtn);
+        kujakuMapView.showCurrentLocationBtn(true);
 
-        doneBtn.setOnClickListener(new View.OnClickListener() {
+        kujakuMapView.addPoint(false, new AddPointCallback() {
             @Override
-            public void onClick(View v) {
-                if (!kujakuMapView.isCanAddPoint()) {
-                    Toasty.info(getApplicationContext(), getString(R.string.click_go_to_my_location_msg), Toast.LENGTH_LONG, true).show();
-                }
-
-                if (kujakuMapView.isCanAddPoint()) {
-                    JSONObject featurePoint = kujakuMapView.dropPoint();
-                    if (featurePoint != null) {
-                        Log.e("FEATURE POINT", featurePoint.toString());
-                    }
-                }
+            public void onPointAdd(JSONObject jsonObject) {
+                Log.i(TAG, jsonObject.toString());
+                // We should probably save the points here
             }
-        });
 
-        goToMyLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        Log.d(TAG, new Gson().toJson(location));
-                    }
-                });
+            public void onCancel() {
+                // Oops, the user cancelled the operation, we can just finish the activity (and save the points here)
             }
         });
     }

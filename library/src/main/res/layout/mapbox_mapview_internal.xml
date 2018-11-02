@@ -52,14 +52,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_my_location"
-        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
-        android:layout_gravity="bottom|right"
+        android:layout_gravity="top|right"
         android:padding="10dp"
         android:background="@drawable/circle_button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <ImageButton
         android:layout_width="wrap_content"

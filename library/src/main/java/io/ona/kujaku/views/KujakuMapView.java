@@ -182,7 +182,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                         if (onLocationChanged != null) {
                             onLocationChanged(location);
-
                         }
 
                         if (updateUserLocationOnMap) {
@@ -272,17 +271,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         });
     }
 
-    private void showAddPointLayout(boolean showLayout) {
-        int visible = showLayout ? VISIBLE : GONE;
-
-        doneAddingPoint.setVisibility(visible);
-        addPoint.setVisibility(visible);
-    }
-
     @Override
     public void enableAddPoint(boolean canAddPoint) {
         this.canAddPoint = canAddPoint;
-
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
             showMarkerLayout();
@@ -426,8 +417,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
-                    mapboxMap.getUiSettings().setLogoGravity(10);
-                    mapboxMap.getUiSettings().setAttributionGravity(10);
+                    mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
                 }
@@ -520,8 +510,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            changeTargetIcon(R.drawable.ic_my_location_focused);
-
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
             if (latestLocation != null) {
@@ -530,12 +518,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         } else {
             updateUserLocationOnMap = false;
-            changeTargetIcon(R.drawable.ic_my_location);
         }
-    }
-
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
     }
 
     @Override
