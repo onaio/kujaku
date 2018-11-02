@@ -49,8 +49,8 @@
     <!-- This is the target button shown on the bottom-right -->
     <ImageButton
         android:id="@+id/ib_mapview_focusOnMyLocationIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:src="@drawable/ic_my_location"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
@@ -60,8 +60,18 @@
         android:visibility="gone" />
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/map_view_hamburger_menu"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@drawable/ic_hamburger_menu"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_gravity="top|left"
+        android:background="@drawable/rounded_square_bg"/>
+
+    <ImageButton
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_gravity="bottom|left"
         android:layout_margin="20dp"
         android:id="@+id/imgBtn_mapview_locationAdditionBtn"
