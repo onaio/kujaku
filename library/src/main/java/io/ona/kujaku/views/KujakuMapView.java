@@ -228,6 +228,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
         addPoint.setVisibility(VISIBLE);
         addPoint.setOnClickListener(new OnClickListener() {
+
             @Override
             public void onClick(View v) {
                 addPoint.setVisibility(GONE);
@@ -356,10 +357,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             // TODO: What if the map already has a source layer with this source layer id
         } else {
             // Get the layer and update it
-            Source source = mapboxMap.getSource(pointsSourceId);
+            if (mapboxMap != null) {
+                Source source = mapboxMap.getSource(pointsSourceId);
 
-            if (source instanceof GeoJsonSource) {
-                ((GeoJsonSource) source).setGeoJson(feature);
+                if (source instanceof GeoJsonSource) {
+                    ((GeoJsonSource) source).setGeoJson(feature);
+                }
             }
         }
     }
