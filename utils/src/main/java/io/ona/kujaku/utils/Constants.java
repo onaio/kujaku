@@ -31,4 +31,8 @@ public class Constants {
 
     public static final String MAP_BOX_URL_FORMAT = "mapbox://styles/[A-Za-z0-9]+/[A-Za-z0-9]+";
 
+    public class RequestCode {
+        // Todo: Document that this request code should not be used inside the activities
+        public static final int LOCATION_SETTINGS = Integer.MAX_VALUE;
+    }
 }
