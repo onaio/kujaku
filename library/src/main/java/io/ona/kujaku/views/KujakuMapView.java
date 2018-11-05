@@ -55,6 +55,7 @@ import io.ona.kujaku.location.clients.AndroidLocationClient;
 import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LocationPermissionListener;
+import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
@@ -566,11 +567,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void onResume() {
         super.onResume();
-
         getMapboxMap();
 
         // This prevents an overlay issue the first time when requesting for permissions
         if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+            if (getContext() instanceof Activity) {
+                final Activity activity = (Activity) getContext();
+                LocationSettingsHelper.checkLocationEnabled(activity);
+            }
             warmUpLocationServices();
         }
     }
