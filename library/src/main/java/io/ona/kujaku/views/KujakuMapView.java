@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -23,6 +24,7 @@ import com.cocoahero.android.geojson.Point;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -226,6 +228,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
+        addPoint(useGPS, addPointCallback, null);
+    }
+
+    @Override
+    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions) {
         addPoint.setVisibility(VISIBLE);
         addPoint.setOnClickListener(new OnClickListener() {
 
@@ -235,14 +242,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 buttonsLayout.setVisibility(VISIBLE);
 
                 if (useGPS) {
-                    enableAddPoint(true, null);
+                    enableAddPoint(true, (OnLocationChanged) null);
                     doneAddingPoint.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject featureJSON = dropPoint();
+                            JSONObject featureJSON = dropPoint(markerOptions);
                             addPointCallback.onPointAdd(featureJSON);
 
-                            enableAddPoint(false, null);
+                            enableAddPoint(false, (OnLocationChanged) null);
 
                             buttonsLayout.setVisibility(GONE);
                             addPoint.setVisibility(VISIBLE);
@@ -253,7 +260,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     doneAddingPoint.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject featureJSON = dropPoint();
+                            JSONObject featureJSON = dropPoint(markerOptions);
                             addPointCallback.onPointAdd(featureJSON);
 
                             enableAddPoint(false);
@@ -268,7 +275,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     @Override
                     public void onClick(View v) {
                         if (useGPS) {
-                            enableAddPoint(false, null);
+                            enableAddPoint(false, (OnLocationChanged) null);
                         } else {
                             enableAddPoint(false);
                         }
@@ -279,6 +286,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 });
             }
         });
+    }
+
+    @Override
+    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @DrawableRes int markerResourceId) {
+        addPoint(useGPS, addPointCallback,
+                new MarkerOptions().setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId))
+        );
+    }
+
+    private void showAddPointLayout(boolean showLayout) {
+        int visible = showLayout ? VISIBLE : GONE;
+
+        doneAddingPoint.setVisibility(visible);
+        addPoint.setVisibility(visible);
     }
 
     @Override
@@ -369,55 +390,87 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public @Nullable JSONObject dropPoint() {
+        return dropPoint((MarkerOptions) null);
+    }
+
+    @Nullable
+    @Override
+    public JSONObject dropPoint(@DrawableRes int markerResourceId) {
+        MarkerOptions markerOptions = new MarkerOptions()
+                .setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId));
+
+        return dropPoint(markerOptions);
+    }
+
+    @Override
+    public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
+        return dropPoint(
+                new MarkerOptions()
+                        .setPosition(latLng)
+        );
+    }
+
+    @Nullable
+    @Override
+    public JSONObject dropPoint(@Nullable MarkerOptions markerOptions) {
         if (mapboxMap != null && canAddPoint) {
-            LatLng latLng = mapboxMap.getCameraPosition().target;
+            if (markerOptions != null && markerOptions.getPosition() != null) {
+                LatLng latLng = markerOptions.getPosition();
+                Feature feature = new Feature();
+                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
 
-            Feature feature = new Feature();
-            feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
+                try {
+                    JSONObject jsonObject = feature.toJSON();
 
-            try {
-                JSONObject jsonObject = feature.toJSON();
+                    // Add a layer with the current point
+                    centerMap(latLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM)));
+                    dropPointOnMap(latLng, markerOptions);
 
-                // Add a layer with the current point
-                dropPointOnMap(latLng);
+                    enableAddPoint(false);
 
-                return jsonObject;
-            } catch (JSONException e) {
-                LogUtil.e(TAG, Log.getStackTraceString(e));
+                    this.onLocationChangedListener = null;
+
+                    if (locationClient != null) {
+                        locationClient.stopLocationUpdates();
+                    }
+
+                    return jsonObject;
+                } catch (JSONException e) {
+                    LogUtil.e(TAG, Log.getStackTraceString(e));
+                }
+            } else {
+                LatLng latLng = mapboxMap.getCameraPosition().target;
+
+                Feature feature = new Feature();
+                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
+
+                try {
+                    JSONObject jsonObject = feature.toJSON();
+
+                    // Add a layer with the current point
+                    dropPointOnMap(latLng, markerOptions);
+
+                    return jsonObject;
+                } catch (JSONException e) {
+                    LogUtil.e(TAG, Log.getStackTraceString(e));
+                }
             }
         }
 
         return null;
     }
 
+    @Nullable
     @Override
-    public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
-        if (latLng != null && mapboxMap != null && canAddPoint) {
-            Feature feature = new Feature();
-            feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
+    public JSONObject dropPoint(@Nullable LatLng latLng, @DrawableRes int markerResourceId) {
+        MarkerOptions markerOptions = new MarkerOptions()
+                .setPosition(latLng)
+                .setIcon(
+                        IconFactory.getInstance(getContext())
+                                .fromResource(markerResourceId)
+                );
 
-            try {
-                JSONObject jsonObject = feature.toJSON();
-
-                // Add a layer with the current point
-                centerMap(latLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM)));
-                dropPointOnMap(latLng);
-
-                enableAddPoint(false);
-
-                this.onLocationChangedListener = null;
-
-                if (locationClient != null) {
-                    locationClient.stopLocationUpdates();
-                }
-
-                return jsonObject;
-            } catch (JSONException e) {
-                LogUtil.e(TAG, Log.getStackTraceString(e));
-            }
-        }
-
-        return null;
+        return dropPoint(markerOptions);
     }
 
     private void showMarkerLayout() {
@@ -465,8 +518,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(latLng);
+        dropPointOnMap(latLng, null);
+    }
+
+    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptions) {
+        if (markerOptions == null) {
+            markerOptions = new MarkerOptions()
+                    .position(latLng);
+        } else if (markerOptions.getPosition() == null) {
+            markerOptions.setPosition(latLng);
+        }
+
         mapboxMap.addMarker(markerOptions);
     }
 
