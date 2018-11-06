@@ -58,6 +58,10 @@ public class LocationSettingsHelper {
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
                         break;
+
+                    default:
+                        Log.e(TAG, "Unknown status code returned after checking location settings");
+                        break;
                 }
             }
         });
