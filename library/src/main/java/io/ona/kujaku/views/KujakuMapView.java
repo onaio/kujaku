@@ -521,7 +521,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         dropPointOnMap(latLng, null);
     }
 
-    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptions) {
+    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptionsParam) {
+        MarkerOptions markerOptions = markerOptionsParam;
         if (markerOptions == null) {
             markerOptions = new MarkerOptions()
                     .position(latLng);
