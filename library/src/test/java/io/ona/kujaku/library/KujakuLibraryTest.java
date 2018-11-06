@@ -1,6 +1,5 @@
 package io.ona.kujaku.library;
 
-import android.content.ContextWrapper;
 import android.content.Intent;
 
 import org.json.JSONObject;
@@ -15,8 +14,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowIntent;
 
 import java.util.ArrayList;
 

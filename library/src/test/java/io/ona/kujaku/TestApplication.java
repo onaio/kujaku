@@ -11,6 +11,6 @@ public class TestApplication extends BaseKujakuApplication {
     }
 
     public void processFeatureJSON(JSONObject featureJSON) {
-
+        // No need to implement this
     }
 }
