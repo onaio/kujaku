@@ -307,7 +307,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 if (mapBoxOfflineQueueTask.getTaskStatus() == MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED) {
                     realmDatabase.persistDownloadStartedStatus(mapBoxOfflineQueueTask);
                 }
-
             }
 
             getTaskStatus(mapBoxOfflineQueueTask, mapBoxAccessToken, new OfflineRegionStatusCallback() {
@@ -578,7 +577,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
         if (status.isComplete()) {
             stopDownloadProgressUpdater();
-            showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_progress_content), getFriendlyFileSize(status.getCompletedResourceSize())));
+            showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_complete_content), getFriendlyFileSize(status.getCompletedResourceSize())));
 
             MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
             mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
@@ -664,11 +663,11 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     }
 
     private void placeQueueOnHold() {
-        isPerformingTask = false;
+        isPerformingTask = true;
     }
 
     private void releaseQueueToPerformOtherJobs() {
-        isPerformingTask = true;
+        isPerformingTask = false;
     }
 
     private void stopDownloadProgressUpdater() {

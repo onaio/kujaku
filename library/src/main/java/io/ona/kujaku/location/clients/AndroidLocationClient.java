@@ -162,4 +162,11 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
+
+    @Override
+    public void close() {
+        disconnectGoogleApiClient();
+
+        super.close();
+    }
 }

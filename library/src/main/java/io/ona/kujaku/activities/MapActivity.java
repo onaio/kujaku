@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,21 +21,11 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
@@ -58,9 +47,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
-import io.ona.kujaku.utils.CoordinateUtils;
 import io.ona.kujaku.utils.Permissions;
-import io.ona.kujaku.utils.Views;
 import io.ona.kujaku.utils.config.DataSourceConfig;
 import io.ona.kujaku.utils.config.KujakuConfig;
 import io.ona.kujaku.utils.config.SortFieldConfig;
@@ -70,7 +57,7 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.views.KujakuMapView;
 
-//import com.mapbox.services.commons.geojson.Feature;
+
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
@@ -85,7 +72,7 @@ import io.ona.kujaku.views.KujakuMapView;
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
-public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
     private KujakuMapView kujakuMapView;
     private String currentStylePath;
@@ -116,15 +103,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
-
-    private GoogleApiClient googleApiClient;
-    private Location lastLocation;
-    private boolean waitingForLocation = true;
-    private boolean googleApiClientInitialized = false;
-
-    private Marker myLocationMarker;
-    private LatLng focusedLocation;
-    private boolean focusedOnMyLocation = false;
 
     //Todo: Move reading data to another Thread
 
@@ -224,24 +202,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             public void onMapReady(MapboxMap mapboxMap) {
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
-                mapboxMap.setOnMapClickListener(MapActivity.this);
-                mapboxMap.setOnScrollListener(new MapboxMap.OnScrollListener() {
-                    @Override
-                    public void onScroll() {
-                        if (focusedLocation != null) {
-                            VisibleRegion mapsVisibleRegion = MapActivity.this.mapboxMap.getProjection().getVisibleRegion();
-                            //LatLngBounds mapBounds = LatLngBounds.from(mapsVisibleRegion.l);
-                            //Todo: Use the actual corners instead of the smallest bounding box (latLngBounds) which are more accurate
-
-                            if (!CoordinateUtils.isLocationInBounds(focusedLocation, mapsVisibleRegion.latLngBounds) && focusedOnMyLocation) {
-                                focusedOnMyLocation = false;
-
-                                // Revert the icon to the non-focused grey one
-                                changeTargetIcon(R.drawable.ic_my_location);
-                            }
-                        }
-                    }
-                });
+                mapboxMap.addOnMapClickListener(MapActivity.this);
 
                 if (minZoom != -1) {
                     mapboxMap.setMinZoomPreference(minZoom);
@@ -259,18 +220,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
 
-                if (mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
-                    waitingForLocation = false;
+                if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+                    kujakuMapView.focusOnUserLocation(true);
                 }
-
-                lastLocation = null;
-                initGoogleApiClient();
-                focusOnMyLocationImgBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        focusOnMyLocation(MapActivity.this.mapboxMap);
-                    }
-                });
             }
         });
     }
@@ -440,7 +392,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onResume() {
         super.onResume();
         if (kujakuMapView != null) kujakuMapView.onResume();
-        if (googleApiClientInitialized) initGoogleApiClient();
         initializeViews();
     }
 
@@ -460,7 +411,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onPause() {
         super.onPause();
         if (kujakuMapView != null) kujakuMapView.onPause();
-        disconnectGoogleApiClient();
     }
 
     @Override
@@ -727,97 +677,5 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
             view.setLayoutParams(relativeLayoutParams);
         }
-    }
-
-    private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
-        if (lastLocation != null) {
-            LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            focusedLocation = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-            focusedOnMyLocation = true;
-
-            // Change the icon to the blue one
-            changeTargetIcon(R.drawable.ic_my_location_focused);
-
-            CameraPosition newCameraPosition = new CameraPosition.Builder(mapboxMap.getCameraPosition())
-                    .target(newTarget)
-                    .build();
-
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition), animateToNewTargetDuration);
-
-            // Change the marker position to the new position - This should also be animated at some point
-            if (myLocationMarker == null) {
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(newTarget);
-                myLocationMarker = mapboxMap.addMarker(markerOptions);
-            } else {
-                myLocationMarker.setPosition(newTarget);
-                mapboxMap.updateMarker(myLocationMarker);
-            }
-        } else {
-            waitingForLocation = true;
-        }
-    }
-
-    private void initGoogleApiClient() {
-        googleApiClientInitialized = true;
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        googleApiClient.connect();
-    }
-
-    private void disconnectGoogleApiClient() {
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
-    }
-
-    // GPS - Location Stuff
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        } catch (SecurityException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-            Toast.makeText(this, "Sorry but we could not get your location since the app does not have permissions to access your Location", Toast.LENGTH_LONG)
-                    .show();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(this, R.string.msg_location_retrieval_taking_longer_than_expected, Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(this, R.string.msg_could_not_find_your_location, Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        lastLocation = location;
-
-        if (waitingForLocation) {
-            waitingForLocation = false;
-            focusOnMyLocation(mapboxMap);
-        }
-    }
-
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(focusOnMyLocationImgBtn, drawableIcon);
     }
 }

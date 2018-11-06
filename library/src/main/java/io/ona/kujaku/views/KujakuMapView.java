@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -53,6 +53,7 @@ import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
+import io.ona.kujaku.utils.Views;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -86,11 +87,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LinearLayout addPointButtonsLayout;
 
     private boolean isCurrentLocationBtnClicked = false;
+
     private boolean isMapScrolled = false;
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
     private List<io.ona.kujaku.domain.Point> droppedPoints;
+
+    private LatLng latestLocation;
+
+    private boolean updateUserLocationOnMap = false;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -123,6 +130,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         getMapboxMap();
         cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
 
+        currentLocationBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                focusOnUserLocation(true);
+            }
+        });
+
         markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -130,14 +144,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 int height = markerLayout.getMeasuredHeight();
                 markerLayout.setY(markerLayout.getY() - (height/2));
-            }
-        });
-
-        this.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                isMapScrolled = true;
-                return false;
             }
         });
 
@@ -159,13 +165,61 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isDoneAddingPointBtnVisible = (boolean) attributes.get(key);
             setVisibility(doneAddingPointBtn, isDoneAddingPointBtnVisible);
         }
+    }
 
-        getMapAsync(new OnMapReadyCallback() {
+    private void showUpdatedUserLocation() {
+        updateUserLocationLayer(latestLocation);
+
+        if (updateUserLocationOnMap || !isMapScrolled) {
+            // Focus on the new location
+            centerMap(latestLocation, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+        }
+    }
+
+    private void warmUpLocationServices() {
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                KujakuMapView.this.mapboxMap = mapboxMap;
+            public Object[] call() throws Exception {
+                return new Object[]{ NetworkUtil.isInternetAvailable()};
             }
         });
+        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
+            @Override
+            public void onSuccess(Object[] objects) {
+                if ((boolean) objects[0]) {
+                    // Use the fused location API
+                    locationClient = new AndroidLocationClient(getContext());
+                } else {
+                    // Use the GPS hardware
+                    locationClient = new GPSLocationClient(getContext());
+                    // Update the location every 5 seconds
+                    locationClient.setUpdateIntervals(5000, 5000);
+                }
+
+                locationClient.requestLocationUpdates(new BaseLocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        latestLocation = new LatLng(location.getLatitude()
+                                , location.getLongitude());
+
+                        if (onLocationChanged != null) {
+                            onLocationChanged(location);
+
+                        }
+
+                        if (updateUserLocationOnMap) {
+                            showUpdatedUserLocation();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                LogUtil.e(TAG, e);
+            }
+        });
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -258,7 +312,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void enableAddPoint(boolean canAddPoint) {
         this.canAddPoint = canAddPoint;
-        getMapboxMap();
 
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
@@ -270,64 +323,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
-        isCurrentLocationBtnClicked = false;
         isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
+
         if (canAddPoint) {
             this.onLocationChanged = onLocationChanged;
-            GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
-                @Override
-                public Object[] call() throws Exception {
-                    return new Object[]{ NetworkUtil.isInternetAvailable()};
-                }
-            });
-            genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
-                @Override
-                public void onSuccess(Object[] objects) {
-                    if ((boolean) objects[0]) {
-                        // Use the fused location API
-                        locationClient = new AndroidLocationClient(getContext());
-                    } else {
-                        // Use the GPS hardware
-                        locationClient = new GPSLocationClient(getContext());
-                    }
 
-                    locationClient.requestLocationUpdates(new BaseLocationListener() {
-                        @Override
-                        public void onLocationChanged(Location location) {
-                            if (KujakuMapView.this.onLocationChanged != null) {
-                                KujakuMapView.this.onLocationChanged.onLocationChanged(location);
-                            }
-                            // 1. Focus on the location for the first time is a must
-                            // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
-                            // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
-
-                            LatLng userLatLng = new LatLng(location.getLatitude()
-                                    , location.getLongitude());
-                            updateUserLocationLayer(userLatLng);
-
-                            if (!isCurrentLocationBtnClicked || !isMapScrolled) {
-                                // Focus on the new location
-                                centerMap(userLatLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
-                                isCurrentLocationBtnClicked = true;
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    LogUtil.e(TAG, e);
-                }
-            });
-            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            // 1. Focus on the location for the first time is a must
+            // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
+            // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
+            updateUserLocationOnMap = true;
+            if (latestLocation != null) {
+                showUpdatedUserLocation();
+            }
         } else {
             // This should just disable the layout and any ongoing operations for focus
             this.onLocationChanged = null;
-
-            if (locationClient != null) {
-                locationClient.stopLocationUpdates();
-            }
         }
     }
 
@@ -356,11 +367,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
                 userLocationOuterCircle.setProperties(
-                        PropertyFactory.circleColor("#deeaf2"),
+                        PropertyFactory.circleColor("#81c2ee"),
                         PropertyFactory.circleRadius(25f),
-                        PropertyFactory.circleStrokeWidth(3f),
-                        PropertyFactory.circleStrokeColor("#cfdeed"),
-                        PropertyFactory.circleOpacity(0.72f)
+                        PropertyFactory.circleStrokeWidth(1f),
+                        PropertyFactory.circleStrokeColor("#74b7f6"),
+                        PropertyFactory.circleOpacity(0.3f),
+                        PropertyFactory.circleStrokeOpacity(0.6f)
                 );
 
                 mapboxMap.addLayer(userLocationOuterCircle);
@@ -449,9 +461,33 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
+                    // This disables
+                    addOnScrollListenerToMap(mapboxMap);
                 }
             });
         }
+    }
+
+    private void addOnScrollListenerToMap(MapboxMap mapboxMap) {
+        mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
+            @Override
+            public void onMoveBegin(@NonNull MoveGestureDetector detector) {
+                isMapScrolled = true;
+
+                // We should assume the user no longer wants us to focus on their location
+                focusOnUserLocation(false);
+            }
+
+            @Override
+            public void onMove(@NonNull MoveGestureDetector detector) {
+                // We are not going to do anything here
+            }
+
+            @Override
+            public void onMoveEnd(@NonNull MoveGestureDetector detector) {
+                // We are also not going to do anything here
+            }
+        });
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -520,6 +556,47 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     public void setDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
         this.droppedPoints = droppedPoints;
+    }
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation) {
+        if (focusOnMyLocation) {
+            isMapScrolled = false;
+            changeTargetIcon(R.drawable.ic_my_location_focused);
+
+            // Enable the listener & show the current user location
+            updateUserLocationOnMap = true;
+            if (latestLocation != null) {
+                showUpdatedUserLocation();
+            }
+
+        } else {
+            updateUserLocationOnMap = false;
+            changeTargetIcon(R.drawable.ic_my_location);
+        }
+    }
+
+    private void changeTargetIcon(int drawableIcon) {
+        Views.changeDrawable(currentLocationBtn, drawableIcon);
+    }
+
+    @Override
+    public void showCurrentLocationBtn(boolean isVisible) {
+        currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
+    @Override
+    public void onPause() {
+        locationClient.stopLocationUpdates();
+        locationClient.close();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        getMapboxMap();
+        warmUpLocationServices();
     }
 }
 
