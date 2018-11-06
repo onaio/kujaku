@@ -15,7 +15,7 @@ import io.ona.kujaku.views.KujakuMapView;
 
 public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity {
 
-    private KujakuMapView kujakuMapView;
+    protected KujakuMapView kujakuMapView;
     private boolean canAddPoint = true;
 
     @Override

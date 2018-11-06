@@ -38,6 +38,7 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+
         navigationView = getNavigationView();
         navigationView.setNavigationItemSelectedListener(this);
     }
@@ -120,6 +121,14 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, CardActivity.class));
                 finish();
                 return true;
+
+            case R.id.nav_low_level_add_point_custom_marker:
+                startActivity(new Intent(this, CustomMarkerLowLevelAddPoint.class));
+                finish();
+                return true;
+
+            default:
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
