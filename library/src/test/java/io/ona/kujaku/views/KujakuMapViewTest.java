@@ -8,12 +8,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
 
 import org.json.JSONObject;
 import org.junit.Before;
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -27,6 +24,12 @@ import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
  */
@@ -34,14 +37,11 @@ import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
 @Config(shadows = {ShadowGeoJsonSource.class})
 public class KujakuMapViewTest extends BaseTest {
 
-    private Context context;
     private KujakuMapTestView kujakuMapView;
-    private MapboxMap mapboxMap;
 
     @Before
-    public void setup() {
-        context = RuntimeEnvironment.application;
-        mapboxMap = null;
+    public void setUp() {
+        Context context = RuntimeEnvironment.application;
         kujakuMapView = new KujakuMapTestView(context);
     }
 
@@ -83,7 +83,7 @@ public class KujakuMapViewTest extends BaseTest {
         OnLocationChanged onLocationChanged = new OnLocationChanged() {
             @Override
             public void onLocationChanged(Location location) {
-
+                // Do nothing
             }
         };
 
@@ -137,12 +137,12 @@ public class KujakuMapViewTest extends BaseTest {
         kujakuMapView.addPoint(false, new AddPointCallback() {
             @Override
             public void onPointAdd(JSONObject jsonObject) {
-
+                // Do nothing
             }
 
             @Override
             public void onCancel() {
-
+                // Do nothing
             }
         });
 
@@ -153,8 +153,7 @@ public class KujakuMapViewTest extends BaseTest {
     @Test
     public void addPointShouldPerformActionsOnClick() {
         ImageButton addBtn = kujakuMapView.findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
-        ImageButton cancelBtn = kujakuMapView.findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
-        Button doneAddingPoint = kujakuMapView.findViewById(R.id.btn_mapview_locationSelectionBtn);;
+        Button doneAddingPoint = kujakuMapView.findViewById(R.id.btn_mapview_locationSelectionBtn);
         LinearLayout buttonsLayout = kujakuMapView.findViewById(R.id.ll_mapview_locationSelectionBtns);
 
         String isPointAddCalled = "isPointAddCalled";
@@ -204,7 +203,6 @@ public class KujakuMapViewTest extends BaseTest {
 
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenGivenCalled() throws NoSuchFieldException, IllegalAccessException {
-        ImageButton currentLocationBtn = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
         String updateUserLocationOnMap = "updateUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true);

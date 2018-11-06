@@ -14,6 +14,6 @@ public class ShadowGeoJsonSource {
 
     @Implementation
     protected void initialize(String layerId, Object options) {
-
+        // We should do nothing here
     }
 }
