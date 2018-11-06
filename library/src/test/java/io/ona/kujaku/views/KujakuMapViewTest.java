@@ -98,7 +98,7 @@ public class KujakuMapViewTest extends BaseTest {
         OnLocationChanged onLocationChanged = new OnLocationChanged() {
             @Override
             public void onLocationChanged(Location location) {
-
+                // Do nothing
             }
         };
 
@@ -169,7 +169,7 @@ public class KujakuMapViewTest extends BaseTest {
 
             @Override
             public void onCancel() {
-
+                // Do nothing
             }
         });
 
