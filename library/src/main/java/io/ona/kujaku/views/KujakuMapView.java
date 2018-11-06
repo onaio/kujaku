@@ -86,8 +86,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private LinearLayout addPointButtonsLayout;
 
-    private boolean isCurrentLocationBtnClicked = false;
-
     private boolean isMapScrolled = false;
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
