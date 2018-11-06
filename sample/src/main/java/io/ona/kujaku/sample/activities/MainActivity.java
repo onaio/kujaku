@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.io.BufferedInputStream;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import io.fabric.sdk.android.Fabric;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
