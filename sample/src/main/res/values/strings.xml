@@ -24,4 +24,5 @@
     <string name="you_do_not_have_offline_regions">You do not have any offline regions</string>
     <string name="geospatial_widget_examples">Geo-spatial widget examples</string>
     <string name="title_activity_card">CardActivity</string>
+    <string name="card_activity">Card Activity</string>
 </resources>
