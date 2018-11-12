@@ -510,6 +510,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
+            changeTargetIcon(R.drawable.ic_cross_hair_blue);
+
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
             if (latestLocation != null) {
@@ -518,6 +520,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         } else {
             updateUserLocationOnMap = false;
+            changeTargetIcon(R.drawable.ic_cross_hair);
         }
     }
 
