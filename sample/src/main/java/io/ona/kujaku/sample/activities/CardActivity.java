@@ -2,6 +2,8 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
@@ -16,6 +18,8 @@ public class CardActivity extends BaseNavigationDrawerActivity {
 
     private static final String TAG = LowLevelLocationAddPointMapView.class.getName();
     private KujakuMapView kujakuMapView;
+
+    private boolean isCardVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,15 @@ public class CardActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onCancel() {
                 // Oops, the user cancelled the operation, we can just finish the activity (and save the points here)
+            }
+        });
+
+        Button testCardView = findViewById(R.id.btn_test_card_view_display);
+        testCardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                findViewById(R.id.feature_info_card_view).setVisibility(isCardVisible ?  View.GONE : View.VISIBLE);
+                isCardVisible = !isCardVisible;
             }
         });
     }
