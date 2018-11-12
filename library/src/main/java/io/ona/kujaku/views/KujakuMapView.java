@@ -181,7 +181,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                                 , location.getLongitude());
 
                         if (onLocationChanged != null) {
-                            onLocationChanged(location);
+//                            onLocationChanged(location);
                         }
 
                         if (updateUserLocationOnMap) {
