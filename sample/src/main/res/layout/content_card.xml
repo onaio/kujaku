@@ -47,10 +47,21 @@
                 android:src="@drawable/ic_hamburger_menu"
                 android:layout_marginTop="28dp"
                 android:layout_marginLeft="28dp"
-                android:layout_gravity="top|left"
                 android:background="@drawable/rounded_square_bg"/>
-        </android.support.constraint.ConstraintLayout>
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:id="@+id/btn_test_card_view_display"
+                android:background="@drawable/circle_button_black_border"
+                android:padding="10dp"
+                android:textColor="@color/mapbox_blue"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:text="Test card view"/>
+        </android.support.constraint.ConstraintLayout>
     </LinearLayout>
 
     <include layout="@layout/navigation_view"/>

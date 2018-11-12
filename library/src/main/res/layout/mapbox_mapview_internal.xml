@@ -97,17 +97,6 @@
         </android.support.design.widget.CoordinatorLayout>
     </LinearLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:id="@+id/btn_test_card_view_display"
-        android:background="@drawable/circle_button_black_border"
-        android:padding="10dp"
-        android:textColor="@color/mapbox_blue"
-        android:layout_gravity="bottom|center_horizontal"
-        android:text="Test card view"/>
-
     <LinearLayout
         android:id="@+id/ll_mapview_locationSelectionBtns"
         android:layout_width="match_parent"
