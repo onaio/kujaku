@@ -282,6 +282,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+
+    public void setViewVisibility(View view, boolean isVisible) {
+        view.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
     @Override
     public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
         isMapScrolled = false;

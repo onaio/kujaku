@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
@@ -30,16 +31,14 @@ public class CardActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView.showCurrentLocationBtn(true);
 
-        kujakuMapView.addPoint(false, new AddPointCallback() {
-            @Override
-            public void onPointAdd(JSONObject jsonObject) {
-                Log.i(TAG, jsonObject.toString());
-                // We should probably save the points here
-            }
+        kujakuMapView.enableAddPoint(true);
 
+        ImageButton addPointBtn = kujakuMapView.findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
+        kujakuMapView.setViewVisibility(addPointBtn, true);
+        addPointBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCancel() {
-                // Oops, the user cancelled the operation, we can just finish the activity (and save the points here)
+            public void onClick(View v) {
+                kujakuMapView.dropPoint();
             }
         });
 
