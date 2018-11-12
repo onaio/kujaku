@@ -521,6 +521,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+    private void changeTargetIcon(int drawableIcon) {
+        Views.changeDrawable(currentLocationBtn, drawableIcon);
+    }
+
     @Override
     public void onPause() {
         locationClient.stopLocationUpdates();

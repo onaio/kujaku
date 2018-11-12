@@ -60,16 +60,6 @@
         android:background="@drawable/circle_button"
         android:visibility="gone" />
 
-    <ImageButton
-        android:id="@+id/map_view_hamburger_menu"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:src="@drawable/ic_hamburger_menu"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_gravity="top|left"
-        android:background="@drawable/rounded_square_bg"/>
-
     <LinearLayout
         android:layout_height="500dp"
         android:layout_width="match_parent"
