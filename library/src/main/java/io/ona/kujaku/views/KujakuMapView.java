@@ -16,8 +16,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.google.gson.JsonArray;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -32,6 +32,7 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,6 +54,16 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Views;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -90,6 +101,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -142,6 +154,147 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         if (attributes.containsKey(key)) {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
+        }
+
+        // initialize feature source
+        initializeFeaturesSource();
+    }
+
+    // TODO: placeholder function to test selective styling refactor to another method after testing
+    private void initializeFeaturesSource()  {
+        try {
+            JSONArray featuresArray = new JSONArray();
+
+            // feature 1
+            JSONObject feature = new JSONObject();
+            feature.put("id", "feature_1");
+            feature.put("type", "Feature");
+
+            JSONObject properties = new JSONObject();
+            properties.put("ethnicity", "White");
+            feature.put("properties", properties);
+
+            JSONObject geometry = new JSONObject();
+            geometry.put("type", "Point");
+            JsonArray coordinates = new JsonArray();
+            coordinates.add(-87.580389);
+            coordinates.add(41.783185);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+            // feature 2
+            feature = new JSONObject();
+            feature.put("id", "feature_2");
+            feature.put("type", "Feature");
+
+            properties = new JSONObject();
+            properties.put("ethnicity", "Black");
+            feature.put("properties", properties);
+
+            geometry = new JSONObject();
+            geometry.put("type", "Point");
+            coordinates = new JsonArray();
+            coordinates.add(-87.580381);
+            coordinates.add(41.783180);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+            // feature 3
+            feature = new JSONObject();
+            feature.put("id", "feature_3");
+            feature.put("type", "Feature");
+
+            properties = new JSONObject();
+            properties.put("ethnicity", "Hispanic");
+            feature.put("properties", properties);
+
+            geometry = new JSONObject();
+            geometry.put("type", "Point");
+            coordinates = new JsonArray();
+            coordinates.add(-87.580382);
+            coordinates.add(41.783181);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+            // feature 4
+            feature = new JSONObject();
+            feature.put("id", "feature_4");
+            feature.put("type", "Feature");
+
+            properties = new JSONObject();
+            properties.put("ethnicity", "Asian");
+            feature.put("properties", properties);
+
+            geometry = new JSONObject();
+            geometry.put("type", "Point");
+            coordinates = new JsonArray();
+            coordinates.add(-87.580383);
+            coordinates.add(41.783182);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+            // feature 5
+            feature = new JSONObject();
+            feature.put("id", "feature_3");
+            feature.put("type", "Feature");
+
+            properties = new JSONObject();
+            properties.put("ethnicity", "Other");
+            feature.put("properties", properties);
+
+            geometry = new JSONObject();
+            geometry.put("type", "Point");
+            coordinates = new JsonArray();
+            coordinates.add(-87.580385);
+            coordinates.add(41.783184);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+
+            // set GeoJsonSource
+            JSONObject featureCollection = new JSONObject();
+            featureCollection.put("type", "FeatureCollection");
+            featureCollection.put("features", featuresArray);
+
+            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
+            mapboxMap.addSource(geoJsonSource);
+
+            CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
+            circleLayer.setSourceLayer("sf2010");
+            circleLayer.withProperties(
+                    circleRadius(
+                            interpolate(
+                                    exponential(1.75f),
+                                    zoom(),
+                                    stop(12, 2f),
+                                    stop(22, 180f)
+                            )),
+                    circleColor(
+                            match(get("ethnicity"), rgb(0, 0, 0),
+                                    stop("White", rgb(251, 176, 59)),
+                                    stop("Black", rgb(34, 59, 83)),
+                                    stop("Hispanic", rgb(229, 94, 94)),
+                                    stop("Asian", rgb(59, 178, 208)),
+                                    stop("Other", rgb(204, 204, 204)))));
+
+            mapboxMap.addLayer(circleLayer);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -330,7 +483,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
                 userLocationInnerCircle.setProperties(
                         PropertyFactory.circleColor("#4387f4"),
-                        PropertyFactory.circleRadius(5f),
+                        circleRadius(5f),
                         PropertyFactory.circleStrokeWidth(1f),
                         PropertyFactory.circleStrokeColor("#dde2e4")
                 );
@@ -338,7 +491,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
                 userLocationOuterCircle.setProperties(
                         PropertyFactory.circleColor("#81c2ee"),
-                        PropertyFactory.circleRadius(25f),
+                        circleRadius(25f),
                         PropertyFactory.circleStrokeWidth(1f),
                         PropertyFactory.circleStrokeColor("#74b7f6"),
                         PropertyFactory.circleOpacity(0.3f),
@@ -364,7 +517,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         if (mapboxMap != null && canAddPoint) {
             LatLng latLng = mapboxMap.getCameraPosition().target;
 
-            Feature feature = new Feature();
+            com.cocoahero.android.geojson.Feature feature = new com.cocoahero.android.geojson.Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
 
             try {
@@ -385,7 +538,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
         if (latLng != null && mapboxMap != null && canAddPoint) {
-            Feature feature = new Feature();
+            com.cocoahero.android.geojson.Feature feature = new com.cocoahero.android.geojson.Feature();
             feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
 
             try {
