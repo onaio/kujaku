@@ -101,6 +101,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
 
+    private JSONObject featureCollection = new JSONObject();
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -263,7 +265,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
 
             // set GeoJsonSource
-            JSONObject featureCollection = new JSONObject();
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
 
@@ -294,6 +295,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                                     stop("Other", rgb(204, 204, 204)))));
 
             mapboxMap.addLayer(circleLayer);
+
+
+            Button btnTestRuntimeDataChange = findViewById(R.id.btn_test_runtime_data_change);
+            btnTestRuntimeDataChange.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        JSONObject newFeatureCollection = new JSONObject(featureCollection.toString());
+                        newFeatureCollection.getJSONArray("features").getJSONObject(0).getJSONObject("properties").put("ethnicity", "Hispanic");
+                        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(newFeatureCollection.toString());
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
+                }
+            });
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }

@@ -73,6 +73,17 @@
         android:textColor="@color/white"
         android:visibility="gone"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textColor="@color/mapbox_blue"
+        android:background="@drawable/circle_button"
+        android:layout_gravity="top|right"
+        android:text="test data change"
+        android:layout_margin="10dp"
+        android:id="@+id/btn_test_runtime_data_change"/>
+
     <LinearLayout
         android:id="@+id/ll_mapview_locationSelectionBtns"
         android:layout_width="match_parent"
