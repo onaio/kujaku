@@ -27,16 +27,16 @@ To publish new versions to the **Bintray/JFrog** account, run:
 ```
 export BINTRAY_USER=johndoe
 export BINTRAY_KEY=98sdfkmykeyhere90sdckl
-./gradlew clean assembleRelease :utils:bintrayUpload
-./gradlew clean assembleRelease :library:bintrayUpload
+./gradlew :utils:clean :utils:assembleRelease :utils:bintrayUpload
+./gradlew :library:clean :library:assembleRelease :library:bintrayUpload
 
 ```
 
 To publish locally:
 
 ```
-./gradlew clean assembleRelease :utils:publishToMavenLocal
-./gradlew clean assembleRelease :library:publishToMavenLocal
+./gradlew :utils:clean :utils:assembleRelease :utils:publishToMavenLocal
+./gradlew :library:clean :library:assembleRelease :library:publishToMavenLocal
 
 ```
 
@@ -70,17 +70,7 @@ android {
 dependencies {
     ...
     // Kujaku dependencies
-    implementation('io.ona.kujaku:library:0.3.0') {
-        transitive = true
-        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
-        exclude group: 'com.android.support'
-        exclude group: 'com.android.volley'
-        exclude group: 'org.jacoco'
-    }
-    implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
-        transitive = true
-        exclude group: "com.android.support"
-    }
+    implementation 'io.ona.kujaku:library:0.5.5'
     ...
 }
 ```
