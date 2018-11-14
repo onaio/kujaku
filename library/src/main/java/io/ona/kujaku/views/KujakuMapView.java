@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Point;
-import com.google.gson.JsonArray;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -155,9 +154,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
         }
-
-        // initialize feature source
-        initializeFeaturesSource();
     }
 
     // TODO: placeholder function to test selective styling refactor to another method after testing
@@ -176,9 +172,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             JSONObject geometry = new JSONObject();
             geometry.put("type", "Point");
-            JsonArray coordinates = new JsonArray();
-            coordinates.add(-87.580389);
-            coordinates.add(41.783185);
+            JSONArray coordinates = new JSONArray();
+            coordinates.put(36.800115);
+            coordinates.put(-1.277019);
             geometry.put("coordinates", coordinates);
 
             feature.put("geometry", geometry);
@@ -196,9 +192,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             geometry = new JSONObject();
             geometry.put("type", "Point");
-            coordinates = new JsonArray();
-            coordinates.add(-87.580381);
-            coordinates.add(41.783180);
+            coordinates = new JSONArray();
+            coordinates.put(36.800218);
+            coordinates.put(-1.277121);
             geometry.put("coordinates", coordinates);
 
             feature.put("geometry", geometry);
@@ -216,9 +212,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             geometry = new JSONObject();
             geometry.put("type", "Point");
-            coordinates = new JsonArray();
-            coordinates.add(-87.580382);
-            coordinates.add(41.783181);
+            coordinates = new JSONArray();
+            coordinates.put(36.800311);
+            coordinates.put(-1.277232);
             geometry.put("coordinates", coordinates);
 
             feature.put("geometry", geometry);
@@ -236,9 +232,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             geometry = new JSONObject();
             geometry.put("type", "Point");
-            coordinates = new JsonArray();
-            coordinates.add(-87.580383);
-            coordinates.add(41.783182);
+            coordinates = new JSONArray();
+            coordinates.put(36.800411);
+            coordinates.put(-1.277343);
             geometry.put("coordinates", coordinates);
 
             feature.put("geometry", geometry);
@@ -247,7 +243,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             // feature 5
             feature = new JSONObject();
-            feature.put("id", "feature_3");
+            feature.put("id", "feature_5");
             feature.put("type", "Feature");
 
             properties = new JSONObject();
@@ -256,9 +252,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             geometry = new JSONObject();
             geometry.put("type", "Point");
-            coordinates = new JsonArray();
-            coordinates.add(-87.580385);
-            coordinates.add(41.783184);
+            coordinates = new JSONArray();
+            coordinates.put(36.800514);
+            coordinates.put(-1.277455);
             geometry.put("coordinates", coordinates);
 
             feature.put("geometry", geometry);
@@ -271,7 +267,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
 
-            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
+
+            String featureCollectionJSONString = featureCollection
+                    .toString()
+                    .replace("\"[", "[")
+                    .replace("]\"", "]");
+            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollectionJSONString);
             mapboxMap.addSource(geoJsonSource);
 
             CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
@@ -582,6 +583,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
+                    // initialize feature source
+                    initializeFeaturesSource();
                 }
             });
         }
