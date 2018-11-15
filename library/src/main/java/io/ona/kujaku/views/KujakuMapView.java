@@ -181,8 +181,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                                 , location.getLongitude());
 
                         if (onLocationChanged != null) {
-                            onLocationChanged(location);
-
+//                            onLocationChanged(location);
                         }
 
                         if (updateUserLocationOnMap) {
@@ -272,23 +271,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         });
     }
 
-    private void showAddPointLayout(boolean showLayout) {
-        int visible = showLayout ? VISIBLE : GONE;
-
-        doneAddingPoint.setVisibility(visible);
-        addPoint.setVisibility(visible);
-    }
-
     @Override
     public void enableAddPoint(boolean canAddPoint) {
         this.canAddPoint = canAddPoint;
-
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
             showMarkerLayout();
         } else {
             hideMarkerLayout();
         }
+    }
+
+
+    public void setViewVisibility(View view, boolean isVisible) {
+        view.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
     @Override
@@ -426,7 +422,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
-
+                    mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
                 }
@@ -519,7 +515,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            changeTargetIcon(R.drawable.ic_my_location_focused);
+            changeTargetIcon(R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
@@ -529,7 +525,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         } else {
             updateUserLocationOnMap = false;
-            changeTargetIcon(R.drawable.ic_my_location);
+            changeTargetIcon(R.drawable.ic_cross_hair);
         }
     }
 

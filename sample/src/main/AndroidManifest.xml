@@ -31,15 +31,19 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.LowLevelManualAddPointMapView"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.LowLevelLocationAddPointMapView"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.HighLevelMapView"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.HighLevelLocationAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.CardActivity"
+            android:label="@string/title_activity_card"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
