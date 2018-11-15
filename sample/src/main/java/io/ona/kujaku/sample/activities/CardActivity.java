@@ -1,23 +1,18 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
-import org.json.JSONObject;
-
-import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
 public class CardActivity extends BaseNavigationDrawerActivity {
 
-    private static final String TAG = LowLevelLocationAddPointMapView.class.getName();
     private KujakuMapView kujakuMapView;
 
     private boolean isCardVisible = false;
