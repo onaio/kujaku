@@ -295,13 +295,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         );
     }
 
-    private void showAddPointLayout(boolean showLayout) {
-        int visible = showLayout ? VISIBLE : GONE;
-
-        doneAddingPoint.setVisibility(visible);
-        addPoint.setVisibility(visible);
-    }
-
     @Override
     public void enableAddPoint(boolean canAddPoint) {
         this.canAddPoint = canAddPoint;
