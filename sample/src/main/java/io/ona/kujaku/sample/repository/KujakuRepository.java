@@ -49,9 +49,6 @@ public class KujakuRepository extends SQLiteOpenHelper {
     public synchronized SQLiteDatabase getReadableDatabase(String password) {
         try {
             if (readableDatabase == null || !readableDatabase.isOpen()) {
-                if (readableDatabase != null) {
-                    readableDatabase.close();
-                }
                 readableDatabase = super.getReadableDatabase(password);
             }
             return readableDatabase;
@@ -65,9 +62,6 @@ public class KujakuRepository extends SQLiteOpenHelper {
     public synchronized SQLiteDatabase getWritableDatabase(String password) {
         try {
             if (writableDatabase == null || !writableDatabase.isOpen()) {
-                if (writableDatabase != null) {
-                    writableDatabase.close();
-                }
                 writableDatabase = super.getWritableDatabase(password);
             }
         } catch (Exception e) {

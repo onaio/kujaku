@@ -36,7 +36,7 @@ public class PointsRepository extends BaseRepository {
                     + ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + LAT + " REAL NOT NULL,"
                     + LNG + " REAL NOT NULL,"
-                    + DATE_UPDATED + "INTEGER"
+                    + DATE_UPDATED + " INTEGER"
             + ")";
 
     public PointsRepository(KujakuRepository repository) { super(repository); }
@@ -45,14 +45,14 @@ public class PointsRepository extends BaseRepository {
         database.execSQL(CREATE_POINTS_TABLE);
     }
 
-    public void addOrUpdate(Point Point) {
+    public void addOrUpdate(Point point) {
 
-        if (Point == null) {
+        if (point == null) {
             return;
         }
 
-        if (Point.getDateUpdated() == null) {
-            Point.setDateUpdated(Calendar.getInstance().getTimeInMillis());
+        if (point.getDateUpdated() == null) {
+            point.setDateUpdated(Calendar.getInstance().getTimeInMillis());
         }
 
         try {
@@ -60,7 +60,7 @@ public class PointsRepository extends BaseRepository {
 
             String query = String.format(INSERT_OR_REPLACE, POINTS_TABLE);
             query += "(" + StringUtils.repeat("?", ",", POINTS_TABLE_COLUMNS.length) + ")";
-            database.execSQL(query, createQueryValues(Point));
+            database.execSQL(query, createQueryValues(point));
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
         }
@@ -102,11 +102,11 @@ public class PointsRepository extends BaseRepository {
 
     private List<Point> readPoints(Cursor cursor) {
 
-        List<Point> Points = new ArrayList<>();
+        List<Point> points = new ArrayList<>();
         try {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    Points.add(createPoint(cursor));
+                    points.add(createPoint(cursor));
                     cursor.moveToNext();
                 }
             }
@@ -117,7 +117,7 @@ public class PointsRepository extends BaseRepository {
                 cursor.close();
             }
         }
-        return Points;
+        return points;
     }
 
     private Point createPoint(Cursor cursor) {
