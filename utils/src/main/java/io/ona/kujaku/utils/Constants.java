@@ -6,7 +6,7 @@ import android.app.AlarmManager;
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
  */
 
-public class Constants {
+public abstract class Constants {
     public static final String INTENT_ACTION_SHOW_MAP = "io.ona.kujaku.map.SHOW";
     public static final String INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES = "io.ona.kujaku.service.map.downloader.updates";
     public static final String PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN = "mapbox_access_token";

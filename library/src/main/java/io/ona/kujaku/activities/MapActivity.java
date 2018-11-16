@@ -144,7 +144,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
 
-            if (stylesArray != null) {
+            if (stylesArray != null && stylesArray.length > 0) {
                 currentStylePath = stylesArray[0];
                 if (currentStylePath != null && !currentStylePath.isEmpty()) {
                     currentStylePath = new MapBoxStyleStorage()
@@ -154,14 +154,17 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     // Extract kujaku meta-data
                     try {
                         MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(mapboxStyleJSON);
-                        if (!styleHelper.getKujakuConfig().isValid()) {
-                            showIncompleteStyleError();
+                        if (styleHelper.isKujakuConfigPresent()) {
+                            if (!styleHelper.getKujakuConfig().isValid()) {
+                                showIncompleteStyleError();
+                            } else {
+                                sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);
+                                dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
+                                featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
+                                featuresMap = sortData(featuresMap, sortFields);
+                                displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
+                            }
                         }
-                        sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);
-                        dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
-                        featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
-                        featuresMap = sortData(featuresMap, sortFields);
-                        displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
                     } catch (JSONException | InvalidMapBoxStyleException e) {
                         Log.e(TAG, Log.getStackTraceString(e));
                     }
@@ -252,9 +255,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     }
 
     private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
+        LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
         if (dataSourceNames != null && mapBoxStyleJSON.has("sources")) {
             JSONObject sources = mapBoxStyleJSON.getJSONObject("sources");
-            LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
             int counter = 0;
 
             for (String dataSourceName : dataSourceNames) {
@@ -279,11 +282,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     }
                 }
             }
-
-            return featuresMap;
         }
 
-        return null;
+        return featuresMap;
     }
 
     private JSONObject getStyleJSON(@NonNull String stylePathOrJSON) {
