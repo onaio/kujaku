@@ -64,7 +64,7 @@ public class KujakuLibrary {
         setMapActivityPoints(points);
 
         Intent intent = new Intent(getHostApplication(), MapActivity.class);
-        createFinalStyleUsingSavedPoints(new OnFinishedListener() {
+        createCustomStyleLayer(new OnFinishedListener() {
             @Override
             public void onSuccess(Object[] objects) {
                 JSONObject mapboxStyleJSON = (JSONObject) objects[0];
@@ -84,7 +84,12 @@ public class KujakuLibrary {
         });
     }
 
-    private void createFinalStyleUsingSavedPoints(OnFinishedListener onFinishedListener) {
+    /**
+     * This method currently creates a custom layer sourced from the file assets/2017-nov-27-kujaku-metadata.json
+     *
+     * @param onFinishedListener
+     */
+    private void createCustomStyleLayer(OnFinishedListener onFinishedListener) {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {

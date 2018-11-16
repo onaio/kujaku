@@ -194,7 +194,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         kujakuMapView.onCreate(savedInstanceState);
 
-        if (!mapBoxStylePath.isEmpty()) {
+        if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
             kujakuMapView.setStyleUrl(mapBoxStylePath);
         }
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
