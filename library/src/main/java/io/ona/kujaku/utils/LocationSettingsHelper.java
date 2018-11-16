@@ -22,6 +22,13 @@ public class LocationSettingsHelper {
 
     private static final String TAG = LocationSettingsHelper.class.getName();
 
+    /**
+     * Checks if location is currently enabled & if the location settings are at high accuracy for
+     * use in {@link io.ona.kujaku.views.KujakuMapView}. If not, a dialog is shown prompting the user
+     * to enable the location services and to a high accuracy level.
+     *
+     * @param activity
+     */
     public static void checkLocationEnabled(Activity activity) {
         GoogleApiClient googleApiClient = new GoogleApiClient.Builder(activity)
                 .addApi(LocationServices.API).build();

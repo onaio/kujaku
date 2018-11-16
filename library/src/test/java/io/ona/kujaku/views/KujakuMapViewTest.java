@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         kujakuMapView.enableAddPoint(true, onLocationChanged);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, isMapScrollingVariableName));
-        assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChanged"));
+        assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "updateUserLocationOnMap"));
     }
 
@@ -202,13 +203,21 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void focusOnUserLocationShouldChangeTargetIconWhenGivenCalled() throws NoSuchFieldException, IllegalAccessException {
+    public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        int drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
+
 
         kujakuMapView.focusOnUserLocation(false);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+
+        drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        assertEquals(R.drawable.ic_cross_hair, drawableResId);
     }
 }
