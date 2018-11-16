@@ -33,6 +33,6 @@ public class Constants {
 
     public class RequestCode {
         // Todo: Document that this request code should not be used inside the activities
-        public static final int LOCATION_SETTINGS = Integer.MAX_VALUE;
+        public static final int LOCATION_SETTINGS = 8688;
     }
 }

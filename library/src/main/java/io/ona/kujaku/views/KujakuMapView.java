@@ -90,7 +90,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
-    private OnLocationChanged onLocationChanged;
+    private OnLocationChanged onLocationChangedListener;
     private boolean isMapScrolled = false;
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
@@ -189,8 +189,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                         latestLocation = new LatLng(location.getLatitude()
                                 , location.getLongitude());
 
-                        if (onLocationChanged != null) {
-                            onLocationChanged.onLocationChanged(location);
+                        if (onLocationChangedListener != null) {
+                            onLocationChangedListener.onLocationChanged(location);
                         }
 
                         if (updateUserLocationOnMap) {
@@ -303,7 +303,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         this.enableAddPoint(canAddPoint);
 
         if (canAddPoint) {
-            this.onLocationChanged = onLocationChanged;
+            this.onLocationChangedListener = onLocationChanged;
 
             // 1. Focus on the location for the first time is a must
             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
@@ -314,7 +314,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
-            this.onLocationChanged = null;
+            this.onLocationChangedListener = null;
         }
     }
 
@@ -405,7 +405,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 enableAddPoint(false);
 
-                this.onLocationChanged = null;
+                this.onLocationChangedListener = null;
 
                 if (locationClient != null) {
                     locationClient.stopLocationUpdates();
