@@ -38,4 +38,6 @@
     <string name="launch_kujaku_map">Launch Kujaku Map</string>
     <string name="title_activity_card">CardActivity</string>
     <string name="card_activity">Card Activity</string>
+    <string name="navigate_to_map">Navigate to Map</string>
+    <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
 </resources>

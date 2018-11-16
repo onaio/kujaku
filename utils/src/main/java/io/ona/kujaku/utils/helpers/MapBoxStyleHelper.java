@@ -2,6 +2,7 @@ package io.ona.kujaku.utils.helpers;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.mapbox.core.utils.TextUtils;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -28,17 +29,21 @@ import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
  */
 
 public class MapBoxStyleHelper {
+
+    public static final String TAG = MapBoxStyleHelper.class.getName();
+
     public static final String KEY_KUJAKU = "kujaku";
     private final JSONObject styleObject;
     private final KujakuConfig kujakuConfig;
     public static final String KEY_MAP_CENTER = "center";
     public static final String KEY_ROOT_ZOOM = "zoom";
+    public static final String KEY_METADATA = "metadata";
 
     public MapBoxStyleHelper(JSONObject styleObject) throws JSONException, InvalidMapBoxStyleException {
         this.styleObject = styleObject;
-        if (this.styleObject.has("metadata")
-                && this.styleObject.getJSONObject("metadata").has(KEY_KUJAKU)) {
-            this.kujakuConfig = new KujakuConfig(this.styleObject.getJSONObject("metadata").getJSONObject(KEY_KUJAKU));
+        if (this.styleObject.has(KEY_METADATA)
+                && this.styleObject.getJSONObject(KEY_METADATA).has(KEY_KUJAKU)) {
+            this.kujakuConfig = new KujakuConfig(this.styleObject.getJSONObject(KEY_METADATA).getJSONObject(KEY_KUJAKU));
         }
         else {
             this.kujakuConfig = new KujakuConfig();
@@ -47,10 +52,10 @@ public class MapBoxStyleHelper {
 
     public JSONObject build() throws InvalidMapBoxStyleException, JSONException {
         if (kujakuConfig.isValid()) {
-            if (!styleObject.has("metadata")) {
-                styleObject.put("metadata", new JSONObject());
+            if (!styleObject.has(KEY_METADATA)) {
+                styleObject.put(KEY_METADATA, new JSONObject());
             }
-            styleObject.getJSONObject("metadata").put(KEY_KUJAKU, kujakuConfig.toJsonObject());
+            styleObject.getJSONObject(KEY_METADATA).put(KEY_KUJAKU, kujakuConfig.toJsonObject());
         } else {
             throw new InvalidMapBoxStyleException("The Kujaku configuraiton in the MapBox style is incomplete");
         }
@@ -76,6 +81,10 @@ public class MapBoxStyleHelper {
 
     public KujakuConfig getKujakuConfig() {
         return kujakuConfig;
+    }
+
+    public boolean isKujakuConfigPresent() throws JSONException {
+        return this.styleObject.has(KEY_METADATA) && this.styleObject.getJSONObject(KEY_METADATA).has(KEY_KUJAKU);
     }
 
     /**
@@ -215,7 +224,7 @@ public class MapBoxStyleHelper {
         return styleObject;
     }
 
-    public LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
+    public static LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
         return new LatLng(
                 (topLeft.getLatitude() + bottomRight.getLatitude())/2,
                 (bottomRight.getLongitude() + topLeft.getLongitude())/2
