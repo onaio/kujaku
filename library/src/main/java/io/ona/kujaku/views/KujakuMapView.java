@@ -242,14 +242,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 buttonsLayout.setVisibility(VISIBLE);
 
                 if (useGPS) {
-                    enableAddPoint(true, (OnLocationChanged) null);
+                    enableAddPoint(true, null);
                     doneAddingPoint.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             JSONObject featureJSON = dropPoint(markerOptions);
                             addPointCallback.onPointAdd(featureJSON);
 
-                            enableAddPoint(false, (OnLocationChanged) null);
+                            enableAddPoint(false, null);
 
                             buttonsLayout.setVisibility(GONE);
                             addPoint.setVisibility(VISIBLE);
@@ -275,7 +275,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     @Override
                     public void onClick(View v) {
                         if (useGPS) {
-                            enableAddPoint(false, (OnLocationChanged) null);
+                            enableAddPoint(false, null);
                         } else {
                             enableAddPoint(false);
                         }
