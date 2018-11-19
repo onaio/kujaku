@@ -31,7 +31,7 @@ public class RealmDatabase {
 
     private RealmDatabase(Context context) {
         this.context = context;
-        Realm.init(context.getApplicationContext());
+        Realm.init(context);
         RealmConfiguration configuration = new RealmConfiguration.Builder()
                 .name(NAME)
                 .schemaVersion(VERSION)

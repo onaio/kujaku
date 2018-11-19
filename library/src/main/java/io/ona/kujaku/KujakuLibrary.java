@@ -1,114 +1,78 @@
 package io.ona.kujaku;
 
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import android.os.SystemClock;
 
 import java.util.List;
 
-import io.ona.kujaku.activities.MapActivity;
-import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.domain.Point;
-import io.ona.kujaku.listeners.OnFinishedListener;
-import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.helpers.ActivityLauncherHelper;
+import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
+import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
 
-import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
+import static android.content.Context.ALARM_SERVICE;
 
 /**
  * @author Vincent Karuri
  */
 public class KujakuLibrary {
 
-    private BaseKujakuApplication hostApplication;
+    private static boolean enableMapDownloadResume;
+
     private static KujakuLibrary library;
-    private List<Point> mapActivityPoints;
+
     private static final String TAG = KujakuLibrary.class.getName();
 
     private KujakuLibrary() {}
 
     public static KujakuLibrary getInstance() {
         if (library == null) {
-            library = new KujakuLibrary();
+            throw new RuntimeException("KujakuLibrary was not initialized! Please call KujakuLibrary's init method " +
+                    "in your application's onCreate method before attempting to access the library instance.");
         }
         return library;
     }
 
-    public void sendFeatureJSONToHostApp(JSONObject featureJSON) {
-        getHostApplication().processFeatureJSON(featureJSON);
+    public static void init(Context context) {
+        RealmDatabase.init(context);
+
+        if (isEnableMapDownloadResume()) {
+            KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(context);
+            resumeMapDownload(context);
+        }
+        library = new KujakuLibrary();
     }
 
-    public void sendFeatureJSONToGeoWidget(JSONObject featureJSON) {
-        // TODO: implement this
+    private static void resumeMapDownload(Context context) {
+        Intent mapService = new Intent(context, MapboxOfflineDownloaderService.class);
+        mapService.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.NETWORK_RESUME);
+
+        PendingIntent pendingIntent = PendingIntent.getService(context, Constants.MAP_DOWNLOAD_SERVICE_ALARM_REQUEST_CODE, mapService, 0);
+        //Add the alarm here
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+        alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME
+                , SystemClock.elapsedRealtime() + Constants.MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL
+                , Constants.MAP_DOWNLOAD_SERVICE_ALARM_INTERVAL
+                , pendingIntent);
     }
 
-    public void setHostApplication(BaseKujakuApplication hostApplication) { this.hostApplication = hostApplication; }
+    public static boolean isEnableMapDownloadResume() {
+        return enableMapDownloadResume;
+    }
 
-    public BaseKujakuApplication getHostApplication() {
-        return hostApplication;
+    public void setEnableMapDownloadResume(boolean enableMapDownloadResume) {
+        this.enableMapDownloadResume = enableMapDownloadResume;
     }
 
 
-    public void setMapActivityPoints(List<Point> points) {
-       mapActivityPoints = points;
-    }
-
-    public List<Point> getMapActivityPoints() {
-        return mapActivityPoints;
-    }
-
-    public void launchMapActivity(List<Point> points) {
-        setMapActivityPoints(points);
-
-        Intent intent = new Intent(getHostApplication(), MapActivity.class);
-        createCustomStyleLayer(new OnFinishedListener() {
-            @Override
-            public void onSuccess(Object[] objects) {
-                JSONObject mapboxStyleJSON = (JSONObject) objects[0];
-                if (mapboxStyleJSON != null) {
-                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                            mapboxStyleJSON.toString()
-                    });
-                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    getHostApplication().startActivity(intent);
-                }
-            }
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, Log.getStackTraceString(e));
-            }
-        });
-    }
-
-    /**
-     * This method currently creates a custom layer sourced from the file assets/2017-nov-27-kujaku-metadata.json
-     *
-     * @param onFinishedListener
-     */
-    private void createCustomStyleLayer(OnFinishedListener onFinishedListener) {
-        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
-            @Override
-            public Object[] call() throws Exception {
-                String style = readInputStreamAsString(getHostApplication().getAssets().open("2017-nov-27-kujaku-metadata.json"));
-
-                JSONObject mapboxStyleJSON = new JSONObject(style);
-                JSONArray jsonArray = mapboxStyleJSON.getJSONArray("layers");
-
-                jsonArray.put(new JSONObject("{\n" +
-                        "            \"id\": \"new-points-layer\",\n" +
-                        "            \"type\": \"symbol\",\n" +
-                        "            \"source\": \"new-points-source\",\n" +
-                        "            \"layout\": {\"icon-image\": \"marker-15\"},\n" +
-                        "            \"paint\": {}\n" +
-                        "        }"));
-                return new Object[]{mapboxStyleJSON};
-            }
-        });
-        genericAsyncTask.setOnFinishedListener(onFinishedListener);
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    public void launchMapActivity(Activity hostActivity, List<Point> points, boolean enableDropPoint) {
+        ActivityLauncherHelper.launchMapActivity(hostActivity, points, enableDropPoint);
     }
 }

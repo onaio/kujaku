@@ -20,6 +20,12 @@ public class Constants {
     public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
     public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
     public static final String PARCELABLE_KEY_GEOJSON_FEATURE = "geojson_feature";
+    public static final String PARCELABLE_POINTS_LIST = "points_list";
+    public static final String ENABLE_DROP_POINT_BUTTON = "enable_drop_point_btn";
+    public static final String NEW_FEATURE_POINTS_JSON = "new_feature_points_json";
+
+
+    public static final int MAP_ACTIVITY_RESULT_CODE = 0;
 
     public static final String PARCELABLE_KEY_SERVICE_ACTION = "map_downloader_service";
     public static final String PARCELABLE_KEY_NETWORK_STATE = "active_network_state";

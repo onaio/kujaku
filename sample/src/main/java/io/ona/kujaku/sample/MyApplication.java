@@ -1,11 +1,12 @@
 package io.ona.kujaku.sample;
 
+import android.app.Application;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.ona.kujaku.BaseKujakuApplication;
+import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
@@ -16,7 +17,7 @@ import static io.ona.kujaku.utils.Constants.DATABASE_NAME;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
  */
 
-public class MyApplication extends BaseKujakuApplication {
+public class MyApplication extends Application {
 
     private static final String TAG = MyApplication.class.getName();
 
@@ -30,8 +31,8 @@ public class MyApplication extends BaseKujakuApplication {
     public void onCreate() {
         super.onCreate();
         application = this;
-        setEnableMapDownloadResume(false);
-        init(this); // must initialize base application
+        KujakuLibrary.init(this); // must initialize KujakuLibrary
+        KujakuLibrary.getInstance().setEnableMapDownloadResume(false);
         getRepository();
     }
 
@@ -53,15 +54,5 @@ public class MyApplication extends BaseKujakuApplication {
             pointsRepository = new PointsRepository(getRepository());
         }
         return pointsRepository;
-    }
-
-    @Override
-    public void processFeatureJSON(JSONObject featurePoint) {
-        try {
-            JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
-            getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
-        } catch (Exception e) {
-            Log.e(TAG, "JsonArray parse error occured");
-        }
     }
 }

@@ -22,6 +22,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -38,11 +41,13 @@ import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
 
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_RESULT_CODE;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+
 public class MainActivity extends BaseNavigationDrawerActivity {
 
     private EditText topLeftLatEd, topLeftLngEd, bottomRightLatEd, bottomRightLngEd, mapNameEd;
 
-    protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
     private String[] basicPermissions = new String[]{
@@ -52,6 +57,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private int lastNotificationId = 200;
     private final static String TAG = MainActivity.class.getSimpleName();
+
+    private Activity mainActivity = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,13 +81,13 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 downloadMap();
             }
         });
+
         openMapActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                callLibrary();
-                // should probably be in an async task
+                // TODO: should probably be in an async task
                 List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().launchMapActivity(points);
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
             }
         });
         registerLocalBroadcastReceiver();
@@ -89,10 +96,9 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         launchKujakuMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // callLibrary();
-                // should probably be in an async task
+                // TODO: should probably be in an async task
                 List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().launchMapActivity(points);
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
             }
         });
 
@@ -226,17 +232,24 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
-            case MAP_ACTIVITY_REQUEST_CODE:
+            case MAP_ACTIVITY_RESULT_CODE:
                 if (resultCode == Activity.RESULT_OK) {
-                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
-                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
-                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                    List<String> geoJSONFeatures;
+                    if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {
+                        geoJSONFeatures = data.getStringArrayListExtra(NEW_FEATURE_POINTS_JSON);
+                        for (String geoJSONFeature : geoJSONFeatures) {
+                            try {
+                                JSONObject featurePoint = new JSONObject(geoJSONFeature);
+                                JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
+                                MyApplication.getInstance().getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
+                            } catch (Exception e) {
+                                Log.e(TAG, "JsonArray parse error occured");
+                            }
+                        }
                     }
-                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
-                            .show();
+
                 }
                 break;
-
             default:
                 break;
         }

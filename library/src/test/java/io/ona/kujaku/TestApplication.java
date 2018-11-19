@@ -1,16 +1,12 @@
 package io.ona.kujaku;
 
-import org.json.JSONObject;
+import android.app.Application;
 
-public class TestApplication extends BaseKujakuApplication {
+public class TestApplication extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
         setTheme(R.style.AppTheme); //or just R.style.Theme_AppCompat
-    }
-
-    public void processFeatureJSON(JSONObject featureJSON) {
-        // No need to implement this
     }
 }

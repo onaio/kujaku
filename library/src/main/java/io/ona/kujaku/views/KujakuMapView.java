@@ -576,8 +576,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void onPause() {
-        locationClient.stopLocationUpdates();
-        locationClient.close();
+        if (locationClient !=  null) {
+            locationClient.stopLocationUpdates();
+            locationClient.close();
+        }
     }
 
     @Override

@@ -21,6 +21,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -57,6 +58,9 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.views.KujakuMapView;
 
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 
 
 /**
@@ -104,22 +108,30 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double minZoom = -1;
     private Bundle savedInstanceState;
 
+    private boolean enableDropPoint = false;
+
+    private List<JSONObject> newPoints;
+
     //Todo: Move reading data to another Thread
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        initializeViews();
 
         screenWidth = getScreenWidth(this);
 
+        newPoints = new ArrayList<>();
+
         Bundle bundle = getIntentExtras();
+        List<Point> points = null;
         if (bundle != null) {
             String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
             Mapbox.getInstance(this, mapBoxAccessToken);
+            points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
         }
-
+        initializeViews(points, enableDropPoint);
         checkPermissions(savedInstanceState);
     }
 
@@ -130,7 +142,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 return bundle;
             }
         }
-
         return null;
     }
 
@@ -237,28 +248,49 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         );
     }
 
-    private void initializeViews() {
+    private void initializeViews(List<Point> points, boolean enableDropPoint) {
         dismissAllDialogs();
         alertDialogs = new HashMap<>();
-        infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
-        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+        infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);
+        focusOnMyLocationImgBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
-        kujakuMapView = (KujakuMapView) findViewById(R.id.map_view);
-        kujakuMapView.enableAddPoint(true);
-        Button locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);
-        locationAdditionBtn.setOnClickListener(new View.OnClickListener() {
+        Button btnDone = findViewById(R.id.btn_done_map_activity);
+        List<String> newPointsJSON = new ArrayList<>();
+        btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (kujakuMapView.isCanAddPoint()) {
-                    JSONObject featurePoint = kujakuMapView.dropPoint();
-                    Log.e("FEATURE POINT", featurePoint.toString());
-                    KujakuLibrary.getInstance().sendFeatureJSONToHostApp(featurePoint);
+                Log.i(TAG, "Done using the MapActivity, exiting ...");
+                for (JSONObject featureJSON : newPoints) {
+                    newPointsJSON.add(featureJSON.toString());
                 }
+                Intent intent = new Intent();
+                intent.putStringArrayListExtra(NEW_FEATURE_POINTS_JSON, (ArrayList<String>) newPointsJSON);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
             }
         });
-        // restore dropped pins
-        List<Point> points = KujakuLibrary.getInstance().getMapActivityPoints();
-        kujakuMapView.setDroppedPoints(points);
+
+        kujakuMapView = findViewById(R.id.map_view);
+        if (enableDropPoint) {
+            kujakuMapView.enableAddPoint(true);
+            ImageButton locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);
+            locationAdditionBtn.setVisibility(View.VISIBLE);
+            locationAdditionBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (kujakuMapView.isCanAddPoint()) {
+                        JSONObject featurePoint = kujakuMapView.dropPoint();
+                        Log.e("FEATURE POINT", featurePoint.toString());
+                        newPoints.add(featurePoint);
+                    }
+                }
+            });
+        }
+
+        // set previously dropped pins
+        if (points != null) {
+            kujakuMapView.setDroppedPoints(points);
+        }
     }
 
     private void dismissAllDialogs() {
@@ -391,8 +423,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     protected void onResume() {
         super.onResume();
-        if (kujakuMapView != null) kujakuMapView.onResume();
-        initializeViews();
+        List<Point> droppedPoints = null;
+        if (kujakuMapView != null) {
+            kujakuMapView.onResume();
+            droppedPoints = kujakuMapView.getDroppedPoints();
+        }
+        initializeViews(droppedPoints, enableDropPoint);
     }
 
     @Override
