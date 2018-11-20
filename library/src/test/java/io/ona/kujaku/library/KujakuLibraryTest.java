@@ -22,7 +22,6 @@ import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.ActivityLauncherHelper;
 
 import static junit.framework.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
@@ -37,11 +36,11 @@ public class KujakuLibraryTest {
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
-    Activity activity;
+    private Activity activity;
 
     @Before
     public void setupBeforeTest() {
-        activity = Robolectric.buildActivity(Activity.class).create().get();;
+        activity = Robolectric.buildActivity(Activity.class).create().get();
     }
 
     @Test

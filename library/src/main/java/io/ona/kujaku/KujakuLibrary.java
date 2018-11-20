@@ -11,6 +11,7 @@ import java.util.List;
 
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.exceptions.KujakuLibraryInitializationException;
 import io.ona.kujaku.helpers.ActivityLauncherHelper;
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
@@ -27,13 +28,11 @@ public class KujakuLibrary {
 
     private static KujakuLibrary library;
 
-    private static final String TAG = KujakuLibrary.class.getName();
-
     private KujakuLibrary() {}
 
     public static KujakuLibrary getInstance() {
         if (library == null) {
-            throw new RuntimeException("KujakuLibrary was not initialized! Please call KujakuLibrary's init method " +
+            throw new KujakuLibraryInitializationException("KujakuLibrary was not initialized! Please call KujakuLibrary's init method " +
                     "in your application's onCreate method before attempting to access the library instance.");
         }
         return library;
