@@ -29,4 +29,6 @@
     <string name="current_location_btn_visibility">current_location_btn_visibility</string>
     <string name="add_btn_visibility">add_btn_visibility</string>
     <string name="done_btn_visibility">done_btn_visibility</string>
+    <string name="location_permission">Location Permission</string>
+    <string name="location_permission_reason">We need the location permission to focus on your location in the map</string>
 </resources>

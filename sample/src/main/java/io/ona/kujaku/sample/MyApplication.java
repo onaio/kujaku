@@ -3,11 +3,10 @@ package io.ona.kujaku.sample;
 import android.app.Application;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.crashlytics.android.Crashlytics;
 
+import io.fabric.sdk.android.Fabric;
 import io.ona.kujaku.KujakuLibrary;
-import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
 
@@ -33,10 +32,13 @@ public class MyApplication extends Application {
         application = this;
         KujakuLibrary.init(this); // must initialize KujakuLibrary
         KujakuLibrary.getInstance().setEnableMapDownloadResume(false);
-        getRepository();
+        getRepository(); // initialize KujakuRepository
+        Fabric.with(this, new Crashlytics());  // initialize fabric
     }
 
-    public static MyApplication getInstance() { return application; }
+    public static MyApplication getInstance() {
+        return application;
+    }
 
     public KujakuRepository getRepository() {
         try {

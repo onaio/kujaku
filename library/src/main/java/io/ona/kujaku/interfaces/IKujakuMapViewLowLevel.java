@@ -1,6 +1,7 @@
 package io.ona.kujaku.interfaces;
 
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -49,4 +50,13 @@ public interface IKujakuMapViewLowLevel {
      * @return
      */
     @Nullable JSONObject dropPoint(@Nullable LatLng latLng);
+
+    /**
+     *
+     * Set the visibility of a view on the KujakuMapView
+     *
+     * @param view
+     * @param isVisible
+     */
+    public void setViewVisibility(View view, boolean isVisible);
 }

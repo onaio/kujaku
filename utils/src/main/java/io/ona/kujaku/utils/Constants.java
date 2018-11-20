@@ -39,4 +39,8 @@ public class Constants {
 
     public static final String INSERT_OR_REPLACE = "INSERT OR REPLACE INTO %s VALUES ";
     public static final String DATABASE_NAME = "kujaku.db";
+    public class RequestCode {
+        // Todo: Document that this request code should not be used inside the activities
+        public static final int LOCATION_SETTINGS = 8688;
+    }
 }

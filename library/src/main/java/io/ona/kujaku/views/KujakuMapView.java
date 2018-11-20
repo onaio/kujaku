@@ -1,5 +1,7 @@
 package io.ona.kujaku.views;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.location.Location;
@@ -18,6 +20,8 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -51,8 +55,11 @@ import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
 import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.LocationPermissionListener;
+import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
+import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
 
 /**
@@ -82,9 +89,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
-    private OnLocationChanged onLocationChanged;
 
     private LinearLayout addPointButtonsLayout;
+
+    private OnLocationChanged onLocationChangedListener;
 
     private boolean isMapScrolled = false;
 
@@ -118,6 +126,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
+        checkPermissions();
+
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
 
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
@@ -200,8 +210,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                         latestLocation = new LatLng(location.getLatitude()
                                 , location.getLongitude());
 
-                        if (onLocationChanged != null) {
-                           // onLocationChanged(location);
+
+                        if (onLocationChangedListener != null) {
+                            onLocationChangedListener.onLocationChanged(location);
                         }
 
                         if (updateUserLocationOnMap) {
@@ -310,13 +321,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+    public void setViewVisibility(View view, boolean isVisible) {
+        view.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
     @Override
     public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
         isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
 
         if (canAddPoint) {
-            this.onLocationChanged = onLocationChanged;
+            this.onLocationChangedListener = onLocationChanged;
 
             // 1. Focus on the location for the first time is a must
             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
@@ -327,7 +342,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
-            this.onLocationChanged = null;
+            this.onLocationChangedListener = null;
         }
     }
 
@@ -370,10 +385,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             // TODO: What if the map already has a source layer with this source layer id
         } else {
             // Get the layer and update it
-            Source source = mapboxMap.getSource(pointsSourceId);
+            if (mapboxMap != null) {
+                Source source = mapboxMap.getSource(pointsSourceId);
 
-            if (source instanceof GeoJsonSource) {
-                ((GeoJsonSource) source).setGeoJson(feature);
+                if (source instanceof GeoJsonSource) {
+                    ((GeoJsonSource) source).setGeoJson(feature);
+                }
             }
         }
     }
@@ -416,7 +433,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 enableAddPoint(false);
 
-                this.onLocationChanged = null;
+                this.onLocationChangedListener = null;
 
                 if (locationClient != null) {
                     locationClient.stopLocationUpdates();
@@ -450,6 +467,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
+                    mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
                 }
@@ -551,7 +569,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            changeTargetIcon(R.drawable.ic_my_location_focused);
+            changeTargetIcon(R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
@@ -561,12 +579,26 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         } else {
             updateUserLocationOnMap = false;
-            changeTargetIcon(R.drawable.ic_my_location);
+            changeTargetIcon(R.drawable.ic_cross_hair);
         }
     }
 
     private void changeTargetIcon(int drawableIcon) {
         Views.changeDrawable(currentLocationBtn, drawableIcon);
+    }
+
+    private void checkPermissions() {
+        if (getContext() instanceof Activity) {
+            final Activity activity = (Activity) getContext();
+            PermissionListener dialogPermissionListener = new LocationPermissionListener(activity);
+
+            Dexter.withActivity(activity)
+                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    .withListener(dialogPermissionListener)
+                    .check();
+        } else {
+            Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
+        }
     }
 
     @Override
@@ -576,7 +608,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void onPause() {
-        if (locationClient !=  null) {
+        if (locationClient != null) {
             locationClient.stopLocationUpdates();
             locationClient.close();
         }
@@ -585,9 +617,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void onResume() {
         super.onResume();
-
         getMapboxMap();
-        warmUpLocationServices();
+        // This prevents an overlay issue the first time when requesting for permissions
+        if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+            if (getContext() instanceof Activity) {
+                final Activity activity = (Activity) getContext();
+                LocationSettingsHelper.checkLocationEnabled(activity);
+            }
+            warmUpLocationServices();
+        }
     }
 }
 

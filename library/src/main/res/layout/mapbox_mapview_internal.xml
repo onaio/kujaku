@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- THIS IS THE MAPBOX VIEW XML -->
     <FrameLayout
@@ -49,29 +50,53 @@
     <!-- This is the target button shown on the bottom-right -->
     <ImageButton
         android:id="@+id/ib_mapview_focusOnMyLocationIcon"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:src="@drawable/ic_my_location"
-        android:layout_marginBottom="20dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@drawable/ic_cross_hair"
+        android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
-        android:layout_gravity="bottom|right"
+        android:layout_gravity="top|right"
         android:padding="10dp"
         android:background="@drawable/circle_button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
-    <ImageButton
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_margin="20dp"
-        android:id="@+id/imgBtn_mapview_locationAdditionBtn"
-        android:background="@drawable/circle_button_black_border"
-        android:src="@drawable/ic_add"
-        android:padding="10dp"
-        android:textColor="@color/white"
-        android:visibility="gone"/>
+        android:layout_gravity="bottom|left">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <ImageButton
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_margin="20dp"
+                android:id="@+id/imgBtn_mapview_locationAdditionBtn"
+                android:background="@drawable/circle_button_black_border"
+                android:src="@drawable/ic_add"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                android:layout_gravity="bottom|left"/>
+            <android.support.v7.widget.CardView
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/feature_info_card_view"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                card_view:cardCornerRadius="10dp"
+                android:visibility="gone"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="20dp">
+                <TextView
+                    android:id="@+id/feature_info_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="This is test data!"
+                    android:padding="15dp"/>
+            </android.support.v7.widget.CardView>
+        </LinearLayout>
+    </android.support.design.widget.CoordinatorLayout>
 
     <LinearLayout
         android:id="@+id/ll_mapview_locationSelectionBtns"
@@ -103,7 +128,6 @@
             android:textSize="19sp"
             android:layout_weight="1"
             android:text="@string/cancel"/>
-
     </LinearLayout>
 
     <!-- END OF CUSTOM VIEWS ADDED TO KujakuMapView.java -->

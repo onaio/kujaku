@@ -38,7 +38,6 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-
         navigationView = getNavigationView();
         navigationView.setNavigationItemSelectedListener(this);
     }
@@ -115,6 +114,10 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
             case R.id.nav_high_level_location_add_point:
                 startActivity(new Intent(this, HighLevelLocationAddPointMapView.class));
+                finish();
+                return true;
+            case R.id.nav_card_activity:
+                startActivity(new Intent(this, CardActivity.class));
                 finish();
                 return true;
         }
