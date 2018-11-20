@@ -7,7 +7,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,18 +33,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.KujakuLibrary;
+import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
+import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
 
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
 import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_RESULT_CODE;
 import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 
 public class MainActivity extends BaseNavigationDrawerActivity {
 
@@ -57,6 +64,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private int lastNotificationId = 200;
     private final static String TAG = MainActivity.class.getSimpleName();
+
+    private List<Point> points;
 
     private Activity mainActivity = this;
 
@@ -73,8 +82,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         mapNameEd = (EditText) findViewById(R.id.edt_mainActivity_mapName);
 
         Button startOfflineDownload = (Button) findViewById(R.id.btn_mainActivity_startOfflineDownload);
-        Button openMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
-
         startOfflineDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,30 +89,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             }
         });
 
-        openMapActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: should probably be in an async task
-                List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
-            }
-        });
-        registerLocalBroadcastReceiver();
-
-        Button launchKujakuMap = (Button) findViewById(R.id.btn_mainActivity_launchKujakuMap);
-        launchKujakuMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: should probably be in an async task
-                List<Point> points = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
-            }
-        });
-
         final EditText mapBoxStyleUrl = (EditText) findViewById(R.id.edt_mainActivity_mapboxStyleURL);
         mapBoxStyleUrl.setText("mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-        Button downloadMapBoxStyle = (Button) findViewById(R.id.btn_mainActivity_downloadMapboxStyle);
-        downloadMapBoxStyle.setOnClickListener(new View.OnClickListener() {
+        Button btnDownloadMapBoxStyle = (Button) findViewById(R.id.btn_mainActivity_downloadMapboxStyle);
+        btnDownloadMapBoxStyle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 downloadMapBoxStyle(mapBoxStyleUrl.getText().toString());
@@ -113,6 +100,58 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
 
         setTitle(R.string.main_activity_title);
+
+        // Fetch previously dropped points
+        final OnFinishedListener onFinishedListener = new OnFinishedListener() {
+            @Override
+            public void onSuccess(Object[] objects) {
+                points = (List<Point>) objects[0];
+            }
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+            }
+        };
+        fetchDroppedPoints(onFinishedListener);
+
+        // set MapActivity launch buttons listeners
+        Button btnOpenMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
+        btnOpenMapActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+                if (points == null || points.size() == 0) {
+                    fetchDroppedPoints(onFinishedListener);
+                }
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+            }
+        });
+        registerLocalBroadcastReceiver();
+
+        Button btnLaunchKujakuMap = (Button) findViewById(R.id.btn_mainActivity_launchKujakuMap);
+        btnLaunchKujakuMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+                if (points == null|| points.size() == 0) {
+                    fetchDroppedPoints(onFinishedListener);
+                }
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+            }
+        });
+    }
+
+
+    private void fetchDroppedPoints(OnFinishedListener onFinishedListener) {
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+            @Override
+            public Object[] call() throws Exception {
+                List<Point> droppedPoints = MyApplication.getInstance().getPointsRepository().getAllPoints();
+                return new Object[]{droppedPoints};
+            }
+        });
+        genericAsyncTask.setOnFinishedListener(onFinishedListener);
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

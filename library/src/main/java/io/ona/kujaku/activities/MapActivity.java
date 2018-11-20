@@ -112,8 +112,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private List<JSONObject> newPoints;
 
-    //Todo: Move reading data to another Thread
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
