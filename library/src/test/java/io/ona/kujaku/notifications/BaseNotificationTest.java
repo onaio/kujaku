@@ -19,6 +19,7 @@ import org.robolectric.shadows.ShadowPendingIntent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
 import io.ona.kujaku.test.shadows.ShadowNotificationChannel;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, manifest = Config.NONE, shadows = {ShadowNotificationChannel.class})
-public abstract class BaseNotificationTest {
+public abstract class BaseNotificationTest extends BaseTest {
 
     protected Context context;
 
@@ -65,29 +66,6 @@ public abstract class BaseNotificationTest {
         }
     }
 
-
-    protected void insertValueInPrivateField(Class classWithField, Object instance, String fieldName, Object newValue) throws IllegalAccessException, NoSuchFieldException {
-        Field instanceField = classWithField.getDeclaredField(fieldName);
-        if (!instanceField.isAccessible()) {
-            instanceField.setAccessible(true);
-        }
-
-        instanceField.set(instance, newValue);
-    }
-
-    protected void insertValueInPrivateStaticField(Class classWithField, String fieldName, Object newValue) throws NoSuchFieldException, IllegalAccessException {
-        insertValueInPrivateField(classWithField, null, fieldName, newValue);
-    }
-
-    protected Object getValueInPrivateField(Class classWithField, Object instance, String fieldName) throws IllegalAccessException, NoSuchFieldException {
-        Field instanceField = classWithField.getDeclaredField(fieldName);
-        if (!instanceField.isAccessible()) {
-            instanceField.setAccessible(true);
-        }
-
-        return instanceField.get(instance);
-    }
-
     protected Intent getIntent(PendingIntent pendingIntent) throws IllegalStateException {
         ShadowPendingIntent shadowPendingIntent = Shadows.shadowOf(pendingIntent);
 
@@ -108,16 +86,6 @@ public abstract class BaseNotificationTest {
 
     protected String getNotificationProgressContent(double percentageProgress) {
         return String.format(context.getString(R.string.notification_download_progress_content), DownloadProgressNotification.formatDecimal(percentageProgress));
-    }
-
-    static void setFinalStatic(Field field, Object newValue) throws NoSuchFieldException, IllegalAccessException {
-        field.setAccessible(true);
-
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-        field.set(null, newValue);
     }
 
     protected void setSDKToAndroidOreo() throws NoSuchFieldException, IllegalAccessException {

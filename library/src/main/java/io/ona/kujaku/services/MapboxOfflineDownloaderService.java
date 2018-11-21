@@ -4,9 +4,6 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,7 +31,6 @@ import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
-import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
@@ -58,7 +54,9 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * - Optional {@link Constants#PARCELABLE_KEY_MAX_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_MIN_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_TOP_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_TOP_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
  * <p>
  * - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
  * </p>
@@ -193,14 +191,18 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             && extras.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)
                             && extras.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)
                             && extras.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)
-                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
+                            && extras.containsKey(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND)
+                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)
+                            && extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND)) {
 
                         downloadTask.setPackageName("kl");
                         downloadTask.setMapBoxStyleUrl(extras.getString(Constants.PARCELABLE_KEY_STYLE_URL));
                         downloadTask.setMaxZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MAX_ZOOM)));
                         downloadTask.setMinZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MIN_ZOOM)));
                         downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));
+                        downloadTask.setTopRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND));
                         downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));
+                        downloadTask.setBottomLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND));
 
                         realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(mapUniqueName);
 
@@ -578,9 +580,6 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         if (status.isComplete()) {
             stopDownloadProgressUpdater();
             showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_complete_content), getFriendlyFileSize(status.getCompletedResourceSize())));
-
-            MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
-            mapBoxOfflineResourcesDownloader.deletePreviousOfflineMapDownloads(currentMapDownloadName, currentMapDownloadId);
 
             realmDatabase.persistCompletedStatus(currentMapBoxTask);
             releaseQueueToPerformOtherJobs();

@@ -17,8 +17,16 @@ To publish new versions to the **Bintray/JFrog** account, run:
 ```
 export BINTRAY_USER=johndoe
 export BINTRAY_KEY=98sdfkmykeyhere90sdckl
-./gradlew clean assembleRelease :library:bintrayUpload
 ./gradlew clean assembleRelease :utils:bintrayUpload
+./gradlew clean assembleRelease :library:bintrayUpload
+
+```
+
+To publish locally:
+
+```
+./gradlew clean assembleRelease :utils:publishToMavenLocal
+./gradlew clean assembleRelease :library:publishToMavenLocal
 
 ```
 

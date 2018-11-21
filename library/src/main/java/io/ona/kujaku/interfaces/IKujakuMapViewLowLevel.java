@@ -1,7 +1,10 @@
 package io.ona.kujaku.interfaces;
 
+import android.support.annotation.DrawableRes;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.Nullable;
 
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONObject;
@@ -41,12 +44,51 @@ public interface IKujakuMapViewLowLevel {
     @Nullable JSONObject dropPoint();
 
     /**
+     * 1. This should be called after calling {@link #enableAddPoint(boolean)} with {@code true} thus
+     * disabling the marker layout, adding a point at the current marker position & returns a geoJSON
+     * feature of the current marker position.
+     *
+     * 2. This should be called after calling {@link #enableAddPoint(boolean, OnLocationChanged)} with {@code true} thus
+     * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
+     * feature at @param latLng
+     *
+     * @param markerOptions This specifies how the marker should look like
+     *
+     * @return
+     */
+    @Nullable JSONObject dropPoint(@Nullable MarkerOptions markerOptions);
+
+    /**
+     * This should be called after calling {@link #enableAddPoint(boolean)} with {@code true} thus
+     * disabling the marker layout, adding a point at the current marker position & returns a geoJSON
+     * feature of the current marker position.
+     *
+     * @param markerResourceId This is the resource that should be shown as the marker
+     *
+     * @return
+     */
+    @Nullable JSONObject dropPoint(@IntegerRes int markerResourceId);
+
+    /**
      * This should be called after calling {@link #enableAddPoint(boolean, OnLocationChanged)} with {@code true} thus
      * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
      * feature at @param latLng
      *
      * @param latLng
+     *
      * @return
      */
     @Nullable JSONObject dropPoint(@Nullable LatLng latLng);
+
+    /**
+     * This should be called after calling {@link #enableAddPoint(boolean, OnLocationChanged)} with {@code true} thus
+     * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
+     * feature at @param latLng
+     *
+     * @param latLng
+     * @param markerResourceId This is the resource that should be shown as the marker
+     *
+     * @return
+     */
+    @Nullable JSONObject dropPoint(@Nullable LatLng latLng, @DrawableRes int markerResourceId);
 }

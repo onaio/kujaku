@@ -46,7 +46,7 @@ publishing {
                 def dependenciesNode = asNode().appendNode('dependencies')
 
                 //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.compile.allDependencies.each {
+                configurations.implementation.allDependencies.each {
                     def dependencyNode = dependenciesNode.appendNode('dependency')
                     dependencyNode.appendNode('groupId', it.group)
                     dependencyNode.appendNode('artifactId', it.name)
@@ -83,8 +83,8 @@ bintray {
 
 android {
 
-    compileSdkVersion 26
-    buildToolsVersion "28.0.2"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -93,7 +93,7 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -153,7 +153,7 @@ android {
 }
 
 dependencies { configuration ->
-    implementation 'com.android.support:support-v4:26.1.0'
+    implementation "com.android.support:support-v4:${rootProject.ext.supportVersion}"
     implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
@@ -169,10 +169,12 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'appcompat-v7'
     }
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:design:${supportVersion}"
 
-    customDependencies(configuration)
-    infoWindowDependencies(configuration)
+    customDependencies(this, configuration)
+    appPermissionsDependencies(configuration)
+    infoWindowDependencies(this, configuration)
     locationDependencies(configuration)
     testDependencies(configuration)
 }
@@ -195,19 +197,22 @@ private static void testDependencies(configuration) {
     })
 }
 
-private static void infoWindowDependencies(configuration) {
-    configuration.implementation 'com.android.support:cardview-v7:26.+'
-    configuration.implementation 'com.android.support:recyclerview-v7:26.+'
+private static void infoWindowDependencies(instance, configuration) {
+    configuration.implementation "com.android.support:cardview-v7:${instance.supportVersion}"
+    configuration.implementation "com.android.support:recyclerview-v7:${instance.supportVersion}"
 }
 
-private static void customDependencies(configuration) {
+private static void customDependencies(instance, configuration) {
     configuration.implementation 'com.cocoahero.android:geojson:1.0.1@jar'
-    configuration.implementation 'com.android.volley:volley:1.0.0'
+    configuration.implementation "com.android.volley:volley:${instance.volleyVersion}"
     configuration.implementation 'com.snatik:storage:2.1.0'
     configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
 }
 
+private static void appPermissionsDependencies(configuration) {
+    configuration.implementation 'com.karumi:dexter:5.0.0'
+}
+
 private static void locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-maps:8.4.0'
     configuration.implementation 'com.google.android.gms:play-services-location:8.4.0'
 }
