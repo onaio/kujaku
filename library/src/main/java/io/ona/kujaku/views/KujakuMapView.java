@@ -170,8 +170,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    // TODO: placeholder function to test selective styling refactor to another method after testing
+    // TODO: placeholder function to test selective styling, refactor this to another method after testing
     private void initializeFeaturesSource()  {
+
         try {
             JSONArray featuresArray = new JSONArray();
 
@@ -276,16 +277,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             featuresArray.put(feature);
 
 
-            // set GeoJsonSource
+            // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
 
-
-            String featureCollectionJSONString = featureCollection
-                    .toString()
-                    .replace("\"[", "[")
-                    .replace("]\"", "]");
-            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollectionJSONString);
+            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
             mapboxMap.addSource(geoJsonSource);
 
             CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
@@ -308,15 +304,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             mapboxMap.addLayer(circleLayer);
 
-
             Button btnTestRuntimeDataChange = findViewById(R.id.btn_test_runtime_data_change);
             btnTestRuntimeDataChange.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
-                        JSONObject newFeatureCollection = new JSONObject(featureCollection.toString());
-                        newFeatureCollection.getJSONArray("features").getJSONObject(0).getJSONObject("properties").put("ethnicity", "Hispanic");
-                        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(newFeatureCollection.toString());
+                        featureCollection.getJSONArray("features").getJSONObject(0).getJSONObject("properties").put("ethnicity", "Hispanic");
+                        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
                     } catch (Exception e) {
                         Log.e(TAG, e.getMessage());
                     }
