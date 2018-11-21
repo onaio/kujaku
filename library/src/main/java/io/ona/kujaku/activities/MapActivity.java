@@ -708,11 +708,4 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             view.setLayoutParams(relativeLayoutParams);
         }
     }
-
-    public void updateDroppedPoints(List<Point> newPoints) {
-        if (kujakuMapView != null) {
-            kujakuMapView.updateDroppedPoints(newPoints);
-        }
-        this.droppedPoints.addAll(newPoints);
-    }
 }
