@@ -1,0 +1,552 @@
+{
+  "version": 8,
+  "name": "mspray-kujaku-sample-map",
+  "metadata": {
+    "kujaku": {
+      "data_sources": [
+        {
+          "name": "opensrp-custom-data-source-0"
+        },
+        {
+          "name": "opensrp-custom-data-source-1"
+        },
+        {
+          "name": "opensrp-custom-data-source-2"
+        },
+        {
+          "name": "opensrp-custom-data-source-3"
+        }
+      ],
+      "sort_fields": [
+        {
+          "type": "number",
+          "data_field": "osmid"
+        }
+      ],
+      "info_window": {
+        "visible_properties": [
+          {
+            "id": "sprayed",
+            "label": "Spray Status"
+          },
+          {
+            "id": "reason",
+            "label": "Reason"
+          },
+          {
+            "id": "spray_operator_code",
+            "label": "Spray Operator Code"
+          },
+          {
+            "id": "spray_date",
+            "label": "Spray Date"
+          },
+          {
+            "id": "submission_id",
+            "label": "Submission ID"
+          },
+          {
+            "id": "osmid",
+            "label": "OSM ID"
+          }
+        ]
+      }
+    }
+  },
+  "center": [
+    25.854781618046786,
+    -17.854564064460504
+  ],
+  "zoom": 0,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "external-vector": {
+      "url": "https://maps.tilehosting.com/data/landcover.json?key=804V6vrAl6CvqLjdoOyG",
+      "type": "vector"
+    },
+    "open-map-tiles": {
+      "type": "vector",
+      "url": "https://maps.tilehosting.com/data/v3.json?key=804V6vrAl6CvqLjdoOyG"
+    },
+    "opensrp-custom-data-source-0": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.874258604205618,
+                -17.86687127190279,
+                0
+              ]
+            },
+            "properties": {
+              "id": "1",
+              "submission_id": 21616219,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Eligible",
+              "reason": null,
+              "osmid": 535013110,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "noteligible"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.855265422607058,
+                -17.87051057660028,
+                0
+              ]
+            },
+            "properties": {
+              "id": "2",
+              "submission_id": 21616642,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Eligible",
+              "reason": null,
+              "osmid": 535013090,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "noteligible"
+            }
+          }
+        ]
+      }
+    },
+    "opensrp-custom-data-source-1": {
+      "type": "geojson",
+      "data": "https://gist.githubusercontent.com/ekigamba/436f21630bc11a565231bde7c8fca963/raw/f229ccf7b01841eb1edd003f7871eb6610006cef/gistfile1.txt"
+    },
+    "opensrp-custom-data-source-2": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.856084487624408,
+                -17.86744898884774,
+                0
+              ]
+            },
+            "properties": {
+              "id": "6",
+              "submission_id": null,
+              "spray_date": null,
+              "sprayed": "Not Visited",
+              "reason": null,
+              "osmid": 535012367,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "Not Visited"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.8630090285827,
+                -17.8565000812569,
+                0
+              ]
+            },
+            "properties": {
+              "id": "7",
+              "submission_id": null,
+              "spray_date": null,
+              "sprayed": "Not Visited",
+              "reason": null,
+              "osmid": 536812367,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "Not Visited"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.857295545692487,
+                -17.866955519703435,
+                0
+              ]
+            },
+            "properties": {
+              "id": "8",
+              "submission_id": null,
+              "spray_date": null,
+              "sprayed": "Not Visited",
+              "reason": null,
+              "osmid": 535122367,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "Not Visited"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.85884021159143,
+                -17.857963588822397,
+                0
+              ]
+            },
+            "properties": {
+              "id": "9",
+              "submission_id": null,
+              "spray_date": null,
+              "sprayed": "Not Visited",
+              "reason": null,
+              "osmid": 535012647,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "Not Visited"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.86919168497836,
+                -17.856146620666205,
+                0
+              ]
+            },
+            "properties": {
+              "id": "10",
+              "submission_id": null,
+              "spray_date": null,
+              "sprayed": "Not Visited",
+              "reason": null,
+              "osmid": 532212367,
+              "spray_operator": null,
+              "spray_operator_code": null,
+              "irs_sticker_num": null,
+              "osm_sprayed": "Not Visited"
+            }
+          }
+        ]
+      }
+    },
+    "opensrp-custom-data-source-3": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.865016790470083,
+                -17.85967755843563,
+                0
+              ]
+            },
+            "properties": {
+              "id": "11",
+              "submission_id": 21616230,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "refused",
+              "osmid": 535013067,
+              "spray_operator": "10011",
+              "spray_operator_code": "10011",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.865436000347035,
+                -17.865974148072354,
+                0
+              ]
+            },
+            "properties": {
+              "id": "12",
+              "submission_id": 21616235,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "sick",
+              "osmid": 535013066,
+              "spray_operator": "10011",
+              "spray_operator_code": "10011",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.856186006624206,
+                -17.865752235632897,
+                0
+              ]
+            },
+            "properties": {
+              "id": "13",
+              "submission_id": 21616199,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "refused",
+              "osmid": -7658292810344973000,
+              "spray_operator": "10001",
+              "spray_operator_code": "10001",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.857443674903035,
+                -17.86526163486296,
+                0
+              ]
+            },
+            "properties": {
+              "id": "14",
+              "submission_id": 21616203,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "locked",
+              "osmid": 535013093,
+              "spray_operator": "10001",
+              "spray_operator_code": "10001",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.870663179600903,
+                -17.872339419964277,
+                0
+              ]
+            },
+            "properties": {
+              "id": "15",
+              "submission_id": 21616586,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "locked",
+              "osmid": 535013082,
+              "spray_operator": "10017",
+              "spray_operator_code": "10017",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.86986750613134,
+                -17.861968514005657,
+                0
+              ]
+            },
+            "properties": {
+              "id": "16",
+              "submission_id": 21626586,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "No one Home",
+              "osmid": 533213082,
+              "spray_operator": "10017",
+              "spray_operator_code": "10017",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                25.859065647616323,
+                -17.871579146487683,
+                0
+              ]
+            },
+            "properties": {
+              "id": "16",
+              "submission_id": 21619986,
+              "spray_date": "2017-11-07",
+              "sprayed": "Not Sprayed",
+              "reason": "Refused",
+              "osmid": 535014082,
+              "spray_operator": "10017",
+              "spray_operator_code": "10017",
+              "irs_sticker_num": null,
+              "osm_sprayed": "notsprayed"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "https://maps.tilehosting.com/fonts/{fontstack}/{range}.pbf?key=804V6vrAl6CvqLjdoOyG",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {},
+      "paint": {
+        "background-color": "hsl(55, 1%, 20%)"
+      }
+    },
+    {
+      "id": "external_vector_layer",
+      "type": "fill",
+      "source": "external-vector",
+      "source-layer": "globallandcover",
+      "maxzoom": 21,
+      "minzoom": 0,
+      "filter": [
+        "==",
+        "class",
+        "scrub"
+      ],
+      "layout": {},
+      "paint": {
+        "fill-color": "hsl(103, 100%, 50%)",
+        "fill-opacity": 0.1
+      }
+    },
+    {
+      "id": "boundaries",
+      "type": "line",
+      "source": "open-map-tiles",
+      "source-layer": "boundary",
+      "maxzoom": 21,
+      "minzoom": 0,
+      "paint": {
+        "line-color": "rgb(247, 12, 51)",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "buildings",
+      "type": "fill",
+      "source": "open-map-tiles",
+      "source-layer": "building",
+      "maxzoom": 21,
+      "minzoom": 0,
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      "layout": {},
+      "paint": {
+        "fill-color": "hsl(240, 100%, 50%)",
+        "fill-opacity": 0.6
+      }
+    },
+    {
+      "id": "black not sprayable",
+      "type": "circle",
+      "metadata": {},
+      "source": "opensrp-custom-data-source-0",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "circle-radius": 15,
+        "circle-color": "hsl(0, 0%, 0%)"
+      }
+    },
+    {
+      "id": "green sprayed",
+      "type": "circle",
+      "metadata": {},
+      "source": "opensrp-custom-data-source-1",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "circle-radius": 15,
+        "circle-color": "hsl(140, 100%, 30%)"
+      }
+    },
+    {
+      "id": "yellow not sprayed",
+      "type": "circle",
+      "metadata": {},
+      "source": "opensrp-custom-data-source-2",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "circle-radius": 15,
+        "circle-color": "hsl(60, 100%, 50%)"
+      }
+    },
+    {
+      "id": "red refused",
+      "type": "circle",
+      "metadata": {},
+      "source": "opensrp-custom-data-source-3",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {},
+      "paint": {
+        "circle-color": "hsl(0, 94%, 52%)",
+        "circle-radius": 15
+      }
+    }
+  ]
+}

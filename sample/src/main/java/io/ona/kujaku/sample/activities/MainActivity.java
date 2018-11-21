@@ -129,7 +129,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         try {
             Intent intent = new Intent(this, MapActivity.class);
             intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                    readInputStreamAsString(getAssets().open("sample-point-file.json"))
+                    readInputStreamAsString(getAssets().open("external-vector-source-style.json"))
             });
             intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
