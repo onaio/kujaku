@@ -110,7 +110,7 @@
         android:padding="10dp"
         android:textColor="@color/mapbox_blue"
         android:background="@drawable/circle_button"
-        android:layout_gravity="top|right"
+        android:layout_gravity="top|center_horizontal"
         android:text="test data change"
         android:layout_margin="10dp"
         android:id="@+id/btn_test_runtime_data_change"/>

@@ -111,8 +111,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
 
-    private JSONObject featureCollection = new JSONObject();
+    private enum FeatureGroup {White, Black, Hispanic, Asian, Other};
+    private final int FEATURE_GROUP_SIZE = FeatureGroup.values().length;
 
+    private JSONObject featureCollection = new JSONObject();
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -174,108 +176,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private void initializeFeaturesSource()  {
 
         try {
-            JSONArray featuresArray = new JSONArray();
-
-            // feature 1
-            JSONObject feature = new JSONObject();
-            feature.put("id", "feature_1");
-            feature.put("type", "Feature");
-
-            JSONObject properties = new JSONObject();
-            properties.put("ethnicity", "White");
-            feature.put("properties", properties);
-
-            JSONObject geometry = new JSONObject();
-            geometry.put("type", "Point");
-            JSONArray coordinates = new JSONArray();
-            coordinates.put(36.800115);
-            coordinates.put(-1.277019);
-            geometry.put("coordinates", coordinates);
-
-            feature.put("geometry", geometry);
-
-            featuresArray.put(feature);
-
-            // feature 2
-            feature = new JSONObject();
-            feature.put("id", "feature_2");
-            feature.put("type", "Feature");
-
-            properties = new JSONObject();
-            properties.put("ethnicity", "Black");
-            feature.put("properties", properties);
-
-            geometry = new JSONObject();
-            geometry.put("type", "Point");
-            coordinates = new JSONArray();
-            coordinates.put(36.800218);
-            coordinates.put(-1.277121);
-            geometry.put("coordinates", coordinates);
-
-            feature.put("geometry", geometry);
-
-            featuresArray.put(feature);
-
-            // feature 3
-            feature = new JSONObject();
-            feature.put("id", "feature_3");
-            feature.put("type", "Feature");
-
-            properties = new JSONObject();
-            properties.put("ethnicity", "Hispanic");
-            feature.put("properties", properties);
-
-            geometry = new JSONObject();
-            geometry.put("type", "Point");
-            coordinates = new JSONArray();
-            coordinates.put(36.800311);
-            coordinates.put(-1.277232);
-            geometry.put("coordinates", coordinates);
-
-            feature.put("geometry", geometry);
-
-            featuresArray.put(feature);
-
-            // feature 4
-            feature = new JSONObject();
-            feature.put("id", "feature_4");
-            feature.put("type", "Feature");
-
-            properties = new JSONObject();
-            properties.put("ethnicity", "Asian");
-            feature.put("properties", properties);
-
-            geometry = new JSONObject();
-            geometry.put("type", "Point");
-            coordinates = new JSONArray();
-            coordinates.put(36.800411);
-            coordinates.put(-1.277343);
-            geometry.put("coordinates", coordinates);
-
-            feature.put("geometry", geometry);
-
-            featuresArray.put(feature);
-
-            // feature 5
-            feature = new JSONObject();
-            feature.put("id", "feature_5");
-            feature.put("type", "Feature");
-
-            properties = new JSONObject();
-            properties.put("ethnicity", "Other");
-            feature.put("properties", properties);
-
-            geometry = new JSONObject();
-            geometry.put("type", "Point");
-            coordinates = new JSONArray();
-            coordinates.put(36.800514);
-            coordinates.put(-1.277455);
-            geometry.put("coordinates", coordinates);
-
-            feature.put("geometry", geometry);
-
-            featuresArray.put(feature);
-
+            JSONArray featuresArray = createFeaturesJsonArray();
+            Log.i(TAG, "Features array size is: " + featuresArray.length());
 
             // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
@@ -309,7 +211,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onClick(View v) {
                     try {
-                        featureCollection.getJSONArray("features").getJSONObject(0).getJSONObject("properties").put("ethnicity", "Hispanic");
+                        alterFeaturesJsonProperties();
                         ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
                     } catch (Exception e) {
                         Log.e(TAG, e.getMessage());
@@ -319,6 +221,76 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    private void alterFeaturesJsonProperties() throws JSONException {
+        JSONArray featuresArray = featureCollection.getJSONArray("features");
+        int featuresSize = featuresArray.length();
+        int featuresSampleSize =  featuresSize / 100;
+        for (int i = 0; i < featuresSampleSize; i++) {
+            int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
+            String featurePropertyValue = FeatureGroup.values()[featurePropertyValueIndex].toString();
+            int featureIndex = (int) (Math.random() * featuresSize);
+            featuresArray.getJSONObject(featureIndex).getJSONObject("properties").put("ethnicity", featurePropertyValue);
+        }
+    }
+
+    private JSONArray createFeaturesJsonArray() throws JSONException {
+
+        double longitude = 36.000000;
+        double latitude = -1.000000;
+        double longitudeOffset = 0;
+        double latitudeOffset = 0;
+        double longitudeStep = 0.0001;
+        double latitudeStep = 0.0001;
+
+        int featureNumber = 0;
+
+        JSONArray featuresArray = new JSONArray();
+        while (longitudeOffset < 1 || latitudeOffset < 1) {
+            JSONObject feature = new JSONObject();
+            feature.put("id", "feature_" + featureNumber);
+            feature.put("type", "Feature");
+
+            int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
+            String featureValue = FeatureGroup.values()[featureIndex].toString();
+            JSONObject properties = new JSONObject();
+            properties.put("ethnicity", featureValue);
+            feature.put("properties", properties);
+
+            JSONObject geometry = new JSONObject();
+            geometry.put("type", "Point");
+            JSONArray coordinates = new JSONArray();
+            coordinates.put(longitude);
+            coordinates.put(latitude);
+            geometry.put("coordinates", coordinates);
+
+            feature.put("geometry", geometry);
+
+            featuresArray.put(feature);
+
+            // housekeeping
+            featureNumber++;
+
+            // if carry bit is produced
+            if (longitudeOffset + longitudeStep == longitudeStep * 10) {
+                longitudeOffset = 0;
+                longitudeStep = longitudeStep * 10;
+            }
+            if (latitudeOffset + latitudeStep == latitudeStep * 10) {
+                latitudeOffset = 0;
+                latitudeStep = latitudeStep * 10;
+            }
+
+            longitudeOffset += longitudeStep;
+            latitudeOffset += latitudeStep;
+            if (longitude < 1) {
+                longitude += longitudeOffset;
+            } else {
+                latitude += latitudeOffset;
+            }
+        }
+        return featuresArray;
     }
 
     private void showUpdatedUserLocation() {
