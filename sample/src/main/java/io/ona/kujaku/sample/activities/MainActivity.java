@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -46,10 +45,8 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
 
-import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
 import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_RESULT_CODE;
 import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
-import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 
 public class MainActivity extends BaseNavigationDrawerActivity {
 
@@ -273,25 +270,34 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         switch(requestCode) {
             case MAP_ACTIVITY_RESULT_CODE:
                 if (resultCode == Activity.RESULT_OK) {
-                    List<String> geoJSONFeatures;
                     if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {
-                        geoJSONFeatures = data.getStringArrayListExtra(NEW_FEATURE_POINTS_JSON);
-                        for (String geoJSONFeature : geoJSONFeatures) {
-                            try {
-                                JSONObject featurePoint = new JSONObject(geoJSONFeature);
-                                JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
-                                MyApplication.getInstance().getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
-                            } catch (Exception e) {
-                                Log.e(TAG, "JsonArray parse error occured");
-                            }
-                        }
+                        saveDroppedPoints(data);
                     }
-
                 }
                 break;
             default:
                 break;
         }
+    }
+
+    private void saveDroppedPoints(Intent data) {
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+            @Override
+            public Object[] call() throws Exception {
+                List<String> geoJSONFeatures = data.getStringArrayListExtra(NEW_FEATURE_POINTS_JSON);
+                for (String geoJSONFeature : geoJSONFeatures) {
+                    try {
+                        JSONObject featurePoint = new JSONObject(geoJSONFeature);
+                        JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
+                        MyApplication.getInstance().getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
+                    } catch (Exception e) {
+                        Log.e(TAG, "JsonArray parse error occured");
+                    }
+                }
+                return null;
+            }
+        });
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
   
     private void confirmSampleStyleAvailable() {
