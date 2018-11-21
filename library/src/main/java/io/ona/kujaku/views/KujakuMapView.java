@@ -39,9 +39,11 @@ import com.mapbox.mapboxsdk.style.sources.Source;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
@@ -98,7 +100,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
-    private List<io.ona.kujaku.domain.Point> droppedPoints;
+    protected List<io.ona.kujaku.domain.Point> droppedPoints;
 
     private LatLng latestLocation;
 
@@ -129,6 +131,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         checkPermissions();
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
+
+        droppedPoints = new ArrayList<>();
 
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
@@ -462,14 +466,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
+                    mapboxMap.getUiSettings().setCompassEnabled(false);
+                    // This disables
+                    addOnScrollListenerToMap(mapboxMap);
                     if (droppedPoints != null) {
                         for (io.ona.kujaku.domain.Point point : droppedPoints) {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
-                    mapboxMap.getUiSettings().setCompassEnabled(false);
-                    // This disables
-                    addOnScrollListenerToMap(mapboxMap);
                 }
             });
         }
@@ -561,8 +565,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         return droppedPoints;
     }
 
-    public void setDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
-        this.droppedPoints = droppedPoints;
+    public void updateDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
+        this.droppedPoints.addAll(droppedPoints);
+        if (this.mapboxMap != null && droppedPoints != null) {
+            for (io.ona.kujaku.domain.Point point : droppedPoints) {
+                dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+            }
+        }
     }
 
     @Override

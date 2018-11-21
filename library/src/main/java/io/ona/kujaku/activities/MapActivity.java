@@ -110,6 +110,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private List<JSONObject> newPoints;
 
+    private List<Point> droppedPoints;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -282,11 +284,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
             });
         }
-
-        // set previously dropped pins
-        if (points != null) {
-            kujakuMapView.setDroppedPoints(points);
-        }
+        droppedPoints = new ArrayList<>(points);
+        kujakuMapView.updateDroppedPoints(points);
     }
 
     private void dismissAllDialogs() {
@@ -419,12 +418,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     protected void onResume() {
         super.onResume();
-        List<Point> droppedPoints = null;
         if (kujakuMapView != null) {
             kujakuMapView.onResume();
-            droppedPoints = kujakuMapView.getDroppedPoints();
+            kujakuMapView.updateDroppedPoints(droppedPoints);
         }
-        initializeViews(droppedPoints, enableDropPoint);
     }
 
     @Override
@@ -709,5 +706,12 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
             view.setLayoutParams(relativeLayoutParams);
         }
+    }
+
+    public void updateDroppedPoints(List<Point> newPoints) {
+        if (kujakuMapView != null) {
+            kujakuMapView.updateDroppedPoints(newPoints);
+        }
+        this.droppedPoints.addAll(newPoints);
     }
 }

@@ -99,17 +99,17 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         setTitle(R.string.main_activity_title);
 
         // Fetch previously dropped points
-        final OnFinishedListener onFinishedListener = new OnFinishedListener() {
+        final OnFinishedListener onPointsFetchFinishedListener = new OnFinishedListener() {
             @Override
             public void onSuccess(Object[] objects) {
                 points = (List<Point>) objects[0];
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
             }
             @Override
             public void onError(Exception e) {
                 Log.e(TAG, Log.getStackTraceString(e));
             }
         };
-        fetchDroppedPoints(onFinishedListener);
 
         // set MapActivity launch buttons listeners
         Button btnOpenMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
@@ -118,9 +118,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
                 if (points == null || points.size() == 0) {
-                    fetchDroppedPoints(onFinishedListener);
+                    fetchDroppedPoints(onPointsFetchFinishedListener);
+                } else {
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
                 }
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
             }
         });
         registerLocalBroadcastReceiver();
@@ -130,10 +131,11 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
-                if (points == null|| points.size() == 0) {
-                    fetchDroppedPoints(onFinishedListener);
+                if (points == null || points.size() == 0) {
+                    fetchDroppedPoints(onPointsFetchFinishedListener);
+                } else {
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
                 }
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
             }
         });
     }
@@ -297,6 +299,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 return null;
             }
         });
+        genericAsyncTask.setOnFinishedListener(null);
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
   

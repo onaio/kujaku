@@ -6,7 +6,10 @@ package io.ona.kujaku.interfaces;
 
 import android.support.annotation.NonNull;
 
+import java.util.List;
+
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.domain.Point;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
@@ -24,4 +27,13 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     void showCurrentLocationBtn(boolean isVisible);
 
     void focusOnUserLocation(boolean focusOnMyLocation);
+
+    /**
+     * This function updates the list of points displayed in KujakuMapView
+     *
+     * This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers
+     *
+     * @param points is a list of {@link Point}
+     */
+    void updateDroppedPoints(List<Point> points);
 }
