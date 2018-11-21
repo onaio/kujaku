@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,22 +8,34 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.LogUtil;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/02/2018.
@@ -31,9 +44,7 @@ import io.ona.kujaku.sample.R;
 public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
 
     private static final String TAG = OfflineRegionsActivity.class.getName();
-    private String offlineRegionInfo = "";
-    private int position = 0;
-    private boolean activated = false;
+    private boolean activated[];
     private String currentText = "";
 
     @Override
@@ -52,13 +63,13 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {
             @Override
             public void onList(final OfflineRegion[] offlineRegions) {
-
                 if (offlineRegions == null || offlineRegions.length == 0) {
                     Toasty.info(OfflineRegionsActivity.this, getString(R.string.you_do_not_have_offline_regions), Toast.LENGTH_LONG)
                             .show();
+                } else {
+                    String[] offlineRegionsInfo = getOfflineRegionsInfo(offlineRegions);
+                    renderOfflineRegions(listView, offlineRegionsInfo, offlineRegions);
                 }
-
-                getOfflineRegionsInfo(offlineRegions, listView);
             }
 
             @Override
@@ -68,110 +79,148 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         });
     }
 
-    private void getOfflineRegionsInfo(final OfflineRegion[] offlineRegions, final ListView listView) {
-        final String[] offlineInfo = new String[offlineRegions.length + 1];
+    private String[] getOfflineRegionsInfo(final OfflineRegion[] offlineRegions) {
+        String[] offlineRegionsInfoArray = new String[offlineRegions.length];
 
-        for(position = 0; position < offlineRegions.length; position++) {
-
+        for(int position = 0; position < offlineRegions.length; position++) {
             //Add name
             //Add percentage downloaded
             //Add date & other details
             //Add unique id
-            offlineRegionInfo = "";
+            StringBuilder offlineRegionInfo = new StringBuilder();
             byte[] metadataBytes = offlineRegions[position].getMetadata();
             try {
                 JSONObject jsonObject = new JSONObject(new String(metadataBytes));
                 if (jsonObject.has("FIELD_REGION_NAME")) {
-                    offlineRegionInfo += "REGION NAME: " + jsonObject.getString("FIELD_REGION_NAME");
+                    offlineRegionInfo.append("REGION NAME: ");
+                    offlineRegionInfo.append(jsonObject.getString("FIELD_REGION_NAME"));
                 }
 
                 if (jsonObject.has("JSON_FIELD_REGION_NAME")) {
-                    offlineRegionInfo += "\nREGION NAME: " + jsonObject.getString("JSON_FIELD_REGION_NAME");
+                    offlineRegionInfo.append("\nREGION NAME: ");
+                    offlineRegionInfo.append(jsonObject.getString("JSON_FIELD_REGION_NAME"));
                 }
 
             } catch (JSONException e) {
-                e.printStackTrace();
+                LogUtil.e(TAG, e);
             }
 
-            offlineRegions[position].getStatus(new OfflineRegion.OfflineRegionStatusCallback() {
-                @Override
-                public void onStatus(OfflineRegionStatus status) {
-                    offlineInfo[OfflineRegionsActivity.this.position] += "\nDOWNLOADED SIZE : " + (status.getCompletedResourceSize() / 1e6) + " MB";
-                    double percentageDownload = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
+            offlineRegionInfo.append("\nID: ");
+            offlineRegionInfo.append(offlineRegions[position].getID());
+            offlineRegionsInfoArray[position] = offlineRegionInfo.toString();
+        }
 
-                    offlineInfo[OfflineRegionsActivity.this.position] += "\nDOWNLOADED %: " + percentageDownload + "%";
-                    offlineInfo[position] += "\nCOMPLETED RESOURCES : " + status.getCompletedResourceCount();
-                    offlineInfo[position] += "\nREQUIRED RESOURCES : " + status.getRequiredResourceCount();
-                    offlineInfo[position] += "\n";
+        return offlineRegionsInfoArray;
+    }
 
-                    Log.i(TAG, offlineRegionInfo);
+    private void renderOfflineRegions(@NonNull ListView listView, String[] offlineRegionsInfo, OfflineRegion[] offlineRegions) {
+        activated = new boolean[offlineRegionsInfo.length];
+        listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, R.layout.offline_region_item, offlineRegionsInfo){
+            @NonNull
+            @Override
+            public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = getLayoutInflater().inflate(R.layout.offline_region_item, parent, false);
+                }
 
-                    listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, android.R.layout.simple_list_item_1, offlineInfo){
-                        @NonNull
-                        @Override
-                        public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                            if (convertView == null) {
-                                convertView = getLayoutInflater().inflate(android.R.layout.simple_list_item_1, parent, false);
+                final TextView textView = convertView.findViewById(R.id.tv_offlineRegionItem_text);
+                final Button navigateToMapBtn = convertView.findViewById(R.id.btn_offlineRegionItem_navigateToMap);
+
+                textView.setText(offlineRegionsInfo[position]);
+                textView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!activated[position]) {
+                            offlineRegions[position].setDownloadState(OfflineRegion.STATE_ACTIVE);
+                        } else {
+                            offlineRegions[position].setDownloadState(OfflineRegion.STATE_INACTIVE);
+                        }
+
+                        activated[position] = !activated[position];
+                        offlineRegions[position].setObserver(new OfflineRegion.OfflineRegionObserver() {
+                            @Override
+                            public void onStatusChanged(OfflineRegionStatus status) {
+                                double progress = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
+
+                                textView.setText(offlineRegionsInfo[position] + "\nPROGRESS : " + progress + "%");
+
+                                if (status.isComplete()) {
+                                    navigateToMapBtn.setVisibility(View.VISIBLE);
+                                }
                             }
 
-                            final TextView textView = (TextView) convertView;
-                            textView.setText(offlineInfo[position]);
-                            textView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    if (!activated) {
-                                        offlineRegions[position].setDownloadState(OfflineRegion.STATE_ACTIVE);
-                                    } else {
-                                        offlineRegions[position].setDownloadState(OfflineRegion.STATE_INACTIVE);
-                                    }
+                            @Override
+                            public void onError(OfflineRegionError error) {
+                                textView.setText(offlineRegionsInfo[position] + "\nError : " + error.getReason() + "\n" + error.getMessage());
+                            }
 
-                                    activated = !activated;
+                            @Override
+                            public void mapboxTileCountLimitExceeded(long limit) {
+                                textView.setText(offlineRegionsInfo[position] + "\nMapbox tile limit count exceeded");
+                            }
+                        });
 
-                                    //Register a listener to update the list item
-                                    if (currentText.isEmpty()) {
-                                        currentText = textView.getText().toString();
-                                    }
+                    }
+                });
 
-                                    offlineRegions[position].setObserver(new OfflineRegion.OfflineRegionObserver() {
-                                        @Override
-                                        public void onStatusChanged(OfflineRegionStatus status) {
-                                            double progress = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
+                navigateToMapBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openOfflineRegionMap(offlineRegions[position].getDefinition().getBounds().getCenter());
+                    }
+                });
 
-                                            textView.setText(currentText + "\nPROGRESS : " + progress + "%");
-                                        }
+                offlineRegions[position].getStatus(new OfflineRegion.OfflineRegionStatusCallback() {
+                    @Override
+                    public void onStatus(OfflineRegionStatus status) {
+                        offlineRegionsInfo[position] += "\nDOWNLOADED SIZE : " + (status.getCompletedResourceSize() / 1e6) + " MB";
+                        double percentageDownload = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
 
-                                        @Override
-                                        public void onError(OfflineRegionError error) {
-                                            textView.setText(currentText + "\nError : " + error.getReason() + "\n" + error.getMessage());
-                                        }
+                        offlineRegionsInfo[position] += "\nDOWNLOADED %: " + percentageDownload + "%";
+                        offlineRegionsInfo[position] += "\nCOMPLETED RESOURCES : " + status.getCompletedResourceCount();
+                        offlineRegionsInfo[position] += "\nREQUIRED RESOURCES : " + status.getRequiredResourceCount();
+                        offlineRegionsInfo[position] += "\n";
 
-                                        @Override
-                                        public void mapboxTileCountLimitExceeded(long limit) {
-                                            textView.setText(currentText + "\nMapbox tile limit count exceeded");
-                                        }
-                                    });
+                        Log.i(TAG, offlineRegionsInfo[position]);
 
-                                }
-                            });
-
-                            return textView;
+                        if (status.isComplete()) {
+                            navigateToMapBtn.setVisibility(View.VISIBLE);
                         }
-                    });
+                    }
 
-                    /*if (remainingCallbacks == 1) {
-                        listView.setAdapter(new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, offlineInfo));
-                    }*/
-                }
+                    @Override
+                    public void onError(String error) {
+                        offlineRegionsInfo[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
+                        Log.e(TAG, "OFFLINE REGION STATUS : " + error);
+                    }
+                });
 
-                @Override
-                public void onError(String error) {
-                    offlineInfo[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
-                    Log.e(TAG, "OFFLINE REGION STATUS : " + error);
-                }
-            });
+                return convertView;
+            }
+        });
+    }
 
-            offlineRegionInfo += "\nID: " + offlineRegions[position].getID();
-            offlineInfo[position] = offlineRegionInfo;
+    private void openOfflineRegionMap(@NonNull LatLng mapCenter) {
+        try {
+            String mapboxStyle = readInputStreamAsString(getAssets().open("download-style.json"));
+            JSONObject mapboxStyleJSON = new JSONObject(mapboxStyle);
+            mapboxStyleJSON.put(MapBoxStyleHelper.KEY_ROOT_ZOOM, 16.76);
+
+            JSONArray mapCenterCoordinates = new JSONArray();
+            mapCenterCoordinates.put(mapCenter.getLongitude());
+            mapCenterCoordinates.put(mapCenter.getLatitude());
+
+            mapboxStyleJSON.put(MapBoxStyleHelper.KEY_MAP_CENTER, mapCenterCoordinates);
+
+            Intent intent = new Intent(this, MapActivity.class);
+            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{mapboxStyleJSON.toString()});
+            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
+            startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
+        } catch (IOException | JSONException e) {
+            LogUtil.e(TAG, e);
+            Toasty.error(this, getString(R.string.error_occurred_reading_mapbox_style))
+                    .show();
         }
     }
 

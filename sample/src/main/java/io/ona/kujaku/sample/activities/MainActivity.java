@@ -45,12 +45,20 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
 
-import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_RESULT_CODE;
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
 import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
 
 public class MainActivity extends BaseNavigationDrawerActivity {
 
-    private EditText topLeftLatEd, topLeftLngEd, bottomRightLatEd, bottomRightLngEd, mapNameEd;
+    private EditText topLeftLatEd;
+    private EditText topLeftLngEd;
+    private EditText bottomRightLatEd;
+    private EditText bottomRightLngEd;
+    private EditText mapNameEd;
+    private EditText topRightLatEd;
+    private EditText topRightLngEd;
+    private EditText bottomLeftLatEd;
+    private EditText bottomLeftLngEd;
 
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
@@ -71,14 +79,18 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         super.onCreate(savedInstanceState);
         requestBasicPermissions();
 
-        bottomRightLatEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlatitude);
-        bottomRightLngEd = (EditText) findViewById(R.id.edt_mainActivity_bottomRightlongitude);
-        topLeftLatEd = (EditText) findViewById(R.id.edt_mainActivity_topLeftlatitude);
-        topLeftLngEd = (EditText) findViewById(R.id.edt_mainActivity_topLeftlongitude);
+        bottomRightLatEd = findViewById(R.id.edt_mainActivity_bottomRightLatitude);
+        bottomRightLngEd = findViewById(R.id.edt_mainActivity_bottomRightLongitude);
+        topLeftLatEd = findViewById(R.id.edt_mainActivity_topLeftLatitude);
+        topLeftLngEd = findViewById(R.id.edt_mainActivity_topLeftLongitude);
+        bottomLeftLatEd = findViewById(R.id.edt_mainActivity_bottomLeftLatitude);
+        bottomLeftLngEd = findViewById(R.id.edt_mainActivity_bottomLeftLongitude);
+        topRightLatEd = findViewById(R.id.edt_mainActivity_topRightLatitude);
+        topRightLngEd = findViewById(R.id.edt_mainActivity_topRightLongitude);
 
-        mapNameEd = (EditText) findViewById(R.id.edt_mainActivity_mapName);
+        mapNameEd = findViewById(R.id.edt_mainActivity_mapName);
 
-        Button startOfflineDownload = (Button) findViewById(R.id.btn_mainActivity_startOfflineDownload);
+        Button startOfflineDownload = findViewById(R.id.btn_mainActivity_startOfflineDownload);
         startOfflineDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,9 +123,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             }
         };
 
-        // set MapActivity launch buttons listeners
-        Button btnOpenMapActivity = (Button) findViewById(R.id.btn_mainActivity_openMapActivity);
-        btnOpenMapActivity.setOnClickListener(new View.OnClickListener() {
+        Button btnLaunchKujakuMap = findViewById(R.id.btn_mainActivity_launchKujakuMap);
+        btnLaunchKujakuMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
@@ -126,8 +137,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
         registerLocalBroadcastReceiver();
 
-        Button btnLaunchKujakuMap = (Button) findViewById(R.id.btn_mainActivity_launchKujakuMap);
-        btnLaunchKujakuMap.setOnClickListener(new View.OnClickListener() {
+        Button btnOpenMapActivity = findViewById(R.id.btn_mainActivity_openMapActivity);
+        btnOpenMapActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
@@ -168,11 +179,19 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         double topLeftLng = -119.5073;
         double bottomRightLat = 37.6744;
         double bottomRightLng = -119.6815;
+        double topRightLat = 37.7897;
+        double topRightLng = -119.6815;
+        double bottomLeftLat = 37.6744;
+        double bottomLeftLng = -119.5073;
 
         String tllatE = topLeftLatEd.getText().toString();
         String tllngE = topLeftLngEd.getText().toString();
         String brlatE = bottomRightLatEd.getText().toString();
         String brlngE = bottomRightLngEd.getText().toString();
+        String trLatE = topRightLatEd.getText().toString();
+        String trLngE = topRightLngEd.getText().toString();
+        String blLatE = bottomLeftLatEd.getText().toString();
+        String blLngE = bottomLeftLngEd.getText().toString();
 
         String mapName = mapNameEd.getText().toString();
         if (mapName.isEmpty()) {
@@ -181,39 +200,34 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             return;
         }
 
-        if (isValidDouble(tllatE) && isValidDouble(tllngE) && isValidDouble(brlatE) && isValidDouble(brlngE)) {
+        if (isValidDouble(tllatE) && isValidDouble(tllngE) && isValidDouble(brlatE) && isValidDouble(brlngE)
+                && isValidDouble(trLatE) && isValidDouble(trLngE) && isValidDouble(blLatE) && isValidDouble(blLngE)) {
             topLeftLat = Double.valueOf(tllatE);
             topLeftLng = Double.valueOf(tllngE);
             bottomRightLat = Double.valueOf(brlatE);
             bottomRightLng = Double.valueOf(brlngE);
-
-            Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
-
-            startService(mapDownloadIntent);
+            topRightLat = Double.valueOf(trLatE);
+            topRightLng = Double.valueOf(trLngE);
+            bottomLeftLat = Double.valueOf(blLatE);
+            bottomLeftLng = Double.valueOf(blLngE);
         } else {
             Toast.makeText(this, "Invalid Lat or Lng! Reverting to default values", Toast.LENGTH_LONG)
                     .show();
-
-            Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
-            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
-
-            startService(mapDownloadIntent);
         }
+
+        Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, new LatLng(topRightLat, topRightLng));
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, new LatLng(bottomLeftLat, bottomLeftLng));
+
+        startService(mapDownloadIntent);
     }
 
     private boolean isValidDouble(String doubleString) {
@@ -270,7 +284,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
-            case MAP_ACTIVITY_RESULT_CODE:
+            case MAP_ACTIVITY_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {
                         saveDroppedPoints(data);

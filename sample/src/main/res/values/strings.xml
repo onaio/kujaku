@@ -17,12 +17,27 @@
     <string name="low_level_location_add_point">Low-level Add Point - Location services</string>
     <string name="high_level_add_point">High-level Add Point</string>
     <string name="high_level_location_add_point">High-level Add Point - Location services</string>
+    <string name="low_level_add_point_custom_marker">Low-level Custom Marker</string>
     <string name="go_to_my_location">GO TO MY LOCATION</string>
     <string name="done">DONE</string>
     <string name="click_go_to_my_location_msg">Please first click GO TO MY LOCATION button</string>
     <string name="no_offline_download_tasks">There are no offline download tasks!</string>
     <string name="you_do_not_have_offline_regions">You do not have any offline regions</string>
     <string name="geospatial_widget_examples">Geo-spatial widget examples</string>
+    <string name="bottom_left_bound">Bottom Left Bound</string>
+    <string name="bottom_right_bound">Bottom Right Bound</string>
+    <string name="top_right_bound">Top Right Bound</string>
+    <string name="top_left_bound">Top left Bound</string>
+    <string name="map_name">Map Name</string>
+    <string name="offline_map_download">Offline Map Download</string>
+    <string name="start_offline_download">Start Offline Download</string>
+    <string name="open_map_activity">Open Map Activity</string>
+    <string name="mapbox_style_url_to_download">Mapbox Style URL to download</string>
+    <string name="enter_mapbox_style_url_to_download_here">Enter mapbox Style URL to download here</string>
+    <string name="download_mapbox_style">Download Mapbox Style</string>
+    <string name="launch_kujaku_map">Launch Kujaku Map</string>
     <string name="title_activity_card">CardActivity</string>
     <string name="card_activity">Card Activity</string>
+    <string name="navigate_to_map">Navigate to Map</string>
+    <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
 </resources>

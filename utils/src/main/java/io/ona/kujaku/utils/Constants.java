@@ -6,7 +6,7 @@ import android.app.AlarmManager;
  * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
  */
 
-public class Constants {
+public abstract class Constants {
     public static final String INTENT_ACTION_SHOW_MAP = "io.ona.kujaku.map.SHOW";
     public static final String INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES = "io.ona.kujaku.service.map.downloader.updates";
     public static final String PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN = "mapbox_access_token";
@@ -16,7 +16,9 @@ public class Constants {
     public static final String PARCELABLE_KEY_MAX_ZOOM = "offline_map_max_zoom";
     public static final String PARCELABLE_KEY_MAP_UNIQUE_NAME = "offline_map_unique_name";
     public static final String PARCELABLE_KEY_TOP_LEFT_BOUND = "offline_map_top_left_bound";
+    public static final String PARCELABLE_KEY_TOP_RIGHT_BOUND = "offline_map_top_right_bound";
     public static final String PARCELABLE_KEY_BOTTOM_RIGHT_BOUND = "offline_map_bottom_right_bound";
+    public static final String PARCELABLE_KEY_BOTTOM_LEFT_BOUND = "offline_map_bottom_left_bound";
     public static final String PARCELABLE_KEY_CAMERA_MAX_ZOOM = "mapbox_camera_max_zoom";
     public static final String PARCELABLE_KEY_CAMERA_MIN_ZOOM = "mapbox_camera_min_zoom";
     public static final String PARCELABLE_KEY_GEOJSON_FEATURE = "geojson_feature";
@@ -25,7 +27,7 @@ public class Constants {
     public static final String NEW_FEATURE_POINTS_JSON = "new_feature_points_json";
 
 
-    public static final int MAP_ACTIVITY_RESULT_CODE = 0;
+    public static final int MAP_ACTIVITY_REQUEST_CODE = 0;
 
     public static final String PARCELABLE_KEY_SERVICE_ACTION = "map_downloader_service";
     public static final String PARCELABLE_KEY_NETWORK_STATE = "active_network_state";

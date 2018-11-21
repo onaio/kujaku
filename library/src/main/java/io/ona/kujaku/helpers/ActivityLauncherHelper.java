@@ -22,7 +22,7 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 
 import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
-import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_RESULT_CODE;
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
 import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
 
@@ -47,7 +47,7 @@ public class ActivityLauncherHelper {
                     intent.putParcelableArrayListExtra(PARCELABLE_POINTS_LIST, (ArrayList<? extends Parcelable>) points);
                     intent.putExtra(ENABLE_DROP_POINT_BUTTON, enableDropPoint);
 
-                    hostActivity.startActivityForResult(intent, MAP_ACTIVITY_RESULT_CODE);
+                    hostActivity.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
                 }
             }
             @Override

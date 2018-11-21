@@ -53,7 +53,8 @@ public class MapBoxStyleStorage {
         if (stylePathOrJSON.startsWith("file:")
                 || stylePathOrJSON.startsWith("asset:")
                 || stylePathOrJSON.startsWith("http:")
-                || stylePathOrJSON.startsWith("https:")) {
+                || stylePathOrJSON.startsWith("https:")
+                || stylePathOrJSON.matches(Constants.MAP_BOX_URL_FORMAT)) {
             return stylePathOrJSON;
         }
 
