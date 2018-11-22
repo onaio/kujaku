@@ -24,6 +24,7 @@ import com.cocoahero.android.geojson.Point;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -160,7 +161,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 markerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 int height = markerLayout.getMeasuredHeight();
-                markerLayout.setY(markerLayout.getY() - (height/2));
+                markerLayout.setY(markerLayout.getY() - (height / 2));
             }
         });
 
@@ -170,124 +171,144 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
         }
+
+        // test button for feature property changes and points addition
+        Button btnTestRuntimeDataChange = findViewById(R.id.btn_test_runtime_data_change);
+        btnTestRuntimeDataChange.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+//                        alterFeaturesJsonProperties();
+                    addFeaturePoints(10);
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            }
+        });
     }
 
-    // TODO: placeholder function to test selective styling, refactor this to another method after testing
-    private void initializeFeaturesSource()  {
+    private void setGeoJSONSource() throws JSONException {
+        JSONArray featuresArray = new JSONArray();
+        Log.i(TAG, "Features array size is: " + featuresArray.length());
 
-        try {
-            JSONArray featuresArray = createFeaturesJsonArray();
+        // Create and set GeoJsonSource
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.put("features", featuresArray);
+
+        GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
+        mapboxMap.addSource(geoJsonSource);
+    }
+
+    private void addMapBoxLayer() {
+        CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
+
+        circleLayer.setSourceLayer("sf2010");
+        circleLayer.withProperties(
+                circleRadius(
+                        interpolate(
+                                exponential(1.75f),
+                                zoom(),
+                                stop(12, 2f),
+                                stop(22, 180f)
+                        )),
+                circleColor(
+                        match(get("ethnicity"), rgb(0, 0, 0),
+                                stop("White", rgb(251, 176, 59)),
+                                stop("Black", rgb(34, 59, 83)),
+                                stop("Hispanic", rgb(229, 94, 94)),
+                                stop("Asian", rgb(59, 178, 208)),
+                                stop("Other", rgb(204, 204, 204)))));
+
+        mapboxMap.addLayer(circleLayer);
+    }
+
+    private void alterFeaturesJsonProperties() throws JSONException {
+        if (featureCollection.getJSONArray("features").length() == 0) {
+            // initial initialization
+            JSONArray featuresArray = createFeaturesJsonArray(10000, 36.000000, -1.000000);
             Log.i(TAG, "Features array size is: " + featuresArray.length());
 
             // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
-
-            GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
-            mapboxMap.addSource(geoJsonSource);
-
-            CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
-            circleLayer.setSourceLayer("sf2010");
-            circleLayer.withProperties(
-                    circleRadius(
-                            interpolate(
-                                    exponential(1.75f),
-                                    zoom(),
-                                    stop(12, 2f),
-                                    stop(22, 180f)
-                            )),
-                    circleColor(
-                            match(get("ethnicity"), rgb(0, 0, 0),
-                                    stop("White", rgb(251, 176, 59)),
-                                    stop("Black", rgb(34, 59, 83)),
-                                    stop("Hispanic", rgb(229, 94, 94)),
-                                    stop("Asian", rgb(59, 178, 208)),
-                                    stop("Other", rgb(204, 204, 204)))));
-
-            mapboxMap.addLayer(circleLayer);
-
-            Button btnTestRuntimeDataChange = findViewById(R.id.btn_test_runtime_data_change);
-            btnTestRuntimeDataChange.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        alterFeaturesJsonProperties();
-                        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
-                    } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
-                    }
-                }
-            });
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
+        } else {
+            // modify properties
+            JSONArray featuresArray = featureCollection.getJSONArray("features");
+            int featuresSize = featuresArray.length();
+            int featuresSampleSize = featuresSize / 100;
+            for (int i = 0; i < featuresSampleSize; i++) {
+                int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
+                String featurePropertyValue = FeatureGroup.values()[featurePropertyValueIndex].toString();
+                int featureIndex = (int) (Math.random() * featuresSize);
+                featuresArray.getJSONObject(featureIndex).getJSONObject("properties").put("ethnicity", featurePropertyValue);
+            }
+            Log.i(TAG, "Features array size is: " + featuresArray.length());
         }
+        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
     }
 
-    private void alterFeaturesJsonProperties() throws JSONException {
-        JSONArray featuresArray = featureCollection.getJSONArray("features");
-        int featuresSize = featuresArray.length();
-        int featuresSampleSize =  featuresSize / 100;
-        for (int i = 0; i < featuresSampleSize; i++) {
-            int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-            String featurePropertyValue = FeatureGroup.values()[featurePropertyValueIndex].toString();
-            int featureIndex = (int) (Math.random() * featuresSize);
-            featuresArray.getJSONObject(featureIndex).getJSONObject("properties").put("ethnicity", featurePropertyValue);
-        }
+    private void addFeaturePoints(int numFeaturePoints)  throws JSONException {
+        JSONArray featuresArray = createFeaturesJsonArray(numFeaturePoints, 36.795538, -1.294638);
+        Log.i(TAG, "Features array size is: " + featuresArray.length());
+
+        JSONArray currFeaturesArray = featureCollection.getJSONArray("features");
+        featuresArray = concatJSONArray(featuresArray, currFeaturesArray);
+        // Create and set GeoJsonSource
+        featureCollection.put("type", "FeatureCollection");
+        featureCollection.put("features", featuresArray);
+        ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
     }
 
-    private JSONArray createFeaturesJsonArray() throws JSONException {
+    private JSONArray concatJSONArray(JSONArray array1, JSONArray array2) throws JSONException {
+        for (int i = 0; i < array2.length(); i++) {
+            array1.put(array2.get(i));
+        }
+        return array1;
+    }
 
-        double longitude = 36.000000;
-        double latitude = -1.000000;
-        double longitudeOffset = 0;
-        double latitudeOffset = 0;
-        double longitudeStep = 0.0001;
-        double latitudeStep = 0.0001;
+    private JSONArray createFeaturesJsonArray(int numFeatures, double longitude, double latitude) throws JSONException {
+
+        final double LAMBDA = 0.0001;
+
+        double longitudeOffset;
+        double latitudeOffset;
+        double newLongitude = longitude;
+        double newLatitude = latitude;
 
         int featureNumber = 0;
+        int prevFeatureNumber = -1;
 
         JSONArray featuresArray = new JSONArray();
-        while (longitudeOffset < 1 || latitudeOffset < 1) {
-            JSONObject feature = new JSONObject();
-            feature.put("id", "feature_" + featureNumber);
-            feature.put("type", "Feature");
+        while (featureNumber < numFeatures) {
+            if (prevFeatureNumber != featureNumber) {
+                JSONObject feature = new JSONObject();
+                feature.put("id", "feature_" + featureNumber);
+                feature.put("type", "Feature");
 
-            int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-            String featureValue = FeatureGroup.values()[featureIndex].toString();
-            JSONObject properties = new JSONObject();
-            properties.put("ethnicity", featureValue);
-            feature.put("properties", properties);
+                int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
+                String featureValue = FeatureGroup.values()[featureIndex].toString();
+                JSONObject properties = new JSONObject();
+                properties.put("ethnicity", featureValue);
+                feature.put("properties", properties);
 
-            JSONObject geometry = new JSONObject();
-            geometry.put("type", "Point");
-            JSONArray coordinates = new JSONArray();
-            coordinates.put(longitude);
-            coordinates.put(latitude);
-            geometry.put("coordinates", coordinates);
+                JSONObject geometry = new JSONObject();
+                geometry.put("type", "Point");
+                JSONArray coordinates = new JSONArray();
+                coordinates.put(newLongitude);
+                coordinates.put(newLatitude);
+                geometry.put("coordinates", coordinates);
 
-            feature.put("geometry", geometry);
+                feature.put("geometry", geometry);
 
-            featuresArray.put(feature);
-
+                featuresArray.put(feature);
+            }
             // housekeeping
-            featureNumber++;
-
-            // if carry bit is produced
-            if (longitudeOffset + longitudeStep == longitudeStep * 10) {
-                longitudeOffset = 0;
-                longitudeStep = longitudeStep * 10;
-            }
-            if (latitudeOffset + latitudeStep == latitudeStep * 10) {
-                latitudeOffset = 0;
-                latitudeStep = latitudeStep * 10;
-            }
-
-            longitudeOffset += longitudeStep;
-            latitudeOffset += latitudeStep;
-            if (longitude < 1) {
-                longitude += longitudeOffset;
-            } else {
-                latitude += latitudeOffset;
+            longitudeOffset = Math.random();
+            latitudeOffset = Math.random();
+            if (longitudeOffset >= LAMBDA || latitudeOffset >= LAMBDA) {
+                featureNumber++;
+                newLongitude += longitudeOffset;
+                newLatitude += latitudeOffset;
             }
         }
         return featuresArray;
@@ -621,8 +642,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
-                    // initialize feature source
-                    initializeFeaturesSource();
+                    try {
+                        setGeoJSONSource();
+                        addMapBoxLayer();
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
         }
