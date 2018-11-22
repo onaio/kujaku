@@ -1,4 +1,4 @@
-package io.ona.kujaku.utils;
+package io.ona.kujaku.sample.util;
 
 import android.util.Pair;
 

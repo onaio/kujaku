@@ -66,18 +66,10 @@ public class ActivityLauncherHelper {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {
-                String style = readInputStreamAsString(context.getAssets().open("2017-nov-27-kujaku-metadata.json"));
+                String style = readInputStreamAsString(context.getAssets().open("sample-point-file.json"));
 
                 JSONObject mapboxStyleJSON = new JSONObject(style);
-                JSONArray jsonArray = mapboxStyleJSON.getJSONArray("layers");
 
-                jsonArray.put(new JSONObject("{\n" +
-                        "            \"id\": \"new-points-layer\",\n" +
-                        "            \"type\": \"symbol\",\n" +
-                        "            \"source\": \"new-points-source\",\n" +
-                        "            \"layout\": {\"icon-image\": \"marker-15\"},\n" +
-                        "            \"paint\": {}\n" +
-                        "        }"));
                 return new Object[]{mapboxStyleJSON};
             }
         });

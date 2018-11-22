@@ -66,10 +66,9 @@ public class KujakuLibrary {
         return enableMapDownloadResume;
     }
 
-    public void setEnableMapDownloadResume(boolean enableMapDownloadResume) {
-        this.enableMapDownloadResume = enableMapDownloadResume;
+    public static void setEnableMapDownloadResume(boolean isEnableMapDownloadResume) {
+        enableMapDownloadResume = isEnableMapDownloadResume;
     }
-
 
     public void launchMapActivity(Activity hostActivity, List<Point> points, boolean enableDropPoint) {
         ActivityLauncherHelper.launchMapActivity(hostActivity, points, enableDropPoint);

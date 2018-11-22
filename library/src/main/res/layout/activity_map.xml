@@ -45,6 +45,7 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp"
         android:background="@drawable/rounded_square"
-        android:textColor="@color/mapbox_blue"/>
+        android:textColor="@color/mapbox_blue"
+        android:visibility="gone"/>
 
 </RelativeLayout>

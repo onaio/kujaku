@@ -286,9 +286,17 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         switch(requestCode) {
             case MAP_ACTIVITY_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
+                    // data from a dropped feature point
                     if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {
                         saveDroppedPoints(data);
                     }
+                    // data from a clicked feature point
+                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
+                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
+                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
+                    }
+                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)
+                            .show();
                 }
                 break;
             default:

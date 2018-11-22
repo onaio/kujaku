@@ -10,7 +10,7 @@ import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
 
-import static io.ona.kujaku.utils.Constants.DATABASE_NAME;
+import static io.ona.kujaku.sample.util.Constants.DATABASE_NAME;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
@@ -30,10 +30,10 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         application = this;
-        KujakuLibrary.init(this); // must initialize KujakuLibrary
-        KujakuLibrary.getInstance().setEnableMapDownloadResume(false);
-        getRepository(); // initialize KujakuRepository
         Fabric.with(this, new Crashlytics());  // initialize fabric
+        KujakuLibrary.setEnableMapDownloadResume(false);
+        KujakuLibrary.init(this); // must initialize KujakuLibrary
+        getRepository(); // initialize KujakuRepository
     }
 
     public static MyApplication getInstance() {

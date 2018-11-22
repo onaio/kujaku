@@ -166,18 +166,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
-
-        key = getContext().getString(R.string.add_btn_visibility);
-        if (attributes.containsKey(key)) {
-            boolean isAddPointBtnVisible = (boolean) attributes.get(key);
-            setVisibility(addPointBtn, isAddPointBtnVisible);
-        }
-
-        key = getContext().getString(R.string.done_btn_visibility);
-        if (attributes.containsKey(key)) {
-            boolean isDoneAddingPointBtnVisible = (boolean) attributes.get(key);
-            setVisibility(doneAddingPointBtn, isDoneAddingPointBtnVisible);
-        }
     }
 
     private void showUpdatedUserLocation() {

@@ -13,7 +13,7 @@ import java.util.List;
 
 import io.ona.kujaku.domain.Point;
 
-import static io.ona.kujaku.utils.Constants.INSERT_OR_REPLACE;
+import static io.ona.kujaku.sample.util.Constants.INSERT_OR_REPLACE;
 
 /**
  * @author Vincent Karuri
