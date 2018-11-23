@@ -3,6 +3,8 @@ package io.ona.kujaku.domain;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Objects;
+
 /**
  * @author Vincent Karuri
  */
@@ -49,6 +51,24 @@ public class Point implements Parcelable {
 
     public void setDateUpdated(Long dateUpdated) {
         this.dateUpdated = dateUpdated;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
+        Point point = (Point) o;
+        return Double.compare(point.getLat(), getLat()) == 0 &&
+                Double.compare(point.getLng(), getLng()) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getLat(), getLng());
     }
 
     // Parcelable methods
