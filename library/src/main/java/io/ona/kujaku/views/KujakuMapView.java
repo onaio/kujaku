@@ -43,8 +43,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
@@ -101,7 +103,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
-    protected List<io.ona.kujaku.domain.Point> droppedPoints;
+    protected Set<io.ona.kujaku.domain.Point> droppedPoints;
 
     private LatLng latestLocation;
 
@@ -133,7 +135,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
 
-        droppedPoints = new ArrayList<>();
+        droppedPoints = new HashSet<>();
 
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
@@ -602,14 +604,25 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
        view.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
-    public List<io.ona.kujaku.domain.Point> getDroppedPoints() {
+    public Set<io.ona.kujaku.domain.Point> getDroppedPoints() {
         return droppedPoints;
     }
 
     public void updateDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
-        this.droppedPoints.addAll(droppedPoints);
-        if (this.mapboxMap != null && droppedPoints != null) {
-            for (io.ona.kujaku.domain.Point point : droppedPoints) {
+        if (droppedPoints == null) {
+            return;
+        }
+        // remove duplicates
+        List<io.ona.kujaku.domain.Point> deDuplicatedPoints = new ArrayList<>();
+        for (io.ona.kujaku.domain.Point point : droppedPoints) {
+            if (!this.droppedPoints.contains(point)) {
+                deDuplicatedPoints.add(point);
+                this.droppedPoints.add(point);
+            }
+        }
+        // drop new unique points
+        if (this.mapboxMap != null) {
+            for (io.ona.kujaku.domain.Point point : deDuplicatedPoints) {
                 dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
             }
         }

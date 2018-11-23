@@ -55,11 +55,8 @@ public class Point implements Parcelable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof Point)) {
             return false;
-        }
-        if (this == o) {
-            return true;
         }
         Point point = (Point) o;
         return Double.compare(point.getLat(), getLat()) == 0 &&
