@@ -8,7 +8,12 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+
+import org.json.JSONException;
+
+import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
 
@@ -53,4 +58,6 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     void showCurrentLocationBtn(boolean isVisible);
 
     void focusOnUserLocation(boolean focusOnMyLocation);
+
+    void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException;
 }

@@ -24,6 +24,7 @@ import com.cocoahero.android.geojson.Point;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -38,6 +39,7 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -100,6 +102,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
 
+    private JSONObject featureCollection;
+    private GeoJsonSource geoJsonSource;
+
+    private Map<String, com.mapbox.geojson.Feature> featureMap;
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -154,6 +161,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
         }
+
+        // initialize feature collection
+        try {
+            JSONArray featuresArray = new JSONArray();
+            this.featureCollection.put("type", "FeatureCollection");
+            this.featureCollection.put("features", featuresArray);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        featureMap = new HashMap<>();
     }
 
     private void showUpdatedUserLocation() {
@@ -483,6 +500,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
+                    setGeoJSONSource("kujaku_primary_source");
                 }
             });
         }
@@ -612,6 +630,27 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     .check();
         } else {
             Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
+        }
+    }
+
+    @Override
+    public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
+            String featureId = feature.getProperty("id").toString();
+            if (!featureMap.containsKey(featureId)) {
+                featureMap.put(featureId, feature);
+                this.featureCollection.getJSONArray("features").put(feature);
+            } else {
+                featureMap.put(featureId, feature);
+            }
+        }
+        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollection.toString());
+    }
+
+    private void setGeoJSONSource(String sourceId) {
+        if (this.mapboxMap != null) {
+            geoJsonSource = new GeoJsonSource(sourceId, featureCollection.toString());
+            mapboxMap.addSource(geoJsonSource);
         }
     }
 
