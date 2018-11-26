@@ -8,11 +8,14 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
 
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.domain.Point;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -55,7 +58,26 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     void showCurrentLocationBtn(boolean isVisible);
 
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation
+     */
     void focusOnUserLocation(boolean focusOnMyLocation);
+
+    /**
+     * Enables the app to get notified when the bounding box of the map changes if a user performs a pinch
+     * or scroll movement. The listener registers the movement once it reaches the end so as no to have
+     * a huge performance hit in cases where this is used to update the map with features. In case you
+     * want to have more control of when to receive such updates, use
+     * {@link com.mapbox.mapboxsdk.maps.MapboxMap#addOnMoveListener(MapboxMap.OnMoveListener)} and
+     * consume {@link com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener#onMove(MoveGestureDetector)}
+     *
+     * @param boundsChangeListener
+     */
+    void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener);
 
     /**
      * This function updates the list of points displayed in KujakuMapView
