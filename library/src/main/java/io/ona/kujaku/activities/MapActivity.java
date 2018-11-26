@@ -289,6 +289,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             btnDone.setVisibility(View.VISIBLE);
         }
         droppedPoints = new ArrayList<>(points);
+        kujakuMapView.updateDroppedPoints(droppedPoints);
     }
 
     private void dismissAllDialogs() {
@@ -421,7 +422,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         super.onResume();
         if (kujakuMapView != null) {
             kujakuMapView.onResume();
-            kujakuMapView.updateDroppedPoints(droppedPoints);
         }
     }
 
