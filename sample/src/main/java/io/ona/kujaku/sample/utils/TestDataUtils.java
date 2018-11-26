@@ -1,4 +1,4 @@
-package io.ona.kujaku.utils;
+package io.ona.kujaku.sample.utils;
 
 import android.util.Log;
 
@@ -67,7 +67,7 @@ public class TestDataUtils {
         mapboxMap.addLayer(circleLayer);
     }
 
-    public static JSONArray createFeaturesJsonArray(int numFeatures, double longitude, double latitude) throws JSONException {
+    public static JSONArray createFeatureJsonArray(int numFeatures, double longitude, double latitude) throws JSONException {
 
         final double LAMBDA = 0.0001;
 
@@ -115,13 +115,12 @@ public class TestDataUtils {
         return featuresArray;
     }
 
-    public static void alterFeaturesJsonProperties(JSONObject featureCollection) throws JSONException {
+    public static void alterFeatureJsonProperties(JSONObject featureCollection) throws JSONException {
 
         if (featureCollection.getJSONArray("features").length() == 0) {
             // initial initialization
-            JSONArray featuresArray = createFeaturesJsonArray(10000, 36.000000, -1.000000);
+            JSONArray featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000);
             Log.i(TAG, "Features array size is: " + featuresArray.length());
-
             // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
@@ -141,7 +140,7 @@ public class TestDataUtils {
     }
 
     public static void addFeaturePoints(int numFeaturePoints, JSONObject featureCollection)  throws JSONException {
-        JSONArray featuresArray = createFeaturesJsonArray(numFeaturePoints, 36.795538, -1.294638);
+        JSONArray featuresArray = createFeatureJsonArray(numFeaturePoints, 36.795538, -1.294638);
         Log.i(TAG, "Features array size is: " + featuresArray.length());
 
         JSONArray currFeaturesArray = featureCollection.getJSONArray("features");

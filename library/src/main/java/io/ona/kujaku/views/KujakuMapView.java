@@ -24,7 +24,6 @@ import com.cocoahero.android.geojson.Point;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
-import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -39,7 +38,6 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,20 +63,7 @@ import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
 
-import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
-import static io.ona.kujaku.utils.TestDataUtils.addFeaturePoints;
-import static io.ona.kujaku.utils.TestDataUtils.addMapBoxLayer;
-import static io.ona.kujaku.utils.TestDataUtils.alterFeaturesJsonProperties;
-import static io.ona.kujaku.utils.TestDataUtils.createFeaturesJsonArray;
-import static io.ona.kujaku.utils.TestDataUtils.setGeoJSONSource;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -173,21 +158,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             showCurrentLocationBtn(isCurrentLocationBtnVisible);
         }
-
-        // test button for feature property changes and points addition
-        Button btnTestRuntimeDataChange = findViewById(R.id.btn_test_runtime_data_change);
-        btnTestRuntimeDataChange.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-//                    alterFeaturesJsonProperties(featureCollection);
-                    addFeaturePoints(10, featureCollection);
-                    ((GeoJsonSource) mapboxMap.getSource("ethnicity-source")).setGeoJson(featureCollection.toString());
-                } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        });
     }
 
     private void showUpdatedUserLocation() {
@@ -518,12 +488,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
-                    try {
-                        setGeoJSONSource(mapboxMap, featureCollection);
-                        addMapBoxLayer(mapboxMap);
-                    } catch (Exception e) {
-                        Log.e(TAG, e.getMessage());
-                    }
                 }
             });
         }
