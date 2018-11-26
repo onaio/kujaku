@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;

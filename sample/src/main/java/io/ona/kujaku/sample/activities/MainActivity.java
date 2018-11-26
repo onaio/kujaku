@@ -313,7 +313,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                     try {
                         JSONObject featurePoint = new JSONObject(geoJSONFeature);
                         JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
-                        MyApplication.getInstance().getPointsRepository().addOrUpdate(new Point(null, (double) coordinates.get(1), (double) coordinates.get(0)));
+                        Point newPoint = new Point(null, (double) coordinates.get(1), (double) coordinates.get(0));
+                        MyApplication.getInstance().getPointsRepository().addOrUpdate(newPoint);
+                        newPoint.setId((int) (Math.random() * Integer.MAX_VALUE));
+                        points.add(newPoint);
                     } catch (Exception e) {
                         Log.e(TAG, "JsonArray parse error occured");
                     }

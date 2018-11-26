@@ -128,12 +128,12 @@ public class PointsRepository extends BaseRepository {
         );
     }
 
-    private Object[] createQueryValues(Point Point) {
+    private Object[] createQueryValues(Point point) {
         Object[] values = new Object[]{
-                Point.getId(),
-                Point.getLat(),
-                Point.getLng(),
-                Point.getDateUpdated()
+                point.getId(),
+                point.getLat(),
+                point.getLng(),
+                point.getDateUpdated()
         };
         return values;
     }
