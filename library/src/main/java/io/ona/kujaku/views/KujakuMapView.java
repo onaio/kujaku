@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
-import com.google.gson.JsonArray;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -44,7 +43,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -103,7 +104,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
 
-    private JSONObject featureCollection;
+    private JSONObject featureCollectionJSON;
     private GeoJsonSource geoJsonSource;
 
     private Map<String, Integer> featureMap;
@@ -166,9 +167,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         // initialize feature collection
         try {
             JSONArray featuresArray = new JSONArray();
-            this.featureCollection = new JSONObject();
-            this.featureCollection.put("type", "FeatureCollection");
-            this.featureCollection.put("features", featuresArray);
+            this.featureCollectionJSON = new JSONObject();
+            this.featureCollectionJSON.put("type", "FeatureCollection");
+            this.featureCollectionJSON.put("features", featuresArray);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -636,26 +637,46 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+    public void addFeaturePoints(FeatureCollection featureCollection) throws JSONException {
+        List<com.mapbox.geojson.Feature> updatedFeatures = new ArrayList<>();
+        JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
             String featureId = feature.getProperty("id").toString();
-            JSONArray featuresArray = this.featureCollection.getJSONArray("features");
             if (!featureMap.containsKey(featureId)) {
-                // TODO: call an add points method instead to do this
                 featureMap.put(featureId, featuresArray.length());
-                featuresArray.put(feature);
+                featuresArray.put(com.mapbox.geojson.Feature.fromJson(feature.toJson()));
             } else {
-                int featureIndex = featureMap.get(featureId);
-                featuresArray.put(featureIndex, feature);
+                updatedFeatures.add(feature);
             }
         }
-        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollection.toString());
+        FeatureCollection updatedFeatureCollection = FeatureCollection.fromFeatures(updatedFeatures);
+        updateFeaturePointProperties(updatedFeatureCollection);
+        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
     }
+
+    @Override
+    public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+        List<com.mapbox.geojson.Feature> newFeatures = new ArrayList<>();
+        JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
+        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
+            String featureId = feature.getProperty("id").toString();
+            if (featureMap.containsKey(featureId)) {
+                int featureIndex = featureMap.get(featureId);
+                featuresArray.put(featureIndex, com.mapbox.geojson.Feature.fromJson(feature.toJson()));
+            } else {
+                newFeatures.add(feature);
+            }
+        }
+        FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
+        addFeaturePoints(newFeatureCollection);
+        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+    }
+
 
     // TODO: remove this use what will be in utils
     private void setGeoJSONSource(String sourceId) {
         if (this.mapboxMap != null) {
-            geoJsonSource = new GeoJsonSource(sourceId, featureCollection.toString());
+            geoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
             mapboxMap.addSource(geoJsonSource);
         }
     }

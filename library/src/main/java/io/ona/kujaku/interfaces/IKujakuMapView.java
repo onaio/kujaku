@@ -59,5 +59,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     void focusOnUserLocation(boolean focusOnMyLocation);
 
+    void addFeaturePoints(FeatureCollection featureCollection) throws JSONException;
+
     void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException;
 }
