@@ -613,17 +613,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             return;
         }
         // remove duplicates
-        List<io.ona.kujaku.domain.Point> deDuplicatedPoints = new ArrayList<>();
         for (io.ona.kujaku.domain.Point point : droppedPoints) {
             if (!this.droppedPoints.contains(point)) {
-                deDuplicatedPoints.add(point);
+                // drop new unique points
+                if (this.mapboxMap != null) {
+                    dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+                }
                 this.droppedPoints.add(point);
-            }
-        }
-        // drop new unique points
-        if (this.mapboxMap != null) {
-            for (io.ona.kujaku.domain.Point point : deDuplicatedPoints) {
-                dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
             }
         }
     }
