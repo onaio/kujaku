@@ -104,6 +104,17 @@
 
     </android.support.design.widget.CoordinatorLayout>
 
+    <Button
+        android:id="@+id/btn_test_properties_change"
+        android:layout_gravity="center_horizontal|top"
+        android:textColor="@color/mapbox_blue"
+        android:text="Test Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_square_bg"
+        android:layout_margin="15dp"
+        android:padding="10dp"/>
+
     <LinearLayout
         android:id="@+id/ll_mapview_locationSelectionBtns"
         android:layout_width="match_parent"
