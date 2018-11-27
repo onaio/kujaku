@@ -13,14 +13,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="io.ona.kujaku.sample.activities.BoundingBoxListenerActivity">
+        tools:context="io.ona.kujaku.sample.activities.BoundsChangeListenerActivity">
 
         <include layout="@layout/app_bar"/>
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".activities.BoundingBoxListenerActivity"
+            tools:context=".activities.BoundsChangeListenerActivity"
             android:padding="8dp">
 
             <io.ona.kujaku.views.KujakuMapView

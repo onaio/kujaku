@@ -133,7 +133,7 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 return true;
 
             case R.id.nav_bounding_box_listener:
-                startActivity(new Intent(this, BoundingBoxListenerActivity.class));
+                startActivity(new Intent(this, BoundsChangeListenerActivity.class));
                 finish();
                 return true;
 

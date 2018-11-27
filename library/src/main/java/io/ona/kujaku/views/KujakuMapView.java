@@ -506,6 +506,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     // This disables
                     addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
 
+                    // Initial call to the bounds listener
+                    callBoundsChangedListeners();
+
                     if (droppedPoints != null) {
                         for (io.ona.kujaku.domain.Point point : droppedPoints) {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
@@ -540,11 +543,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private void callBoundsChangedListeners() {
         if (boundsChangeListener != null) {
-            VisibleRegion visibleRegion = mapboxMap.getProjection().getVisibleRegion();
+            VisibleRegion visibleRegion = getCurrentBounds();
 
-            boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
-                    , visibleRegion.nearRight, visibleRegion.nearLeft);
+            if (visibleRegion != null) {
+                boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
+                        , visibleRegion.nearRight, visibleRegion.nearLeft);
+            }
         }
+    }
+
+    @Nullable
+    private VisibleRegion getCurrentBounds() {
+        return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -655,6 +665,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener) {
         this.boundsChangeListener = boundsChangeListener;
+
+        callBoundsChangedListeners();
     }
 
     private void changeTargetIcon(int drawableIcon) {

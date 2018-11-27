@@ -17,7 +17,7 @@ import io.ona.kujaku.views.KujakuMapView;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 27/11/2018
  */
 
-public class BoundingBoxListenerActivity extends BaseNavigationDrawerActivity {
+public class BoundsChangeListenerActivity extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
     private TextView topRightBound;
