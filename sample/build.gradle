@@ -95,7 +95,7 @@ dependencies {
     }
 
     implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
+    implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -118,4 +118,3 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }
-
