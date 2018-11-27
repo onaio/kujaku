@@ -41,7 +41,6 @@ import com.mapbox.mapboxsdk.style.sources.Source;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
