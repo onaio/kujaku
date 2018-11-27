@@ -42,7 +42,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
@@ -75,13 +78,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private boolean canAddPoint = false;
 
     private ImageView markerLayout;
-    private Button doneAddingPoint;
+    private Button doneAddingPointBtn;
+    private ImageButton addPointBtn;
     private Button cancelAddingPoint;
-    private ImageButton addPoint;
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
-
-    private LinearLayout buttonsLayout;
 
     private CircleLayer userLocationInnerCircle;
     private CircleLayer userLocationOuterCircle;
@@ -92,13 +93,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
+
+    private LinearLayout addPointButtonsLayout;
+
     private OnLocationChanged onLocationChangedListener;
+
     private boolean isMapScrolled = false;
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
+    protected Set<io.ona.kujaku.domain.Point> droppedPoints;
+
     private LatLng latestLocation;
+
     private boolean updateUserLocationOnMap = false;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -124,13 +133,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         checkPermissions();
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
-        doneAddingPoint = findViewById(R.id.btn_mapview_locationSelectionBtn);
-        cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
 
-        addPoint = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
+        droppedPoints = new HashSet<>();
+
+        doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
+        addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
+        addPointBtn = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
-        buttonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
+        getMapboxMap();
+        cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
+
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -152,7 +165,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         String key = getContext().getString(R.string.current_location_btn_visibility);
         if (attributes.containsKey(key)) {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
-            showCurrentLocationBtn(isCurrentLocationBtnVisible);
+            setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
     }
 
@@ -190,6 +203,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     public void onLocationChanged(Location location) {
                         latestLocation = new LatLng(location.getLatitude()
                                 , location.getLongitude());
+
 
                         if (onLocationChangedListener != null) {
                             onLocationChangedListener.onLocationChanged(location);
@@ -233,17 +247,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions) {
-        addPoint.setVisibility(VISIBLE);
-        addPoint.setOnClickListener(new OnClickListener() {
 
+        addPointBtn.setVisibility(VISIBLE);
+        addPointBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                addPoint.setVisibility(GONE);
-                buttonsLayout.setVisibility(VISIBLE);
+                addPointBtn.setVisibility(GONE);
+                showAddPointLayout(true);
 
                 if (useGPS) {
                     enableAddPoint(true, null);
-                    doneAddingPoint.setOnClickListener(new OnClickListener() {
+                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             JSONObject featureJSON = dropPoint(markerOptions);
@@ -251,13 +265,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                             enableAddPoint(false, null);
 
-                            buttonsLayout.setVisibility(GONE);
-                            addPoint.setVisibility(VISIBLE);
+                            showAddPointLayout(false);
+                            addPointBtn.setVisibility(VISIBLE);
                         }
                     });
                 } else {
+                    // Enable the marker layout
                     enableAddPoint(true);
-                    doneAddingPoint.setOnClickListener(new OnClickListener() {
+                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             JSONObject featureJSON = dropPoint(markerOptions);
@@ -265,27 +280,32 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                             enableAddPoint(false);
 
-                            buttonsLayout.setVisibility(GONE);
-                            addPoint.setVisibility(VISIBLE);
+                            showAddPointLayout(false);
+                            addPointBtn.setVisibility(VISIBLE);
                         }
                     });
                 }
-
-                cancelAddingPoint.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (useGPS) {
-                            enableAddPoint(false, null);
-                        } else {
-                            enableAddPoint(false);
-                        }
-
-                        buttonsLayout.setVisibility(GONE);
-                        addPoint.setVisibility(VISIBLE);
-                    }
-                });
             }
         });
+
+        cancelAddingPoint.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (useGPS) {
+                    enableAddPoint(false, null);
+                } else {
+                    enableAddPoint(false);
+                }
+
+                showAddPointLayout(false);
+                addPointBtn.setVisibility(VISIBLE);
+            }
+        });
+    }
+
+    private void showAddPointLayout(boolean showLayout) {
+        int visible = showLayout ? VISIBLE : GONE;
+        addPointButtonsLayout.setVisibility(visible);
     }
 
     @Override
@@ -483,6 +503,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
+                    if (droppedPoints != null) {
+                        for (io.ona.kujaku.domain.Point point : droppedPoints) {
+                            dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+                        }
+                    }
                 }
             });
         }
@@ -574,9 +599,28 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    @Override
-    public void showCurrentLocationBtn(boolean isVisible) {
-       currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
+    public void setVisibility(View view, boolean isVisible) {
+       view.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
+    public Set<io.ona.kujaku.domain.Point> getDroppedPoints() {
+        return droppedPoints;
+    }
+
+    public void updateDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
+        if (droppedPoints == null) {
+            return;
+        }
+        // remove duplicates
+        for (io.ona.kujaku.domain.Point point : droppedPoints) {
+            if (!this.droppedPoints.contains(point)) {
+                // drop new unique points
+                if (this.mapboxMap != null) {
+                    dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+                }
+                this.droppedPoints.add(point);
+            }
+        }
     }
 
     @Override
@@ -616,6 +660,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
+    public void showCurrentLocationBtn(boolean isVisible) {
+        currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
+    @Override
     public void onPause() {
         if (locationClient != null) {
             locationClient.stopLocationUpdates();
@@ -627,7 +676,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void onResume() {
         super.onResume();
         getMapboxMap();
-
         // This prevents an overlay issue the first time when requesting for permissions
         if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
             if (getContext() instanceof Activity) {
@@ -638,3 +686,4 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 }
+
