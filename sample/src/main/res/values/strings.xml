@@ -40,4 +40,5 @@
     <string name="card_activity">Card Activity</string>
     <string name="navigate_to_map">Navigate to Map</string>
     <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
+    <string name="feature_click_status">Feature Click Status</string>
 </resources>
