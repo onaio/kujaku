@@ -102,8 +102,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private LatLng latestLocation;
     private boolean updateUserLocationOnMap = false;
 
-    private JSONObject featureCollection = new JSONObject();
-
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
