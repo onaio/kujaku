@@ -673,7 +673,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             String featureId = feature.id();
             if (!featureMap.containsKey(featureId)) {
                 featureMap.put(featureId, featuresArray.length());
-                featuresArray.put(com.mapbox.geojson.Feature.fromJson(feature.toJson()));
+                featuresArray.put(new JSONObject(feature.toJson()));
             }
         }
         ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
@@ -684,10 +684,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         List<com.mapbox.geojson.Feature> newFeatures = new ArrayList<>();
         JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
-            String featureId = feature.getProperty("id").toString();
+            String featureId = feature.id();
             if (featureMap.containsKey(featureId)) {
                 int featureIndex = featureMap.get(featureId);
-                featuresArray.put(featureIndex, com.mapbox.geojson.Feature.fromJson(feature.toJson()));
+                featuresArray.put(featureIndex, new JSONObject(feature.toJson()));
             } else {
                 newFeatures.add(feature);
             }
@@ -708,7 +708,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     // TODO: remove this use what will be in utils
     public void addMapBoxLayer() {
 
-        CircleLayer circleLayer = new CircleLayer(geoJsonSource.getId(), "ethnicity-source");
+        CircleLayer circleLayer = new CircleLayer("kujaku-primary-layer", geoJsonSource.getId());
 
         circleLayer.setSourceLayer("sf2010");
         circleLayer.withProperties(
