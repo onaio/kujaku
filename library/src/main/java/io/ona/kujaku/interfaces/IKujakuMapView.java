@@ -8,9 +8,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
 
 import java.util.List;
 
@@ -72,8 +70,8 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * or scroll movement. The listener registers the movement once it reaches the end so as no to have
      * a huge performance hit in cases where this is used to update the map with features. In case you
      * want to have more control of when to receive such updates, use
-     * {@link com.mapbox.mapboxsdk.maps.MapboxMap#addOnMoveListener(MapboxMap.OnMoveListener)} and
-     * consume {@link com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener#onMove(MoveGestureDetector)}
+     * {@link com.mapbox.mapboxsdk.maps.MapboxMap#addOnMoveListener(com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener)} and
+     * consume {@link com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener#onMove(com.mapbox.android.gestures.MoveGestureDetector)}
      *
      * @param boundsChangeListener
      */
