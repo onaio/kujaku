@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.google.gson.JsonArray;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -105,7 +106,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private JSONObject featureCollection;
     private GeoJsonSource geoJsonSource;
 
-    private Map<String, com.mapbox.geojson.Feature> featureMap;
+    private Map<String, Integer> featureMap;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -165,6 +166,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         // initialize feature collection
         try {
             JSONArray featuresArray = new JSONArray();
+            this.featureCollection = new JSONObject();
             this.featureCollection.put("type", "FeatureCollection");
             this.featureCollection.put("features", featuresArray);
         } catch (JSONException e) {
@@ -637,16 +639,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
             String featureId = feature.getProperty("id").toString();
+            JSONArray featuresArray = this.featureCollection.getJSONArray("features");
             if (!featureMap.containsKey(featureId)) {
-                featureMap.put(featureId, feature);
-                this.featureCollection.getJSONArray("features").put(feature);
+                // TODO: call an add points method instead to do this
+                featureMap.put(featureId, featuresArray.length());
+                featuresArray.put(feature);
             } else {
-                featureMap.put(featureId, feature);
+                int featureIndex = featureMap.get(featureId);
+                featuresArray.put(featureIndex, feature);
             }
         }
         ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollection.toString());
     }
 
+    // TODO: remove this use what will be in utils
     private void setGeoJSONSource(String sourceId) {
         if (this.mapboxMap != null) {
             geoJsonSource = new GeoJsonSource(sourceId, featureCollection.toString());
