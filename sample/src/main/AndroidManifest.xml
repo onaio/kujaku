@@ -50,7 +50,7 @@
             android:name=".activities.CustomMarkerLowLevelAddPoint"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
-            android:name=".activities.BoundingBoxListenerActivity"
+            android:name=".activities.BoundsChangeListenerActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.FeatureClickStatusActivity"

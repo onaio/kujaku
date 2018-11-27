@@ -72,6 +72,9 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * want to have more control of when to receive such updates, use
      * {@link com.mapbox.mapboxsdk.maps.MapboxMap#addOnMoveListener(com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener)} and
      * consume {@link com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener#onMove(com.mapbox.android.gestures.MoveGestureDetector)}
+     * <p>
+     * There is an initial call to {@code boundsChangeListener} so that the host application can know
+     * the current bounding box
      *
      * @param boundsChangeListener
      */
