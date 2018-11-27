@@ -110,8 +110,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private List<JSONObject> newPoints;
 
-    private List<Point> droppedPoints;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -288,7 +286,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             });
             btnDone.setVisibility(View.VISIBLE);
         }
-        droppedPoints = new ArrayList<>(points);
+        List<Point> droppedPoints = new ArrayList<>(points);
         kujakuMapView.updateDroppedPoints(droppedPoints);
     }
 
