@@ -697,6 +697,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
     }
 
+    public MapboxMap getMapBoxMap() {
+        return this.mapboxMap;
+    }
+
     // TODO: remove this use what will be in utils
     private void setGeoJSONSource(String sourceId) {
         if (this.mapboxMap != null) {
