@@ -2,6 +2,7 @@ package io.ona.kujaku.sample.utils;
 
 import android.util.Log;
 
+import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -9,6 +10,9 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
@@ -114,6 +118,55 @@ public class TestDataUtils {
         }
         return featuresArray;
     }
+
+    public List<Feature> createFeatures(int numFeatures, double longitude, double latitude) throws JSONException {
+
+        final double LAMBDA = 0.0001;
+
+        double longitudeOffset;
+        double latitudeOffset;
+        double newLongitude = longitude;
+        double newLatitude = latitude;
+
+        int featureNumber = 0;
+        int prevFeatureNumber = -1;
+
+        List<Feature> features = new ArrayList<>();
+        while (featureNumber < numFeatures) {
+            if (prevFeatureNumber != featureNumber) {
+                JSONObject feature = new JSONObject();
+                feature.put("id", "feature_" + featureNumber);
+                feature.put("type", "Feature");
+
+                int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
+                String featureValue = FeatureGroup.values()[featureIndex].toString();
+                JSONObject properties = new JSONObject();
+                properties.put("ethnicity", featureValue);
+                feature.put("properties", properties);
+
+                JSONObject geometry = new JSONObject();
+                geometry.put("type", "Point");
+                JSONArray coordinates = new JSONArray();
+                coordinates.put(newLongitude);
+                coordinates.put(newLatitude);
+                geometry.put("coordinates", coordinates);
+
+                feature.put("geometry", geometry);
+
+                features.add(com.mapbox.geojson.Feature.fromJson(feature.toString()));
+            }
+            // housekeeping
+            longitudeOffset = Math.random();
+            latitudeOffset = Math.random();
+            if (longitudeOffset >= LAMBDA || latitudeOffset >= LAMBDA) {
+                featureNumber++;
+                newLongitude += longitudeOffset;
+                newLatitude += latitudeOffset;
+            }
+        }
+        return features;
+    }
+
 
     public static void alterFeatureJsonProperties(JSONObject featureCollection) throws JSONException {
 
