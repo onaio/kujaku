@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -22,20 +23,30 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
-import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.KujakuLibrary;
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
+import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
+
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
 
 public class MainActivity extends BaseNavigationDrawerActivity {
 
@@ -49,7 +60,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private EditText bottomLeftLatEd;
     private EditText bottomLeftLngEd;
 
-    protected static final int MAP_ACTIVITY_REQUEST_CODE = 43;
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
     private String[] basicPermissions = new String[]{
@@ -59,6 +69,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private int lastNotificationId = 200;
     private final static String TAG = MainActivity.class.getSimpleName();
+
+    private List<Point> points;
+
+    private Activity mainActivity = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,34 +91,17 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         mapNameEd = findViewById(R.id.edt_mainActivity_mapName);
 
         Button startOfflineDownload = findViewById(R.id.btn_mainActivity_startOfflineDownload);
-        Button openMapActivity = findViewById(R.id.btn_mainActivity_openMapActivity);
-
         startOfflineDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 downloadMap();
             }
         });
-        openMapActivity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callLibrary();
-            }
-        });
-        registerLocalBroadcastReceiver();
 
-        Button launchKujakuMap = findViewById(R.id.btn_mainActivity_launchKujakuMap);
-        launchKujakuMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callLibrary();
-            }
-        });
-
-        final EditText mapBoxStyleUrl = findViewById(R.id.edt_mainActivity_mapboxStyleURL);
+        final EditText mapBoxStyleUrl = (EditText) findViewById(R.id.edt_mainActivity_mapboxStyleURL);
         mapBoxStyleUrl.setText("mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-        Button downloadMapBoxStyle = findViewById(R.id.btn_mainActivity_downloadMapboxStyle);
-        downloadMapBoxStyle.setOnClickListener(new View.OnClickListener() {
+        Button btnDownloadMapBoxStyle = (Button) findViewById(R.id.btn_mainActivity_downloadMapboxStyle);
+        btnDownloadMapBoxStyle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 downloadMapBoxStyle(mapBoxStyleUrl.getText().toString());
@@ -112,6 +109,59 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         });
 
         setTitle(R.string.main_activity_title);
+
+        // Fetch previously dropped points
+        final OnFinishedListener onPointsFetchFinishedListener = new OnFinishedListener() {
+            @Override
+            public void onSuccess(Object[] objects) {
+                points = (List<Point>) objects[0];
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+            }
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+            }
+        };
+
+        Button btnLaunchKujakuMap = findViewById(R.id.btn_mainActivity_launchKujakuMap);
+        btnLaunchKujakuMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+                if (points == null || points.size() == 0) {
+                    fetchDroppedPoints(onPointsFetchFinishedListener);
+                } else {
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+                }
+            }
+        });
+        registerLocalBroadcastReceiver();
+
+        Button btnOpenMapActivity = findViewById(R.id.btn_mainActivity_openMapActivity);
+        btnOpenMapActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+                if (points == null || points.size() == 0) {
+                    fetchDroppedPoints(onPointsFetchFinishedListener);
+                } else {
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+                }
+            }
+        });
+    }
+
+
+    private void fetchDroppedPoints(OnFinishedListener onFinishedListener) {
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+            @Override
+            public Object[] call() throws Exception {
+                List<Point> droppedPoints = MyApplication.getInstance().getPointsRepository().getAllPoints();
+                return new Object[]{droppedPoints};
+            }
+        });
+        genericAsyncTask.setOnFinishedListener(onFinishedListener);
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
@@ -122,35 +172,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     @Override
     protected int getSelectedNavigationItem() {
         return R.id.nav_main_activity;
-    }
-
-    private void callLibrary() {
-
-        try {
-            Intent intent = new Intent(this, MapActivity.class);
-            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                    readInputStreamAsString(getAssets().open("sample-point-file.json"))
-            });
-            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-
-            startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
-        } catch (IOException exception) {
-            Log.e(TAG, Log.getStackTraceString(exception));
-        }
-    }
-
-    public static String readInputStreamAsString(InputStream in)
-            throws IOException {
-
-        BufferedInputStream bis = new BufferedInputStream(in);
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int result = bis.read();
-        while(result != -1) {
-            byte b = (byte)result;
-            buf.write(b);
-            result = bis.read();
-        }
-        return buf.toString();
     }
 
     private void downloadMap() {
@@ -265,6 +286,11 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         switch(requestCode) {
             case MAP_ACTIVITY_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
+                    // data from a dropped feature point
+                    if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {
+                        saveDroppedPoints(data);
+                    }
+                    // data from a clicked feature point
                     String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);
                     if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {
                         geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);
@@ -273,10 +299,33 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                             .show();
                 }
                 break;
-
             default:
                 break;
         }
+    }
+
+    private void saveDroppedPoints(Intent data) {
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+            @Override
+            public Object[] call() throws Exception {
+                List<String> geoJSONFeatures = data.getStringArrayListExtra(NEW_FEATURE_POINTS_JSON);
+                for (String geoJSONFeature : geoJSONFeatures) {
+                    try {
+                        JSONObject featurePoint = new JSONObject(geoJSONFeature);
+                        JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
+                        Point newPoint = new Point(null, (double) coordinates.get(1), (double) coordinates.get(0));
+                        MyApplication.getInstance().getPointsRepository().addOrUpdate(newPoint);
+                        newPoint.setId((int) (Math.random() * Integer.MAX_VALUE));
+                        points.add(newPoint);
+                    } catch (Exception e) {
+                        Log.e(TAG, "JsonArray parse error occured");
+                    }
+                }
+                return null;
+            }
+        });
+        genericAsyncTask.setOnFinishedListener(null);
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
   
     private void confirmSampleStyleAvailable() {

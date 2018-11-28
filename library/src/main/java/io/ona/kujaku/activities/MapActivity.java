@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
@@ -41,6 +42,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
@@ -53,6 +55,10 @@ import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
 import io.ona.kujaku.views.KujakuMapView;
+
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 
 
 /**
@@ -70,7 +76,7 @@ import io.ona.kujaku.views.KujakuMapView;
  */
 public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
-    private KujakuMapView mapView;
+    private KujakuMapView kujakuMapView;
     private String currentStylePath;
 
     private SortFieldConfig[] sortFields;
@@ -100,22 +106,28 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private double minZoom = -1;
     private Bundle savedInstanceState;
 
-    //Todo: Move reading data to another Thread
+    private boolean enableDropPoint = false;
+
+    private List<JSONObject> newPoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        initializeViews();
 
         screenWidth = getScreenWidth(this);
 
+        newPoints = new ArrayList<>();
+
         Bundle bundle = getIntentExtras();
+        List<Point> points = null;
         if (bundle != null) {
             String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
             Mapbox.getInstance(this, mapBoxAccessToken);
+            points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
         }
-
+        initializeViews(points, enableDropPoint);
         checkPermissions(savedInstanceState);
     }
 
@@ -126,7 +138,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 return bundle;
             }
         }
-
         return null;
     }
 
@@ -190,14 +201,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
                                final double maxZoom, final double minZoom) {
-        mapView = (KujakuMapView) findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
 
-        if (!mapBoxStylePath.isEmpty()) {
-            mapView.setStyleUrl(mapBoxStylePath);
+        kujakuMapView.onCreate(savedInstanceState);
+
+        if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
+            kujakuMapView.setStyleUrl(mapBoxStylePath);
         }
-
-        mapView.getMapAsync(new OnMapReadyCallback() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 //Set listener for markers
@@ -221,7 +231,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
 
                 if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
-                    mapView.focusOnUserLocation(true);
+                    kujakuMapView.focusOnUserLocation(true);
                 }
             }
         });
@@ -237,11 +247,47 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         );
     }
 
-    private void initializeViews() {
+    private void initializeViews(List<Point> points, boolean enableDropPoint) {
         dismissAllDialogs();
         alertDialogs = new HashMap<>();
-        infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
-        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+        infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);
+        focusOnMyLocationImgBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        Button btnDone = findViewById(R.id.btn_done_map_activity);
+        List<String> newPointsJSON = new ArrayList<>();
+        btnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "Done using the MapActivity, exiting ...");
+                for (JSONObject featureJSON : newPoints) {
+                    newPointsJSON.add(featureJSON.toString());
+                }
+                Intent intent = new Intent();
+                intent.putStringArrayListExtra(NEW_FEATURE_POINTS_JSON, (ArrayList<String>) newPointsJSON);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
+
+        kujakuMapView = findViewById(R.id.map_view);
+        if (enableDropPoint) {
+            kujakuMapView.enableAddPoint(true);
+            ImageButton locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);
+            locationAdditionBtn.setVisibility(View.VISIBLE);
+            locationAdditionBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (kujakuMapView.isCanAddPoint()) {
+                        JSONObject featurePoint = kujakuMapView.dropPoint();
+                        Log.e("FEATURE POINT", featurePoint.toString());
+                        newPoints.add(featurePoint);
+                    }
+                }
+            });
+            btnDone.setVisibility(View.VISIBLE);
+        }
+        List<Point> droppedPoints = new ArrayList<>(points);
+        kujakuMapView.updateDroppedPoints(droppedPoints);
     }
 
     private void dismissAllDialogs() {
@@ -372,25 +418,27 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     protected void onResume() {
         super.onResume();
-        if (mapView != null) mapView.onResume();
+        if (kujakuMapView != null) {
+            kujakuMapView.onResume();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (mapView != null) mapView.onStart();
+        if (kujakuMapView != null) kujakuMapView.onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mapView != null) mapView.onStop();
+        if (kujakuMapView != null) kujakuMapView.onStop();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mapView != null) mapView.onPause();
+        if (kujakuMapView != null) kujakuMapView.onPause();
     }
 
     @Override
@@ -402,19 +450,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     .deleteFile(currentStylePath.replace("file://", ""), true);
         }
 
-        if (mapView != null) mapView.onDestroy();
+        if (kujakuMapView != null) kujakuMapView.onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mapView != null) mapView.onSaveInstanceState(outState);
+        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (mapView != null) mapView.onLowMemory();
+        if (kujakuMapView != null) kujakuMapView.onLowMemory();
     }
 
     @Override
@@ -579,7 +627,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             performInfoWindowDoubleClickAction(featuresMap.get(id));
         } else {
             showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-            mapView.centerMap(latLng, animateToNewTargetDuration);
+            kujakuMapView.centerMap(latLng, animateToNewTargetDuration);
         }
         lastSelected = position;
     }
