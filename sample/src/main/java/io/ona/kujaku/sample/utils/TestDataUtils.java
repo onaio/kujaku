@@ -3,9 +3,9 @@ package io.ona.kujaku.sample.utils;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,22 +34,9 @@ public class TestDataUtils {
     private enum FeatureGroup {White, Black, Hispanic, Asian, Other};
     private final static int FEATURE_GROUP_SIZE = FeatureGroup.values().length;
 
-    public static void setGeoJSONSource(MapboxMap mapboxMap, JSONObject featureCollection) throws JSONException {
+    public static Layer generateMapBoxLayer(String layerId, String sourceId) {
 
-        JSONArray featuresArray = new JSONArray();
-        Log.i(TAG, "Features array size is: " + featuresArray.length());
-
-        // Create and set GeoJsonSource
-        featureCollection.put("type", "FeatureCollection");
-        featureCollection.put("features", featuresArray);
-
-        GeoJsonSource geoJsonSource = new GeoJsonSource("ethnicity-source", featureCollection.toString());
-        mapboxMap.addSource(geoJsonSource);
-    }
-
-    public static void addMapBoxLayer(MapboxMap mapboxMap) {
-
-        CircleLayer circleLayer = new CircleLayer("population", "ethnicity-source");
+        CircleLayer circleLayer = new CircleLayer(layerId, sourceId);
 
         circleLayer.setSourceLayer("sf2010");
         circleLayer.withProperties(
@@ -67,8 +54,7 @@ public class TestDataUtils {
                                 stop("Hispanic", rgb(229, 94, 94)),
                                 stop("Asian", rgb(59, 178, 208)),
                                 stop("Other", rgb(204, 204, 204)))));
-
-        mapboxMap.addLayer(circleLayer);
+        return circleLayer;
     }
 
     public static JSONArray createFeatureJsonArray(int numFeatures, double longitude, double latitude) throws JSONException {
@@ -119,20 +105,20 @@ public class TestDataUtils {
         return featuresArray;
     }
 
-    public List<Feature> createFeatures(int numFeatures, double longitude, double latitude) throws JSONException {
+    public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude) throws JSONException {
 
-        final double LAMBDA = 0.0001;
+        final double LAMBDA = 0.9;
 
         double longitudeOffset;
         double latitudeOffset;
         double newLongitude = longitude;
         double newLatitude = latitude;
 
-        int featureNumber = 0;
-        int prevFeatureNumber = -1;
+        int featureNumber = startingIndex;
+        int prevFeatureNumber = startingIndex;
 
         List<Feature> features = new ArrayList<>();
-        while (featureNumber < numFeatures) {
+        while (featureNumber < numFeatures + startingIndex) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
                 feature.put("id", "feature_" + featureNumber);
@@ -156,9 +142,10 @@ public class TestDataUtils {
                 features.add(com.mapbox.geojson.Feature.fromJson(feature.toString()));
             }
             // housekeeping
-            longitudeOffset = Math.random();
-            latitudeOffset = Math.random();
-            if (longitudeOffset >= LAMBDA || latitudeOffset >= LAMBDA) {
+            longitudeOffset = Math.random() * 3;
+            latitudeOffset = Math.random() * 3;
+            if (longitudeOffset >= LAMBDA && latitudeOffset >= LAMBDA) {
+                prevFeatureNumber = featureNumber;
                 featureNumber++;
                 newLongitude += longitudeOffset;
                 newLatitude += latitudeOffset;
@@ -168,21 +155,20 @@ public class TestDataUtils {
     }
 
 
-    public static void alterFeatureJsonProperties(JSONObject featureCollection) throws JSONException {
-
+    public static FeatureCollection alterFeatureJsonProperties(int numFeatures, JSONObject featureCollection) throws JSONException {
+        JSONArray featuresArray;
         if (featureCollection.getJSONArray("features").length() == 0) {
             // initial initialization
-            JSONArray featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000);
+            featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000);
             Log.i(TAG, "Features array size is: " + featuresArray.length());
             // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
             featureCollection.put("features", featuresArray);
         } else {
             // modify properties
-            JSONArray featuresArray = featureCollection.getJSONArray("features");
+            featuresArray = featureCollection.getJSONArray("features");
             int featuresSize = featuresArray.length();
-            int featuresSampleSize = featuresSize / 100;
-            for (int i = 0; i < featuresSampleSize; i++) {
+            for (int i = 0; i < numFeatures; i++) {
                 int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
                 String featurePropertyValue = FeatureGroup.values()[featurePropertyValueIndex].toString();
                 int featureIndex = (int) (Math.random() * featuresSize);
@@ -190,6 +176,7 @@ public class TestDataUtils {
             }
             Log.i(TAG, "Features array size is: " + featuresArray.length());
         }
+        return FeatureCollection.fromJson(featureCollection.toString());
     }
 
     public static void addFeaturePoints(int numFeaturePoints, JSONObject featureCollection)  throws JSONException {
