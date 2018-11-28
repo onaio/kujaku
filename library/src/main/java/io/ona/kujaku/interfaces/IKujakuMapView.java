@@ -60,16 +60,36 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     void focusOnUserLocation(boolean focusOnMyLocation);
 
+    /**
+     *  Add new {@link com.mapbox.geojson.Feature Feature} points to the {@link io.ona.kujaku.views.KujakuMapView map}
+     *
+     *  A {@link com.mapbox.geojson.Feature feature} will be uniquely identified by its id field and a {@link com.mapbox.geojson.Feature Feature} with
+     *  an already existing feature id will be ignored and not added to the {@link io.ona.kujaku.views.KujakuMapView map}
+     *
+     *  @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points to be added to the map
+     *
+     *  @throws JSONException
+     */
     void addFeaturePoints(FeatureCollection featureCollection) throws JSONException;
 
+    /**
+     *  Update the properties of {@link com.mapbox.geojson.Feature Feature} points that are already on the {@link io.ona.kujaku.views.KujakuMapView map}
+     *
+     *  If the {@link com.mapbox.geojson.Feature Feature} point does not already exist, it is added to the map by calling the {@link #addFeaturePoints(FeatureCollection) addFeaturePoints}
+     *  function and passing the new {@link FeatureCollection FeatureCollection}
+     *
+     *  @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points whose properties will be updated on the map
+     *
+     *   @throws JSONException
+     */
     void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException;
 
     /**
-     * This function updates the list of points displayed in KujakuMapView
+     *  Update the list of points displayed in KujakuMapView
      *
-     * This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers
+     *  This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers defined by the user
      *
-     * @param points is a list of {@link Point}
+     *  @param points A list of {@link Point}
      */
     void updateDroppedPoints(List<Point> points);
 }
