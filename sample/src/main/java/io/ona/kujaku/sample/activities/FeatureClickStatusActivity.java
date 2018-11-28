@@ -3,6 +3,7 @@ package io.ona.kujaku.sample.activities;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;
@@ -11,8 +12,10 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,6 +33,8 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
     private KujakuMapView kujakuMapView;
     private HashMap<String, Feature> selectedFeatures = new HashMap<>();
 
+    private String[] selectableLayers;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,14 +46,14 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
+                selectableLayers = getLayerNames(mapboxMap.getLayers());
+
                 mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override
                     public void onMapClick(@NonNull LatLng point) {
                         final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                        List<Feature> features = mapboxMap.queryRenderedFeatures(pixel);
+                        List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, selectableLayers);
                         Log.e(TAG, "LEN: " + features.size());
-
-                        features = mapboxMap.queryRenderedFeatures(pixel);
 
                         if (features.size() > 0) {
                             Feature feature = features.get(features.size() - 1);
@@ -60,20 +65,33 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
                             }
                         }
 
-                        if (selectedFeatures.size() > 0) {
-                            FeatureCollection featureCollection = FeatureCollection.fromFeatures((Feature[]) selectedFeatures.values().toArray(new Feature[]{}));
+                        FeatureCollection featureCollection = FeatureCollection.fromFeatures((Feature[]) selectedFeatures.values().toArray(new Feature[]{}));
 
-                            // Update the select layer
-                            GeoJsonSource geoJsonSource = mapboxMap.getSourceAs("select-data");
-                            if (geoJsonSource != null) {
-                                geoJsonSource.setGeoJson(featureCollection);
-                            }
+                        // Update the select layer
+                        GeoJsonSource geoJsonSource = mapboxMap.getSourceAs("select-data");
+                        if (geoJsonSource != null) {
+                            geoJsonSource.setGeoJson(featureCollection);
                         }
                     }
 
                 });
             }
         });
+    }
+
+    private String[] getLayerNames(List<Layer> layers) {
+        int size = layers.size();
+        ArrayList<String> layerNames = new ArrayList<>();
+
+        for(int i = 0; i < size; i++) {
+            String layerId = layers.get(i).getId();
+
+            if (!TextUtils.isEmpty(layerId) && !"select-layer".equals(layerId)) {
+                layerNames.add(layerId);
+            }
+        }
+
+        return layerNames.toArray(new String[layerNames.size()]);
     }
 
     @Override
