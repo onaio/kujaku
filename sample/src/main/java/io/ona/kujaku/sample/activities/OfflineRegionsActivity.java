@@ -34,6 +34,9 @@ import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/02/2018.
  */
@@ -199,7 +202,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
 
     private void openOfflineRegionMap(@NonNull LatLng mapCenter) {
         try {
-            String mapboxStyle = MainActivity.readInputStreamAsString(getAssets().open("download-style.json"));
+            String mapboxStyle = readInputStreamAsString(getAssets().open("download-style.json"));
             JSONObject mapboxStyleJSON = new JSONObject(mapboxStyle);
             mapboxStyleJSON.put(MapBoxStyleHelper.KEY_ROOT_ZOOM, 16.76);
 
@@ -213,7 +216,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
             intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{mapboxStyleJSON.toString()});
             intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-            startActivityForResult(intent, MainActivity.MAP_ACTIVITY_REQUEST_CODE);
+            startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
         } catch (IOException | JSONException e) {
             LogUtil.e(TAG, e);
             Toasty.error(this, getString(R.string.error_occurred_reading_mapbox_style))
