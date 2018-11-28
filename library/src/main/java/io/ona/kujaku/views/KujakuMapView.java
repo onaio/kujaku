@@ -35,6 +35,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
@@ -68,13 +69,6 @@ import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
 
-import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
@@ -126,9 +120,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private boolean updateUserLocationOnMap = false;
 
     private JSONObject featureCollectionJSON;
-    private GeoJsonSource geoJsonSource;
 
     private Map<String, Integer> featureMap;
+
+    private Layer primaryLayer;
+
+    private GeoJsonSource primaryGeoJsonSource;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -199,25 +196,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             Log.e(TAG, e.getMessage());
         }
         featureMap = new HashMap<>();
-
-        // TODO: remove this button after testing
-        Button button = findViewById(R.id.btn_test_properties_change);
-        button.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    if (featureCollectionJSON.getJSONArray("features").length() == 0) {
-                        List<com.mapbox.geojson.Feature> features = createFeatures(20, 36.768831, -1.284956);
-                        addFeaturePoints(FeatureCollection.fromFeatures(features));
-                    } else {
-                        List<com.mapbox.geojson.Feature> features = createFeatures(10, 36.768831, -1.284956);
-                        updateFeaturePointProperties(FeatureCollection.fromFeatures(features));
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        });
     }
 
     private void showUpdatedUserLocation() {
@@ -555,14 +533,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     mapboxMap.getUiSettings().setCompassEnabled(false);
                     // This disables
                     addOnScrollListenerToMap(mapboxMap);
-                    setGeoJSONSource("kujaku_primary_source");
-                    addMapBoxLayer(); // TODO: remove this after testing
                     if (KujakuMapView.this.droppedPoints != null) {
                         List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
                         for (io.ona.kujaku.domain.Point point : droppedPoints) {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
+                    mapboxMap.addSource(getPrimaryGeoJsonSource());
+                    mapboxMap.addLayer(getPrimaryLayer());
                 }
             });
         }
@@ -729,7 +707,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 featuresArray.put(new JSONObject(feature.toJson()));
             }
         }
-        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+        if (mapboxMap != null) {
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+        }
     }
 
     @Override
@@ -745,97 +725,32 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 newFeatures.add(feature);
             }
         }
+        // add new features if any
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
-        ((GeoJsonSource) mapboxMap.getSource(geoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+        if (mapboxMap != null) {
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+        }
     }
 
     public MapboxMap getMapBoxMap() {
         return this.mapboxMap;
     }
 
-    // TODO: remove this use what will be in utils
-    private void setGeoJSONSource(String sourceId) {
-        if (this.mapboxMap != null) {
-            geoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
-            mapboxMap.addSource(geoJsonSource);
-        }
+    public void initializePrimaryGeoJsonSource(String sourceId) {
+        primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
     }
 
-    // TODO: remove this use what will be in utils
-    public void addMapBoxLayer() {
-
-        CircleLayer circleLayer = new CircleLayer("kujaku-primary-layer", geoJsonSource.getId());
-
-        circleLayer.setSourceLayer("sf2010");
-        circleLayer.withProperties(
-                circleRadius(
-                        interpolate(
-                                exponential(1.75f),
-                                zoom(),
-                                stop(12, 2f),
-                                stop(22, 180f)
-                        )),
-                circleColor(
-                        match(get("ethnicity"), rgb(0, 0, 0),
-                                stop("White", rgb(251, 176, 59)),
-                                stop("Black", rgb(34, 59, 83)),
-                                stop("Hispanic", rgb(229, 94, 94)),
-                                stop("Asian", rgb(59, 178, 208)),
-                                stop("Other", rgb(204, 204, 204)))));
-
-        this.mapboxMap.addLayer(circleLayer);
+    public GeoJsonSource getPrimaryGeoJsonSource() {
+        return primaryGeoJsonSource;
     }
 
-    // TODO: remove this use what will be in utils
-    private enum FeatureGroup {White, Black, Hispanic, Asian, Other};
-    private final static int FEATURE_GROUP_SIZE = FeatureGroup.values().length;
-    public List<com.mapbox.geojson.Feature> createFeatures(int numFeatures, double longitude, double latitude) throws JSONException {
+    public Layer getPrimaryLayer() {
+        return primaryLayer;
+    }
 
-        final double LAMBDA = 0.0001;
-
-        double longitudeOffset;
-        double latitudeOffset;
-        double newLongitude = longitude;
-        double newLatitude = latitude;
-
-        int featureNumber = 0;
-        int prevFeatureNumber = -1;
-
-        List<com.mapbox.geojson.Feature> features = new ArrayList<>();
-        while (featureNumber < numFeatures) {
-            if (prevFeatureNumber != featureNumber) {
-                JSONObject feature = new JSONObject();
-                feature.put("id", "feature_" + featureNumber);
-                feature.put("type", "Feature");
-
-                int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-                String featureValue = FeatureGroup.values()[featureIndex].toString();
-                JSONObject properties = new JSONObject();
-                properties.put("ethnicity", featureValue);
-                feature.put("properties", properties);
-
-                JSONObject geometry = new JSONObject();
-                geometry.put("type", "Point");
-                JSONArray coordinates = new JSONArray();
-                coordinates.put(newLongitude);
-                coordinates.put(newLatitude);
-                geometry.put("coordinates", coordinates);
-
-                feature.put("geometry", geometry);
-
-                features.add(com.mapbox.geojson.Feature.fromJson(feature.toString()));
-            }
-            // housekeeping
-            longitudeOffset = Math.random();
-            latitudeOffset = Math.random();
-            if (longitudeOffset >= LAMBDA || latitudeOffset >= LAMBDA) {
-                featureNumber++;
-                newLongitude += longitudeOffset;
-                newLatitude += latitudeOffset;
-            }
-        }
-        return features;
+    public void setPrimaryLayer(Layer layer) {
+        primaryLayer = layer;
     }
 
     @Override
@@ -859,5 +774,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             warmUpLocationServices();
         }
     }
+
+
 }
 
