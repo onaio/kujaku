@@ -137,6 +137,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_feature_click_listener:
+                startActivity(new Intent(this, FeatureClickListenerActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }
