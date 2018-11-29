@@ -539,8 +539,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
-                    mapboxMap.addSource(getPrimaryGeoJsonSource());
-                    mapboxMap.addLayer(getPrimaryLayer());
+                    if (getPrimaryGeoJsonSource() != null && getPrimaryLayer() != null) {
+                        mapboxMap.addSource(getPrimaryGeoJsonSource());
+                        mapboxMap.addLayer(getPrimaryLayer());
+                    }
                 }
             });
         }
