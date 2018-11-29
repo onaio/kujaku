@@ -41,6 +41,18 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
         navigationView = getNavigationView();
         navigationView.setNavigationItemSelectedListener(this);
+
+        // Set activity title
+        setActivityTitleFromNavItem();
+    }
+
+    private void setActivityTitleFromNavItem() {
+        if (getSelectedNavigationItem() != 0) {
+            MenuItem menuItem = navigationView.getMenu().findItem(getSelectedNavigationItem());
+            if (menuItem != null) {
+                setTitle(menuItem.getTitle());
+            }
+        }
     }
 
     @Override
