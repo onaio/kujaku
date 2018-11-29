@@ -1,7 +1,6 @@
 package io.ona.kujaku.listeners;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.mapboxsdk.style.expressions.Expression;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ public interface OnFeatureClickListener {
     /**
      * Called when a features(s) is clicked on the map and adheres to params passed in
      * {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureClickListener(OnFeatureClickListener, String...)}
-     * or {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureClickListener(OnFeatureClickListener, Expression, String...)}
+     * or {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureClickListener(OnFeatureClickListener, com.mapbox.mapboxsdk.style.expressions.Expression, String...)}
      *
      * @param features
      */
