@@ -9,7 +9,6 @@ import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.Layer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +22,6 @@ import io.ona.kujaku.views.KujakuMapView;
 
 import static io.ona.kujaku.sample.utils.TestDataUtils.alterFeatureJsonProperties;
 import static io.ona.kujaku.sample.utils.TestDataUtils.createFeatureList;
-import static io.ona.kujaku.sample.utils.TestDataUtils.generateMapBoxLayer;
 
 public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
 
@@ -31,16 +29,21 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
 
+//    private final String[] featureGroup =  {"White", "Black", "Hispanic", "Asian", "Other"};
+    private final String[] featureGroup =  {"not_visited",  "sprayed", "not_sprayable",  "not_sprayed"}; // TODO: uncomment this to test style-defined GeoJson source
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         kujakuMapView = findViewById(R.id.add_update_activity_map_view);
-
         // bootstrap
-        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false);
-        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
-        kujakuMapView.setPrimaryLayer(circleLayer);
+        kujakuMapView.setStyleUrl("asset://reveal-structure-style.json"); // TODO: uncomment this to test style-defined GeoJson source
+        kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true); // TODO: uncomment this to test style-defined GeoJson source
+
+//        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false);
+//        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
+//        kujakuMapView.setPrimaryLayer(circleLayer);
 
         // test button actions
         Button btnAddFeaturePoints = findViewById(R.id.btn_test_feature_point_addition);
@@ -49,7 +52,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 try {
                     List<Feature> existingFeatures = new ArrayList<>(kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all()));
-                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956);
+//                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956, "ethnicity", featureGroup);
+                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956, "businessStatus", featureGroup); // TODO: uncomment this to test style-defined GeoJson source
                     existingFeatures.addAll(newFeatures);
                     kujakuMapView.addFeaturePoints(FeatureCollection.fromFeatures(existingFeatures));
                 } catch (JSONException e) {
@@ -64,7 +68,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 try {
                     List<Feature> features  = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
-                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()));
+//                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), "ethnicity", featureGroup);
+                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), "businessStatus", featureGroup); // TODO: uncomment this to test style-defined GeoJson source
                     kujakuMapView.updateFeaturePointProperties(featureCollection);
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage());

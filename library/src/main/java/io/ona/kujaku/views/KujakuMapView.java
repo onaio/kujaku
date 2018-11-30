@@ -128,6 +128,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private GeoJsonSource primaryGeoJsonSource;
 
+    private String primaryGeoJsonSourceId;
+
+    private boolean isFetchSourceFromStyle = false;
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -530,11 +534,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
-                    if (getPrimaryGeoJsonSource() != null) {
+                    if (getPrimaryGeoJsonSource() != null && mapboxMap.getSource(getPrimaryGeoJsonSource().getId()) == null) {
                         mapboxMap.addSource(getPrimaryGeoJsonSource());
                     }
                     if (getPrimaryLayer() != null) {
                         mapboxMap.addLayer(getPrimaryLayer());
+                    }
+                    if (isFetchSourceFromStyle) {
+                        initializeSourceAndFeatureCollectionFromStyle();
                     }
                 }
             });
@@ -740,18 +747,24 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     public void initializePrimaryGeoJsonSource(String sourceId, boolean isFetchSourceFromStyle) {
-        if (isFetchSourceFromStyle && mapboxMap != null) {
-            try {
-                GeoJsonSource source = mapboxMap.getSourceAs(sourceId);
-                List<com.mapbox.geojson.Feature> features = source.querySourceFeatures(Expression.all());
-                featureCollectionJSON = new JSONObject(FeatureCollection.fromFeatures(features).toJson());
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-            }
+        if (isFetchSourceFromStyle) {
+            this.isFetchSourceFromStyle = true;
+            this.primaryGeoJsonSourceId = sourceId;
         } else {
             initializeFeatureCollection();
+            primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
         }
-        primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
+    }
+
+    public void initializeSourceAndFeatureCollectionFromStyle() {
+        try {
+            GeoJsonSource source = mapboxMap.getSourceAs(getPrimaryGeoJsonSourceId());
+            List<com.mapbox.geojson.Feature> features = source.querySourceFeatures(Expression.all());
+            featureCollectionJSON = new JSONObject(FeatureCollection.fromFeatures(features).toJson());
+            primaryGeoJsonSource = source;
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public GeoJsonSource getPrimaryGeoJsonSource() {
@@ -764,6 +777,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     public void setPrimaryLayer(Layer layer) {
         primaryLayer = layer;
+    }
+
+    public String getPrimaryGeoJsonSourceId() {
+        return primaryGeoJsonSourceId;
+    }
+
+    public void setPrimaryGeoJsonSourceId(String primaryGeoJsonSourceId) {
+        this.primaryGeoJsonSourceId = primaryGeoJsonSourceId;
     }
 
     @Override
