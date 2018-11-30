@@ -38,7 +38,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView = findViewById(R.id.add_update_activity_map_view);
 
         // bootstrap
-        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source");
+        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false);
         Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
         kujakuMapView.setPrimaryLayer(circleLayer);
 
