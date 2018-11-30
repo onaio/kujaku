@@ -202,7 +202,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
 
     private void openOfflineRegionMap(@NonNull LatLng mapCenter) {
         try {
-            String mapboxStyle = readInputStreamAsString(getAssets().open("download-style.json"));
+            String mapboxStyle = readInputStreamAsString(getAssets().open("new-reveal-style-with-satellite.json"));
             JSONObject mapboxStyleJSON = new JSONObject(mapboxStyle);
             mapboxStyleJSON.put(MapBoxStyleHelper.KEY_ROOT_ZOOM, 16.76);
 

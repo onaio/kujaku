@@ -1,0 +1,198 @@
+{
+  "version": 8,
+  "name": "Reveal Style 2",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "template",
+    "mapbox:sdk-support": {
+      "js": "0.49.0",
+      "android": "6.5.0",
+      "ios": "4.4.0"
+    }
+  },
+  "center": [
+    32.449160147068596,
+    -14.08573404883333
+  ],
+  "zoom": 8.735062037248435,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "mapbox://ona.aami3tqv": {
+      "url": "mapbox://ona.aami3tqv",
+      "type": "raster",
+      "tileSize": 256
+    },
+    "mapbox://ona.dr2qx0ff": {
+      "url": "mapbox://ona.dr2qx0ff",
+      "type": "raster",
+      "tileSize": 256
+    },
+    "mapbox://ona.6o1nsc8i": {
+      "url": "mapbox://ona.6o1nsc8i",
+      "type": "raster",
+      "tileSize": 256
+    },
+    "reveal-data-set": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
+    "select-data": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    }
+  },
+  "sprite": "mapbox://sprites/ona/cjp461odq3oq22sp60oxq1qwz",
+  "glyphs": "mapbox://fonts/ona/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "rgba(0,0,0,0)"
+      }
+    },
+    {
+      "id": "ona-aami3tqv",
+      "type": "raster",
+      "source": "mapbox://ona.aami3tqv",
+      "layout": {},
+      "paint": {}
+    },
+    {
+      "id": "ona-dr2qx0ff",
+      "type": "raster",
+      "source": "mapbox://ona.dr2qx0ff",
+      "layout": {},
+      "paint": {}
+    },
+    {
+      "id": "ona-6o1nsc8i",
+      "type": "raster",
+      "source": "mapbox://ona.6o1nsc8i",
+      "layout": {},
+      "paint": {}
+    },
+    {
+      "id": "reveal-data-polygons",
+      "type": "fill",
+      "layout": {},
+      "source": "reveal-data-set",
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      "paint": {
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "taskBusinessStatus"
+          ],
+          [
+            "Not Visited"
+          ],
+          "hsl(46, 88%, 62%)",
+          [
+            "Not Sprayed"
+          ],
+          "hsl(3, 71%, 54%)",
+          [
+            "Sprayed"
+          ],
+          "hsl(89, 52%, 48%)",
+          [
+            "Not Sprayable"
+          ],
+          "hsl(0, 0%, 9%)",
+          "hsl(0, 0%, 9%)"
+        ],
+        "fill-opacity": 1,
+        "fill-outline-color": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "id": "reveal-data-points",
+      "type": "circle",
+      "source": "reveal-data-set",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {},
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "taskBusinessStatus"
+          ],
+          [
+            "Not Visited"
+          ],
+          "hsl(46, 88%, 62%)",
+          [
+            "Not Sprayed"
+          ],
+          "hsl(3, 71%, 54%)",
+          [
+            "Sprayed"
+          ],
+          "hsl(89, 52%, 48%)",
+          [
+            "Not Sprayable"
+          ],
+          "hsl(0, 0%, 9%)",
+          "hsl(0, 0%, 9%)"
+        ],
+        "circle-stroke-width": 1
+      }
+    },
+    {
+      "id": "select-layer-polygons",
+      "type": "fill",
+      "source": "select-data",
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      "layout": {},
+      "paint": {
+        "fill-outline-color": "rgb(0, 0, 0)",
+        "fill-opacity": 1,
+        "fill-color": "hsl(26, 84%, 56%)"
+      }
+    },
+    {
+      "id": "select-layer-circles",
+      "type": "circle",
+      "source": "select-data",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "paint": {
+        "circle-color": "hsl(26, 84%, 56%)",
+        "circle-radius": 10,
+        "circle-stroke-width": 1
+      }
+    }
+  ],
+  "created": "2018-11-30T15:11:36.899Z",
+  "id": "cjp461odq3oq22sp60oxq1qwz",
+  "modified": "2018-11-30T15:12:41.272Z",
+  "owner": "ona",
+  "visibility": "private",
+  "draft": false
+}

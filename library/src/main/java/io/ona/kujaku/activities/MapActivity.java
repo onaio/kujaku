@@ -286,8 +286,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             });
             btnDone.setVisibility(View.VISIBLE);
         }
-        List<Point> droppedPoints = new ArrayList<>(points);
-        kujakuMapView.updateDroppedPoints(droppedPoints);
+        //List<Point> droppedPoints = new ArrayList<>(points);
+        //kujakuMapView.updateDroppedPoints(droppedPoints);
     }
 
     private void dismissAllDialogs() {

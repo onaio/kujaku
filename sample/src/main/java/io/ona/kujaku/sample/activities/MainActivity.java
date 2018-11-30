@@ -218,7 +218,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "https://gist.githubusercontent.com/ekigamba/cadc42f6930eff25b3aa47781f698164/raw/reveal-style-2.json");//asset://new-reveal-style-with-satellite.json");//"mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
