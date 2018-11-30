@@ -31,9 +31,6 @@ public class TestDataUtils {
 
     private static final String TAG = TestDataUtils.class.getName();
 
-    private enum FeatureGroup {White, Black, Hispanic, Asian, Other};
-    private final static int FEATURE_GROUP_SIZE = FeatureGroup.values().length;
-
     public static Layer generateMapBoxLayer(String layerId, String sourceId) {
 
             CircleLayer circleLayer = new CircleLayer(layerId, sourceId);
@@ -57,7 +54,7 @@ public class TestDataUtils {
             return circleLayer;
     }
 
-    public static JSONArray createFeatureJsonArray(int numFeatures, double longitude, double latitude) throws JSONException {
+    public static JSONArray createFeatureJsonArray(int numFeatures, double longitude, double latitude, String propertyName, final String[] featureGroup) throws JSONException {
 
         final double LAMBDA = 0.0001;
 
@@ -70,6 +67,7 @@ public class TestDataUtils {
         int prevFeatureNumber = -1;
 
         JSONArray featuresArray = new JSONArray();
+        final int FEATURE_GROUP_SIZE = featureGroup.length;
         while (featureNumber < numFeatures) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
@@ -77,9 +75,9 @@ public class TestDataUtils {
                 feature.put("type", "Feature");
 
                 int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-                String featureValue = FeatureGroup.values()[featureIndex].toString();
+                String featureValue = featureGroup[featureIndex];
                 JSONObject properties = new JSONObject();
-                properties.put("ethnicity", featureValue);
+                properties.put(propertyName, featureValue);
                 feature.put("properties", properties);
 
                 JSONObject geometry = new JSONObject();
@@ -105,7 +103,7 @@ public class TestDataUtils {
         return featuresArray;
     }
 
-    public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude) throws JSONException {
+    public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude, String propertyName, final String[] featureGroup) throws JSONException {
 
         final double LAMBDA = 0.9;
 
@@ -118,6 +116,7 @@ public class TestDataUtils {
         int prevFeatureNumber = startingIndex;
 
         List<Feature> features = new ArrayList<>();
+        final int FEATURE_GROUP_SIZE = featureGroup.length;
         while (featureNumber < numFeatures + startingIndex) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
@@ -125,9 +124,9 @@ public class TestDataUtils {
                 feature.put("type", "Feature");
 
                 int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-                String featureValue = FeatureGroup.values()[featureIndex].toString();
+                String featureValue = featureGroup[featureIndex];
                 JSONObject properties = new JSONObject();
-                properties.put("ethnicity", featureValue);
+                properties.put(propertyName, featureValue);
                 feature.put("properties", properties);
 
                 JSONObject geometry = new JSONObject();
@@ -155,11 +154,12 @@ public class TestDataUtils {
     }
 
 
-    public static FeatureCollection alterFeatureJsonProperties(int numFeatures, JSONObject featureCollection) throws JSONException {
+    public static FeatureCollection alterFeatureJsonProperties(int numFeatures, JSONObject featureCollection, String propertyName, final String[] featureGroup) throws JSONException {
         JSONArray featuresArray;
+        final int FEATURE_GROUP_SIZE = featureGroup.length;
         if (featureCollection.getJSONArray("features").length() == 0) {
             // initial initialization
-            featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000);
+            featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000, propertyName, featureGroup);
             Log.i(TAG, "Features array size is: " + featuresArray.length());
             // Create and set GeoJsonSource
             featureCollection.put("type", "FeatureCollection");
@@ -170,17 +170,17 @@ public class TestDataUtils {
             int featuresSize = featuresArray.length();
             for (int i = 0; i < numFeatures; i++) {
                 int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
-                String featurePropertyValue = FeatureGroup.values()[featurePropertyValueIndex].toString();
+                String featurePropertyValue = featureGroup[featurePropertyValueIndex];
                 int featureIndex = (int) (Math.random() * featuresSize);
-                featuresArray.getJSONObject(featureIndex).getJSONObject("properties").put("ethnicity", featurePropertyValue);
+                featuresArray.getJSONObject(featureIndex).getJSONObject("properties").put(propertyName, featurePropertyValue);
             }
             Log.i(TAG, "Features array size is: " + featuresArray.length());
         }
         return FeatureCollection.fromJson(featureCollection.toString());
     }
 
-    public static void addFeaturePoints(int numFeaturePoints, JSONObject featureCollection)  throws JSONException {
-        JSONArray featuresArray = createFeatureJsonArray(numFeaturePoints, 36.795538, -1.294638);
+    public static void addFeaturePoints(int numFeaturePoints, JSONObject featureCollection, String propertyName, final String[] featureGroup)  throws JSONException {
+        JSONArray featuresArray = createFeatureJsonArray(numFeaturePoints, 36.795538, -1.294638, propertyName, featureGroup);
         Log.i(TAG, "Features array size is: " + featuresArray.length());
 
         JSONArray currFeaturesArray = featureCollection.getJSONArray("features");
