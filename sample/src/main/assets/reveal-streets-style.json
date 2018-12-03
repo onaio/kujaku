@@ -2,9 +2,14 @@
   "version": 8,
   "name": "Reveal Streets Style",
   "metadata": {
+    "mapbox:origin": "streets-v10",
     "mapbox:autocomposite": true,
     "mapbox:type": "default",
-    "mapbox:origin": "streets-v10",
+    "mapbox:sdk-support": {
+      "js": "0.49.0",
+      "android": "6.5.0",
+      "ios": "4.4.0"
+    },
     "mapbox:groups": {
       "1444934828655.3389": {
         "name": "Aeroways",
@@ -78,11 +83,6 @@
         "name": "POI labels (scalerank 4)",
         "collapsed": true
       }
-    },
-    "mapbox:sdk-support": {
-      "js": "0.49.0",
-      "android": "6.5.0",
-      "ios": "4.4.0"
     }
   },
   "center": [
@@ -91,6 +91,13 @@
   ],
   "zoom": 16.99,
   "sources": {
+    "select-data": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
     "composite": {
       "url": "mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7",
       "type": "vector"
@@ -129,9 +136,6 @@
     {
       "id": "landcover_snow",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456970288113.8113"
-      },
       "source": "composite",
       "source-layer": "landcover",
       "filter": [
@@ -144,17 +148,16 @@
         "fill-color": "hsl(0, 0%, 100%)",
         "fill-opacity": 0.2,
         "fill-antialias": false
+      },
+      "metadata": {
+        "mapbox:group": "1456970288113.8113"
       }
     },
     {
       "id": "landcover_wood",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456970288113.8113"
-      },
       "source": "composite",
       "source-layer": "landcover",
-      "maxzoom": 14,
       "filter": [
         "==",
         "class",
@@ -177,17 +180,17 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456970288113.8113"
+      },
+      "maxzoom": 14
     },
     {
       "id": "landcover_scrub",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456970288113.8113"
-      },
       "source": "composite",
       "source-layer": "landcover",
-      "maxzoom": 14,
       "filter": [
         "==",
         "class",
@@ -210,22 +213,17 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456970288113.8113"
+      },
+      "maxzoom": 14
     },
     {
       "id": "landcover_grass",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456970288113.8113"
-      },
       "source": "composite",
       "source-layer": "landcover",
-      "maxzoom": 14,
-      "filter": [
-        "==",
-        "class",
-        "grass"
-      ],
       "layout": {},
       "paint": {
         "fill-color": "hsl(75, 62%, 81%)",
@@ -243,17 +241,22 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456970288113.8113"
+      },
+      "maxzoom": 14,
+      "filter": [
+        "==",
+        "class",
+        "grass"
+      ]
     },
     {
       "id": "landcover_crop",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456970288113.8113"
-      },
       "source": "composite",
       "source-layer": "landcover",
-      "maxzoom": 14,
       "filter": [
         "==",
         "class",
@@ -276,7 +279,11 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456970288113.8113"
+      },
+      "maxzoom": 14
     },
     {
       "id": "national_park",
@@ -408,7 +415,6 @@
       "type": "line",
       "source": "composite",
       "source-layer": "landuse",
-      "minzoom": 15,
       "filter": [
         "==",
         "class",
@@ -419,7 +425,8 @@
       },
       "paint": {
         "line-color": "hsl(75, 57%, 84%)"
-      }
+      },
+      "minzoom": 15
     },
     {
       "id": "cemetery",
@@ -481,12 +488,8 @@
     {
       "id": "hillshade_highlight_bright",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
-      "maxzoom": 16,
       "filter": [
         "==",
         "level",
@@ -508,17 +511,17 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
+      },
+      "maxzoom": 16
     },
     {
       "id": "hillshade_highlight_med",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
-      "maxzoom": 16,
       "filter": [
         "==",
         "level",
@@ -540,17 +543,17 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
+      },
+      "maxzoom": 16
     },
     {
       "id": "hillshade_shadow_faint",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
-      "maxzoom": 16,
       "filter": [
         "==",
         "level",
@@ -572,17 +575,17 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
+      },
+      "maxzoom": 16
     },
     {
       "id": "hillshade_shadow_med",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
-      "maxzoom": 16,
       "filter": [
         "==",
         "level",
@@ -604,14 +607,15 @@
           ]
         },
         "fill-antialias": false
-      }
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
+      },
+      "maxzoom": 16
     },
     {
       "id": "hillshade_shadow_dark",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
       "maxzoom": 16,
@@ -636,14 +640,14 @@
           ]
         },
         "fill-antialias": false
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
       }
     },
     {
       "id": "hillshade_shadow_extreme",
       "type": "fill",
-      "metadata": {
-        "mapbox:group": "1456969573402.7817"
-      },
       "source": "composite",
       "source-layer": "hillshade",
       "maxzoom": 16,
@@ -668,6 +672,9 @@
           ]
         },
         "fill-antialias": false
+      },
+      "metadata": {
+        "mapbox:group": "1456969573402.7817"
       }
     },
     {
@@ -819,6 +826,10 @@
       "id": "barrier_line-land-polygon",
       "type": "fill",
       "source": "composite",
+      "layout": {},
+      "paint": {
+        "fill-color": "hsl(35, 12%, 89%)"
+      },
       "source-layer": "barrier_line",
       "filter": [
         "all",
@@ -832,11 +843,7 @@
           "class",
           "land"
         ]
-      ],
-      "layout": {},
-      "paint": {
-        "fill-color": "hsl(35, 12%, 89%)"
-      }
+      ]
     },
     {
       "id": "barrier_line-land-line",
@@ -12304,37 +12311,112 @@
       }
     },
     {
-      "id": "mspray-buildings-open",
+      "id": "reveal-data-polygons",
       "type": "fill",
       "layout": {},
       "source": "reveal-data-set",
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ],
       "paint": {
         "fill-color": [
           "match",
           [
             "get",
-            "businessStatus"
+            "taskBusinessStatus"
           ],
           [
-            "not_visited"
+            "Not Visited"
           ],
           "hsl(46, 88%, 62%)",
           [
-            "not_sprayed"
+            "Not Sprayed"
           ],
           "hsl(3, 71%, 54%)",
           [
-            "sprayed"
+            "Sprayed"
           ],
           "hsl(89, 52%, 48%)",
           [
-            "not_sprayable"
+            "Not Sprayable"
           ],
           "hsl(0, 0%, 9%)",
-          "hsl(0, 88%, 56%)"
+          "hsl(0, 0%, 9%)"
         ],
         "fill-opacity": 1,
         "fill-outline-color": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "id": "reveal-data-points",
+      "type": "circle",
+      "source": "reveal-data-set",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {},
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "taskBusinessStatus"
+          ],
+          [
+            "Not Visited"
+          ],
+          "hsl(46, 88%, 62%)",
+          [
+            "Not Sprayed"
+          ],
+          "hsl(3, 71%, 54%)",
+          [
+            "Sprayed"
+          ],
+          "hsl(89, 52%, 48%)",
+          [
+            "Not Sprayable"
+          ],
+          "hsl(0, 0%, 9%)",
+          "hsl(0, 0%, 9%)"
+        ],
+        "circle-stroke-width": 1
+      }
+    },
+    {
+      "id": "select-layer-polygons",
+      "type": "fill",
+      "source": "select-data",
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      "layout": {},
+      "paint": {
+        "fill-outline-color": "rgb(0, 0, 0)",
+        "fill-opacity": 1,
+        "fill-color": "hsl(26, 84%, 56%)"
+      }
+    },
+    {
+      "id": "select-layer-circles",
+      "type": "circle",
+      "source": "select-data",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "paint": {
+        "circle-color": "hsl(26, 84%, 56%)",
+        "circle-radius": 10,
+        "circle-stroke-width": 1
       }
     }
   ],

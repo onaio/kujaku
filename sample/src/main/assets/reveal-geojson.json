@@ -38,12 +38,7 @@
         "type": "Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_visited",
-        "task": {
-          "identifier": "0d15fcac-df64-4f53-b01a-b650d1e45252",
-          "businessStatus": "Not Visited",
-          "status": "In Progress"
-        },
+        "taskBusinessStatus": "Not Visited",
         "spray_date": null,
         "sprayed": null,
         "reason": null
@@ -86,12 +81,7 @@
         "type": "Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_visited",
-        "task": {
-          "identifier": "068612c8-f0e5-4565-a162-e95b7d5b65e0",
-          "businessStatus": "Not Visited",
-          "status": "In Progress"
-        },
+        "taskBusinessStatus": "Not Visited",
         "spray_date": null,
         "sprayed": null,
         "reason": null
@@ -134,12 +124,7 @@
         "type": "Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_visited",
-        "task": {
-          "identifier": "c7942334-0e9d-46af-ae16-ecac9d863b25",
-          "businessStatus": "Not Visited",
-          "status": "In Progress"
-        },
+        "taskBusinessStatus": "Not Visited",
         "spray_date": null,
         "sprayed": null,
         "reason": null
@@ -294,12 +279,7 @@
         "type": "Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_sprayed",
-        "task": {
-          "identifier": "8b6bfdf1-142e-4539-90e9-bf0b801229dd",
-          "businessStatus": "Not Sprayed",
-          "status": "Failed"
-        },
+        "taskBusinessStatus": "Not Sprayed",
         "spray_date": "2017-11-01",
         "sprayed": "notsprayed",
         "reason": "Locked"
@@ -342,12 +322,7 @@
         "type": "Non-Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_sprayable",
-        "task": {
-          "identifier": "9370a52d-9f14-4d5a-b962-8784b927fd3a",
-          "businessStatus": "Not Eligible",
-          "status": "Completed"
-        },
+        "taskBusinessStatus": "Not Eligible",
         "spray_date": "2017-10-31",
         "sprayed": "noteligible",
         "reason": null
@@ -390,12 +365,7 @@
         "type": "Non-Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "not_sprayable",
-        "task": {
-          "identifier": "ad9f556b-9720-49de-9a60-c1131e5d8384",
-          "businessStatus": "Not Eligible",
-          "status": "Completed"
-        },
+        "taskBusinessStatus": "Not Eligible",
         "spray_date": "2017-10-31",
         "sprayed": "noteligible",
         "reason": null
@@ -438,12 +408,7 @@
         "type": "Residential Structure",
         "status": "Active",
         "version": 0,
-        "businessStatus": "sprayed",
-        "task": {
-          "identifier": "261d61fd-413e-46f0-a157-321fc60a4288",
-          "businessStatus": "Sprayed",
-          "status": "Completed"
-        },
+        "taskBusinessStatus": "Sprayed",
         "spray_date": "2017-10-31",
         "sprayed": "sprayed",
         "reason": null
