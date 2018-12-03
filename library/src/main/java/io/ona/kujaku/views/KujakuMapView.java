@@ -762,10 +762,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
-    public MapboxMap getMapView() {
-        return mapboxMap;
-    }
-
     private void initializeSourceAndFeatureCollectionFromStyle() {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());

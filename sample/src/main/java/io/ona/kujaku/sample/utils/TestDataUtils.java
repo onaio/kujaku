@@ -3,7 +3,6 @@ package io.ona.kujaku.sample.utils;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.gson.JsonArray;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
