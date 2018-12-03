@@ -108,7 +108,7 @@ public class TestDataUtils {
 
     public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude, String propertyName, String geometryType, boolean isPolygon, final String[] featureGroup) throws JSONException {
 
-        final double LAMBDA = 0.9;
+        final double LAMBDA = 0.009;
 
         double longitudeOffset;
         double latitudeOffset;
@@ -143,8 +143,10 @@ public class TestDataUtils {
                 features.add(com.mapbox.geojson.Feature.fromJson(feature.toString()));
             }
             // housekeeping
-            longitudeOffset = Math.random() * 3;
-            latitudeOffset = Math.random() * 3;
+            longitudeOffset = Math.random();
+            latitudeOffset = Math.random();
+            longitudeOffset = (Math.random() - 0.5) > 0.001 ? longitudeOffset : -longitudeOffset;
+            latitudeOffset = (Math.random() - 0.5) > 0.001 ? latitudeOffset : -latitudeOffset;
             prevFeatureNumber = featureNumber;
             if (longitudeOffset >= LAMBDA && latitudeOffset >= LAMBDA) {
                 prevFeatureNumber = featureNumber;
