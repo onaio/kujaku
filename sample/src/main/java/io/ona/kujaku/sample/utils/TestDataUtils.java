@@ -3,6 +3,7 @@ package io.ona.kujaku.sample.utils;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.gson.JsonArray;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
@@ -106,7 +107,7 @@ public class TestDataUtils {
         return featuresArray;
     }
 
-    public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude, String propertyName, final String[] featureGroup) throws JSONException {
+    public static List<Feature> createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude, String propertyName, String geometryType, boolean isPolygon, final String[] featureGroup) throws JSONException {
 
         final double LAMBDA = 0.9;
 
@@ -120,7 +121,7 @@ public class TestDataUtils {
 
         List<Feature> features = new ArrayList<>();
         final int FEATURE_GROUP_SIZE = featureGroup.length;
-        while (featureNumber < numFeatures + startingIndex) {
+        while (featureNumber < numFeatures + startingIndex + 1) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
                 feature.put("id", "feature_" + featureNumber);
@@ -133,10 +134,9 @@ public class TestDataUtils {
                 feature.put("properties", properties);
 
                 JSONObject geometry = new JSONObject();
-                geometry.put("type", "Point");
-                JSONArray coordinates = new JSONArray();
-                coordinates.put(newLongitude);
-                coordinates.put(newLatitude);
+                geometry.put("type", geometryType);
+
+                JSONArray coordinates = generateCoordinates(newLongitude, newLatitude, isPolygon);
                 geometry.put("coordinates", coordinates);
 
                 feature.put("geometry", geometry);
@@ -146,16 +146,49 @@ public class TestDataUtils {
             // housekeeping
             longitudeOffset = Math.random() * 3;
             latitudeOffset = Math.random() * 3;
+            prevFeatureNumber = featureNumber;
             if (longitudeOffset >= LAMBDA && latitudeOffset >= LAMBDA) {
                 prevFeatureNumber = featureNumber;
                 featureNumber++;
-                newLongitude += longitudeOffset;
-                newLatitude += latitudeOffset;
+                newLongitude = longitude + longitudeOffset;
+                newLatitude = latitude + latitudeOffset;
             }
         }
         return features;
     }
 
+    private static JSONArray generateCoordinates(double longitude, double latitude, boolean isPolygon) throws JSONException {
+        JSONArray result = new JSONArray();
+        if (!isPolygon) {
+            result.put(longitude);
+            result.put(latitude);
+        } else {
+            JSONArray coordinates = new JSONArray();
+            coordinates.put(longitude);
+            coordinates.put(latitude);
+            result.put(coordinates);
+
+            coordinates = new JSONArray();
+            coordinates.put(longitude + 0.0001);
+            coordinates.put(latitude);
+            result.put(coordinates);
+
+            coordinates = new JSONArray();
+            coordinates.put(longitude);
+            coordinates.put(latitude + 0.0001);
+            result.put(coordinates);
+
+            coordinates = new JSONArray();
+            coordinates.put(longitude + 0.0001);
+            coordinates.put(latitude + 0.0001);
+            result.put(coordinates);
+
+            JSONArray tempResult = result;
+            result = new JSONArray();
+            result.put(tempResult);
+        }
+        return result;
+    }
 
     public static FeatureCollection alterFeatureJsonProperties(int numFeatures, JSONObject featureCollection, String propertyName, final String[] featureGroup) throws JSONException {
         JSONArray featuresArray;

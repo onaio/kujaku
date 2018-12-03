@@ -62,8 +62,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 try {
                     List<Feature> existingFeatures = new ArrayList<>(kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all()));
-//                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956, "ethnicity", featureGroup); // TODO: uncomment this to test using randomly-generated features
-                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 32.5987837, -14.1706623, "businessStatus", featureGroup); // TODO: uncomment this to test using user's  style-defined GeoJson source
+//                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956, "ethnicity", "Point", featureGroup); // TODO: uncomment this to test using randomly-generated features
+                    List<Feature> newFeatures = createFeatureList(20, existingFeatures.size(), 32.5987837, -14.1706623, "taskBusinessStatus", "Point", false, featureGroup); // TODO: uncomment this to test using user's  style-defined GeoJson source
                     existingFeatures.addAll(newFeatures);
                     kujakuMapView.addFeaturePoints(FeatureCollection.fromFeatures(existingFeatures));
                 } catch (JSONException e) {
@@ -79,7 +79,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 try {
                     List<Feature> features  = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
 //                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), "ethnicity", featureGroup); // TODO: uncomment this to test using randomly-generated features
-                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), "businessStatus", featureGroup); // TODO: uncomment this to test using user's style-defined GeoJson source
+                    FeatureCollection featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), "taskBusinessStatus", featureGroup); // TODO: uncomment this to test using user's style-defined GeoJson source
                     kujakuMapView.updateFeaturePointProperties(featureCollection);
                 } catch (JSONException e) {
                     Log.e(TAG, e.getMessage());
