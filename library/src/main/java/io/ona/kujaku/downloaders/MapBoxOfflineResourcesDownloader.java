@@ -208,9 +208,9 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Invalid map name");
         }
 
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+        /*if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
             throw new OfflineMapDownloadException("Invalid Style URL");
-        }
+        }*/
 
         checkMapZoomParams(minZoom, maxZoom);
     }

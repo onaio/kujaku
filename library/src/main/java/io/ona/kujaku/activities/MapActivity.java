@@ -24,8 +24,10 @@ import android.widget.RelativeLayout;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
@@ -109,6 +111,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private boolean enableDropPoint = false;
 
     private List<JSONObject> newPoints;
+
+    public static LatLngBounds latLngBounds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,6 +236,24 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                 if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
                     kujakuMapView.focusOnUserLocation(true);
+                }
+
+                // Draw red for boundary
+                if (latLngBounds != null) {
+                    LatLng[] latLngs = new LatLng[5];
+                    latLngs[0] = new LatLng(latLngBounds.getLatNorth(), latLngBounds.getLonWest());
+                    latLngs[1] = new LatLng(latLngBounds.getLatNorth(), latLngBounds.getLonEast());
+                    latLngs[2] = new LatLng(latLngBounds.getLatSouth(), latLngBounds.getLonEast());
+                    latLngs[3] = new LatLng(latLngBounds.getLatSouth(), latLngBounds.getLonWest());
+                    latLngs[4] = new LatLng(latLngBounds.getLatNorth(), latLngBounds.getLonWest());
+
+
+                    PolylineOptions polylineOptions = new PolylineOptions()
+                            .add(latLngs)
+                            .color(getColor(android.R.color.holo_red_light))
+                            .width(3);
+
+                    mapboxMap.addPolyline(polylineOptions);
                 }
             }
         });

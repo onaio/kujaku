@@ -174,7 +174,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         return R.id.nav_main_activity;
     }
 
-    private void downloadMap() {
+    private void downloadMap() {/*
         double topLeftLat = 37.7897;
         double topLeftLng = -119.5073;
         double bottomRightLat = 37.6744;
@@ -182,7 +182,15 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         double topRightLat = 37.7897;
         double topRightLng = -119.6815;
         double bottomLeftLat = 37.6744;
-        double bottomLeftLng = -119.5073;
+        double bottomLeftLng = -119.5073;*/
+        double topLeftLat = -14.267893;
+        double topLeftLng = 32.331574;
+        double bottomRightLat = -14.269813982708689;
+        double bottomRightLng = 32.334039928332106;
+        double topRightLat = -14.267893;
+        double topRightLng = 32.334039928332106;
+        double bottomLeftLat = -14.269813982708689;
+        double bottomLeftLng = 32.331574;
 
         String tllatE = topLeftLatEd.getText().toString();
         String tllngE = topLeftLngEd.getText().toString();
@@ -220,7 +228,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "https://gist.githubusercontent.com/ekigamba/cadc42f6930eff25b3aa47781f698164/raw/reveal-style-2.json");//asset://new-reveal-style-with-satellite.json");//"mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
+        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 22.0);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
         mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, new LatLng(topRightLat, topRightLng));

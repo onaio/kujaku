@@ -166,6 +166,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                 navigateToMapBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        MapActivity.latLngBounds = offlineRegions[position].getDefinition().getBounds();
                         openOfflineRegionMap(offlineRegions[position].getDefinition().getBounds().getCenter());
                     }
                 });
@@ -186,6 +187,8 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                         if (status.isComplete()) {
                             navigateToMapBtn.setVisibility(View.VISIBLE);
                         }
+
+                        textView.setText(offlineRegionsInfo[position]);
                     }
 
                     @Override
