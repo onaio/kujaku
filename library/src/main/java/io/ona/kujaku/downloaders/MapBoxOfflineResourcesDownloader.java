@@ -2,6 +2,7 @@ package io.ona.kujaku.downloaders;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -204,11 +205,11 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Context passed is null");
         }
 
-        if (name == null || name.isEmpty()) {
+        if (TextUtils.isEmpty(name)) {
             throw new OfflineMapDownloadException("Invalid map name");
         }
 
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+        if (TextUtils.isEmpty(styleUrl)) {
             throw new OfflineMapDownloadException("Invalid Style URL");
         }
 
