@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.utils;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;
@@ -11,6 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,5 +198,21 @@ public class TestDataUtils {
             array1.put(array2.get(i));
         }
         return array1;
+    }
+
+    public static String readAssetContents(Context context, String path) {
+        String fileContents = null;
+        try {
+            InputStream is = context.getAssets().open(path);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            fileContents = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            Log.e(TAG, Log.getStackTraceString(ex));
+        }
+
+        return fileContents;
     }
 }
