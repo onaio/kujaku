@@ -33,7 +33,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     private KujakuMapView kujakuMapView;
 
 //    private final String[] featureGroup =  {"White", "Black", "Hispanic", "Asian", "Other"}; // TODO: uncomment this to test using randomly-generated features
-    private final String[] featureGroup =  {"not_visited",  "sprayed", "not_sprayable",  "not_sprayed"}; // TODO: uncomment this to test using user's style-defined GeoJson source
+    private final String[] featureGroup =  {"Not Visited",  "Sprayed", "Not Sprayable",  "Not Sprayed"}; // TODO: uncomment this to test using user's style-defined GeoJson source
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

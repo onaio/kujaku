@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
@@ -711,7 +712,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
             String featureId = feature.id();
-            if (!featureMap.containsKey(featureId)) {
+            if (featureId != null && !featureMap.containsKey(featureId)) {
                 featureMap.put(featureId, featuresArray.length());
                 featuresArray.put(new JSONObject(feature.toJson()));
             }
@@ -729,8 +730,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             String featureId = feature.id();
             if (featureMap.containsKey(featureId)) {
                 int featureIndex = featureMap.get(featureId);
-                featuresArray.put(featureIndex, new JSONObject(feature.toJson()));
-            } else {
+                JSONObject featureJSONProperties = featuresArray.getJSONObject(featureIndex).getJSONObject("properties");
+                for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
+                    featureJSONProperties.remove(entry.getKey());
+                    featureJSONProperties.put(entry.getKey(), entry.getValue().getAsString());
+                }
+            } else if (featureId != null && featureMap.containsKey(featureId)) {
                 newFeatures.add(feature);
             }
         }
@@ -747,24 +752,25 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             Log.e(TAG, "GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.");
             return;
         }
+        initializeFeatureCollection(new JSONArray());
         if (isFetchSourceFromStyle) {
             this.isFetchSourceFromStyle = true;
             setPrimaryGeoJsonSourceId(sourceId);
             setGeoJsonSourceString(geoJsonSource);
         } else {
-            initializeFeatureCollection(new JSONArray());
             primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
         }
+    }
+
+    public MapboxMap getMapView() {
+        return mapboxMap;
     }
 
     private void initializeSourceAndFeatureCollectionFromStyle() {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            initializeFeatureCollection(new JSONObject(featureCollection.toJson()).getJSONArray("features"));
             primaryGeoJsonSource = mapboxMap.getSourceAs(getPrimaryGeoJsonSourceId());
-            if (primaryGeoJsonSource != null) {
-                primaryGeoJsonSource.setGeoJson(featureCollectionJSON.toString());
-            }
+            addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
