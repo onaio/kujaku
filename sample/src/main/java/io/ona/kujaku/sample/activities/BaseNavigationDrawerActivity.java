@@ -160,6 +160,12 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, FeatureClickListenerActivity.class));
                 finish();
                 return true;
+
+            case R.id.nav_padded_bbox_calculator:
+                startActivity(new Intent(this, PaddedBboxCalculatorActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }
