@@ -130,6 +130,16 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, AddUpdatePropertiesActivity.class));
                 finish();
                 return true;
+
+            case R.id.nav_feature_click_status:
+                startActivity(new Intent(this, FeatureClickStatusActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_bounding_box_listener:
+                startActivity(new Intent(this, BoundsChangeListenerActivity.class));
+                finish();
+                return true;
             default:
                 break;
         }

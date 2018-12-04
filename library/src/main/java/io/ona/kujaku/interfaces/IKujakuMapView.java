@@ -16,6 +16,7 @@ import org.json.JSONException;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.domain.Point;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -31,6 +32,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback);
 
+
     /**
      * Enables adding a point on the map. You can either use GPS by passing a {@code true} on @param useGPS
      * which disables the scrolling and animates the location updates on the map while showing the location accuracy
@@ -42,6 +44,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param markerOptions Specifies the marker properties
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions);
+
 
     /**
      * Enables adding a point on the map. You can either use GPS by passing a {@code true} on @param useGPS
@@ -56,9 +59,19 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @DrawableRes int markerResourceId);
 
+
     void showCurrentLocationBtn(boolean isVisible);
 
+
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation
+     */
     void focusOnUserLocation(boolean focusOnMyLocation);
+
 
     /**
      *  Add new {@link com.mapbox.geojson.Feature Feature} points to the {@link io.ona.kujaku.views.KujakuMapView map}
@@ -72,6 +85,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     void addFeaturePoints(FeatureCollection featureCollection) throws JSONException;
 
+
     /**
      *  Update the properties of {@link com.mapbox.geojson.Feature Feature} points that are already on the {@link io.ona.kujaku.views.KujakuMapView map}
      *
@@ -84,8 +98,26 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException;
 
+
     /**
      *  Update the list of points displayed in KujakuMapView
+     * Enables the app to get notified when the bounding box of the map changes if a user performs a pinch
+     * or scroll movement. The listener registers the movement once it reaches the end so as no to have
+     * a huge performance hit in cases where this is used to update the map with features. In case you
+     * want to have more control of when to receive such updates, use
+     * {@link com.mapbox.mapboxsdk.maps.MapboxMap#addOnMoveListener(com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener)} and
+     * consume {@link com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener#onMove(com.mapbox.android.gestures.MoveGestureDetector)}
+     * <p>
+     * There is an initial call to {@code boundsChangeListener} so that the host application can know
+     * the current bounding box
+     *
+     * @param boundsChangeListener
+     */
+    void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener);
+
+
+    /**
+     * This function updates the list of points displayed in KujakuMapView
      *
      *  This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers defined by the user
      *

@@ -54,7 +54,12 @@
         <activity
             android:name=".activities.AddUpdatePropertiesActivity"
             android:label="@string/title_activity_add_update_properties"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.BoundsChangeListenerActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.FeatureClickStatusActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
-
 </manifest>

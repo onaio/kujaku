@@ -42,4 +42,7 @@
     <string name="navigate_to_map">Navigate to Map</string>
     <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
     <string name="title_activity_add_update_properties">AddUpdatePropertiesActivity</string>
+    <string name="feature_click_status">Feature Click Status</string>
+    <string name="bounding_box_listener">Bounding Box Listener</string>
+    <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
 </resources>

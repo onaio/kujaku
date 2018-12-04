@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +32,7 @@ import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
@@ -58,6 +60,7 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
@@ -135,6 +138,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private boolean isFetchSourceFromStyle = false;
 
     private CameraPosition cameraPosition = null;
+
+    private BoundsChangeListener boundsChangeListener;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -530,8 +535,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
                     mapboxMap.getUiSettings().setCompassEnabled(false);
-                    // This disables
-                    addOnScrollListenerToMap(mapboxMap);
                     if (KujakuMapView.this.droppedPoints != null) {
                         List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
                         for (io.ona.kujaku.domain.Point point : droppedPoints) {
@@ -551,12 +554,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     if (getCameraPosition() != null) {
                         mapboxMap.setCameraPosition(getCameraPosition());
                     }
+                    // add bounds change listener
+                    addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
+                    callBoundsChangedListeners();
                 }
             });
         }
     }
 
-    private void addOnScrollListenerToMap(MapboxMap mapboxMap) {
+    private void addMapScrollListenerAndBoundsChangeEmitterToMap(MapboxMap mapboxMap) {
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
@@ -573,9 +579,26 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             @Override
             public void onMoveEnd(@NonNull MoveGestureDetector detector) {
-                // We are also not going to do anything here
+                callBoundsChangedListeners();
             }
         });
+    }
+
+    private void callBoundsChangedListeners() {
+        if (boundsChangeListener != null) {
+            VisibleRegion visibleRegion = getCurrentBounds();
+
+            if (visibleRegion != null) {
+                boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
+                        , visibleRegion.nearRight, visibleRegion.nearLeft);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    @Nullable
+    protected VisibleRegion getCurrentBounds() {
+        return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -637,7 +660,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         // Clean up location services
         if (locationClient != null && locationClient.isMonitoringLocation()) {
             locationClient.setListener(null);
-            locationClient.stopLocationUpdates();
             locationClient = null;
         }
     }
@@ -687,6 +709,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             updateUserLocationOnMap = false;
             changeTargetIcon(R.drawable.ic_cross_hair);
         }
+    }
+
+    @Override
+    public void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener) {
+        this.boundsChangeListener = boundsChangeListener;
+
+        callBoundsChangedListeners();
     }
 
     private void changeTargetIcon(int drawableIcon) {
@@ -820,7 +849,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void onPause() {
-        if (locationClient != null) {
+        if (locationClient != null && locationClient.isMonitoringLocation()) {
             locationClient.stopLocationUpdates();
             locationClient.close();
         }
