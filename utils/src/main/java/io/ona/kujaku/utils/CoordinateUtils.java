@@ -1,10 +1,11 @@
 package io.ona.kujaku.utils;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.turf.TurfConstants;
+import com.mapbox.turf.TurfMeasurement;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 19/12/2017.
@@ -42,108 +43,45 @@ public class CoordinateUtils {
                 && positionInQuestion.getLongitude() >= lonWest);
     }
 
-    /*public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, @NonNull LatLng topLeft, @NonNull LatLng topRight, @NonNull LatLng bottomRight, @NonNull LatLng bottomLeft) {
-        if (positionInQuestion.getLatitude() <= latNorth
-                && positionInQuestion.getLatitude() >= latSouth
-                && positionInQuestion.getLongitude() <= lonEast
-                && positionInQuestion.getLongitude() >= lonWest) {
-            return true;
-        }
-
-        return false;
-    }*/
 
     /**
-     * Generate the outermost bounds from an array of {@link LatLng} so that one can easily defined bounds
-     * for offline map downloads. The {@link LatLng[]} returned contains the top-right farthest point at
-     * index 0 and the bottom left farthest point at index 1
+     * Returns a padded bbox of in this order {@code [minX, minY, maxX, maxY]} with a padding of
+     * the distance in metres passed
      *
-     * @param points
+     * @param bbox            in this order  {@code [minX, minY, maxX, maxY]}
+     * @param paddingInMetres
      * @return
      */
-    @Nullable
-    public static LatLng[] getBounds(@NonNull LatLng[] points) {
-        if (points.length < 1) {
-            return null;
+    public static double[] getPaddedBbox(@NonNull double[] bbox, double paddingInMetres) {
+        if (bbox.length < 4 || paddingInMetres <= 0) {
+            return bbox;
         }
 
-        LatLng highestPoint = points[0];
-        LatLng lowestPoint = points[0];
+        double minX = TurfMeasurement.destination(Point.fromLngLat(bbox[0], bbox[1])
+                , paddingInMetres
+                , -90d
+                , TurfConstants.UNIT_METRES
+                ).longitude();
 
-        if (points.length == 1) {
-            // Create a default 0.021103 bound length
-            double halfBoundLength = DEFAULT_BOUND_DIFFERENCE/2;
-            highestPoint = new LatLng(
-                    highestPoint.getLatitude() + halfBoundLength,
-                    highestPoint.getLongitude() + halfBoundLength
-            );
+        double minY = TurfMeasurement.destination(Point.fromLngLat(bbox[0], bbox[1])
+                        , paddingInMetres
+                        , -180d
+                        , TurfConstants.UNIT_METRES
+                ).latitude();
 
-            lowestPoint = new LatLng(
-                    lowestPoint.getLatitude() - halfBoundLength,
-                    lowestPoint.getLongitude() - halfBoundLength
-            );
+        double maxX = TurfMeasurement.destination(Point.fromLngLat(bbox[1], bbox[2])
+                , paddingInMetres
+                , 90d
+                , TurfConstants.UNIT_METRES
+                ).longitude();
 
-            return (new LatLng[]{highestPoint, lowestPoint});
-        }
+        double maxY = TurfMeasurement.destination(Point.fromLngLat(bbox[1], bbox[2])
+                        , paddingInMetres
+                        , 0d
+                        , TurfConstants.UNIT_METRES
+                ).latitude();
 
-        for(LatLng latLng: points) {
-            if (isLatLngHigher(latLng, highestPoint)) {
-                highestPoint = new LatLng(latLng.getLatitude(), latLng.getLongitude());
-            }
-
-            if (isLatLngLower(latLng, lowestPoint)) {
-                lowestPoint = new LatLng(latLng.getLatitude(), latLng.getLongitude());
-            }
-        }
-
-        // If the bounds are less than 0.021103 apart either longitude or latitude, then increase the bound to a minimum of that
-        double defaultBoundDifference = DEFAULT_BOUND_DIFFERENCE;
-        double latDifference = highestPoint.getLatitude() - lowestPoint.getLatitude();
-        double lngDifference = highestPoint.getLongitude() - lowestPoint.getLongitude();
-        if (latDifference < defaultBoundDifference) {
-            double increaseDifference = (defaultBoundDifference - latDifference)/2;
-            highestPoint.setLatitude(highestPoint.getLatitude() + increaseDifference);
-            lowestPoint.setLatitude(lowestPoint.getLatitude() - increaseDifference);
-        }
-
-        if (lngDifference < defaultBoundDifference) {
-            double increaseDifference = (defaultBoundDifference - lngDifference)/2;
-            highestPoint.setLongitude(highestPoint.getLongitude() + increaseDifference);
-            lowestPoint.setLongitude(lowestPoint.getLongitude() - increaseDifference);
-        }
-
-        return (new LatLng[]{highestPoint, lowestPoint});
-    }
-
-    public static LatLng[] getBounds(@NonNull LatLng[] points, int paddingInMetres) {
-        LatLng[] bounds = getBounds(points);
-        if (bounds != null && paddingInMetres > 0) {
-            return bounds;
-        } else {
-            return bounds;
-        }
-    }
-
-    public static boolean isLatLngHigher(LatLng firstCoord, LatLng secondCoord) {
-        double latDelta = firstCoord.getLatitude() - secondCoord.getLatitude();
-        double lngDelta = firstCoord.getLongitude() - secondCoord.getLongitude();
-
-        if ((latDelta >= 0 && lngDelta >= 0) && !(latDelta == 0 && lngDelta == 0)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public static boolean isLatLngLower(LatLng firstCoord, LatLng secondCoord) {
-        double latDelta = secondCoord.getLatitude() - firstCoord.getLatitude();
-        double lngDelta = secondCoord.getLongitude() - firstCoord.getLongitude();
-
-        if ((latDelta >= 0 && lngDelta >= 0) && !(latDelta == 0 && lngDelta == 0)) {
-            return true;
-        }
-
-        return false;
+        return new double[]{minX, minY, maxX, maxY};
     }
 
 }
