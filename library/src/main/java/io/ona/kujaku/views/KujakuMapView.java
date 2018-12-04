@@ -868,7 +868,5 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             warmUpLocationServices();
         }
     }
-
-
 }
 
