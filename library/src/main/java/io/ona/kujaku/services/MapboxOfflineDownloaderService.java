@@ -35,6 +35,7 @@ import io.ona.kujaku.listeners.OfflineRegionObserver;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import io.ona.kujaku.notifications.CriticalDownloadErrorNotification;
 import io.ona.kujaku.notifications.DownloadCompleteNotification;
 import io.ona.kujaku.notifications.DownloadProgressNotification;
 import io.ona.kujaku.utils.Constants;
@@ -110,9 +111,12 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private long currentMapDownloadId;
 
     private DownloadProgressNotification downloadProgressNotification;
-    public static final int PROGRESS_NOTIFICATION_ID = 85;
+    public static final int PROGRESS_NOTIFICATION_ID = 80;
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
-    public int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 87;
+
+    // Should persist across service instances but within the same app session
+    public static int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 180;
+    public static int LAST_DOWNLOAD_ERROR_NOTIFICATION_ID = 280;
 
     private boolean isPerformingTask = false;
 
@@ -608,8 +612,16 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void mapboxTileCountLimitExceeded(long limit) {
         String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);
         Log.e(TAG, finalMessage);
-        releaseQueueToPerformOtherJobs();
         sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);
+
+        // Show download error notification
+        LAST_DOWNLOAD_ERROR_NOTIFICATION_ID++;
+        CriticalDownloadErrorNotification criticalDownloadErrorNotification = new CriticalDownloadErrorNotification(this);
+        criticalDownloadErrorNotification.displayNotification(String.format(getString(R.string.error_occurred_download_map), currentMapDownloadName)
+                , String.format(getString(R.string.mapbox_tile_count_limit_of_exceeded), limit), LAST_DOWNLOAD_ERROR_NOTIFICATION_ID);
+
+        releaseQueueToPerformOtherJobs();
+        performNextTask();
     }
 
     private String getFriendlyFileSize(long bytes) {

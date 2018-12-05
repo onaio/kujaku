@@ -13,7 +13,7 @@
     <string name="notification_download_progress_content">Downloading: %1$s %%</string>
     <string name="notification_download_complete_title">Download for %1$s Map Complete!</string>
     <string name="notification_download_complete_content">Downloaded %1$s</string>
-    <string name="error_mapbox_tile_count_limit">MapBox Tile Count limit exceeded : %1$d while Downloading %2$s</string>
+    <string name="error_mapbox_tile_count_limit">MapBox Tile Count limit exceeded %1$d while Downloading %2$s</string>
     <string name="error_broadcast_message_format_part_reason">REASON : %1$s</string>
     <string name="error_broadcast_message_format_part_message">\nMESSAGE: %1$s</string>
     <string name="msg_could_not_find_your_location">Sorry but we could not get your location! Try Again</string>
@@ -21,6 +21,8 @@
     <string name="download_progress_channel_description">This channel shows notifications for offline map progress</string>
     <string name="download_complete_channel_name">Offline Map Download Complete</string>
     <string name="download_complete_channel_description">This channel shows notifications for complete offline map downloads</string>
+    <string name="download_error_channel_name">Offline Map Download Error</string>
+    <string name="download_error_channel_description">This channel shows notifications for critical offline map download errors</string>
     <string name="msg_location_retrieval_taking_longer_than_expected">Whoops! It seems that retrieving your location is going to take longer than expected!</string>
     <string name="done">DONE</string>
     <string name="cancel">CANCEL</string>
@@ -29,4 +31,6 @@
     <string name="current_location_btn_visibility">current_location_btn_visibility</string>
     <string name="location_permission">Location Permission</string>
     <string name="location_permission_reason">We need the location permission to focus on your location in the map</string>
+    <string name="error_occurred_download_map">Error occurred downloading %1$s</string>
+    <string name="mapbox_tile_count_limit_of_exceeded">Mapbox tile count limit of %1$d</string>
 </resources>

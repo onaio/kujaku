@@ -37,6 +37,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.notifications.CriticalDownloadErrorNotification;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
 import io.ona.kujaku.sample.R;
