@@ -35,8 +35,11 @@ import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.style.sources.RasterSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
+import com.mapbox.mapboxsdk.style.sources.TileSet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,6 +54,7 @@ import java.util.UUID;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
@@ -65,6 +69,8 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
+import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.utils.wmts.model.WmtsLayer;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
@@ -108,6 +114,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private boolean updateUserLocationOnMap = false;
 
+    /**
+     * Wmts Layers to add on the map
+     */
+    private Set<WmtsLayer> wmtsLayers;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -135,6 +145,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
 
         droppedPoints = new HashSet<>();
+        wmtsLayers = new HashSet<>();
 
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
         addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
@@ -508,10 +519,120 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
+
+                    addWmtsLayers();
                 }
             });
         }
     }
+
+    /**
+     * Add all Wmts Layers in wmtsLayers on the map
+     */
+    private void addWmtsLayers() {
+        // Add WmtsLayers
+        if (wmtsLayers != null) {
+            for (WmtsLayer layer : wmtsLayers) {
+                if (mapboxMap.getSource(layer.getIdentifier()) == null) {
+                    RasterSource webMapSource = new RasterSource(
+                            layer.getIdentifier(),
+                            new TileSet("tileset", layer.getTemplateUrl()), 256);
+                    mapboxMap.addSource(webMapSource);
+
+                    RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
+                    mapboxMap.addLayer(webMapLayer);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add first available layer to the wmtsLayer list
+     *
+     * @param capabilities
+     */
+    public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception {
+       this.addWmtsLayer(capabilities, null, null, null);
+    }
+
+    /**
+     * Add identified layer to the wmtsLayer list
+     *
+     * @param layerIdentifier
+     * @param capabilities
+     */
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception {
+        this.addWmtsLayer(capabilities, layerIdentifier, null, null);
+    }
+
+    /**
+     * Add identified layer with specific style to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     */
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception {
+        this.addWmtsLayer(capabilities, layerIdentifier, styleIdentifier, null);
+    }
+
+    /**
+     * Add identified layer with specific style & specific tileMatrixSet to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     * @param tileMatrixSetLinkIdentifier
+     */
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception {
+        WmtsLayer layerIdentified;
+
+        if (capabilities == null) {
+            throw new WmtsCapabilitiesException("capabilities object is null or empty");
+        }
+
+        if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
+            if (capabilities.getLayers().size() == 0) {
+                // No layer available
+                throw new WmtsCapabilitiesException("No layer available in the capacities object");
+            } else {
+                layerIdentified = capabilities.getLayers().get(0);
+            }
+        } else {
+            // Get the identified layer
+            layerIdentified = capabilities.getLayer(layerIdentifier);
+
+            if (layerIdentified == null) {
+                throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
+            }
+        }
+
+        if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
+            // Check if style is known
+            if (layerIdentified.getStyle(styleIdentifier) == null) {
+                throw new WmtsCapabilitiesException(String.format("Style with identifier %1$s is not available for Layer %2$s", styleIdentifier, layerIdentifier));
+            } else {
+                layerIdentified.setSelectedStyleIdentifier(styleIdentifier);
+            }
+        }
+
+        if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
+            // Check if style is known
+            if (layerIdentified.getTileMatrixSet(tileMatrixSetLinkIdentifier) == null) {
+                throw new WmtsCapabilitiesException(String.format("tileMatrixSetLink with identifier %1$s is not available for Layer %2$s", tileMatrixSetLinkIdentifier, layerIdentifier));
+            } else {
+                layerIdentified.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);
+            }
+        }
+
+        this.wmtsLayers.add(layerIdentified);
+
+        if (mapboxMap != null) {
+            addWmtsLayers();
+        }
+    }
+
+
 
     private void addOnScrollListenerToMap(MapboxMap mapboxMap) {
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
