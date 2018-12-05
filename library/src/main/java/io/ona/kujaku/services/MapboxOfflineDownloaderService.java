@@ -401,11 +401,15 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                 }
             });
         } else {
-            stopDownloadProgressUpdater();
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.cancel(PROGRESS_NOTIFICATION_ID);
-            stopSelf();
+            cleanupAndExit();
         }
+    }
+
+    private void cleanupAndExit() {
+        stopDownloadProgressUpdater();
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(PROGRESS_NOTIFICATION_ID);
+        stopSelf();
     }
 
     /**
@@ -620,8 +624,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         criticalDownloadErrorNotification.displayNotification(String.format(getString(R.string.error_occurred_download_map), currentMapDownloadName)
                 , String.format(getString(R.string.mapbox_tile_count_limit_of_exceeded), limit), LAST_DOWNLOAD_ERROR_NOTIFICATION_ID);
 
-        releaseQueueToPerformOtherJobs();
-        performNextTask();
+        // No other download can be performed and we should exit the service
+        cleanupAndExit();
     }
 
     private String getFriendlyFileSize(long bytes) {
