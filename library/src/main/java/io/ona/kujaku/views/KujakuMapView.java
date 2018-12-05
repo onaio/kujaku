@@ -546,6 +546,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+    public Set<WmtsLayer> getWmtsLayers() {
+        return this.wmtsLayers;
+    }
+
     /**
      * Add first available layer to the wmtsLayer list
      *

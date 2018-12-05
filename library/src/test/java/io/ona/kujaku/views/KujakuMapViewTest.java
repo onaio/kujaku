@@ -16,14 +16,21 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
+import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Set;
 
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
+import io.ona.kujaku.services.WmtsCapabilitiesService;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
+import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.utils.wmts.model.WmtsLayer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -219,5 +226,49 @@ public class KujakuMapViewTest extends BaseTest {
 
         drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
+    }
+
+    @Test
+    public void addNullWmtsLayers () {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+        try {
+            kujakuMapView.addWmtsLayer(null);
+        } catch (Exception ex) {
+
+        }
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+    }
+
+    @Test
+    public void addFirstWmtsLayers () {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+        try {
+
+            InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+            WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+            WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+            kujakuMapView.addWmtsLayer(capabilities);
+        } catch (Exception ex) {
+
+        }
+        assertEquals(1, kujakuMapView.getWmtsLayers().size());
+        assertEquals("Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", ((WmtsLayer)kujakuMapView.getWmtsLayers().toArray()[0]).getIdentifier());
+    }
+
+    @Test
+    public void addUnknowWmtsLayers () {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+        try {
+
+            InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+            WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+            WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+            kujakuMapView.addWmtsLayer(capabilities, "unknownLayer", "unknownStyle", "unknownTileMatrix");
+        } catch (Exception ex) {
+
+        }
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
     }
 }
