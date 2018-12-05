@@ -127,6 +127,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_wmts:
+                startActivity(new Intent(this, WmtsActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }
