@@ -134,6 +134,7 @@ dependencies {
     implementation(project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+        exclude group: 'io.ona.kujaku', module: 'utils'
     }
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
