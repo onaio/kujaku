@@ -374,10 +374,9 @@ public class MapBoxOfflineResourcesDownloader {
             @Override
             public void mapboxTileCountLimitExceeded(long limit) {
                 String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
-                offlineRegion.setDownloadState(OfflineRegion.STATE_INACTIVE);
                 Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(errorMessage);
+                    onDownloadMapListener.mapboxTileCountLimitExceeded(limit);
                 }
             }
         });
