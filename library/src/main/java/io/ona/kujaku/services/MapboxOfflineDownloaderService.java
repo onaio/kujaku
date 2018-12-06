@@ -228,7 +228,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                     final String taskType = extras.getString(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, "");
 
                     if (!TextUtils.isEmpty(taskType)) {
-                        if (taskType.equals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)) {
+                        if (taskType.equals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD) && mostRecentMapNameUpdate.equals(mapUniqueName)) {
                             MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);
 
                             // Remove the STOP DOWNLOAD ACTION from the notification so that it cannot be pressed and cause the app to crash!
@@ -268,7 +268,13 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                 }
                             });
                         } else {
-                            deleteTaskFromRealmDatabase(taskType, mapUniqueName);
+                            if (deleteTaskFromRealmDatabase(taskType, mapUniqueName)) {
+                                // Communicate if the delete task was successful
+                                sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);
+                            } else {
+                                // Send a broadcast that the delete task was unsuccessful because the task could not be found
+                                sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, String.format(getString(R.string.error_broadcast_for_download_pause), "Map could not be found"));
+                            }
                         }
                     }
 

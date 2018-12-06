@@ -79,7 +79,7 @@ public abstract class OfflineServiceHelper {
      * @param mapName
      * @param mapBoxAccessToken
      */
-    public static void stopCurrentDownload(@NonNull Context context, @NonNull String mapName, @NonNull String mapBoxAccessToken) {
+    public static void stopMapDownload(@NonNull Context context, @NonNull String mapName, @NonNull String mapBoxAccessToken) {
         Intent stopDownloadIntent = new Intent(context, MapboxOfflineDownloaderService.class);
         stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);
         stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
