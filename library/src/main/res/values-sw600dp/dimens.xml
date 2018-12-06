@@ -1,0 +1,5 @@
+<resources>
+    <dimen name="my_location_button_dimen">70dp</dimen>
+    <dimen name="hamburger_margin">48dp</dimen>
+    <dimen name="my_location_btn_margin">32dp</dimen>
+</resources>
