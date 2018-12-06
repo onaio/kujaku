@@ -34,6 +34,10 @@ public class WmtsLayer {
 
     private String selectedTileMatrixLinkIdentifier;
 
+    public String getFormat() {
+        return this.format;
+    }
+
     public String getTitle() {
         return this.title;
     }

@@ -13,4 +13,6 @@ public class WmtsOperation {
 
     @Attribute(name="name")
     private String name;
+
+    public String getName() { return this.name; }
 }

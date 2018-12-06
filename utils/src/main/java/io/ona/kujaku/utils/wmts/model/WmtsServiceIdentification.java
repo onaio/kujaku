@@ -17,4 +17,8 @@ public class WmtsServiceIdentification {
 
     @Element(name="ServiceTypeVersion")
     private String serviceTypeVersion;
+
+    public String getTitle() { return this.title; }
+    public String getServiceType() { return this.serviceType; }
+    public String getServiceTypeVersion() { return this.serviceTypeVersion; }
 }

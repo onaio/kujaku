@@ -18,14 +18,11 @@ import org.robolectric.annotation.Config;
 
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Set;
 
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
-import io.ona.kujaku.services.WmtsCapabilitiesService;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
 import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;

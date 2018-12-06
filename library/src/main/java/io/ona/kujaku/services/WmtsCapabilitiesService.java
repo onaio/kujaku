@@ -10,7 +10,6 @@ import java.net.URL;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
-import io.ona.kujaku.helpers.ActivityLauncherHelper;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;

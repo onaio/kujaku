@@ -605,29 +605,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         } else {
             // Get the identified layer
             layerIdentified = capabilities.getLayer(layerIdentifier);
-
-            if (layerIdentified == null) {
-                throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
-            }
         }
 
-        if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
-            // Check if style is known
-            if (layerIdentified.getStyle(styleIdentifier) == null) {
-                throw new WmtsCapabilitiesException(String.format("Style with identifier %1$s is not available for Layer %2$s", styleIdentifier, layerIdentifier));
-            } else {
-                layerIdentified.setSelectedStyleIdentifier(styleIdentifier);
-            }
+        if (layerIdentified == null) {
+            throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
         }
 
-        if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
-            // Check if style is known
-            if (layerIdentified.getTileMatrixSet(tileMatrixSetLinkIdentifier) == null) {
-                throw new WmtsCapabilitiesException(String.format("tileMatrixSetLink with identifier %1$s is not available for Layer %2$s", tileMatrixSetLinkIdentifier, layerIdentifier));
-            } else {
-                layerIdentified.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);
-            }
-        }
+        this.selectWmtsStyle(layerIdentified, styleIdentifier);
+
+        this.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
 
         this.wmtsLayers.add(layerIdentified);
 
@@ -636,6 +622,41 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+    /**
+     * Verify if Style exists for the Layer
+     *
+     * @param layer
+     * @param styleIdentifier
+     * @throws Exception
+     */
+    private void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws Exception {
+        if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
+            // Check if style is known
+            if (layer.getStyle(styleIdentifier) == null) {
+                throw new WmtsCapabilitiesException(String.format("Style with identifier %1$s is not available for Layer %2$s", styleIdentifier, layer.getIdentifier()));
+            } else {
+                layer.setSelectedStyleIdentifier(styleIdentifier);
+            }
+        }
+    }
+
+    /**
+     * Verify if TileMatrixSetlink exists exists for the Layer
+     *
+     * @param layer
+     * @param tileMatrixSetLinkIdentifier
+     * @throws Exception
+     */
+    private void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws Exception {
+        if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
+            // Check if style is known
+            if (layer.getTileMatrixSet(tileMatrixSetLinkIdentifier) == null) {
+                throw new WmtsCapabilitiesException(String.format("tileMatrixSetLink with identifier %1$s is not available for Layer %2$s", tileMatrixSetLinkIdentifier, layer.getIdentifier()));
+            } else {
+                layer.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);
+            }
+        }
+    }
 
 
     private void addOnScrollListenerToMap(MapboxMap mapboxMap) {
