@@ -41,6 +41,11 @@ public class WmtsResourceUrl {
     @Attribute(name="template")
     private String template;
 
+
+    public String getFormat() { return this.format; }
+
+    public String getResourceType() { return this.resourceType; }
+
     /**
      * Return template Url
      * @return string

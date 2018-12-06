@@ -12,9 +12,6 @@ import java.io.Reader;
  */
 public class WmtsCapabilitiesSerializer {
 
-    public WmtsCapabilitiesSerializer(){
-    }
-
     /**
      * This <code>read</code> method will read the contents of the XML
      * document from the provided source and convert it into an object

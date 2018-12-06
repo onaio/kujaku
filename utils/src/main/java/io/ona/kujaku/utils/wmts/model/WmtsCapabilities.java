@@ -27,6 +27,10 @@ public class WmtsCapabilities {
     @Attribute(name="version")
     private String version;
 
+    public List<WmtsOperation> getOperations() { return this.operations; }
+
+    public WmtsServiceIdentification getServiceIdentification() { return this.serviceIdentification; }
+
     public String getVersion() {
         return this.version;
     }
