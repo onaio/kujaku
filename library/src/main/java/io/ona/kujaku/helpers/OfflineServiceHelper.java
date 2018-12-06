@@ -30,14 +30,13 @@ public abstract class OfflineServiceHelper {
      * @param topRightBound
      * @param bottomRightBound
      * @param bottomLeftBound
-     * @param minZoom
-     * @param maxZoom
+     * @param zoomRange
      */
     public static void requestOfflineMapDownload(@NonNull Context context, @NonNull String mapName,
                                           @NonNull String mapboxStyleUrl, @NonNull String mapBoxAccessToken,
                                           @NonNull LatLng topLeftBound, @NonNull LatLng topRightBound,
                                           @NonNull LatLng bottomRightBound, @NonNull LatLng bottomLeftBound,
-                                          double minZoom, double maxZoom) {
+                                          @NonNull ZoomRange zoomRange) {
         Intent intent = new Intent(context, MapboxOfflineDownloaderService.class);
         intent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         intent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, mapboxStyleUrl);
@@ -47,8 +46,8 @@ public abstract class OfflineServiceHelper {
         intent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
         intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
         intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
-        intent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);
-        intent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);
+        intent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, zoomRange.getMinZoom());
+        intent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, zoomRange.getMaxZoom());
 
         context.startService(intent);
     }
@@ -87,6 +86,24 @@ public abstract class OfflineServiceHelper {
         stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
 
         context.startService(stopDownloadIntent);
+    }
+
+    public static class ZoomRange {
+        private double minZoom;
+        private double maxZoom;
+
+        public ZoomRange(double minZoom, double maxZoom) {
+            this.minZoom = minZoom;
+            this.maxZoom = maxZoom;
+        }
+
+        public double getMinZoom() {
+            return minZoom;
+        }
+
+        public double getMaxZoom() {
+            return maxZoom;
+        }
     }
 
 
