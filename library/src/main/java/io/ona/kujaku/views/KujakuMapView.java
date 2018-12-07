@@ -552,7 +552,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     if (getPrimaryGeoJsonSource() != null && mapboxMap.getSource(getPrimaryGeoJsonSource().getId()) == null) {
                         mapboxMap.addSource(getPrimaryGeoJsonSource());
                     }
-                    if (getPrimaryLayer() != null) {
+                    if (getPrimaryLayer() != null && mapboxMap.getLayer(getPrimaryLayer().getId()) == null) {
                         mapboxMap.addLayer(getPrimaryLayer());
                     }
                     if (isFetchSourceFromStyle) {
