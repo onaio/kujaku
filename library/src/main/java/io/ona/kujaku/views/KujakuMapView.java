@@ -44,7 +44,6 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,8 +61,8 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
-import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
@@ -126,7 +125,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean updateUserLocationOnMap = false;
 
-    private JSONObject featureCollectionJSON;
+    private FeatureCollection featureCollection;
 
     private Map<String, Integer> featureMap;
 
@@ -765,34 +764,34 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void addFeaturePoints(FeatureCollection featureCollection) throws JSONException {
-        JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
+    public void addFeaturePoints(FeatureCollection featureCollection) {
+        List<com.mapbox.geojson.Feature> features = this.featureCollection.features();
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
             String featureId = feature.id();
             if (featureId != null && !featureMap.containsKey(featureId)) {
-                featureMap.put(featureId, featuresArray.length());
-                featuresArray.put(new JSONObject(feature.toJson()));
+                featureMap.put(featureId, features.size());
+                features.add(feature);
             }
         }
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
     @Override
     public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+        List<com.mapbox.geojson.Feature> currFeatures = this.featureCollection.features();
         List<com.mapbox.geojson.Feature> newFeatures = new ArrayList<>();
-        JSONArray featuresArray = this.featureCollectionJSON.getJSONArray("features");
         for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
             String featureId = feature.id();
             if (featureMap.containsKey(featureId)) {
                 int featureIndex = featureMap.get(featureId);
-                JSONObject featureJSONProperties = featuresArray.getJSONObject(featureIndex).getJSONObject("properties");
+                com.mapbox.geojson.Feature currFeature = currFeatures.get(featureIndex);
                 for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
-                    featureJSONProperties.remove(entry.getKey());
-                    featureJSONProperties.put(entry.getKey(), entry.getValue().getAsString());
+                    currFeature.removeProperty(entry.getKey());
+                    currFeature.addStringProperty(entry.getKey(), entry.getValue().getAsString());
                 }
-            } else if (featureId != null && featureMap.containsKey(featureId)) {
+            } else {
                 newFeatures.add(feature);
             }
         }
@@ -800,7 +799,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(featureCollectionJSON.toString());
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
@@ -809,13 +808,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             Log.e(TAG, "GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.");
             return;
         }
-        initializeFeatureCollection(new JSONArray());
+        initializeFeatureCollection();
         if (isFetchSourceFromStyle) {
             this.isFetchSourceFromStyle = true;
             setPrimaryGeoJsonSourceId(sourceId);
             setGeoJsonSourceString(geoJsonSource);
         } else {
-            primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollectionJSON.toString());
+            primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollection);
         }
     }
 
@@ -829,14 +828,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void initializeFeatureCollection(JSONArray featuresArray) {
-        try {
-            this.featureCollectionJSON = new JSONObject();
-            this.featureCollectionJSON.put("type", "FeatureCollection");
-            this.featureCollectionJSON.put("features", featuresArray);
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
-        }
+    private void initializeFeatureCollection() {
+        featureCollection = FeatureCollection.fromFeatures(new ArrayList<>());
     }
 
     public CameraPosition getCameraPosition() {
