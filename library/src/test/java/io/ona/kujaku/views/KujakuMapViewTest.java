@@ -7,11 +7,13 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
@@ -29,11 +31,16 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
+import io.ona.kujaku.test.shadows.ShadowFileSource;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
+import io.ona.kujaku.test.shadows.ShadowMapRenderer;
+import io.ona.kujaku.test.shadows.ShadowMapView;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
 import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+import io.ona.kujaku.test.shadows.ShadowGLSurfaceViewMapRenderer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +52,9 @@ import static org.junit.Assert.assertTrue;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
  */
 
-@Config(shadows = {ShadowGeoJsonSource.class})
+@Ignore
+@Config(shadows = {ShadowGeoJsonSource.class, ShadowConnectivityReceiver.class, ShadowFileSource.class,
+        ShadowGLSurfaceViewMapRenderer.class, ShadowMapRenderer.class})
 public class KujakuMapViewTest extends BaseTest {
 
     private KujakuMapTestView kujakuMapView;
@@ -53,6 +62,7 @@ public class KujakuMapViewTest extends BaseTest {
     @Before
     public void setUp() {
         Context context = RuntimeEnvironment.application;
+        Mapbox.getInstance(context, "sample_token");
         kujakuMapView = new KujakuMapTestView(context);
     }
 
