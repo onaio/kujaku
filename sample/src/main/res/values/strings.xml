@@ -45,4 +45,7 @@
     <string name="feature_click_status">Feature Click Status</string>
     <string name="bounding_box_listener">Bounding Box Listener</string>
     <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
+    <string name="feature_click_listener">Feature Click Listener</string>
+    <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
+    <string name="building_exc">Building!</string>
 </resources>

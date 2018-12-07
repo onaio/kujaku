@@ -61,5 +61,8 @@
         <activity
             android:name=".activities.FeatureClickStatusActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.FeatureClickListenerActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 </manifest>

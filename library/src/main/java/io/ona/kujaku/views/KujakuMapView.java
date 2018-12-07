@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.DrawableRes;
@@ -37,6 +38,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -60,6 +62,7 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
@@ -85,7 +88,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidt
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
 
-public class KujakuMapView extends MapView implements IKujakuMapView {
+public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
     public static final double LOCATION_FOCUS_ZOOM = 20d;
@@ -140,6 +143,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private CameraPosition cameraPosition = null;
 
     private BoundsChangeListener boundsChangeListener;
+
+    private OnFeatureClickListener onFeatureClickListener;
+    private String[] featureClickLayerIdFilters;
+    private Expression featureClickExpressionFilter;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -557,12 +565,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                     // add bounds change listener
                     addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
                     callBoundsChangedListeners();
+                    enableFeatureClickListenerEmitter(mapboxMap);
                 }
             });
         }
     }
 
-    private void addMapScrollListenerAndBoundsChangeEmitterToMap(MapboxMap mapboxMap) {
+    private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
@@ -599,6 +608,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Nullable
     protected VisibleRegion getCurrentBounds() {
         return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
+    }
+
+    private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
+        mapboxMap.removeOnMapClickListener(this);
+        mapboxMap.addOnMapClickListener(this);
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -691,6 +705,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 this.droppedPoints.add(point);
             }
         }
+    }
+
+    @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds) {
+        this.onFeatureClickListener = onFeatureClickListener;
+        this.featureClickLayerIdFilters = layerIds;
+        this.featureClickExpressionFilter = null;
+    }
+
+    @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds) {
+        this.onFeatureClickListener = onFeatureClickListener;
+        this.featureClickLayerIdFilters = layerIds;
+        this.featureClickExpressionFilter = expressionFilter;
     }
 
     @Override
@@ -869,6 +897,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         }
     }
 
+    @Override
+    public void onMapClick(@NonNull LatLng point) {
+        if (onFeatureClickListener != null) {
+            PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
 
+            if (features.size() > 0) {
+                onFeatureClickListener.onFeatureClick(features);
+            }
+        }
+    }
 }
 
