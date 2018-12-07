@@ -47,4 +47,6 @@
     <string name="bounds_aware_activity">Bounds Aware Activity</string>
     <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
     <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
+    <string name="enable_bounds_listener">"Enable Bounds Listener"</string>
+    <string name="disable_bounds_listener">"Disable Bounds Listener"</string>
 </resources>

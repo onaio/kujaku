@@ -55,6 +55,7 @@ public class BoundsAwareActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View v) {
                 isBoundsAware = !isBoundsAware;
+                ((Button) v).setText(!isBoundsAware ? R.string.enable_bounds_listener : R.string.disable_bounds_listener);
             }
         });
 
