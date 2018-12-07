@@ -138,6 +138,10 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, CustomMarkerLowLevelAddPoint.class));
                 finish();
                 return true;
+            case R.id.nav_add_update_activity:
+                startActivity(new Intent(this, AddUpdatePropertiesActivity.class));
+                finish();
+                return true;
 
             case R.id.nav_feature_click_status:
                 startActivity(new Intent(this, FeatureClickStatusActivity.class));
@@ -148,16 +152,13 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, BoundsChangeListenerActivity.class));
                 finish();
                 return true;
-
             case R.id.nav_feature_click_listener:
                 startActivity(new Intent(this, FeatureClickListenerActivity.class));
                 finish();
                 return true;
-
             default:
                 break;
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -183,8 +184,6 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
         if (navigationView == null) {
             navigationView = getNavigationView();
         }
-
         navigationView.setCheckedItem(navigationItem);
     }
-
 }

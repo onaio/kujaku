@@ -10,12 +10,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="io.fabric.ApiKey"
+        <meta-data
+            android:name="io.fabric.ApiKey"
             android:value="3f94f9c3caeff331b3a2bd8c2182b663ad6a955a" />
+
         <activity
             android:name=".activities.MainActivity"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,10 +47,14 @@
         <activity
             android:name=".activities.CardActivity"
             android:label="@string/title_activity_card"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.CustomMarkerLowLevelAddPoint"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.AddUpdatePropertiesActivity"
+            android:label="@string/title_activity_add_update_properties"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.BoundsChangeListenerActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
@@ -59,5 +65,4 @@
             android:name=".activities.FeatureClickListenerActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
-
 </manifest>
