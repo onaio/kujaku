@@ -49,4 +49,7 @@
     <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
     <string name="enable_bounds_listener">"Enable Bounds Listener"</string>
     <string name="disable_bounds_listener">"Disable Bounds Listener"</string>
+    <string name="feature_click_listener">Feature Click Listener</string>
+    <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
+    <string name="building_exc">Building!</string>
 </resources>

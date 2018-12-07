@@ -41,6 +41,18 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
         navigationView = getNavigationView();
         navigationView.setNavigationItemSelectedListener(this);
+
+        // Set activity title
+        setActivityTitleFromNavItem();
+    }
+
+    private void setActivityTitleFromNavItem() {
+        if (getSelectedNavigationItem() != 0) {
+            MenuItem menuItem = navigationView.getMenu().findItem(getSelectedNavigationItem());
+            if (menuItem != null) {
+                setTitle(menuItem.getTitle());
+            }
+        }
     }
 
     @Override
@@ -142,6 +154,8 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 return true;
             case R.id.nav_bounds_aware_activity:
                 startActivity(new Intent(this, BoundsAwareActivity.class));
+            case R.id.nav_feature_click_listener:
+                startActivity(new Intent(this, FeatureClickListenerActivity.class));
                 finish();
                 return true;
             default:

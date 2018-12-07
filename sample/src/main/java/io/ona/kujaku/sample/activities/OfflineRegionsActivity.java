@@ -179,6 +179,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                         offlineRegionsInfo[position] += "\nDOWNLOADED %: " + percentageDownload + "%";
                         offlineRegionsInfo[position] += "\nCOMPLETED RESOURCES : " + status.getCompletedResourceCount();
                         offlineRegionsInfo[position] += "\nREQUIRED RESOURCES : " + status.getRequiredResourceCount();
+                        offlineRegionsInfo[position] += "\nCOMPLETED TILE COUNT: " + status.getCompletedTileCount();
                         offlineRegionsInfo[position] += "\n";
 
                         Log.i(TAG, offlineRegionsInfo[position]);
@@ -186,12 +187,16 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                         if (status.isComplete()) {
                             navigateToMapBtn.setVisibility(View.VISIBLE);
                         }
+
+                        textView.setText(offlineRegionsInfo[position]);
                     }
 
                     @Override
                     public void onError(String error) {
                         offlineRegionsInfo[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
                         Log.e(TAG, "OFFLINE REGION STATUS : " + error);
+
+                        textView.setText(offlineRegionsInfo[position]);
                     }
                 });
 

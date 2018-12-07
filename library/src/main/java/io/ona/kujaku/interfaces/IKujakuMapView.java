@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 
 import org.json.JSONException;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
@@ -124,4 +126,23 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      *  @param points A list of {@link Point}
      */
     void updateDroppedPoints(List<Point> points);
+
+    /**
+     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * is touched/clicked
+     *
+     * @param onFeatureClickListener
+     * @param layerIds
+     */
+    void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds);
+
+    /**
+     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * is touched/clicked and/or fulfilling the filter defined in {@code filter}
+     *
+     * @param onFeatureClickListener
+     * @param expressionFilter
+     * @param layerIds
+     */
+    void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds);
 }

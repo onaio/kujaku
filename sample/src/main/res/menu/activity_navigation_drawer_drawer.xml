@@ -48,6 +48,10 @@
             android:title="@string/feature_click_status"/>
 
         <item
+            android:id="@+id/nav_feature_click_listener"
+            android:title="@string/feature_click_listener"/>
+
+        <item
             android:id="@+id/nav_bounding_box_listener"
             android:title="@string/bounding_box_listener"/>
 
