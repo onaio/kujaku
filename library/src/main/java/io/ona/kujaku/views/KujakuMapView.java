@@ -58,8 +58,8 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
-import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
@@ -70,7 +70,6 @@ import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
-import io.ona.kujaku.utils.Views;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
