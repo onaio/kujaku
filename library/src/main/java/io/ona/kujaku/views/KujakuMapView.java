@@ -177,6 +177,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
+
+        // update my location button drawable for mobile
+        if (!getResources().getBoolean(R.bool.isTablet)){
+            currentLocationBtn.setImageResource(R.drawable.ic_cross_hair_mobile);
+        }
     }
 
     private void showUpdatedUserLocation() {
@@ -700,7 +705,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        Views.changeDrawable(currentLocationBtn, isTablet ? drawableIcon : R.drawable.ic_cross_hair_blue_mobile);
     }
 
     private void checkPermissions() {
