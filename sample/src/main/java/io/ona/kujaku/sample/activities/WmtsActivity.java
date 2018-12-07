@@ -27,8 +27,7 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView = findViewById(R.id.wmts_mapView);
 
-        WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService();
-        wmtsService.setCapabilitiesUrl("https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml");
+        WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService("https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml");
         wmtsService.requestData();
         wmtsService.setListener(new WmtsCapabilitiesListener() {
             @Override
