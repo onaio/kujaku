@@ -177,6 +177,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
+
+        // update my location button drawable for mobile
+        if (getResources().getBoolean(R.bool.isTablet)){
+            currentLocationBtn.setImageResource(R.drawable.ic_cross_hair_tablet);
+        }
     }
 
     private void showUpdatedUserLocation() {
@@ -678,7 +683,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            changeTargetIcon(R.drawable.ic_cross_hair_blue);
+            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+            changeImageButtonResource(currentLocationBtn, isTablet ? R.drawable.ic_cross_hair_blue_tablet : R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
@@ -688,7 +694,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         } else {
             updateUserLocationOnMap = false;
-            changeTargetIcon(R.drawable.ic_cross_hair);
+            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+            changeImageButtonResource(currentLocationBtn, isTablet ? R.drawable.ic_cross_hair_tablet : R.drawable.ic_cross_hair);
         }
     }
 
@@ -699,8 +706,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         callBoundsChangedListeners();
     }
 
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
+    private void changeImageButtonResource(ImageButton imageButton, int resourceId) {
+        imageButton.setImageResource(resourceId);
     }
 
     private void checkPermissions() {
