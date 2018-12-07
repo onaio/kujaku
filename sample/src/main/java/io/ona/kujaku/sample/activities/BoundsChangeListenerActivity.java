@@ -31,7 +31,6 @@ public class BoundsChangeListenerActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_boundingBoxListener_mapView);
         kujakuMapView.onCreate(savedInstanceState);
