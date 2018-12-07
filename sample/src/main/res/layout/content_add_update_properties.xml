@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical">
+
+        <include layout="@layout/app_bar"/>
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/btn_test_feature_point_addition"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="@color/mapbox_blue"
+                android:text="Add Feature Points"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_square_bg"
+                android:layout_margin="15dp"
+                android:padding="10dp"/>
+
+            <Button
+                android:id="@+id/btn_test_properties_modification"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="@color/mapbox_blue"
+                android:text="Modify Properties"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_square_bg"
+                android:layout_margin="15dp"
+                android:padding="10dp"/>
+
+            <io.ona.kujaku.views.KujakuMapView
+                android:id="@+id/add_update_activity_map_view"
+                android:minHeight="200dp"
+                android:minWidth="200dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:mapbox_uiLogoGravity="right|top"
+                app:mapbox_uiLogoMarginRight="30dp"
+                app:mapbox_uiAttributionGravity="right|end|top" />
+
+        </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+
+    <include layout="@layout/navigation_view"/>
+
+</android.support.v4.widget.DrawerLayout>

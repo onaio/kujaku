@@ -40,6 +40,10 @@
             android:title="@string/low_level_add_point_custom_marker"/>
 
         <item
+            android:id="@+id/nav_add_update_activity"
+            android:title="@string/add_update_activity_title"/>
+
+        <item
             android:id="@+id/nav_feature_click_status"
             android:title="@string/feature_click_status"/>
 
@@ -51,5 +55,4 @@
             android:id="@+id/nav_bounding_box_listener"
             android:title="@string/bounding_box_listener"/>
     </group>
-
 </menu>
