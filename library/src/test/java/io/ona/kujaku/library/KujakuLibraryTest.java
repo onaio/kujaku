@@ -45,7 +45,7 @@ public class KujakuLibraryTest {
 
     @Test
     public void testMethodLaunchMapActivityShouldSuccessfullyLaunchMapActivity() throws InterruptedException {
-            ActivityLauncherHelper.launchMapActivity(activity, new ArrayList<>(), true);
+            ActivityLauncherHelper.launchMapActivity(activity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, new ArrayList<>(), true);
             Thread.sleep(5000l);
 
             Robolectric.getForegroundThreadScheduler().runOneTask(); // flush foreground job to allow AsyncTask's onPostExecute to run
