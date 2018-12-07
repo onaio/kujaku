@@ -8,12 +8,9 @@ import android.view.View;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.util.ReflectionHelpers;
 
 import io.ona.kujaku.R;
 
@@ -25,11 +22,11 @@ public class ShadowMapView extends ShadowViewGroup {
 
     @Implementation
     public void __constructor__(Context context) {
-        View view = LayoutInflater.from(context).inflate(R.layout.mapbox_mapview_internal, null);
+        LayoutInflater.from(context).inflate(R.layout.mapbox_mapview_internal, null);
     }
 
     @Implementation
     public void getMapAsync(final @NonNull OnMapReadyCallback callback) {
-
+        // Nothing should happen here
     }
 }

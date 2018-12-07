@@ -15,6 +15,6 @@ public class ShadowMapRenderer {
 
     @Implementation
     public void __constructor__(Context context, String localIdeographFontFamily) {
-
+        // Nothing should happen in the constructor
     }
 }
