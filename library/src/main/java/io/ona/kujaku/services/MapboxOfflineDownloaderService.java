@@ -399,6 +399,17 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             }
                         } else {
                             // An error means this cannot be solved even at a later time THUS persist the task as DONE
+                            String message;
+                            String taskType = mapBoxOfflineQueueTask.getTaskType();
+                            if (MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD.equals(taskType)) {
+                                message = getString(R.string.map_could_not_be_downloaded);
+                            } else if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(taskType)) {
+                                message = getString(R.string.map_could_not_be_deleted);
+                            } else  {
+                                message = getString(R.string.map_download_could_not_be_stopped);
+                            }
+
+                            MapboxOfflineDownloaderService.this.onError(error, message);
                             releaseQueueToPerformOtherJobs();
                             realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);
                             performNextTask();
