@@ -206,11 +206,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
         featureMap = new HashMap<>();
-
-        // update my location button drawable for mobile
-        if (getResources().getBoolean(R.bool.isTablet)){
-            currentLocationBtn.setImageResource(R.drawable.ic_cross_hair_tablet);
-        }
     }
 
     private void showUpdatedUserLocation() {
@@ -728,8 +723,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-            changeImageButtonResource(currentLocationBtn, isTablet ? R.drawable.ic_cross_hair_blue_tablet : R.drawable.ic_cross_hair_blue);
+            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
@@ -739,8 +733,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         } else {
             updateUserLocationOnMap = false;
-            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-            changeImageButtonResource(currentLocationBtn, isTablet ? R.drawable.ic_cross_hair_tablet : R.drawable.ic_cross_hair);
+            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
     }
 

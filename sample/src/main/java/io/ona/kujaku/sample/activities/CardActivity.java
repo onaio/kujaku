@@ -48,10 +48,6 @@ public class CardActivity extends BaseNavigationDrawerActivity {
 
         ImageButton btnHamburgerMenu = findViewById(R.id.map_view_hamburger_menu);
         boolean isTablet = getResources().getBoolean(io.ona.kujaku.R.bool.isTablet);
-        if (isTablet) {
-            addPointBtn.setImageResource(R.drawable.ic_add_tablet);
-            btnHamburgerMenu.setImageResource(R.drawable.ic_hamburger_menu_tablet);
-        }
     }
 
     @Override
