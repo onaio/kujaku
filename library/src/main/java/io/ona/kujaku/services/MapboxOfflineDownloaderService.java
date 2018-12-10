@@ -80,6 +80,9 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * </p>
  * <p>
  * <p>
+ *This services uses notification ids from 80 to 2080. The application should therefore use notification ids from 2081
+ *
+ *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
 public class MapboxOfflineDownloaderService extends Service implements OfflineRegionObserver, OnDownloadMapListener {
@@ -115,8 +118,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
 
     // Should persist across service instances but within the same app session
-    public static int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 180;
-    public static int LAST_DOWNLOAD_ERROR_NOTIFICATION_ID = 280;
+    public static int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 81;
+    public static int LAST_DOWNLOAD_ERROR_NOTIFICATION_ID = 1081;
 
     private boolean isPerformingTask = false;
 

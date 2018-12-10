@@ -67,7 +67,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
-    private int lastNotificationId = 200;
+    // Kujaku library uses notification ids 80 to 2080
+    private int lastNotificationId = 2081;
     private final static String TAG = MainActivity.class.getSimpleName();
 
     private List<Point> points;
