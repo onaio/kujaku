@@ -255,7 +255,12 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
                                 if (resultStatus.equals(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name())) {
                                     String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);
-                                    showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+
+                                    if (!TextUtils.isEmpty(message)) {
+                                        if (!message.contains("MapBox Tile Count limit exceeded")) {
+                                            showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+                                        }
+                                    }
                                 }
                             }
                         } else {
