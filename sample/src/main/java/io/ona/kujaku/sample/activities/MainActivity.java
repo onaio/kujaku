@@ -31,11 +31,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
+import io.ona.kujaku.helpers.OfflineServiceHelper;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.MyApplication;
@@ -59,6 +61,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private EditText topRightLngEd;
     private EditText bottomLeftLatEd;
     private EditText bottomLeftLngEd;
+    private EditText mapNameToDeleteEd;
+
+    private Button stopMapDownloadBtn;
+    private Button deleteMapDownloadBtn;
 
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
@@ -75,6 +81,9 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private Activity mainActivity = this;
 
+    private String currentMapDownload;
+    private boolean mapDownloadStop = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +97,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         bottomLeftLngEd = findViewById(R.id.edt_mainActivity_bottomLeftLongitude);
         topRightLatEd = findViewById(R.id.edt_mainActivity_topRightLatitude);
         topRightLngEd = findViewById(R.id.edt_mainActivity_topRightLongitude);
+        mapNameToDeleteEd = findViewById(R.id.edt_mainActivity_mapNameToDelete);
+
+        stopMapDownloadBtn = findViewById(R.id.btn_mainActivity_stopOfflineDownloadUsingHelper);
+        deleteMapDownloadBtn = findViewById(R.id.btn_mainActivity_deleteOfflineDownloadUsingHelper);
 
         mapNameEd = findViewById(R.id.edt_mainActivity_mapName);
 
@@ -95,7 +108,35 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         startOfflineDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                downloadMap();
+                downloadMap(false);
+            }
+        });
+
+        Button startOfflineDownloadUsingHelper = findViewById(R.id.btn_mainActivity_startOfflineDownloadUsingHelper);
+        startOfflineDownloadUsingHelper.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                downloadMap(true);
+            }
+        });
+
+        stopMapDownloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!TextUtils.isEmpty(currentMapDownload)) {
+                    stopMapDownload(currentMapDownload);
+                }
+            }
+        });
+
+        deleteMapDownloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String mapNameToDelete = mapNameToDeleteEd.getText().toString();
+
+                if (!TextUtils.isEmpty(mapNameToDelete)) {
+                    OfflineServiceHelper.deleteOfflineMap(MainActivity.this, mapNameToDelete, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+                }
             }
         });
 
@@ -165,6 +206,14 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    private void setMapDownloadStop(boolean enabled) {
+        if (mapDownloadStop != enabled) {
+            stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);
+        }
+
+        mapDownloadStop = enabled;
+    }
+
     @Override
     protected int getContentView() {
         return R.layout.activity_main;
@@ -175,7 +224,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         return R.id.nav_main_activity;
     }
 
-    private void downloadMap() {
+    private void downloadMap(boolean useDownloadHelper) {
         double topLeftLat = 37.7897;
         double topLeftLng = -119.5073;
         double bottomRightLat = 37.6744;
@@ -211,24 +260,56 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             topRightLng = Double.valueOf(trLngE);
             bottomLeftLat = Double.valueOf(blLatE);
             bottomLeftLng = Double.valueOf(blLngE);
+
+            setMapDownloadStop(true);
         } else {
             Toast.makeText(this, "Invalid Lat or Lng! Reverting to default values", Toast.LENGTH_LONG)
                     .show();
         }
 
-        Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m");
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, 20.0);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, 0.0);
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, new LatLng(topLeftLat, topLeftLng));
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, new LatLng(topRightLat, topRightLng));
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, new LatLng(bottomRightLat, bottomRightLng));
-        mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, new LatLng(bottomLeftLat, bottomLeftLng));
+        currentMapDownload = mapName;
 
-        startService(mapDownloadIntent);
+        String mapboxStyle = "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m";
+        LatLng topLeftBound = new LatLng(topLeftLat, topLeftLng);
+        LatLng topRightBound = new LatLng(topRightLat, topRightLng);
+        LatLng bottomRightBound = new LatLng(bottomRightLat, bottomRightLng);
+        LatLng bottomLeftBound = new LatLng(bottomLeftLat, bottomLeftLng);
+
+        double maxZoom = 20.0;
+        double minZoom = 0.0;
+
+        OfflineServiceHelper.ZoomRange zoomRange = new OfflineServiceHelper.ZoomRange(minZoom, maxZoom);
+
+        if (useDownloadHelper) {
+            OfflineServiceHelper.requestOfflineMapDownload(this
+                    , mapName
+                    , mapboxStyle
+                    , BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
+                    , topLeftBound
+                    , topRightBound
+                    , bottomRightBound
+                    , bottomLeftBound
+                    , zoomRange
+            );
+        } else {
+            Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, mapboxStyle);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeftBound);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
+
+            startService(mapDownloadIntent);
+        }
+    }
+
+    private void stopMapDownload(@NonNull String mapName) {
+        OfflineServiceHelper.stopMapDownload(this, mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
     }
 
     private boolean isValidDouble(String doubleString) {
@@ -253,12 +334,40 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                                 String resultStatus = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_STATUS);
                                 MapboxOfflineDownloaderService.SERVICE_ACTION serviceAction = (MapboxOfflineDownloaderService.SERVICE_ACTION) bundle.get(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION);
 
-                                if (resultStatus.equals(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name())) {
-                                    String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);
+                                String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);
 
+                                if (MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name().equals(resultStatus)) {
                                     if (!TextUtils.isEmpty(message)) {
                                         if (!message.contains("MapBox Tile Count limit exceeded")) {
                                             showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+                                        }
+                                    }
+
+                                    if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP && !TextUtils.isEmpty(message)) {
+                                        Toasty.error(MainActivity.this, message)
+                                                .show();
+                                    } else if (!TextUtils.isEmpty(mapUniqueName) && mapUniqueName.equals(currentMapDownload)) {
+                                        setMapDownloadStop(false);
+                                    }
+                                } else {
+                                    // We should disable the stop offline download button if it was stopped successfully
+                                    if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.STOP_CURRENT_DOWNLOAD) {
+                                        currentMapDownload = null;
+                                        setMapDownloadStop(false);
+                                    } else {
+                                        if (!TextUtils.isEmpty(message)) {
+                                            // This is a download progress message
+                                            if (isValidDouble(message)) {
+                                                if (Double.valueOf(message) == 100d) {
+                                                    currentMapDownload = null;
+                                                    setMapDownloadStop(false);
+                                                } else {
+                                                    setMapDownloadStop(true);
+                                                }
+                                            } else {
+                                                Toasty.info(MainActivity.this, message)
+                                                        .show();
+                                            }
                                         }
                                     }
                                 }

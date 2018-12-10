@@ -33,4 +33,7 @@
     <string name="location_permission_reason">We need the location permission to focus on your location in the map</string>
     <string name="error_occurred_download_map">Error occurred downloading %1$s</string>
     <string name="mapbox_tile_count_limit_of_exceeded">Mapbox tile count limit of %1$d</string>
+    <string name="map_could_not_be_deleted">Map could not be deleted</string>
+    <string name="map_could_not_be_downloaded">Map could not be downloaded</string>
+    <string name="map_download_could_not_be_stopped">Map download could not be stopped</string>
 </resources>
