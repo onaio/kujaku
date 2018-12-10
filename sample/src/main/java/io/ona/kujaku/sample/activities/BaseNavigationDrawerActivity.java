@@ -152,6 +152,10 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, BoundsChangeListenerActivity.class));
                 finish();
                 return true;
+            case R.id.nav_bounds_aware_activity:
+                startActivity(new Intent(this, BoundsAwareActivity.class));
+                finish();
+                return true;
             case R.id.nav_feature_click_listener:
                 startActivity(new Intent(this, FeatureClickListenerActivity.class));
                 finish();

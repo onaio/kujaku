@@ -57,12 +57,18 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.BoundsChangeListenerActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.FeatureClickStatusActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.BoundsAwareActivity"
+            android:label="@string/title_activity_bounds_aware"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.FeatureClickListenerActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
+
 </manifest>

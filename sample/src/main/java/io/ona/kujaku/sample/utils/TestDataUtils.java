@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
@@ -122,7 +123,7 @@ public class TestDataUtils {
         while (featureNumber < numFeatures + startingIndex + 1) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
-                feature.put("id", "feature_" + featureNumber);
+                feature.put("id", "feature_" + UUID.randomUUID());
                 feature.put("type", "Feature");
 
                 int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);
@@ -149,7 +150,6 @@ public class TestDataUtils {
             latitudeOffset = random.nextBoolean() ? latitudeOffset : -latitudeOffset;
             prevFeatureNumber = featureNumber;
             if (Math.abs(longitudeOffset) >= spread && Math.abs(latitudeOffset) >= spread) {
-                prevFeatureNumber = featureNumber;
                 featureNumber++;
                 newLongitude = longitude + longitudeOffset;
                 newLatitude = latitude + latitudeOffset;

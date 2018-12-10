@@ -54,5 +54,8 @@
         <item
             android:id="@+id/nav_bounding_box_listener"
             android:title="@string/bounding_box_listener"/>
+
+        <item android:id="@+id/nav_bounds_aware_activity"
+            android:title="@string/bounds_aware_activity"/>
     </group>
 </menu>
