@@ -15,8 +15,6 @@ import com.mapbox.turf.TurfMeasurement;
 
 public class CoordinateUtils {
 
-    public static final double DEFAULT_BOUND_DIFFERENCE = 0.021103;
-
     /**
      * Checks whether the provided coordinate is within the provided Bounds.
      *
