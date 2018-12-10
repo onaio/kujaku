@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="KujakuMapView">
         <attr name="current_location_btn_visibility" format="boolean" />
+        <attr name="mapbox_warmGps" format="boolean"/>
     </declare-styleable>
 </resources>

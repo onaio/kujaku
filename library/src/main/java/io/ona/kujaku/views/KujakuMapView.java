@@ -156,6 +156,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
 
+    private boolean warmGps = true;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -197,6 +199,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             @Override
             public void onClick(View v) {
                 focusOnUserLocation(true);
+
+                setWarmGps(true);
             }
         });
 
@@ -211,11 +215,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         });
 
         Map<String, Object> attributes = extractStyleValues(attributeSet);
-        String key = getContext().getString(R.string.current_location_btn_visibility);
-        if (attributes.containsKey(key)) {
-            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
+        String locationBtnVisibilityKey = getContext().getString(R.string.current_location_btn_visibility);
+        if (attributes.containsKey(locationBtnVisibilityKey)) {
+            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(locationBtnVisibilityKey);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
+
+        String warmGPSKey = getContext().getString(R.string.mapbox_warmGps);
+        if (attributes.containsKey(warmGPSKey)) {
+            warmGps = (boolean) attributes.get(warmGPSKey);
+        }
+
         featureMap = new HashMap<>();
     }
 
@@ -280,9 +290,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.KujakuMapView, 0, 0);
             try {
                 boolean isCurrentLocationBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_current_location_btn_visibility, false);
+                boolean isWarmGps = typedArray.getBoolean(R.styleable.KujakuMapView_mapbox_warmGps, true);
                 attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);
+                attributes.put(getContext().getString(R.string.mapbox_warmGps), isWarmGps);
             } catch (Exception e) {
-                Log.d(TAG, e.getMessage());
+                LogUtil.e(TAG, e);
             } finally {
                 typedArray.recycle();
             }
@@ -1061,12 +1073,19 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         super.onResume();
         getMapboxMap();
         // This prevents an overlay issue the first time when requesting for permissions
-        if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-            if (getContext() instanceof Activity) {
-                final Activity activity = (Activity) getContext();
-                LocationSettingsHelper.checkLocationEnabled(activity);
-            }
+        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+            checkLocationSettingsAndStartLocationServices();
+        }
+    }
+
+    private void checkLocationSettingsAndStartLocationServices() {
+        if (getContext() instanceof Activity) {
+            final Activity activity = (Activity) getContext();
+            LocationSettingsHelper.checkLocationEnabled(activity);
+
             warmUpLocationServices();
+        } else {
+            LogUtil.e(TAG, "KujakuMapView is not started in an Activity and can therefore not start location services");
         }
     }
 
@@ -1080,6 +1099,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 onFeatureClickListener.onFeatureClick(features);
             }
         }
+    }
+
+    public boolean isWarmGps() {
+        return warmGps;
+    }
+
+    public void setWarmGps(boolean warmGps) {
+        // If it was not warming(started) the location services, do that now
+        boolean shouldStartNow = !this.warmGps && warmGps;
+        this.warmGps = warmGps;
+
+        if (shouldStartNow) {
+            checkLocationSettingsAndStartLocationServices();
+        }
+
     }
 }
 
