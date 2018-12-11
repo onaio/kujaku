@@ -8,6 +8,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -17,11 +18,15 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
@@ -267,5 +272,44 @@ public class KujakuMapViewTest extends BaseTest {
 
         }
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
+    }
+
+    @Test
+    public void setBoundsChangeListener() throws NoSuchFieldException, IllegalAccessException {
+        String fieldName = "boundsChangeListener";
+        BoundsChangeListener boundsChangeListener = new BoundsChangeListener() {
+            @Override
+            public void onBoundsChanged(LatLng topLeft, LatLng topRight, LatLng bottomRight, LatLng bottomLeft) {
+                // do nothing for now
+            }
+        };
+
+        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName, null);
+        assertNull(getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
+        kujakuMapView.setBoundsChangeListener(boundsChangeListener);
+
+        assertEquals(boundsChangeListener, getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
+    }
+
+
+    @Test
+    public void setBoundsChangeListenerShouldCallListenerFirstTime() throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ArrayList<Boolean> results = new ArrayList<>();
+
+        BoundsChangeListener boundsChangeListener = new BoundsChangeListener() {
+            @Override
+            public void onBoundsChanged(LatLng topLeft, LatLng topRight, LatLng bottomRight, LatLng bottomLeft) {
+                countDownLatch.countDown();
+                results.add(true);
+            }
+        };
+
+        kujakuMapView.setVisibleRegion(new VisibleRegion(new LatLng(16, 16), new LatLng(15, 15),
+                new LatLng(14, 14), new LatLng(13, 13), null));
+        kujakuMapView.setBoundsChangeListener(boundsChangeListener);
+
+        countDownLatch.await(3, TimeUnit.SECONDS);
+        assertEquals(1, results.size());
     }
 }

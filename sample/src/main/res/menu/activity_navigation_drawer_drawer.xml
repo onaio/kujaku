@@ -42,6 +42,24 @@
         <item
             android:id="@+id/nav_wmts"
             android:title="@string/wmts"/>
-    </group>
 
+        <item
+            android:id="@+id/nav_add_update_activity"
+            android:title="@string/add_update_activity_title"/>
+
+        <item
+            android:id="@+id/nav_feature_click_status"
+            android:title="@string/feature_click_status"/>
+
+        <item
+            android:id="@+id/nav_feature_click_listener"
+            android:title="@string/feature_click_listener"/>
+
+        <item
+            android:id="@+id/nav_bounding_box_listener"
+            android:title="@string/bounding_box_listener"/>
+
+        <item android:id="@+id/nav_bounds_aware_activity"
+            android:title="@string/bounds_aware_activity"/>
+    </group>
 </menu>

@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 
 import io.ona.kujaku.views.KujakuMapView;
@@ -18,6 +19,8 @@ public class KujakuMapTestView extends KujakuMapView {
 
     public boolean isMapCentered = false;
     public boolean enableAddPointIsCalled = false;
+
+    private VisibleRegion visibleRegion;
 
     public KujakuMapTestView(@NonNull Context context) {
         super(context);
@@ -45,5 +48,13 @@ public class KujakuMapTestView extends KujakuMapView {
         isMapCentered = true;
     }
 
+    public void setVisibleRegion(VisibleRegion visibleRegion) {
+        this.visibleRegion = visibleRegion;
+    }
 
+    @Nullable
+    @Override
+    protected VisibleRegion getCurrentBounds() {
+        return visibleRegion;
+    }
 }

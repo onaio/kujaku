@@ -2,6 +2,7 @@ package io.ona.kujaku.downloaders;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -24,10 +25,8 @@ import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
-import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.utils.exceptions.MalformedDataException;
 import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
-import io.ona.kujaku.utils.Constants;
 
 /**
  * This is a singleton
@@ -204,11 +203,11 @@ public class MapBoxOfflineResourcesDownloader {
             throw new OfflineMapDownloadException("Context passed is null");
         }
 
-        if (name == null || name.isEmpty()) {
+        if (TextUtils.isEmpty(name)) {
             throw new OfflineMapDownloadException("Invalid map name");
         }
 
-        if (styleUrl == null || styleUrl.isEmpty() || !styleUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {
+        if (TextUtils.isEmpty(styleUrl)) {
             throw new OfflineMapDownloadException("Invalid Style URL");
         }
 
@@ -377,7 +376,7 @@ public class MapBoxOfflineResourcesDownloader {
                 String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
                 Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(errorMessage);
+                    onDownloadMapListener.mapboxTileCountLimitExceeded(limit);
                 }
             }
         });

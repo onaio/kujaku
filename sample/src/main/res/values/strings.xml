@@ -19,6 +19,7 @@
     <string name="high_level_location_add_point">High-level Add Point - Location services</string>
     <string name="low_level_add_point_custom_marker">Low-level Custom Marker</string>
     <string name="wmts">Wmts</string>
+    <string name="add_update_activity_title">Add or Update</string>
     <string name="go_to_my_location">GO TO MY LOCATION</string>
     <string name="done">DONE</string>
     <string name="click_go_to_my_location_msg">Please first click GO TO MY LOCATION button</string>
@@ -41,4 +42,15 @@
     <string name="card_activity">Card Activity</string>
     <string name="navigate_to_map">Navigate to Map</string>
     <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
+    <string name="title_activity_add_update_properties">AddUpdatePropertiesActivity</string>
+    <string name="feature_click_status">Feature Click Status</string>
+    <string name="bounding_box_listener">Bounding Box Listener</string>
+    <string name="bounds_aware_activity">Bounds Aware Activity</string>
+    <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
+    <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
+    <string name="enable_bounds_listener">"Enable Bounds Listener"</string>
+    <string name="disable_bounds_listener">"Disable Bounds Listener"</string>
+    <string name="feature_click_listener">Feature Click Listener</string>
+    <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
+    <string name="building_exc">Building!</string>
 </resources>
