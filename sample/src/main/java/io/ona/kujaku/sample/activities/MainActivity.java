@@ -64,7 +64,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private EditText mapNameToDeleteEd;
 
     private Button stopMapDownloadBtn;
-    private Button deleteMapDownloadBtn;
 
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
@@ -100,7 +99,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         mapNameToDeleteEd = findViewById(R.id.edt_mainActivity_mapNameToDelete);
 
         stopMapDownloadBtn = findViewById(R.id.btn_mainActivity_stopOfflineDownloadUsingHelper);
-        deleteMapDownloadBtn = findViewById(R.id.btn_mainActivity_deleteOfflineDownloadUsingHelper);
+        Button deleteMapDownloadBtn = findViewById(R.id.btn_mainActivity_deleteOfflineDownloadUsingHelper);
 
         mapNameEd = findViewById(R.id.edt_mainActivity_mapName);
 
