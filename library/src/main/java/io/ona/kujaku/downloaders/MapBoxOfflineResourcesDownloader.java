@@ -376,7 +376,7 @@ public class MapBoxOfflineResourcesDownloader {
                 String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
                 Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
-                    onDownloadMapListener.onError(errorMessage);
+                    onDownloadMapListener.mapboxTileCountLimitExceeded(limit);
                 }
             }
         });

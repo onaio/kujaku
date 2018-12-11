@@ -261,7 +261,7 @@ public class MapboxOfflineDownloaderServiceTest {
         latch.await();
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded : 60000 while Downloading " + mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded 60000 while Downloading " + mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
     }
 
     @Test
