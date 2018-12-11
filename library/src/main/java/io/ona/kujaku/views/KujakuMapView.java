@@ -61,7 +61,6 @@ import java.util.UUID;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
@@ -80,6 +79,14 @@ import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
 import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.utils.wmts.model.WmtsLayer;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
+
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
