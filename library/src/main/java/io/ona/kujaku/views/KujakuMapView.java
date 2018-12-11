@@ -61,6 +61,7 @@ import java.util.UUID;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
@@ -658,7 +659,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         WmtsLayer layerIdentified;
 
         if (capabilities == null) {
-            throw new WmtsCapabilitiesException("capabilities object is null or empty");
+            throw new WmtsCapabilitiesException ("capabilities object is null or empty");
         }
 
         if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
