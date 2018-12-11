@@ -41,6 +41,18 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
         navigationView = getNavigationView();
         navigationView.setNavigationItemSelectedListener(this);
+
+        // Set activity title
+        setActivityTitleFromNavItem();
+    }
+
+    private void setActivityTitleFromNavItem() {
+        if (getSelectedNavigationItem() != 0) {
+            MenuItem menuItem = navigationView.getMenu().findItem(getSelectedNavigationItem());
+            if (menuItem != null) {
+                setTitle(menuItem.getTitle());
+            }
+        }
     }
 
     @Override
@@ -132,10 +144,31 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_add_update_activity:
+                startActivity(new Intent(this, AddUpdatePropertiesActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_feature_click_status:
+                startActivity(new Intent(this, FeatureClickStatusActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_bounding_box_listener:
+                startActivity(new Intent(this, BoundsChangeListenerActivity.class));
+                finish();
+                return true;
+            case R.id.nav_bounds_aware_activity:
+                startActivity(new Intent(this, BoundsAwareActivity.class));
+                finish();
+                return true;
+            case R.id.nav_feature_click_listener:
+                startActivity(new Intent(this, FeatureClickListenerActivity.class));
+                finish();
+                return true;
             default:
                 break;
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -161,8 +194,6 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
         if (navigationView == null) {
             navigationView = getNavigationView();
         }
-
         navigationView.setCheckedItem(navigationItem);
     }
-
 }

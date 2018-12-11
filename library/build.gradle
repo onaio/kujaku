@@ -20,7 +20,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.4.1'
+version '0.5.0'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -161,8 +161,8 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
-    implementation (project(":utils")) {
-//    implementation('io.ona.kujaku:utils:0.4.1') {
+    //implementation (project(":utils")) {
+    implementation('io.ona.kujaku:utils:0.5.0') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'

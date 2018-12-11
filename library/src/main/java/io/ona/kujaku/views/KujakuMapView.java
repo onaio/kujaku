@@ -4,11 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -21,21 +23,25 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
@@ -44,6 +50,7 @@ import com.mapbox.mapboxsdk.style.sources.TileSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +65,8 @@ import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
+import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
@@ -72,11 +81,18 @@ import io.ona.kujaku.utils.Views;
 import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.utils.wmts.model.WmtsLayer;
 
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
 
-public class KujakuMapView extends MapView implements IKujakuMapView {
+public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
     public static final double LOCATION_FOCUS_ZOOM = 20d;
@@ -118,6 +134,29 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
      * Wmts Layers to add on the map
      */
     private Set<WmtsLayer> wmtsLayers;
+
+    private FeatureCollection featureCollection;
+
+    private Map<String, Integer> featureMap;
+
+    private Layer primaryLayer;
+
+    private GeoJsonSource primaryGeoJsonSource;
+
+    private String primaryGeoJsonSourceId;
+
+    private String geoJsonSourceString;
+
+    private boolean isFetchSourceFromStyle = false;
+
+    private CameraPosition cameraPosition = null;
+
+    private BoundsChangeListener boundsChangeListener;
+
+    private OnFeatureClickListener onFeatureClickListener;
+    private String[] featureClickLayerIdFilters;
+    private Expression featureClickExpressionFilter;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -168,7 +207,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 markerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 int height = markerLayout.getMeasuredHeight();
-                markerLayout.setY(markerLayout.getY() - (height/2));
+                markerLayout.setY(markerLayout.getY() - (height / 2));
             }
         });
 
@@ -178,6 +217,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
+        featureMap = new HashMap<>();
     }
 
     private void showUpdatedUserLocation() {
@@ -380,20 +420,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
                 userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
                 userLocationInnerCircle.setProperties(
-                        PropertyFactory.circleColor("#4387f4"),
-                        PropertyFactory.circleRadius(5f),
-                        PropertyFactory.circleStrokeWidth(1f),
-                        PropertyFactory.circleStrokeColor("#dde2e4")
+                        circleColor("#4387f4"),
+                        circleRadius(5f),
+                        circleStrokeWidth(1f),
+                        circleStrokeColor("#dde2e4")
                 );
 
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
                 userLocationOuterCircle.setProperties(
-                        PropertyFactory.circleColor("#81c2ee"),
-                        PropertyFactory.circleRadius(25f),
-                        PropertyFactory.circleStrokeWidth(1f),
-                        PropertyFactory.circleStrokeColor("#74b7f6"),
-                        PropertyFactory.circleOpacity(0.3f),
-                        PropertyFactory.circleStrokeOpacity(0.6f)
+                        circleColor("#81c2ee"),
+                        circleRadius(25f),
+                        circleStrokeWidth(1f),
+                        circleStrokeColor("#74b7f6"),
+                        circleOpacity(0.3f),
+                        circleStrokeOpacity(0.6f)
                 );
 
                 mapboxMap.addLayer(userLocationOuterCircle);
@@ -416,6 +456,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public @Nullable JSONObject dropPoint() {
         return dropPoint((MarkerOptions) null);
     }
+
 
     @Nullable
     @Override
@@ -512,13 +553,30 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
                     mapboxMap.getUiSettings().setCompassEnabled(false);
-                    // This disables
-                    addOnScrollListenerToMap(mapboxMap);
-                    if (droppedPoints != null) {
+                    if (KujakuMapView.this.droppedPoints != null) {
+                        List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
                         for (io.ona.kujaku.domain.Point point : droppedPoints) {
                             dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
                         }
                     }
+
+                    if (getPrimaryGeoJsonSource() != null && mapboxMap.getSource(getPrimaryGeoJsonSource().getId()) == null) {
+                        mapboxMap.addSource(getPrimaryGeoJsonSource());
+                    }
+                    if (getPrimaryLayer() != null && mapboxMap.getLayer(getPrimaryLayer().getId()) == null) {
+                        mapboxMap.addLayer(getPrimaryLayer());
+                    }
+                    if (isFetchSourceFromStyle) {
+                        initializeSourceAndFeatureCollectionFromStyle();
+                        isFetchSourceFromStyle = false;
+                    }
+                    if (getCameraPosition() != null) {
+                        mapboxMap.setCameraPosition(getCameraPosition());
+                    }
+                    // add bounds change listener
+                    addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
+                    callBoundsChangedListeners();
+                    enableFeatureClickListenerEmitter(mapboxMap);
 
                     addWmtsLayers();
                 }
@@ -592,7 +650,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         WmtsLayer layerIdentified;
 
         if (capabilities == null) {
-            throw new WmtsCapabilitiesException("capabilities object is null or empty");
+            throw new WmtsCapabilitiesException ("capabilities object is null or empty");
         }
 
         if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
@@ -659,7 +717,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
 
-    private void addOnScrollListenerToMap(MapboxMap mapboxMap) {
+    private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
@@ -676,9 +734,31 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
             @Override
             public void onMoveEnd(@NonNull MoveGestureDetector detector) {
-                // We are also not going to do anything here
+                callBoundsChangedListeners();
             }
         });
+    }
+
+    private void callBoundsChangedListeners() {
+        if (boundsChangeListener != null) {
+            VisibleRegion visibleRegion = getCurrentBounds();
+
+            if (visibleRegion != null) {
+                boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
+                        , visibleRegion.nearRight, visibleRegion.nearLeft);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    @Nullable
+    protected VisibleRegion getCurrentBounds() {
+        return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
+    }
+
+    private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
+        mapboxMap.removeOnMapClickListener(this);
+        mapboxMap.addOnMapClickListener(this);
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -740,9 +820,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         // Clean up location services
         if (locationClient != null && locationClient.isMonitoringLocation()) {
             locationClient.setListener(null);
-            locationClient.stopLocationUpdates();
             locationClient = null;
         }
+    }
+
+    @Override
+    public void showCurrentLocationBtn(boolean isVisible) {
+        currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
     public void setVisibility(View view, boolean isVisible) {
@@ -770,6 +854,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds) {
+        this.onFeatureClickListener = onFeatureClickListener;
+        this.featureClickLayerIdFilters = layerIds;
+        this.featureClickExpressionFilter = null;
+    }
+
+    @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds) {
+        this.onFeatureClickListener = onFeatureClickListener;
+        this.featureClickLayerIdFilters = layerIds;
+        this.featureClickExpressionFilter = expressionFilter;
+    }
+
+    @Override
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
@@ -785,6 +883,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             updateUserLocationOnMap = false;
             changeTargetIcon(R.drawable.ic_cross_hair);
         }
+    }
+
+    @Override
+    public void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener) {
+        this.boundsChangeListener = boundsChangeListener;
+
+        callBoundsChangedListeners();
     }
 
     private void changeTargetIcon(int drawableIcon) {
@@ -806,13 +911,113 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public void showCurrentLocationBtn(boolean isVisible) {
-        currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);
+    public void addFeaturePoints(FeatureCollection featureCollection) {
+        List<com.mapbox.geojson.Feature> features = this.featureCollection.features();
+        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
+            String featureId = feature.id();
+            if (featureId != null && !featureMap.containsKey(featureId)) {
+                featureMap.put(featureId, features.size());
+                features.add(feature);
+            }
+        }
+        if (mapboxMap != null) {
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+        }
+    }
+
+    @Override
+    public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+        List<com.mapbox.geojson.Feature> currFeatures = this.featureCollection.features();
+        List<com.mapbox.geojson.Feature> newFeatures = new ArrayList<>();
+        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {
+            String featureId = feature.id();
+            if (featureMap.containsKey(featureId)) {
+                int featureIndex = featureMap.get(featureId);
+                com.mapbox.geojson.Feature currFeature = currFeatures.get(featureIndex);
+                for (Map.Entry<String, JsonElement> entry : feature.properties().entrySet()) {
+                    currFeature.removeProperty(entry.getKey());
+                    currFeature.addStringProperty(entry.getKey(), entry.getValue().getAsString());
+                }
+            } else {
+                newFeatures.add(feature);
+            }
+        }
+        // add new features if any
+        FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
+        addFeaturePoints(newFeatureCollection);
+        if (mapboxMap != null) {
+            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+        }
+    }
+
+    public void initializePrimaryGeoJsonSource(String sourceId, boolean isFetchSourceFromStyle, String geoJsonSource) {
+        if (sourceId == null || (isFetchSourceFromStyle && geoJsonSource == null)) {
+            Log.e(TAG, "GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.");
+            return;
+        }
+        initializeFeatureCollection();
+        if (isFetchSourceFromStyle) {
+            this.isFetchSourceFromStyle = true;
+            setPrimaryGeoJsonSourceId(sourceId);
+            setGeoJsonSourceString(geoJsonSource);
+        } else {
+            primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollection);
+        }
+    }
+
+    private void initializeSourceAndFeatureCollectionFromStyle() {
+        try {
+            FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
+            primaryGeoJsonSource = mapboxMap.getSourceAs(getPrimaryGeoJsonSourceId());
+            addFeaturePoints(featureCollection);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private void initializeFeatureCollection() {
+        featureCollection = FeatureCollection.fromFeatures(new ArrayList<>());
+    }
+
+    public CameraPosition getCameraPosition() {
+        return cameraPosition;
+    }
+
+    public void setCameraPosition(CameraPosition cameraPosition) {
+        this.cameraPosition = cameraPosition;
+    }
+
+    public GeoJsonSource getPrimaryGeoJsonSource() {
+        return primaryGeoJsonSource;
+    }
+
+    public Layer getPrimaryLayer() {
+        return primaryLayer;
+    }
+
+    public void setPrimaryLayer(Layer layer) {
+        primaryLayer = layer;
+    }
+
+    public String getPrimaryGeoJsonSourceId() {
+        return primaryGeoJsonSourceId;
+    }
+
+    public void setPrimaryGeoJsonSourceId(String primaryGeoJsonSourceId) {
+        this.primaryGeoJsonSourceId = primaryGeoJsonSourceId;
+    }
+
+    public String getGeoJsonSourceString() {
+        return geoJsonSourceString;
+    }
+
+    public void setGeoJsonSourceString(String geoJsonSourceString) {
+        this.geoJsonSourceString = geoJsonSourceString;
     }
 
     @Override
     public void onPause() {
-        if (locationClient != null) {
+        if (locationClient != null && locationClient.isMonitoringLocation()) {
             locationClient.stopLocationUpdates();
             locationClient.close();
         }
@@ -829,6 +1034,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
                 LocationSettingsHelper.checkLocationEnabled(activity);
             }
             warmUpLocationServices();
+        }
+    }
+
+    @Override
+    public void onMapClick(@NonNull LatLng point) {
+        if (onFeatureClickListener != null) {
+            PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
+
+            if (features.size() > 0) {
+                onFeatureClickListener.onFeatureClick(features);
+            }
         }
     }
 }

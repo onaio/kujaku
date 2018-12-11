@@ -67,7 +67,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
-    private int lastNotificationId = 200;
+    // Kujaku library uses notification ids 80 to 2080
+    private int lastNotificationId = 2081;
     private final static String TAG = MainActivity.class.getSimpleName();
 
     private List<Point> points;
@@ -254,7 +255,12 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
                                 if (resultStatus.equals(MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name())) {
                                     String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);
-                                    showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+
+                                    if (!TextUtils.isEmpty(message)) {
+                                        if (!message.contains("MapBox Tile Count limit exceeded")) {
+                                            showInfoNotification("Error occurred " + mapUniqueName + ":" + serviceAction.name(), message);
+                                        }
+                                    }
                                 }
                             }
                         } else {
