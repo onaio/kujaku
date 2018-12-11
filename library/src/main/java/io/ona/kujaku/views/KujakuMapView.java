@@ -88,15 +88,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColo
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
 
-
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
-
-
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
