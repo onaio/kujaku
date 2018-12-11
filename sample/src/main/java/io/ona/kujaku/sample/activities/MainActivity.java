@@ -81,7 +81,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private Activity mainActivity = this;
 
     private String currentMapDownload;
-    private boolean mapDownloadStop = false;
+    private boolean canStopMapDownload = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,12 +205,19 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void setMapDownloadStop(boolean enabled) {
-        if (mapDownloadStop != enabled) {
+    private void setCanStopMapDownload(boolean enabled) {
+        /*
+         * Purpose of this:
+         * 1. Is not have to call stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);
+         * repetitively if the desired state is current.
+         * 2. Also, views can tend to be unreactive to events if you you update them too frequent.
+         * Map progress updates are expected to be frequent
+         */
+        if (canStopMapDownload != enabled) {
             stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);
         }
 
-        mapDownloadStop = enabled;
+        canStopMapDownload = enabled;
     }
 
     @Override
@@ -260,7 +267,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             bottomLeftLat = Double.valueOf(blLatE);
             bottomLeftLng = Double.valueOf(blLngE);
 
-            setMapDownloadStop(true);
+            setCanStopMapDownload(true);
         } else {
             Toast.makeText(this, "Invalid Lat or Lng! Reverting to default values", Toast.LENGTH_LONG)
                     .show();
@@ -345,23 +352,32 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                                     if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP && !TextUtils.isEmpty(message)) {
                                         Toasty.error(MainActivity.this, message)
                                                 .show();
-                                    } else if (!TextUtils.isEmpty(mapUniqueName) && mapUniqueName.equals(currentMapDownload)) {
-                                        setMapDownloadStop(false);
+                                    }
+                                    /*
+                                    (FACT) This is an error update from the service. If this is not
+                                    a DELETE_MAP action and the update is about the map that we expect
+                                    to be currently downloading held by currentMapDownload, then we
+                                    need to disable the STOP MAP DOWNLOAD since it's already been
+                                    stopped after the error and if we left this, then we will be misleading
+                                    the user than they can stop a download which is not happening
+                                     */
+                                    else if (!TextUtils.isEmpty(mapUniqueName) && mapUniqueName.equals(currentMapDownload)) {
+                                        setCanStopMapDownload(false);
                                     }
                                 } else {
                                     // We should disable the stop offline download button if it was stopped successfully
                                     if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.STOP_CURRENT_DOWNLOAD) {
                                         currentMapDownload = null;
-                                        setMapDownloadStop(false);
+                                        setCanStopMapDownload(false);
                                     } else {
                                         if (!TextUtils.isEmpty(message)) {
                                             // This is a download progress message
                                             if (isValidDouble(message)) {
                                                 if (Double.valueOf(message) == 100d) {
                                                     currentMapDownload = null;
-                                                    setMapDownloadStop(false);
+                                                    setCanStopMapDownload(false);
                                                 } else {
-                                                    setMapDownloadStop(true);
+                                                    setCanStopMapDownload(true);
                                                 }
                                             } else {
                                                 Toasty.info(MainActivity.this, message)
