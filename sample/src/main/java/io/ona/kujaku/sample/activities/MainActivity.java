@@ -210,7 +210,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
          * Purpose of this:
          * 1. Is not have to call stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);
          * repetitively if the desired state is current.
-         * 2. Also, views can tend to be unreactive to events if you you update them too frequent.
+         * 2. Also, views can tend to be unreactive to events if you update them too frequently.
          * Map progress updates are expected to be frequent
          */
         if (canStopMapDownload != enabled) {
@@ -356,10 +356,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                                     /*
                                     (FACT) This is an error update from the service. If this is not
                                     a DELETE_MAP action and the update is about the map that we expect
-                                    to be currently downloading held by currentMapDownload, then we
-                                    need to disable the STOP MAP DOWNLOAD since it's already been
-                                    stopped after the error and if we left this, then we will be misleading
-                                    the user than they can stop a download which is not happening
+                                    to be currently downloading, held by currentMapDownload variable, then we
+                                    need to disable the STOP MAP DOWNLOAD since the download has already been
+                                    stopped after the error. If we left this as true, then we would be misleading
+                                    the user that they can stop a non-existent download.
                                      */
                                     else if (!TextUtils.isEmpty(mapUniqueName) && mapUniqueName.equals(currentMapDownload)) {
                                         setCanStopMapDownload(false);
