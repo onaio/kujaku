@@ -45,9 +45,6 @@ public class CardActivity extends BaseNavigationDrawerActivity {
                 isCardVisible = !isCardVisible;
             }
         });
-
-        ImageButton btnHamburgerMenu = findViewById(R.id.map_view_hamburger_menu);
-        boolean isTablet = getResources().getBoolean(io.ona.kujaku.R.bool.isTablet);
     }
 
     @Override
