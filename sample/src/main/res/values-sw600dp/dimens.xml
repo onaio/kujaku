@@ -1,4 +1,5 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="hamburger_margin">48dp</dimen>
+    <dimen name="hamburger_radius">10dp</dimen>
 </resources>
