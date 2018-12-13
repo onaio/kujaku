@@ -9,4 +9,6 @@
     <dimen name="info_window_nonfocus_text_size">14dp</dimen>
     <dimen name="info_window_focus_padding">14dp</dimen>
     <dimen name="info_window_nonfocus_padding">10dp</dimen>
+    <dimen name="my_location_button_dimen">48dp</dimen>
+    <dimen name="my_location_btn_margin">16dp</dimen>
 </resources>
