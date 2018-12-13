@@ -52,4 +52,11 @@
     <string name="feature_click_listener">Feature Click Listener</string>
     <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
     <string name="building_exc">Building!</string>
+    <string name="padded_bbox_calculator">Padded Bbox Calculator</string>
+    <string name="drop_point">Drop Point</string>
+    <string name="generate_padded_bbox">Generate Padded Bbox</string>
+    <string name="first_add_some_points">First add some points</string>
+    <string name="start_offline_downloading_using_helper">Start Offline Downloading Using Helper</string>
+    <string name="stop_offline_download_using_helper">Stop Offline Download Using Helper</string>
+    <string name="delete_offline_map_using_helper">Delete Offline Map Using Helper</string>
 </resources>
