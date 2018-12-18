@@ -53,4 +53,7 @@
     <string name="feature_click_listener">Feature Click Listener</string>
     <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
     <string name="building_exc">Building!</string>
+
+    <!-- WMTS Capabilities Url -->
+    <string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>
 </resources>
