@@ -35,13 +35,13 @@ To publish locally:
 ### WmtsService
 
 This class reads the capabilities Xml stream and deserialize it into a WMTSCapabilities object.
-You need to provide a Capabilities URL as argument to the constructor
+You need to provide a Capabilities URL as argument to the constructor.
 
 ```
  WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
 ```
 
-Calls the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the asynch task return the result.
+Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the asynch task returns the result.
 
 ```
 wmtsService.requestData();
@@ -73,12 +73,12 @@ public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception
 public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception
 ```
 
-* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the identified style by the styleIdentifier argument and first tileMatrixSet:
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and first tileMatrixSet:
 ```
  public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception
 ```
 
-* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the identified style by the styleIdentifier argument and the identified tileMatrixSet by the tileMatrixSetLinkIdentifier argument:
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and the tileMatrixSet identified by the tileMatrixSetLinkIdentifier argument:
 ```
 public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception
 ```
