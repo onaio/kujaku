@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:src="@drawable/mapbox_markerview_icon_default"/>
+        android:src="@drawable/ic_subway"/>
 
     <!-- This is the target button shown on the bottom-right -->
     <ImageButton
