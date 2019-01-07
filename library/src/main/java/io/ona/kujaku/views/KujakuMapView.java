@@ -613,7 +613,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      * @param capabilities
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception {
+    public void addWmtsLayer(WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
        this.addWmtsLayer(capabilities, null, null, null);
     }
 
@@ -623,7 +623,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param layerIdentifier
      * @param capabilities
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception {
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws WmtsCapabilitiesException {
         this.addWmtsLayer(capabilities, layerIdentifier, null, null);
     }
 
@@ -634,7 +634,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param layerIdentifier
      * @param styleIdentifier
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception {
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws WmtsCapabilitiesException {
         this.addWmtsLayer(capabilities, layerIdentifier, styleIdentifier, null);
     }
 
@@ -646,7 +646,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param styleIdentifier
      * @param tileMatrixSetLinkIdentifier
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception {
+    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         WmtsLayer layerIdentified;
 
         if (capabilities == null) {
@@ -687,7 +687,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param styleIdentifier
      * @throws Exception
      */
-    private void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws Exception {
+    private void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws WmtsCapabilitiesException {
         if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getStyle(styleIdentifier) == null) {
@@ -705,7 +705,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param tileMatrixSetLinkIdentifier
      * @throws Exception
      */
-    private void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws Exception {
+    private void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getTileMatrixSet(tileMatrixSetLinkIdentifier) == null) {

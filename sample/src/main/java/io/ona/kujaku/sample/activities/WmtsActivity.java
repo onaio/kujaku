@@ -1,12 +1,11 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -35,32 +34,17 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
                 try {
                     kujakuMapView.addWmtsLayer(capabilities);
                 }
-                catch (Exception ex) {
-                    //throw ex;
+                catch (WmtsCapabilitiesException ex) {
+                    Log.e(TAG, "A WmtsCapabilitiesException occurs", ex);
                 }
+            }
+
+            @Override
+            public void onCapabilitiesError(Exception ex) {
+                Log.e(TAG,"Capabilities Exception", ex);
             }
         });
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        return super.onNavigationItemSelected(item);
     }
 
     @Override
@@ -77,11 +61,6 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
     @Override
     protected int getSelectedNavigationItem() {
         return R.id.nav_wmts;
-    }
-
-    @Override
-    protected NavigationView getNavigationView() {
-        return super.getNavigationView();
     }
 
     @Override
@@ -118,10 +97,5 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
     public void onLowMemory() {
         super.onLowMemory();
         if (kujakuMapView != null) kujakuMapView.onLowMemory();
-    }
-
-    @Override
-    protected void setSelectedNavigationItem(int navigationItem) {
-        super.setSelectedNavigationItem(navigationItem);
     }
 }

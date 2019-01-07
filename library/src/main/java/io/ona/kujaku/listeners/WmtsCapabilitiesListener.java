@@ -9,4 +9,5 @@ import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
  */
 public interface WmtsCapabilitiesListener {
     void onCapabilitiesReceived(WmtsCapabilities capabilities);
+    void onCapabilitiesError(Exception ex);
 }

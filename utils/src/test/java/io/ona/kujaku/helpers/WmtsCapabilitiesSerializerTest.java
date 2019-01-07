@@ -21,30 +21,26 @@ import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
 @Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class WmtsCapabilitiesSerializerTest {
 
-    private WmtsCapabilities getCapabilities() {
+    private WmtsCapabilities getCapabilities() throws Exception {
 
         WmtsCapabilities capabilities = null ;
 
-        try {
-            InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
-            WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
-            capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
-
-        } catch (Exception ex) {
-        }
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
 
         return capabilities;
     }
 
     @Test
-    public void readCapabilities() {
+    public void readCapabilities() throws Exception {
 
         WmtsCapabilities capabilities = getCapabilities() ;
         Assert.assertNotNull(capabilities);
     }
 
     @Test
-    public void testCapabilitiesContent() {
+    public void testCapabilitiesContent() throws Exception {
         WmtsCapabilities capabilities = getCapabilities() ;
         Assert.assertEquals(capabilities.getVersion(), "1.0.0");
         Assert.assertEquals(capabilities.getLayers().size(), 1);

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
@@ -235,42 +236,41 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
         try {
             kujakuMapView.addWmtsLayer(null);
-        } catch (Exception ex) {
-
+        }
+        catch (WmtsCapabilitiesException ex) {
+            assertEquals(ex.getMessage(), "capabilities object is null or empty");
         }
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
     }
 
     @Test
-    public void addFirstWmtsLayers () {
+    public void addFirstWmtsLayers () throws Exception {
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
-        try {
 
-            InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
-            WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
-            WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
 
-            kujakuMapView.addWmtsLayer(capabilities);
-        } catch (Exception ex) {
+        kujakuMapView.addWmtsLayer(capabilities);
 
-        }
         assertEquals(1, kujakuMapView.getWmtsLayers().size());
         assertEquals("Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", ((WmtsLayer)kujakuMapView.getWmtsLayers().toArray()[0]).getIdentifier());
     }
 
     @Test
-    public void addUnknowWmtsLayers () {
+    public void addUnknowWmtsLayers () throws Exception{
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
+
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
         try {
-
-            InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
-            WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
-            WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
-
             kujakuMapView.addWmtsLayer(capabilities, "unknownLayer", "unknownStyle", "unknownTileMatrix");
-        } catch (Exception ex) {
-
+        } catch (WmtsCapabilitiesException ex) {
+            assertEquals(ex.getMessage(), String.format("Layer with identifier %1$s is unknown", "unknownLayer"));
         }
+
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
     }
 
