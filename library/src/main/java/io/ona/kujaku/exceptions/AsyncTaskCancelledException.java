@@ -14,6 +14,10 @@ public class AsyncTaskCancelledException extends Exception {
         super("AsyncTask was cancedlled : " + asyncTaskClass.getName());
     }
 
+    public AsyncTaskCancelledException(Throwable cause) {
+        super(cause);
+    }
+
     public AsyncTaskCancelledException(String message) {
         super(message);
     }
