@@ -18,6 +18,8 @@ public class GenericAsyncTask extends AsyncTask<Void, Void, Object[]> {
     private AsyncTaskCallable toCall;
     private OnFinishedListener onFinishedListener;
 
+    private Exception exception;
+
     public GenericAsyncTask(@NonNull AsyncTaskCallable toCall) {
         this.toCall = toCall;
     }
@@ -28,6 +30,7 @@ public class GenericAsyncTask extends AsyncTask<Void, Void, Object[]> {
             return toCall.call();
         } catch (Exception e) {
             LogUtil.e(TAG, e);
+            exception = e;
             this.cancel(true);
 
             return null;
@@ -44,7 +47,11 @@ public class GenericAsyncTask extends AsyncTask<Void, Void, Object[]> {
     @Override
     protected void onCancelled() {
         if (onFinishedListener != null) {
-            onFinishedListener.onError(new AsyncTaskCancelledException());
+            AsyncTaskCancelledException asyncTaskCancelledException = exception == null ?
+                    new AsyncTaskCancelledException() :
+                    new AsyncTaskCancelledException(exception);
+
+            onFinishedListener.onError(asyncTaskCancelledException);
         }
     }
 
