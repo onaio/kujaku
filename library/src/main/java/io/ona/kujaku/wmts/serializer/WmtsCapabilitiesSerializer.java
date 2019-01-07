@@ -1,4 +1,4 @@
-package io.ona.kujaku.utils.helpers;
+package io.ona.kujaku.wmts.serializer;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;

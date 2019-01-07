@@ -10,7 +10,7 @@ import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.WmtsCapabilitiesService;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.views.KujakuMapView;
 
 public class WmtsActivity extends BaseNavigationDrawerActivity {

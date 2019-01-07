@@ -1,4 +1,4 @@
-package io.ona.kujaku.utils.wmts.model;
+package io.ona.kujaku.wmts.model;
 
 import org.simpleframework.xml.Attribute;
 

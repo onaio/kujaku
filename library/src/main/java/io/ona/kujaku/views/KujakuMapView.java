@@ -78,8 +78,8 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.Views;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
-import io.ona.kujaku.utils.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;

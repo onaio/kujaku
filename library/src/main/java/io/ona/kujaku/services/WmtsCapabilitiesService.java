@@ -13,8 +13,8 @@ import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
-import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
 
 /**
  * Service performs the retrieval of the WMTS Capabilities file describing all accessible layers

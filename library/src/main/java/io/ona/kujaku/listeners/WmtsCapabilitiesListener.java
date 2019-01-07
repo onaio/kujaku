@@ -1,6 +1,6 @@
 package io.ona.kujaku.listeners;
 
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
 
 /**
  * Listener called when capabilities have been retrieved

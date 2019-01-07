@@ -31,9 +31,9 @@ import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
-import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
-import io.ona.kujaku.utils.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

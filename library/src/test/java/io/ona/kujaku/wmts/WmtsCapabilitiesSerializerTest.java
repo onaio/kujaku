@@ -1,4 +1,4 @@
-package io.ona.kujaku.helpers;
+package io.ona.kujaku.wmts;
 
 import junit.framework.Assert;
 
@@ -9,9 +9,9 @@ import org.robolectric.annotation.Config;
 
 import java.io.InputStreamReader;
 
-import io.ona.kujaku.utils.BuildConfig;
-import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 
 /**
  *
