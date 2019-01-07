@@ -47,11 +47,11 @@ public class GenericAsyncTask extends AsyncTask<Void, Void, Object[]> {
     @Override
     protected void onCancelled() {
         if (onFinishedListener != null) {
-            AsyncTaskCancelledException asyncTaskCancelledException = exception == null ?
+            Exception cancelException = exception == null ?
                     new AsyncTaskCancelledException() :
-                    new AsyncTaskCancelledException(exception);
+                    exception;
 
-            onFinishedListener.onError(asyncTaskCancelledException);
+            onFinishedListener.onError(cancelException);
         }
     }
 
