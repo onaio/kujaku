@@ -171,6 +171,7 @@ dependencies { configuration ->
 
     implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation "com.android.support:design:${supportVersion}"
+    implementation 'org.simpleframework:simple-xml:2.7.1'
 
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)

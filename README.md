@@ -41,7 +41,7 @@ You need to provide a Capabilities URL as argument to the constructor.
  WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
 ```
 
-Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the asynch task returns the result.
+Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the async task returns the result.
 
 ```
 wmtsService.requestData();
@@ -61,7 +61,7 @@ wmtsService.setListener(new WmtsCapabilitiesListener() {
 
 ### Add WMTS layers to the map
 
-The kujakuMapView has 4 public methods to add Layers onto the map :
+The kujakuMapView has 4 public methods to add WMTS Layers onto the map :
 
 * This method will add the first layer of the Capabilities file with the default style and first tileMatrixSet :
 ```

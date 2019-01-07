@@ -13,8 +13,8 @@ import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
-import io.ona.kujaku.utils.helpers.WmtsCapabilitiesSerializer;
-import io.ona.kujaku.utils.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
 
 /**
  * Service performs the retrieval of the WMTS Capabilities file describing all accessible layers
@@ -53,9 +53,7 @@ public class WmtsCapabilitiesService {
                 }
 
                 URL  myUrl = new URL(url);
-                HttpURLConnection  connection =(HttpURLConnection)
-                        myUrl.openConnection();
-
+                HttpURLConnection connection =(HttpURLConnection) myUrl.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setReadTimeout(15000);
                 connection.setConnectTimeout(15000);
@@ -63,8 +61,7 @@ public class WmtsCapabilitiesService {
                 //Connect to our url
                 connection.connect();
 
-                InputStreamReader streamReader = new
-                        InputStreamReader(connection.getInputStream());
+                InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
 
                 WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
                 capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
@@ -85,7 +82,7 @@ public class WmtsCapabilitiesService {
             public void onError(Exception e) {
                 Log.e(TAG, Log.getStackTraceString(e));
                 if (listener != null) {
-                    listener.onCapabilitiesReceived(null);
+                    listener.onCapabilitiesError(e);
                 }
             }
         });
