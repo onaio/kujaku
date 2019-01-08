@@ -871,7 +871,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public void focusOnUserLocation(boolean focusOnMyLocation) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
-            changeTargetIcon(R.drawable.ic_cross_hair_blue);
+            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
@@ -881,7 +881,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         } else {
             updateUserLocationOnMap = false;
-            changeTargetIcon(R.drawable.ic_cross_hair);
+            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
     }
 
@@ -892,8 +892,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         callBoundsChangedListeners();
     }
 
-    private void changeTargetIcon(int drawableIcon) {
-        Views.changeDrawable(currentLocationBtn, drawableIcon);
+    private void changeImageButtonResource(ImageButton imageButton, int resourceId) {
+        imageButton.setImageResource(resourceId);
     }
 
     private void checkPermissions() {

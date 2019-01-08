@@ -12,11 +12,18 @@
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp">
 
+        <Button
+            android:id="@+id/btn_mainActivity_openMapActivity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="@string/open_map_activity"
+            android:layout_marginBottom="20dp"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/offline_map_download"
-            android:layout_marginTop="30dp"
             android:layout_marginBottom="20dp"/>
 
         <EditText
@@ -142,11 +149,31 @@
             android:layout_height="wrap_content"
             android:text="@string/start_offline_download"/>
 
+
         <Button
-            android:id="@+id/btn_mainActivity_openMapActivity"
+            android:id="@+id/btn_mainActivity_startOfflineDownloadUsingHelper"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/open_map_activity"/>
+            android:text="@string/start_offline_downloading_using_helper"/>
+
+        <Button
+            android:id="@+id/btn_mainActivity_stopOfflineDownloadUsingHelper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/stop_offline_download_using_helper"/>
+
+        <EditText
+            android:id="@+id/edt_mainActivity_mapNameToDelete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/map_name"/>
+
+        <Button
+            android:id="@+id/btn_mainActivity_deleteOfflineDownloadUsingHelper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_offline_map_using_helper"/>
 
         <LinearLayout
             android:layout_width="match_parent"

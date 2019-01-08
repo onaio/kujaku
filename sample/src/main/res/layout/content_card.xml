@@ -41,11 +41,11 @@
                 android:id="@+id/map_view_hamburger_menu"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
+                android:layout_width="@dimen/my_location_button_dimen"
+                android:layout_height="@dimen/my_location_button_dimen"
                 android:src="@drawable/ic_hamburger_menu"
-                android:layout_marginTop="28dp"
-                android:layout_marginLeft="28dp"
+                android:layout_marginTop="@dimen/hamburger_margin"
+                android:layout_marginLeft="@dimen/hamburger_margin"
                 android:background="@drawable/rounded_square_bg"/>
 
             <Button

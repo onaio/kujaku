@@ -50,11 +50,11 @@
     <!-- This is the target button shown on the bottom-right -->
     <ImageButton
         android:id="@+id/ib_mapview_focusOnMyLocationIcon"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="@dimen/my_location_button_dimen"
+        android:layout_height="@dimen/my_location_button_dimen"
         android:src="@drawable/ic_cross_hair"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginTop="@dimen/my_location_btn_margin"
+        android:layout_marginRight="@dimen/my_location_btn_margin"
         android:layout_gravity="top|right"
         android:padding="10dp"
         android:background="@drawable/circle_button"
@@ -71,8 +71,8 @@
             android:orientation="vertical">
 
             <ImageButton
-                android:layout_width="70dp"
-                android:layout_height="70dp"
+                android:layout_width="@dimen/my_location_button_dimen"
+                android:layout_height="@dimen/my_location_button_dimen"
                 android:layout_margin="20dp"
                 android:id="@+id/imgBtn_mapview_locationAdditionBtn"
                 android:background="@drawable/circle_button_black_border"
@@ -90,7 +90,6 @@
                 android:visibility="gone"
                 android:layout_marginLeft="20dp"
                 android:layout_marginBottom="20dp">
-
                 <TextView
                     android:id="@+id/feature_info_text"
                     android:layout_width="match_parent"
