@@ -207,7 +207,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             public void onClick(View v) {
                 focusOnUserLocation(true);
 
-                // Enable asking for locating by resetting this flag in case it was true
+                // Enable asking for enabling the location by resetting this flag in case it was true
                 hasAlreadyRequestedEnableLocation = false;
                 setWarmGps(true);
             }
@@ -1120,7 +1120,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                     Log.i(TAG, "PendingIntent unable to execute request.");
                                 }
                             } else {
-                                // The user had already request for permissions, so we should not request again
+                                // The user had already requested for permissions, so we should not request again
                                 // We should disable these two modes since they cannot be achieved in the current stage
                                 setWarmGps(false);
                                 focusOnUserLocation(false);
