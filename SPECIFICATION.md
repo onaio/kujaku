@@ -16,7 +16,7 @@
 
 ## What is a Geospatial Widget?
 
-The Geospatial widget is an Android SDK designed to connect to the georegistry and other common geographical data sources like OSM and OGC servers. It also supports visualisation of geosptial data and inspection. It is designed to integrate into common mobile data collection tools used in global health.  It is expected to support the three elimination use cases including:
+The Geospatial widget is an Android SDK designed to connect to the georegistry and other common geographical data sources like OSM and OGC servers. It also supports visualisation of geosptial data and inspection. It is designed to integrate into common mobile data collection tools used in global health.  It is expected to support the following disease elimination use cases among others:
 - Case Detection, Notification and Investigation
 - Focus Investigation
 - Routine and Reactive Intervention
@@ -43,6 +43,8 @@ Index 0 should have either of the following:
 - A Mapbox style URL eg. `mapbox://styles/ona/ksdk909kkscd9023k`
 - A string of the JSON Object of an existing Mapbox Style or adhering to the Mapbox Style Spec
 
+Index > 0 are ignored for now
+
 The `MapActivity` should allow selection of a geospatial feature and post it back as a result. The geospatial feature SHOULD be in `GeoJSON` format.
 
 Example usage:
@@ -61,12 +63,15 @@ Example usage:
 
 2. Start an activity with data
 
-Go [here](#mapboxstylehelper) for more on the how to create a mapbox style with your own geospatial data
+Go [here](#1-mapboxstylehelper) for more on the how to create a mapbox style with your own geospatial data
 
 ```java
+        String mapboxStyleWithKujakuConfigAndData;
+        ...
+
         Intent intent = new Intent(this, MapActivity.class);
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
-                "file:///sdcard/MapboxStyles/nairobi-city-view.json"
+                mapboxStyleWithKujakuConfigAndData
         });
         intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, "sdklcs823k9OIDFSKsd8uwk");
 

@@ -11,6 +11,7 @@ A mapping and check-in library for Android using MapBox SDK.
 * [How to import the library](#how-to-import-the-library)
 * [License](#license)
 * [Acknowledgements](#acknowledgements)
+* [Specification](SPECIFICATION.md)
 
 ## Setup Instructions
 
