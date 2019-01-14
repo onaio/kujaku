@@ -34,6 +34,10 @@ public class WmtsLayer {
 
     private String selectedTileMatrixLinkIdentifier;
 
+    private int maximumZoom;
+
+    private int minimumZoom;
+
     public String getFormat() {
         return this.format;
     }
@@ -64,10 +68,10 @@ public class WmtsLayer {
         return null ;
     }
 
-    public WmtsTileMatrixSetLink getTileMatrixSet(String tileMatrixLinkIdentifier) {
-        for (WmtsTileMatrixSetLink tileMatrix : this.tileMatrixSetLinks) {
-            if (tileMatrix.getTileMatrixSet().equals(tileMatrixLinkIdentifier)) {
-                return tileMatrix;
+    public WmtsTileMatrixSetLink getTileMatrixSetLink(String tileMatrixLinkIdentifier) {
+        for (WmtsTileMatrixSetLink tileMatrixSetLink : this.tileMatrixSetLinks) {
+            if (tileMatrixSetLink.getTileMatrixSet().equals(tileMatrixLinkIdentifier)) {
+                return tileMatrixSetLink;
             }
         }
 
@@ -90,12 +94,32 @@ public class WmtsLayer {
             }
         }
 
+        return this.resourceURL.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());
+    }
+
+    public String getSelectedTileMatrixLinkIdentifier() {
         if (this.selectedTileMatrixLinkIdentifier == null || this.selectedTileMatrixLinkIdentifier.isEmpty()) {
             // Get First one
             this.selectedTileMatrixLinkIdentifier = this.tileMatrixSetLinks.get(0).getTileMatrixSet();
         }
 
-        return this.resourceURL.getTemplate(this.selectedStyleIdentifier, this.selectedTileMatrixLinkIdentifier);
+        return this.selectedTileMatrixLinkIdentifier;
+    }
+
+    public int getMaximumZoom() {
+        return this.maximumZoom;
+    }
+
+    public void setMaximumZoom(int maxZoom) {
+        this.maximumZoom = maxZoom;
+    }
+
+    public int getMinimumZoom() {
+        return this.minimumZoom;
+    }
+
+    public void setMinimumZoom(int minZoom) {
+        this.minimumZoom = minZoom;
     }
 
     private WmtsStyle getDefaultStyle() {
