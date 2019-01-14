@@ -14,9 +14,27 @@ public class WmtsContents {
     @ElementList(inline=true, entry="Layer")
     private List<WmtsLayer> layers;
 
+    @ElementList(inline=true, entry="TileMatrixSet")
+    private List<WmtsTileMatrixSet> tileMatrixSets;
+
     public List<WmtsLayer> getLayers() {
         return this.layers;
     }
+
+    public List<WmtsTileMatrixSet> geTileMatrixSets() {
+        return this.tileMatrixSets;
+    }
+
+    public WmtsTileMatrixSet geTileMatrixSet(String tileMatrixSetIdentifier) {
+        for (WmtsTileMatrixSet wmtsTileMatrixSet : this.tileMatrixSets) {
+            if (wmtsTileMatrixSet.getIdentifier().equals(tileMatrixSetIdentifier)) {
+                return wmtsTileMatrixSet;
+            }
+        }
+
+        return null ;
+    }
+
 
     /**
      * Return the layer corresponding to the identifier

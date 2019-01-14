@@ -232,7 +232,7 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void addNullWmtsLayers () {
+    public void addNullWmtsLayers() {
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
         try {
             kujakuMapView.addWmtsLayer(null);
@@ -244,7 +244,7 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void addFirstWmtsLayers () throws Exception {
+    public void addFirstWmtsLayers() throws Exception {
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
 
         InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
@@ -258,7 +258,7 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void addUnknowWmtsLayers () throws Exception{
+    public void addUnknowWmtsLayers() throws Exception {
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
 
         InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
@@ -272,6 +272,27 @@ public class KujakuMapViewTest extends BaseTest {
         }
 
         assertEquals(0, kujakuMapView.getWmtsLayers().size());
+    }
+
+    @Test
+    public void addKnwonWmtsLayersAndTestMaximumAndMinimumZooms() throws Exception {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+        try {
+            kujakuMapView.addWmtsLayer(capabilities, "Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", "default", "GoogleMapsCompatible");
+        } catch (WmtsCapabilitiesException ex) {
+
+        }
+
+        assertEquals(1, kujakuMapView.getWmtsLayers().size());
+
+        WmtsLayer layer = (WmtsLayer)kujakuMapView.getWmtsLayers().toArray()[0];
+        assertEquals(layer.getMaximumZoom(), 18);
+        assertEquals(layer.getMinimumZoom(), 0);
     }
 
     @Test

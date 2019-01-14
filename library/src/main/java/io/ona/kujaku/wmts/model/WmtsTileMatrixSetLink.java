@@ -13,6 +13,6 @@ public class WmtsTileMatrixSetLink {
     private String tileMatrixSet;
 
     public String getTileMatrixSet() {
-        return tileMatrixSet;
+        return this.tileMatrixSet;
     }
 }

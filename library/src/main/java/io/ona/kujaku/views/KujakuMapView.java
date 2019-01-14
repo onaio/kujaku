@@ -591,9 +591,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (wmtsLayers != null) {
             for (WmtsLayer layer : wmtsLayers) {
                 if (mapboxMap.getSource(layer.getIdentifier()) == null) {
+
+                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl());
+                    tileSet.setMaxZoom(layer.getMaximumZoom());
+                    tileSet.setMinZoom(layer.getMinimumZoom());
+
                     RasterSource webMapSource = new RasterSource(
                             layer.getIdentifier(),
-                            new TileSet("tileset", layer.getTemplateUrl()), 256);
+                            tileSet, 256);
                     mapboxMap.addSource(webMapSource);
 
                     RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
@@ -669,8 +674,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         this.selectWmtsStyle(layerIdentified, styleIdentifier);
-
         this.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
+        this.setZooms(layerIdentified, capabilities);
 
         this.wmtsLayers.add(layerIdentified);
 
@@ -707,12 +712,28 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
             // Check if style is known
-            if (layer.getTileMatrixSet(tileMatrixSetLinkIdentifier) == null) {
+            if (layer.getTileMatrixSetLink(tileMatrixSetLinkIdentifier) == null) {
                 throw new WmtsCapabilitiesException(String.format("tileMatrixSetLink with identifier %1$s is not available for Layer %2$s", tileMatrixSetLinkIdentifier, layer.getIdentifier()));
             } else {
                 layer.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);
             }
         }
+    }
+
+    /**
+     * Set the Maximum and Minimum Zoom for this layer
+     *
+     * @param layer
+     * @param capabilities
+     */
+    private void setZooms(WmtsLayer layer, WmtsCapabilities capabilities){
+        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
+
+        int maxZoom = capabilities.getMaximumTileMatrixZoom(tileMatrixSetIdentifier);
+        int minZoom = capabilities.getMinimumTileMatrixZoom(tileMatrixSetIdentifier);
+
+        layer.setMaximumZoom(maxZoom);
+        layer.setMinimumZoom(minZoom);
     }
 
 

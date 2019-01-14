@@ -50,4 +50,32 @@ public class WmtsCapabilities {
 
         return this.contents.getLayers();
     }
+
+    public int getMaximumTileMatrixZoom(String tileMatrixIdentifier) {
+        WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
+
+        if (tileMatrixSet == null) {
+            return 0;
+        }
+
+        return tileMatrixSet.getMaximumZoom();
+    }
+
+    public int getMinimumTileMatrixZoom(String tileMatrixIdentifier) {
+        WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
+
+        if (tileMatrixSet == null) {
+            return 0;
+        }
+
+        return tileMatrixSet.getMinimumZoom();
+    }
+
+    private WmtsTileMatrixSet getTileMatrixSet(String tileMatrixIdentifier) {
+        if (this.contents == null) {
+            return null;
+        }
+
+        return this.contents.geTileMatrixSet(tileMatrixIdentifier);
+    }
 }
