@@ -282,11 +282,7 @@ public class KujakuMapViewTest extends BaseTest {
         WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
         WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
 
-        try {
-            kujakuMapView.addWmtsLayer(capabilities, "Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", "default", "GoogleMapsCompatible");
-        } catch (WmtsCapabilitiesException ex) {
-
-        }
+        kujakuMapView.addWmtsLayer(capabilities, "Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", "default", "GoogleMapsCompatible");
 
         assertEquals(1, kujakuMapView.getWmtsLayers().size());
 
