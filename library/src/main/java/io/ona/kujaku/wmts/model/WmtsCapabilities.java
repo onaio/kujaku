@@ -2,7 +2,6 @@ package io.ona.kujaku.wmts.model;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 import java.util.List;
@@ -10,24 +9,19 @@ import java.util.List;
 /**
  * Describe a Wmts Capabilities object
  *
- * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18
  */
 @Root(name="Capabilities")
 public class WmtsCapabilities {
 
-    @Element(name="ServiceIdentification")
+    @Element(name="ServiceIdentification", required=false)
     private WmtsServiceIdentification serviceIdentification;
-
-    @ElementList(name="OperationsMetadata")
-    private List<WmtsOperation> operations;
 
     @Element(name="Contents")
     private WmtsContents contents;
 
-    @Attribute(name="version")
+    @Attribute(name="version", required=false)
     private String version;
-
-    public List<WmtsOperation> getOperations() { return this.operations; }
 
     public WmtsServiceIdentification getServiceIdentification() { return this.serviceIdentification; }
 

@@ -1,6 +1,9 @@
 package io.ona.kujaku.wmts.model;
 
-import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
+
+import java.util.List;
+import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
 /**
  * Describe a Wmts Service Identification object from the WMTS Capabilities object
@@ -9,16 +12,21 @@ import org.simpleframework.xml.Element;
  */
 public class WmtsServiceIdentification {
 
-    @Element(name="Title")
-    private String title;
+    @ElementList(inline=true, entry="Title")
+    private List<LanguageStringType> titles;
 
-    @Element(name="ServiceType")
-    private String serviceType;
+    public List<LanguageStringType> getTitles() { return this.titles; }
 
-    @Element(name="ServiceTypeVersion")
-    private String serviceTypeVersion;
+    public String getTitle(String lang) {
+        String result = "No Title found";
 
-    public String getTitle() { return this.title; }
-    public String getServiceType() { return this.serviceType; }
-    public String getServiceTypeVersion() { return this.serviceTypeVersion; }
+        for (LanguageStringType title: this.titles) {
+            if (title.getLang() != null && title.getLang().equals(lang)) {
+                result = title.getValue();
+                break;
+            }
+        }
+
+        return result;
+    }
 }

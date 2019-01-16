@@ -2,6 +2,11 @@ package io.ona.kujaku.wmts.model;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
+
+import java.util.List;
+
+import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
 /**
  * Describe a Wmts Style object from the WMTS Capabilities object
@@ -13,8 +18,8 @@ public class WmtsStyle {
     @Attribute(name="isDefault")
     private boolean isDefault = false;
 
-    @Element(name="Title",required=false)
-    private String title;
+    @ElementList(inline=true, entry="Title")
+    private List<LanguageStringType> titles;
 
     @Element(name="Identifier")
     private String identifier;
@@ -23,8 +28,8 @@ public class WmtsStyle {
         return this.isDefault;
     }
 
-    public String getTitle() {
-        return this.title;
+    public List<LanguageStringType> getTitles() {
+        return this.titles;
     }
 
     public String getIdentifier() {
