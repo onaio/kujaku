@@ -42,6 +42,8 @@ public class WmtsCapabilitiesSerializerTest {
     @Test
     public void testCapabilitiesContent() throws Exception {
         WmtsCapabilities capabilities = getCapabilities() ;
+        Assert.assertEquals(capabilities.getServiceIdentification().getTitles().get(0).getValue(), "Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data");
+        Assert.assertEquals(capabilities.getServiceIdentification().getTitle("fr"), "No Title found");
         Assert.assertEquals(capabilities.getVersion(), "1.0.0");
         Assert.assertEquals(capabilities.getLayers().size(), 1);
         Assert.assertNull(capabilities.getLayer("0123456789"));

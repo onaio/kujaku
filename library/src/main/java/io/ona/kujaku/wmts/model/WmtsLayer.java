@@ -5,6 +5,8 @@ import org.simpleframework.xml.ElementList;
 
 import java.util.List;
 
+import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
+
 /**
  * Describe a Wmts Layer object from the WMTS Capabilities object
  *
@@ -12,8 +14,8 @@ import java.util.List;
  */
 public class WmtsLayer {
 
-    @Element(name="Title")
-    private String title;
+    @ElementList(inline=true, entry="Title")
+    private List<LanguageStringType> titles;
 
     @Element(name="Identifier")
     private String identifier;
@@ -21,14 +23,11 @@ public class WmtsLayer {
     @ElementList(inline=true, entry="Style")
     private List<WmtsStyle> styles;
 
-    @Element(name="Format")
-    private String format;
-
     @ElementList(inline=true, entry="TileMatrixSetLink")
     private List<WmtsTileMatrixSetLink> tileMatrixSetLinks;
 
-    @Element(name="ResourceURL")
-    private WmtsResourceUrl resourceURL;
+    @ElementList(inline=true, entry="ResourceURL")
+    private List<WmtsResourceUrl> resourceURLs;
 
     private String selectedStyleIdentifier;
 
@@ -38,12 +37,8 @@ public class WmtsLayer {
 
     private int minimumZoom;
 
-    public String getFormat() {
-        return this.format;
-    }
-
-    public String getTitle() {
-        return this.title;
+    public List<LanguageStringType> getTitles() {
+        return this.titles;
     }
 
     public String getIdentifier() {
@@ -78,9 +73,11 @@ public class WmtsLayer {
         return null ;
     }
 
-    public String getTemplateUrl() {
-        if (this.resourceURL == null) {
-            return null ;
+    public String getTemplateUrl(String resourceType) {
+        WmtsResourceUrl url = this.getResourceUrl(resourceType);
+
+        if (url == null) {
+            return null;
         }
 
         if (this.selectedStyleIdentifier == null || this.selectedStyleIdentifier.isEmpty()) {
@@ -94,7 +91,7 @@ public class WmtsLayer {
             }
         }
 
-        return this.resourceURL.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());
+        return url.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());
     }
 
     public String getSelectedTileMatrixLinkIdentifier() {
@@ -136,4 +133,17 @@ public class WmtsLayer {
         return null;
     }
 
+    private WmtsResourceUrl getResourceUrl(String resourceType) {
+        if (this.resourceURLs == null || this.resourceURLs.isEmpty() ) {
+            return null ;
+        }
+
+        for (WmtsResourceUrl url: this.resourceURLs) {
+            if (url.getResourceType().equals(resourceType) ){
+                return url;
+            }
+        }
+
+        return null;
+    }
 }

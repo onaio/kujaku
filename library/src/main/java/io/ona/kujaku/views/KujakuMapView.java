@@ -592,7 +592,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             for (WmtsLayer layer : wmtsLayers) {
                 if (mapboxMap.getSource(layer.getIdentifier()) == null) {
 
-                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl());
+                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
                     tileSet.setMaxZoom(layer.getMaximumZoom());
                     tileSet.setMinZoom(layer.getMinimumZoom());
 

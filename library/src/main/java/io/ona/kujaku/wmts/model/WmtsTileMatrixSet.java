@@ -14,35 +14,14 @@ import java.util.List;
  */
 public class WmtsTileMatrixSet {
 
-    @Element(name="Title")
-    private String title;
-
-    @Element(name="Abstract")
-    private String _abstract; // abstract is a reserved key word
-
     @Element(name="Identifier")
     private String identifier;
-
-    @Element(name="SupportedCRS")
-    private String supportedCRS;
 
     @ElementList(inline=true, entry="TileMatrix")
     private List<WmtsTileMatrix> tileMatrixs;
 
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getAbstract() {
-        return this._abstract;
-    }
-
     public String getIdentifier() {
         return this.identifier;
-    }
-
-    public String getSupportedCRS() {
-        return this.supportedCRS;
     }
 
     public List<WmtsTileMatrix> getTileMatrixs() {
