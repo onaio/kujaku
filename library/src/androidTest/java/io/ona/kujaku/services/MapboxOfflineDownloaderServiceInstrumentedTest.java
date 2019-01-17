@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.content.LocalBroadcastManager;
 
@@ -14,6 +16,7 @@ import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -52,11 +55,18 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
     private float minZoom = 22;
     private float maxZoom = 10;
     private LatLng topLeftBound = new LatLng(9.1, 9.1);
-    private LatLng bottomRightBound = new LatLng(1.1, 20.5);
+    private LatLng topRightBound = new LatLng(9.1, 11.1);
+    private LatLng bottomRightBound = new LatLng(2.1, 11.1);
+    private LatLng bottomLeftBound = new LatLng(2.1, 9.1);
 
     private ArrayList<Object> resultsToCheck = new ArrayList<>();
     private CountDownLatch latch;
     private ArrayList<MapBoxOfflineQueueTask> offlineQueueTasks = new ArrayList<>();
+
+    private BroadcastReceiver broadcastReceiver;
+
+    @Rule
+    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
 
     public MapboxOfflineDownloaderServiceInstrumentedTest() {
         Realm.init(InstrumentationRegistry.getTargetContext());
@@ -79,11 +89,16 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
     public void cleanup() {
         Realm realm = Realm.getDefaultInstance();
 
+        if (realm.isInTransaction()) {
+            realm.commitTransaction();
+        }
+
         realm.beginTransaction();
+
         Iterator<MapBoxOfflineQueueTask> iterator = offlineQueueTasks.iterator();
         while (iterator.hasNext()) {
             MapBoxOfflineQueueTask mapBoxOfflineQueueTask = iterator.next();
-            if (mapBoxOfflineQueueTask.isValid()) {
+            if (mapBoxOfflineQueueTask != null && mapBoxOfflineQueueTask.isValid()) {
                 mapBoxOfflineQueueTask.deleteFromRealm();
                 iterator.remove();
             }
@@ -92,21 +107,26 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         realm.commitTransaction();
     }
 
+
     @Test
-    public void onStatusChangedShouldShowDownloadCompleteNotificationWhenGivenCompletedOfflineRegion() throws Exception {
+    public synchronized void onStatusChangedShouldShowDownloadCompleteNotificationWhenGivenCompletedOfflineRegion() throws Throwable {
         latch = new CountDownLatch(1);
         OfflineRegionStatus completeOfflineRegionStatus = createOfflineRegion(OfflineRegion.STATE_ACTIVE, 300, 98923, 898, 230909, 300, true, true);
 
         // Create dummy download task & insert it into the service
-        Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
-        sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
+        final Intent sampleServiceIntent = createSampleDownloadIntent();
 
         String mapName = sampleServiceIntent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);
 
         RealmDatabase realmDatabase = RealmDatabase.init(context);
         insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", realmDatabase);
 
-        mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
+            }
+        });
 
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getTask(mapName);
         offlineQueueTasks.add(mapBoxOfflineQueueTask);
@@ -131,6 +151,11 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask2 = (MapBoxOfflineQueueTask) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapBoxTask");
         assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_DONE, mapBoxOfflineQueueTask2.getTaskStatus());
 
+    }
+
+    private Intent createSampleDownloadIntent() {
+        Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
+        return createSampleDownloadIntent(sampleServiceIntent);
     }
 
     private OfflineRegionStatus createOfflineRegion(int downloadState, long completedResourceCount,
@@ -185,7 +210,9 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeftBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
 
         return serviceIntent;
     }
@@ -220,14 +247,15 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
     }
 
     private void registerLocalBroadcastReceiverForDownloadServiceUpdates() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                resultsToCheck.add(intent);
+                latch.countDown();
+            }
+        };
         LocalBroadcastManager.getInstance(context)
-                .registerReceiver(new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        resultsToCheck.add(intent);
-                        latch.countDown();
-                    }
-                }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
+                .registerReceiver(broadcastReceiver, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
 
     private MapBoxOfflineQueueTask getTask(String mapName) {

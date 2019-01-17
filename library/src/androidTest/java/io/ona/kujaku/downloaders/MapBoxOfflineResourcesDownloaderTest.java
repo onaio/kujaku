@@ -2,6 +2,8 @@ package io.ona.kujaku.downloaders;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -53,6 +55,9 @@ public class MapBoxOfflineResourcesDownloaderTest {
     private long lastId = 0;
 
     @Rule
+    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
+
+    @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
@@ -63,68 +68,73 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenNullContext() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenNullContext() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("Context passed is nul");
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+            }
+        });
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenNullMapName() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenNullMapName() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("Invalid map name");
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
         invalidDownloadTask.setMapName(null);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("Invalid Style URL");
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
-        invalidDownloadTask.setMapBoxStyleUrl("https://odsk");
+        invalidDownloadTask.setMapBoxStyleUrl("");
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL2() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL2() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("Invalid Style URL");
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
         invalidDownloadTask.setMapBoxStyleUrl("mapbox://tiles/kosi");
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
 
         assertTrue(mapBoxOfflineResourcesDownloader.offlineManager != null);
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL3() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMapboxStyleURL3() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("Invalid Style URL");
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
         invalidDownloadTask.setMapBoxStyleUrl("mapbox://styles/isdkl");
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("minZoom should be lower than maxZoom");
 
@@ -132,12 +142,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMinZoom(20);
         invalidDownloadTask.setMaxZoom(10);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom2() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom2() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("maxZoom & minZoom should be among 0-22");
 
@@ -145,12 +155,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMinZoom(30);
         invalidDownloadTask.setMaxZoom(10);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom3() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom3() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("maxZoom & minZoom should be among 0-22");
 
@@ -158,12 +168,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMinZoom(20);
         invalidDownloadTask.setMaxZoom(30);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom4() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom4() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("maxZoom & minZoom should be among 0-22");
 
@@ -171,12 +181,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMinZoom(-1);
         invalidDownloadTask.setMaxZoom(10);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
     @Test
-    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom5() throws OfflineMapDownloadException {
+    public void downloadMapShouldThrowExceptionWhenGivenInvalidMinMaxZoom5() throws Throwable {
         expectedException.expect(OfflineMapDownloadException.class);
         expectedException.expectMessage("maxZoom & minZoom should be among 0-22");
 
@@ -184,14 +194,23 @@ public class MapBoxOfflineResourcesDownloaderTest {
         invalidDownloadTask.setMinZoom(20);
         invalidDownloadTask.setMaxZoom(-1);
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
     }
 
-    @Test
-    public void downloadMapShouldChangeOfflineRegionDownloadState() throws OfflineMapDownloadException {
+    private void createMapboxOfflineResourcesDownloaderInstanceOnUIThread() throws Throwable {
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+            }
+        });
+    }
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+    @Test
+    public void downloadMapShouldChangeOfflineRegionDownloadState() throws Throwable {
+
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
 
         MapBoxOfflineResourcesDownloader spyMapBoxOfflineResourcesDownloader = Mockito.spy(mapBoxOfflineResourcesDownloader);
@@ -206,6 +225,11 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
             @Override
             public void onError(String errorReason) {
+                // Do nothing here, not testing this here
+            }
+
+            @Override
+            public void mapboxTileCountLimitExceeded(long limit) {
                 // Do nothing here, not testing this here
             }
         };
@@ -276,7 +300,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void deleteMapShouldCallErrorCallbackWhenGivenNullContext() throws OfflineMapDownloadException, InterruptedException {
+    public void deleteMapShouldCallErrorCallbackWhenGivenNullContext() throws Throwable {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
@@ -296,7 +320,12 @@ public class MapBoxOfflineResourcesDownloaderTest {
             }
         };
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+            }
+        });
         mapBoxOfflineResourcesDownloader.deleteMap("Sample Map name", offlineRegionDeleteCallback);
 
         downLatch.await();
@@ -305,11 +334,16 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void deleteMapShouldCallErrorMethodWhenGiveNonExistentMapName() throws OfflineMapDownloadException, InterruptedException {
+    public void deleteMapShouldCallErrorMethodWhenGiveNonExistentMapName() throws Throwable {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+            }
+        });
 
         // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
         OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
@@ -350,11 +384,11 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void deleteMapShouldCallOnDeleteCallbackWhenGivenCorrectMapName() throws OfflineMapDownloadException, InterruptedException {
+    public void deleteMapShouldCallOnDeleteCallbackWhenGivenCorrectMapName() throws Throwable {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
 
         // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
         OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
@@ -429,7 +463,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void resumeDownloadShouldCallErrorCallbackWhenGivenNullContext() throws OfflineMapDownloadException, InterruptedException {
+    public void resumeDownloadShouldCallErrorCallbackWhenGivenNullContext() throws Throwable {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
@@ -449,8 +483,13 @@ public class MapBoxOfflineResourcesDownloaderTest {
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
-        mapBoxOfflineResourcesDownloader.deleteMap(invalidDownloadTask.getMapName(), offlineRegionDeleteCallback);
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader.deleteMap(invalidDownloadTask.getMapName(), offlineRegionDeleteCallback);
+            }
+        });
 
         downLatch.await();
 
@@ -458,7 +497,7 @@ public class MapBoxOfflineResourcesDownloaderTest {
     }
 
     @Test
-    public void getIncompleteMapDownloadsShouldCallErrorCallbackWhenGivenNullContext() throws OfflineMapDownloadException {
+    public void getIncompleteMapDownloadsShouldCallErrorCallbackWhenGivenNullContext() throws Throwable {
         resetTestVariables();
         downLatch = new CountDownLatch(1);
 
@@ -477,18 +516,23 @@ public class MapBoxOfflineResourcesDownloaderTest {
             }
         };
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+            }
+        });
         mapBoxOfflineResourcesDownloader.getIncompleteMapDownloads(incompleteMapDownloadCallback);
 
         assertEquals("Context passed is null", outputsFromCallbacks.get(0));
     }
 
     @Test
-    public void deletePreviousOfflineMapDownloadsShouldDeleteMapAndReserveCurrentMap() throws OfflineMapDownloadException {
+    public void deletePreviousOfflineMapDownloadsShouldDeleteMapAndReserveCurrentMap() throws Throwable {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
-        mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
 
         // Replace the OfflineManager in the MapBoxOfflineResourcesDownloader with the Spied one
         OfflineManager spiedOfflineManager = Mockito.spy(mapBoxOfflineResourcesDownloader.offlineManager);
@@ -591,8 +635,16 @@ public class MapBoxOfflineResourcesDownloaderTest {
                         25.854782
                 ),
                 new LatLng(
+                        -17.854564,
+                        25.876589
+                ),
+                new LatLng(
                         -17.875469,
                         25.876589
+                ),
+                new LatLng(
+                        -17.875469,
+                        25.854782
                 ),
                 BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
         );

@@ -2,6 +2,9 @@ package io.ona.kujaku.views;
 
 import android.content.Context;
 import android.location.Location;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.UiThreadTestRule;
+import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -12,12 +15,11 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
+import org.junit.runner.RunWith;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -31,13 +33,9 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
-import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
-import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
 import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
-import io.ona.kujaku.test.shadows.ShadowGLSurfaceViewMapRenderer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,46 +47,53 @@ import static org.junit.Assert.assertTrue;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
  */
 
-@Ignore
-@Config(shadows = {ShadowGeoJsonSource.class, ShadowConnectivityReceiver.class})
+@RunWith(AndroidJUnit4.class)
 public class KujakuMapViewTest extends BaseTest {
 
     private KujakuMapTestView kujakuMapView;
+    @Rule
+    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() {
-        Context context = RuntimeEnvironment.application;
-        Mapbox.getInstance(context, "sample_token");
-        kujakuMapView = new KujakuMapTestView(context);
+    public void setUp() throws Throwable {
+        Context context = InstrumentationRegistry.getTargetContext();
+
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Mapbox.getInstance(context, "sample_token");
+                kujakuMapView = new KujakuMapTestView(context);
+            }
+        });
     }
 
     @Test
     public void enableAddPointShouldShowMarkerLayoutWhenPassedTrue() throws NoSuchFieldException, IllegalAccessException {
-        assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(true);
 
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "canAddPoint"));
-        assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
     }
 
     @Test
     public void enableAddPointShouldHideMarkerLayoutWhenPassedFalse() throws NoSuchFieldException, IllegalAccessException {
-        assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(false);
 
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "canAddPoint"));
-        assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(true);
-        assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(false);
 
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "canAddPoint"));
-        assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        Assert.assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
     }
 
@@ -106,12 +111,12 @@ public class KujakuMapViewTest extends BaseTest {
 
         kujakuMapView.enableAddPoint(true, onLocationChanged);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, isMapScrollingVariableName));
-        assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
+        Assert.assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "updateUserLocationOnMap"));
     }
 
     @Test
-    public void enableAddPointShouldShowLatestPositionWhenGivenOnLocationChangedAndTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void enableAddPointShouldShowLatestPositionWhenGivenOnLocationChangedAndTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException, Throwable {
         OnLocationChanged onLocationChanged = new OnLocationChanged() {
             @Override
             public void onLocationChanged(Location location) {
@@ -122,8 +127,13 @@ public class KujakuMapViewTest extends BaseTest {
         LatLng latLng = new LatLng(14d, 23d);
 
         insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocation", latLng);
-        setFinalStatic(KujakuMapView.class.getDeclaredField("ANIMATE_TO_LOCATION_DURATION"), 0);
-        kujakuMapView.enableAddPoint(true, onLocationChanged);
+        BaseTest.setFinalStatic(KujakuMapView.class.getDeclaredField("ANIMATE_TO_LOCATION_DURATION"), 0);
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                kujakuMapView.enableAddPoint(true, onLocationChanged);
+            }
+        });
 
         // Check if the two circle layers were added
         // Check if geojson for current user position was added
@@ -216,7 +226,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         kujakuMapView.showCurrentLocationBtn(false);
         assertEquals(View.GONE, currentLocationBtn.getVisibility());
-    }
+    }/*
 
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
@@ -311,7 +321,7 @@ public class KujakuMapViewTest extends BaseTest {
         assertNull(getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
         kujakuMapView.setBoundsChangeListener(boundsChangeListener);
 
-        assertEquals(boundsChangeListener, getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
+        Assert.assertEquals(boundsChangeListener, getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
     }
 
 
@@ -334,5 +344,5 @@ public class KujakuMapViewTest extends BaseTest {
 
         countDownLatch.await(3, TimeUnit.SECONDS);
         assertEquals(1, results.size());
-    }
+    }*/
 }
