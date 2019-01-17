@@ -1,4 +1,4 @@
-# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku)
+# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion)
 
 A mapping and check-in library for Android using MapBox SDK.
 
@@ -132,7 +132,7 @@ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, 
 
 ## License
 
-This software is provided under the Apache 2 license, see the LICENSE file for further details.
+This software is provided under the Apache 2 license, see the [LICENSE file](LICENSE) for further details.
 
 ## Acknowledgements
 
