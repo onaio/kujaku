@@ -1,5 +1,62 @@
 <resources>
     <string name="app_name">Kujaku Sample</string>
-    <string name="mapbox_access_token"></string>
     <string name="error_msg_could_not_retrieve_chosen_feature">Sorry! It seems we could not retrieve the feature chosen</string>
+    <string name="title_activity_navigation_drawer">NavigationDrawerActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="main_activity_title">Main Activity</string>
+    <string name="offline_regions_activity_title">Offline Regions</string>
+    <string name="task_queue_activity_title">Task Queue</string>
+
+    <string name="task_item_display_template">\n\nTask Type:  %1$s\nTask Details: %2$s\nTask Status: %3$s\nDate created: %4$s\n\n</string>
+    <string name="error_msg_json_exception">Sorry! An error occurred due to the JSON format</string>
+    <string name="low_level_manual_add_point">Low-level Add Point</string>
+    <string name="low_level_location_add_point">Low-level Add Point - Location services</string>
+    <string name="high_level_add_point">High-level Add Point</string>
+    <string name="high_level_location_add_point">High-level Add Point - Location services</string>
+    <string name="low_level_add_point_custom_marker">Low-level Custom Marker</string>
+    <string name="add_update_activity_title">Add or Update</string>
+    <string name="go_to_my_location">GO TO MY LOCATION</string>
+    <string name="done">DONE</string>
+    <string name="click_go_to_my_location_msg">Please first click GO TO MY LOCATION button</string>
+    <string name="no_offline_download_tasks">There are no offline download tasks!</string>
+    <string name="you_do_not_have_offline_regions">You do not have any offline regions</string>
+    <string name="geospatial_widget_examples">Geo-spatial widget examples</string>
+    <string name="bottom_left_bound">Bottom Left Bound</string>
+    <string name="bottom_right_bound">Bottom Right Bound</string>
+    <string name="top_right_bound">Top Right Bound</string>
+    <string name="top_left_bound">Top left Bound</string>
+    <string name="map_name">Map Name</string>
+    <string name="offline_map_download">Offline Map Download</string>
+    <string name="start_offline_download">Start Offline Download</string>
+    <string name="open_map_activity">Open Map Activity</string>
+    <string name="mapbox_style_url_to_download">Mapbox Style URL to download</string>
+    <string name="enter_mapbox_style_url_to_download_here">Enter mapbox Style URL to download here</string>
+    <string name="download_mapbox_style">Download Mapbox Style</string>
+    <string name="launch_kujaku_map">Launch Kujaku Map</string>
+    <string name="title_activity_card">CardActivity</string>
+    <string name="card_activity">Card Activity</string>
+    <string name="navigate_to_map">Navigate to Map</string>
+    <string name="error_occurred_reading_mapbox_style">An error occurred reading the Mapbox style!</string>
+    <string name="title_activity_add_update_properties">AddUpdatePropertiesActivity</string>
+    <string name="feature_click_status">Feature Click Status</string>
+    <string name="bounding_box_listener">Bounding Box Listener</string>
+    <string name="bounds_aware_activity">Bounds Aware Activity</string>
+    <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
+    <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
+    <string name="enable_bounds_listener">"Enable Bounds Listener"</string>
+    <string name="disable_bounds_listener">"Disable Bounds Listener"</string>
+    <string name="feature_click_listener">Feature Click Listener</string>
+    <string name="feature_click_listener_activity_instructions">Click on a feature and we\'ll tell you if it\'s a building!</string>
+    <string name="building_exc">Building!</string>
+    <string name="padded_bbox_calculator">Padded Bbox Calculator</string>
+    <string name="drop_point">Drop Point</string>
+    <string name="generate_padded_bbox">Generate Padded Bbox</string>
+    <string name="first_add_some_points">First add some points</string>
+    <string name="start_offline_downloading_using_helper">Start Offline Downloading Using Helper</string>
+    <string name="stop_offline_download_using_helper">Stop Offline Download Using Helper</string>
+    <string name="delete_offline_map_using_helper">Delete Offline Map Using Helper</string>
 </resources>

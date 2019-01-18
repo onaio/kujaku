@@ -8,7 +8,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.BuildConfig;
-import utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
 import static org.junit.Assert.*;
 
@@ -20,22 +20,18 @@ import static org.junit.Assert.*;
 public class MapBoxDeleteTaskTest {
 
     @Test
-    public void constructorShouldCreateValidObject() {
+    public void constructorShouldCreateValidObject() throws JSONException, MalformedDataException {
         String mapName = "sample map name";
         String mapboxAccessToken = "90sd09jio(#@";
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(MapBoxDeleteTask.MAP_NAME, mapName);
-            jsonObject.put(MapBoxDeleteTask.MAP_BOX_ACCESS_TOKEN, mapboxAccessToken);
 
-            MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(jsonObject);
+        jsonObject.put(MapBoxDeleteTask.MAP_NAME, mapName);
+        jsonObject.put(MapBoxDeleteTask.MAP_BOX_ACCESS_TOKEN, mapboxAccessToken);
 
-            assertEquals(mapBoxDeleteTask.getMapName(), mapName);
-            assertEquals(mapBoxDeleteTask.getMapBoxAccessToken(), mapboxAccessToken);
-        } catch (JSONException | MalformedDataException e) {
-            e.printStackTrace();
-        }
+        MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(jsonObject);
 
+        assertEquals(mapBoxDeleteTask.getMapName(), mapName);
+        assertEquals(mapBoxDeleteTask.getMapBoxAccessToken(), mapboxAccessToken);
     }
 
 }

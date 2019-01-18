@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- THIS IS THE MAPBOX VIEW XML -->
+    <FrameLayout
+        android:id="@+id/markerViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:contentDescription="@null"/>
+
+    <com.mapbox.mapboxsdk.maps.widgets.CompassView
+        android:id="@+id/compassView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/mapbox_compassContentDescription"/>
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/logoView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@null"
+        android:src="@drawable/mapbox_logo_icon"/>
+
+    <ImageView
+        android:visibility="gone"
+        android:id="@+id/attributionView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="@string/mapbox_attributionsIconContentDescription"
+        android:src="@drawable/mapbox_info_bg_selector"/>
+
+    <!-- END OF MAPBOX VIEW XML -->
+
+    <!-- START OF CUSTOM VIEWS ADDED TO KujakuMapView -->
+    <!-- This is the drop point layout used to simulate the position on which the user wants to drop a point -->
+    <ImageView
+        android:id="@+id/iv_mapview_locationSelectionMarker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:src="@drawable/mapbox_markerview_icon_default"/>
+
+    <!-- This is the target button shown on the bottom-right -->
+    <ImageButton
+        android:id="@+id/ib_mapview_focusOnMyLocationIcon"
+        android:layout_width="@dimen/my_location_button_dimen"
+        android:layout_height="@dimen/my_location_button_dimen"
+        android:src="@drawable/ic_cross_hair"
+        android:layout_marginTop="@dimen/my_location_btn_margin"
+        android:layout_marginRight="@dimen/my_location_btn_margin"
+        android:layout_gravity="top|right"
+        android:padding="10dp"
+        android:background="@drawable/circle_button"
+        android:visibility="gone" />
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:layout_width="@dimen/my_location_button_dimen"
+                android:layout_height="@dimen/my_location_button_dimen"
+                android:layout_margin="20dp"
+                android:id="@+id/imgBtn_mapview_locationAdditionBtn"
+                android:background="@drawable/circle_button_black_border"
+                android:src="@drawable/ic_add"
+                android:padding="10dp"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                android:layout_gravity="bottom|left"/>
+            <android.support.v7.widget.CardView
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/feature_info_card_view"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                card_view:cardCornerRadius="10dp"
+                android:visibility="gone"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="20dp">
+                <TextView
+                    android:id="@+id/feature_info_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="This is test data!"
+                    android:padding="15dp"/>
+
+            </android.support.v7.widget.CardView>
+
+        </LinearLayout>
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_mapview_locationSelectionBtns"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:weightSum="2">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_mapview_locationSelectionBtn"
+            android:background="@drawable/done_btn_bg"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:layout_weight="1"
+            android:text="@string/done"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:id="@+id/btn_mapview_locationSelectionCancelBtn"
+            android:background="@drawable/cancel_btn_bg"
+            android:textColor="@color/white"
+            android:textSize="19sp"
+            android:layout_weight="1"
+            android:text="@string/cancel"/>
+
+    </LinearLayout>
+
+    <!-- END OF CUSTOM VIEWS ADDED TO KujakuMapView.java -->
+</merge>

@@ -1,32 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="io.ona.kujaku.activities.MapActivity">
 
-    <com.mapbox.mapboxsdk.maps.MapView
+    <io.ona.kujaku.views.KujakuMapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true">
-    </com.mapbox.mapboxsdk.maps.MapView>
+        android:layout_alignParentLeft="true"
+        app:current_location_btn_visibility="true"/>
 
-    <!-- Todo: Make the icon blink/turn blue when trying to center & stop blinking after it is done centering to the user's location, remains blue if my location is in focus -->
+
     <ImageButton
-        android:id="@+id/ib_mapActivity_focusOnMyLocationIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_my_location"
-        android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp"
-        android:background="@drawable/circle_button"
-        android:layout_above="@+id/rv_mapActivity_infoWindow"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:id="@+id/map_activity_location_addition_btn"
+        android:src="@drawable/ic_add"
+        android:textColor="@color/white"
+        android:background="@drawable/circle_button_black_border"
+        android:layout_margin="20dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentLeft="true"
+        android:visibility="gone"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_mapActivity_infoWindow"
@@ -35,5 +34,18 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:foregroundGravity="center"/>
+
+    <Button
+        android:id="@+id/btn_done_map_activity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="DONE"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp"
+        android:background="@drawable/rounded_square"
+        android:textColor="@color/mapbox_blue"
+        android:visibility="gone"/>
 
 </RelativeLayout>

@@ -11,14 +11,11 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import io.ona.kujaku.adapters.InfoWindowObject;
-import io.ona.kujaku.sorting.objects.SortField;
+import io.ona.kujaku.utils.config.SortFieldConfig;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2017.
@@ -36,7 +33,7 @@ public class Sorter {
     }
 
 
-    public ArrayList<InfoWindowObject> mergeSort(int low, int high, String fieldName, SortField.FieldType fieldType) throws JSONException {
+    public ArrayList<InfoWindowObject> mergeSort(int low, int high, String fieldName, SortFieldConfig.FieldType fieldType) throws JSONException {
         // check if low is smaller than high, if not then the array is sorted
         if (low < high) {
             // Get the index of the element which is in the middle
@@ -52,7 +49,7 @@ public class Sorter {
         return  infoWindowObjects;
     }
 
-    private void merge(int low, int middle, int high, String fieldName, SortField.FieldType fieldType) throws JSONException {
+    private void merge(int low, int middle, int high, String fieldName, SortFieldConfig.FieldType fieldType) throws JSONException {
 
         // Copy both parts into the helper array
         for (int i = low; i <= high; i++) {
@@ -87,7 +84,7 @@ public class Sorter {
 
     }
 
-    private int compare(@NonNull InfoWindowObject object1, @NonNull InfoWindowObject object2, @NonNull String fieldName, @NonNull SortField.FieldType fieldType) throws JSONException {
+    private int compare(@NonNull InfoWindowObject object1, @NonNull InfoWindowObject object2, @NonNull String fieldName, @NonNull SortFieldConfig.FieldType fieldType) throws JSONException {
         JSONObject jsonObject1 = object1.getJsonObject();
         JSONObject jsonObject2 = object2.getJsonObject();
 
@@ -97,17 +94,17 @@ public class Sorter {
             JSONObject object2Properties = jsonObject2.getJSONObject("properties");
 
             if (object1Properties.has(fieldName) && object2Properties.has(fieldName)) {
-                if (fieldType == SortField.FieldType.DATE) {
+                if (fieldType == SortFieldConfig.FieldType.DATE) {
                     Date date1 = getDateFromISO8601(object1Properties.getString(fieldName));
                     Date date2 = getDateFromISO8601(object2Properties.getString(fieldName));
 
                     return compare(date1, date2);
-                } else if (fieldType == SortField.FieldType.NUMBER) {
+                } else if (fieldType == SortFieldConfig.FieldType.NUMBER) {
                     double number1 = object1Properties.getDouble(fieldName);
                     double number2 = object2Properties.getDouble(fieldName);
 
                     return compare(number1, number2);
-                } else if (fieldType == SortField.FieldType.STRING) {
+                } else if (fieldType == SortFieldConfig.FieldType.STRING) {
                     String s1 = object1Properties.getString(fieldName);
                     String s2 = object2Properties.getString(fieldName);
 

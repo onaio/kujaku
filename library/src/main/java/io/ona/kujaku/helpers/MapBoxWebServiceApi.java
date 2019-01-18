@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.android.volley.NetworkError;
 import com.android.volley.Request;
@@ -13,7 +14,7 @@ import com.android.volley.toolbox.Volley;
 
 import java.io.File;
 
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/11/2017.
@@ -21,8 +22,7 @@ import utils.Constants;
 
 public class MapBoxWebServiceApi {
 
-    private String mapboxApiUrl = "https://api.mapbox.com"
-            , stylesPath = "/styles/v1";
+    private String mapboxApiUrl = "https://api.mapbox.com", stylesPath = "/styles/v1";
     private RequestQueue requestQueue;
     private String mapboxAccessToken;
 
@@ -54,7 +54,7 @@ public class MapBoxWebServiceApi {
                 if (error instanceof NetworkError) {
                     String cachedStyle = (new MapBoxStyleStorage())
                             .getCachedStyle("mapbox://styles/" + username + File.separator + styleId);
-                    if (cachedStyle != null && !cachedStyle.isEmpty()) {
+                    if (!TextUtils.isEmpty(cachedStyle)) {
                         responseListener.onResponse(cachedStyle);
                         return;
                     }
@@ -66,7 +66,7 @@ public class MapBoxWebServiceApi {
         requestQueue.add(stringRequest);
     }
 
-    public void retrieveStyleJSON(@NonNull String mapBoxStyleURL,@NonNull Response.Listener<String> responseListener,@NonNull Response.ErrorListener errorListener) {
+    public void retrieveStyleJSON(@NonNull String mapBoxStyleURL, @NonNull Response.Listener<String> responseListener, @NonNull Response.ErrorListener errorListener) {
         if (!mapBoxStyleURL.matches(Constants.MAP_BOX_URL_FORMAT)) {
             errorListener.onErrorResponse(new VolleyError("Invalid MapBox Style URL "));
             return;

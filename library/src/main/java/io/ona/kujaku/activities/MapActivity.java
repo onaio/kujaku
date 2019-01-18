@@ -2,44 +2,39 @@ package io.ona.kujaku.activities;
 
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
-import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
-import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.services.commons.geojson.Feature;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -47,34 +42,44 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
-import io.ona.kujaku.sorting.objects.SortField;
+import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.config.DataSourceConfig;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import io.ona.kujaku.views.InfoWindowLayoutManager;
+import io.ona.kujaku.views.KujakuMapView;
 
-import utils.Constants;
-import utils.helpers.converters.GeoJSONFeature;
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
+
 
 /**
  * This activity displays a MapView once provided with a a MapBox Access Key & String array.
  * These are passed as:
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
- *      {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
- *
- *
- *      <p>
- *      - MapBox Styles - String array containing <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/">valid MapBox Style</a> at index 0
- *      <p>
- *
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
+ * <p>
+ * <p>
+ * <p>
+ * - MapBox Styles - String array containing <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/">valid MapBox Style</a> at index 0
+ * <p>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
-public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
-    private MapView mapView;
+    private KujakuMapView kujakuMapView;
     private String currentStylePath;
 
-    private SortField[] sortFields;
+    private SortFieldConfig[] sortFields;
     private String[] dataLayers;
     private JSONObject mapboxStyleJSON;
     private static final String TAG = MapActivity.class.getSimpleName();
@@ -87,8 +92,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
     private InfoWindowLayoutManager linearLayoutManager;
+    private HashMap<Integer, AlertDialog> alertDialogs;
     private int lastSelected = -1;
-
     private ImageButton focusOnMyLocationImgBtn;
 
     private int animateToNewTargetDuration = 1000;
@@ -97,39 +102,32 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private InfoWindowAdapter infoWindowAdapter;
 
-    private LatLng topLeftBound;
-    private LatLng bottomRightBound;
-    private LatLng cameraTargetLatLng;
-    private double cameraZoom = -1;
-    private double cameraTilt = -1;
-    private double cameraBearing = -1;
     private double maxZoom = -1;
     private double minZoom = -1;
     private Bundle savedInstanceState;
 
-    private GoogleApiClient googleApiClient;
-    private Location lastLocation;
-    private boolean waitingForLocation = true;
-    private boolean googleApiClientInitialized = false;
+    private boolean enableDropPoint = false;
 
-    private Marker myLocationMarker;
-
-    //Todo: Move reading data to another Thread
+    private List<JSONObject> newPoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        initializeViews();
 
         screenWidth = getScreenWidth(this);
 
+        newPoints = new ArrayList<>();
+
         Bundle bundle = getIntentExtras();
+        List<Point> points = null;
         if (bundle != null) {
             String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
             Mapbox.getInstance(this, mapBoxAccessToken);
+            points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
         }
-
+        initializeViews(points, enableDropPoint);
         checkPermissions(savedInstanceState);
     }
 
@@ -140,7 +138,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 return bundle;
             }
         }
-
         return null;
     }
 
@@ -150,14 +147,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
             currentStylePath = "";
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)) {
-                topLeftBound = bundle.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND);
-
-                if (bundle.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)) {
-                    bottomRightBound = bundle.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND);
-                }
-            }
-
             if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {
                 maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);
             }
@@ -166,23 +155,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);
             }
 
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG)) {
-                cameraTargetLatLng = bundle.getParcelable(Constants.PARCELABLE_KEY_CAMERA_TARGET_LATLNG);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_ZOOM)) {
-                cameraZoom = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_ZOOM);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_TILT)) {
-                cameraTilt = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_TILT);
-            }
-
-            if (bundle.containsKey(Constants.PARCELABLE_KEY_CAMERA_BEARING)) {
-                cameraBearing = bundle.getDouble(Constants.PARCELABLE_KEY_CAMERA_BEARING);
-            }
-
-            if (stylesArray != null) {
+            if (stylesArray != null && stylesArray.length > 0) {
                 currentStylePath = stylesArray[0];
                 if (currentStylePath != null && !currentStylePath.isEmpty()) {
                     currentStylePath = new MapBoxStyleStorage()
@@ -191,49 +164,55 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
                     // Extract kujaku meta-data
                     try {
-                        sortFields = extractSortFields(mapboxStyleJSON);
-                        dataLayers = extractSourceNames(mapboxStyleJSON);
-                        featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
-                        featuresMap = sortData(featuresMap, sortFields);
-                        displayInitialFeatures(featuresMap);
-                    } catch (JSONException e) {
+                        MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(mapboxStyleJSON);
+                        if (styleHelper.isKujakuConfigPresent()) {
+                            if (!styleHelper.getKujakuConfig().isValid()) {
+                                showIncompleteStyleError();
+                            } else {
+                                sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);
+                                dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());
+                                featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);
+                                featuresMap = sortData(featuresMap, sortFields);
+                                displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());
+                            }
+                        }
+                    } catch (JSONException | InvalidMapBoxStyleException e) {
                         Log.e(TAG, Log.getStackTraceString(e));
                     }
                 }
             }
 
-            initMapBoxSdk(savedInstanceState, currentStylePath, topLeftBound, bottomRightBound,
-                    cameraTargetLatLng, cameraZoom, cameraTilt, cameraBearing, maxZoom, minZoom);
+            initMapBoxSdk(savedInstanceState, currentStylePath, maxZoom, minZoom);
         }
     }
 
+    private void showIncompleteStyleError() {
+        showAlertDialog(
+                R.string.error_kujaku_config,
+                R.string.error_kujaku_config_description,
+                R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }, -1, null);
+    }
+
     private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
-                               @Nullable final LatLng topLeftBound, @Nullable final LatLng bottomRightBound,
-                               @Nullable final LatLng cameraTargetLatLng, final double cameraZoom, final double cameraTilt,
-                               final double cameraBearing, final double maxZoom, final double minZoom) {
-        mapView = (MapView) findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+                               final double maxZoom, final double minZoom) {
 
-        if (!mapBoxStylePath.isEmpty()) {
-            mapView.setStyleUrl(mapBoxStylePath);
+        kujakuMapView.onCreate(savedInstanceState);
+
+        if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
+            kujakuMapView.setStyleUrl(mapBoxStylePath);
         }
-
-        mapView.getMapAsync(new OnMapReadyCallback() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 //Set listener for markers
                 MapActivity.this.mapboxMap = mapboxMap;
-                mapboxMap.setOnMapClickListener(MapActivity.this);
-
-                if (topLeftBound != null && bottomRightBound != null) {
-                    waitingForLocation = false;
-                    LatLngBounds latLngBounds = new LatLngBounds.Builder()
-                            .include(topLeftBound)
-                            .include(bottomRightBound)
-                            .build();
-
-                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 50), 50);
-                }
+                mapboxMap.addOnMapClickListener(MapActivity.this);
 
                 if (minZoom != -1) {
                     mapboxMap.setMinZoomPreference(minZoom);
@@ -246,45 +225,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
                 boolean cameraPositionChanged = false;
 
-                if (cameraTargetLatLng != null) {
-                    waitingForLocation = false;
-                    cameraPositionBuilder.target(cameraTargetLatLng);
-                    mapboxMap.setLatLng(cameraTargetLatLng);
-                    cameraPositionChanged = true;
-                }
-
-                if (cameraZoom != -1) {
-                    cameraPositionBuilder.zoom(cameraZoom);
-                    cameraPositionChanged = true;
-                }
-
-                if (cameraTilt != -1) {
-                    cameraPositionBuilder.tilt(cameraTilt);
-                    cameraPositionChanged = true;
-                }
-
-                if (cameraBearing != -1) {
-                    cameraPositionBuilder.bearing(cameraBearing);
-                    cameraPositionChanged = true;
-                }
 
                 if (cameraPositionChanged) {
-
-                    if (bottomRightBound != null & topLeftBound != null) {
-                        cameraPositionBuilder.target(getBoundsCenter(topLeftBound, bottomRightBound));
-                    }
-
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
 
-                lastLocation = null;
-                initGoogleApiClient();
-                focusOnMyLocationImgBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        focusOnMyLocation(MapActivity.this.mapboxMap);
-                    }
-                });
+                if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+                    kujakuMapView.focusOnUserLocation(true);
+                }
             }
         });
     }
@@ -294,55 +242,84 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         double lngDifference = bottomRightBound.getLongitude() - topLeftBound.getLongitude();
 
         return new LatLng(
-                bottomRightBound.getLatitude() + (latDifference/2),
-                topLeftBound.getLongitude() + (lngDifference/2)
+                bottomRightBound.getLatitude() + (latDifference / 2),
+                topLeftBound.getLongitude() + (lngDifference / 2)
         );
     }
 
-    private void initializeViews() {
-        infoWindowsRecyclerView = (RecyclerView) findViewById(R.id.rv_mapActivity_infoWindow);
-        focusOnMyLocationImgBtn = (ImageButton) findViewById(R.id.ib_mapActivity_focusOnMyLocationIcon);
+    private void initializeViews(List<Point> points, boolean enableDropPoint) {
+        dismissAllDialogs();
+        alertDialogs = new HashMap<>();
+        infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);
+        focusOnMyLocationImgBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        Button btnDone = findViewById(R.id.btn_done_map_activity);
+        List<String> newPointsJSON = new ArrayList<>();
+        btnDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "Done using the MapActivity, exiting ...");
+                for (JSONObject featureJSON : newPoints) {
+                    newPointsJSON.add(featureJSON.toString());
+                }
+                Intent intent = new Intent();
+                intent.putStringArrayListExtra(NEW_FEATURE_POINTS_JSON, (ArrayList<String>) newPointsJSON);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
+
+        kujakuMapView = findViewById(R.id.map_view);
+        if (enableDropPoint) {
+            kujakuMapView.enableAddPoint(true);
+            ImageButton locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);
+            locationAdditionBtn.setVisibility(View.VISIBLE);
+            locationAdditionBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (kujakuMapView.isCanAddPoint()) {
+                        JSONObject featurePoint = kujakuMapView.dropPoint();
+                        Log.e("FEATURE POINT", featurePoint.toString());
+                        newPoints.add(featurePoint);
+                    }
+                }
+            });
+            btnDone.setVisibility(View.VISIBLE);
+
+            if (points != null) {
+                kujakuMapView.updateDroppedPoints(new ArrayList<>(points));
+            }
+        }
     }
 
-    private String[] extractSourceNames(@NonNull JSONObject jsonObject) throws JSONException {
-        if (jsonObject.has("metadata")) {
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
-            if (metadata.has("kujaku")) {
-                JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("data_source_names")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("data_source_names");
-                    String[] dataLayers = new String[jsonArray.length()];
-
-                    for(int i = 0; i < dataLayers.length; i++) {
-                        dataLayers[i] = jsonArray.getString(i);
-                    }
-
-                    return dataLayers;
+    private void dismissAllDialogs() {
+        if (alertDialogs != null) {
+            for (AlertDialog curDialog : alertDialogs.values()) {
+                if (curDialog.isShowing()) {
+                    curDialog.dismiss();
                 }
             }
         }
-
-        return null;
     }
 
     private LinkedHashMap<String, InfoWindowObject> extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
+        LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
         if (dataSourceNames != null && mapBoxStyleJSON.has("sources")) {
             JSONObject sources = mapBoxStyleJSON.getJSONObject("sources");
-            LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
             int counter = 0;
 
-            for(String dataSourceName: dataSourceNames) {
+            for (String dataSourceName : dataSourceNames) {
                 if (sources.has(dataSourceName)) {
                     JSONObject jsonObject = sources.getJSONObject(dataSourceName);
                     if (jsonObject.has("data")) {
                         JSONObject sourceDataJSONObject = jsonObject.getJSONObject("data");
                         if (sourceDataJSONObject.has("features")) {
                             JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
-                            for(int i = 0; i < featuresJSONArray.length(); i++) {
+                            for (int i = 0; i < featuresJSONArray.length(); i++) {
                                 JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 
                                 String id = getFeatureId(featureJSON);
-                                if (!id.isEmpty()) {
+                                if (!TextUtils.isEmpty(id)) {
                                     //Todo: Should check for errors here & print them in LogCat or notify the dev somehow
                                     featuresMap.put(id, new InfoWindowObject(counter, featureJSON));
                                     featureIdList.add(id);
@@ -353,32 +330,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     }
                 }
             }
-
-            return featuresMap;
         }
 
-        return null;
-    }
-
-    private SortField[] extractSortFields(@NonNull JSONObject jsonObject) throws JSONException {
-        if (jsonObject.has("metadata")) {
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
-            if (metadata.has("kujaku")) {
-                JSONObject kujakuRelatedData = metadata.getJSONObject("kujaku");
-                if (kujakuRelatedData.has("sort_fields")) {
-                    JSONArray jsonArray = kujakuRelatedData.getJSONArray("sort_fields");
-                    SortField[] sortFields = new SortField[jsonArray.length()];
-
-                    for(int i = 0; i < sortFields.length; i++) {
-                        sortFields[i] = SortField.extract(jsonArray.getJSONObject(i));
-                    }
-
-                    return sortFields;
-                }
-            }
-        }
-
-        return null;
+        return featuresMap;
     }
 
     private JSONObject getStyleJSON(@NonNull String stylePathOrJSON) {
@@ -405,9 +359,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap) {
+    private void displayInitialFeatures(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull KujakuConfig kujakuConfig) {
         if (!featuresMap.isEmpty()) {
-            infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView);
+            infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView, kujakuConfig);
             infoWindowsRecyclerView.setHasFixedSize(true);
             linearLayoutManager = new InfoWindowLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
             infoWindowsRecyclerView.setLayoutManager(linearLayoutManager);
@@ -415,19 +369,20 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private LinkedHashMap<String, InfoWindowObject> sortData(LinkedHashMap<String, InfoWindowObject> featuresMap, SortField[] sortFields) throws JSONException {
+    private LinkedHashMap<String, InfoWindowObject> sortData(@NonNull LinkedHashMap<String, InfoWindowObject> featuresMap, @NonNull SortFieldConfig[] sortFields) throws JSONException {
+        //TODO: Add support for multiple sorts
         int counter = 0;
-        if (sortFields != null && sortFields.length > 0) {
-            SortField sortField = sortFields[0];
-            if (sortField.getType() == SortField.FieldType.DATE) {
-                Sorter sorter = new Sorter(new ArrayList<>(featuresMap.values()));
-                ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() -1, sortField.getDataField(), sortField.getType());
+        if (sortFields.length > 0) {
+            SortFieldConfig sortField = sortFields[0];
+            if (sortField.getType() == SortFieldConfig.FieldType.DATE) {
+                Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));
+                ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() - 1, sortField.getDataField(), sortField.getType());
 
                 featuresMap.clear();
 
-                for(InfoWindowObject infoWindowObject: infoWindowObjectArrayList) {
+                for (InfoWindowObject infoWindowObject : infoWindowObjectArrayList) {
                     String id = getFeatureId(infoWindowObject);
-                    if (!id.isEmpty()) {
+                    if (!TextUtils.isEmpty(id)) {
                         infoWindowObject.setPosition(counter);
                         featuresMap.put(id, infoWindowObject);
                         counter++;
@@ -439,30 +394,53 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return featuresMap;
     }
 
+    public void showAlertDialog(int title, int message,
+                                int posButtonText,
+                                @Nullable DialogInterface.OnClickListener posOnClickListener,
+                                int negButtonText,
+                                @Nullable DialogInterface.OnClickListener negOnClickListener) {
+        if (!alertDialogs.containsKey(message)
+                || !alertDialogs.get(message).isShowing()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(title);
+            builder.setMessage(message);
+            builder.setCancelable(true);
+            if (posOnClickListener != null) {
+                builder.setPositiveButton(posButtonText, posOnClickListener);
+                builder.setCancelable(false);
+            }
+            if (negOnClickListener != null) {
+                builder.setNegativeButton(negButtonText, negOnClickListener);
+                builder.setCancelable(false);
+            }
+            alertDialogs.put(message, builder.show());
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        if (mapView != null) mapView.onResume();
-        if (googleApiClientInitialized) initGoogleApiClient();
+        if (kujakuMapView != null) {
+            kujakuMapView.onResume();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (mapView != null) mapView.onStart();
+        if (kujakuMapView != null) kujakuMapView.onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (mapView != null) mapView.onStop();
+        if (kujakuMapView != null) kujakuMapView.onStop();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mapView != null) mapView.onPause();
-        disconnectGoogleApiClient();
+        if (kujakuMapView != null) kujakuMapView.onPause();
     }
 
     @Override
@@ -474,19 +452,19 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     .deleteFile(currentStylePath.replace("file://", ""), true);
         }
 
-        if (mapView != null) mapView.onDestroy();
+        if (kujakuMapView != null) kujakuMapView.onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mapView != null) mapView.onSaveInstanceState(outState);
+        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (mapView != null) mapView.onLowMemory();
+        if (kujakuMapView != null) kujakuMapView.onLowMemory();
     }
 
     @Override
@@ -514,16 +492,14 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         // Get the first feature within the list if one exist
         if (features.size() > 0) {
-            for(Feature feature: features) {
+            for (Feature feature : features) {
 
                 // Ensure the feature has properties defined
-                if (feature.getProperties() != null) {
-                    if (feature.hasProperty("id")) {
-                        String id = feature.getProperty("id").getAsString();
-                        if (featuresMap.containsKey(id)) {
-                            focusOnFeature(id);
-                            break;
-                        }
+                if (feature.properties() != null && feature.hasProperty("id")) {
+                    String id = feature.getProperty("id").getAsString();
+                    if (featuresMap.containsKey(id)) {
+                        focusOnFeature(id);
+                        break;
                     }
                 }
             }
@@ -533,6 +509,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {
         if (!infoWindowDisplayed) {
+
             // Good enough for now
             infoWindowsRecyclerView.setVisibility(View.VISIBLE);
             infoWindowsRecyclerView.getViewTreeObserver()
@@ -543,6 +520,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
                         }
                     });
+
+            disableAlignBottomAndEnableAlignAbove(focusOnMyLocationImgBtn);
             infoWindowDisplayed = true;
         } else {
             scrollToInfoWindowPosition(position, informInfoWindowAdapter);
@@ -569,8 +548,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                             if (infoWindowViewHolder != null) {
                                 View v = infoWindowViewHolder.itemView;
 
-                                int offset = (screenWidth/2) - (v.getWidth()/2);
-                                linearLayoutManager.scrollToPositionWithOffset(position,  offset);
+                                int offset = (screenWidth / 2) - (v.getWidth() / 2);
+                                linearLayoutManager.scrollToPositionWithOffset(position, offset);
 
                                 infoWindowViewHolder.select();
                             }
@@ -588,19 +567,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
     }
 
-    private void centerMap(@NonNull LatLng point) {
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(point)
-                .build();
-
-        if (mapboxMap != null) {
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);
-        }
-    }
-
     private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
         final int left = view.getLeft();
-        final int offset = (screenWidth/2) - (view.getWidth()/2);
+        final int offset = (screenWidth / 2) - (view.getWidth() / 2);
         final float totalOffset = offset - left;
 
         ValueAnimator valueAnimator = ValueAnimator.ofFloat(totalOffset);
@@ -660,7 +629,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             performInfoWindowDoubleClickAction(featuresMap.get(id));
         } else {
             showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
-            centerMap(latLng);
+            kujakuMapView.centerMap(latLng, animateToNewTargetDuration);
         }
         lastSelected = position;
     }
@@ -681,15 +650,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (featureJSON.has("geometry")) {
             try {
                 JSONObject featureGeometry = featureJSON.getJSONObject("geometry");
-                if (featureGeometry.has("type") && GeoJSONFeature.Type.POINT.toString().equalsIgnoreCase(featureGeometry.getString("type"))) {
-                    if (featureGeometry.has("coordinates")) {
-                        JSONArray coordinatesArray = featureGeometry.getJSONArray("coordinates");
-                        if (coordinatesArray.length() > 2) {
-                            double lng = coordinatesArray.getDouble(0);
-                            double lat = coordinatesArray.getDouble(1);
+                if (featureGeometry.has("type") && GeoJSONFeature.Type.POINT.toString().equalsIgnoreCase(featureGeometry.getString("type")) && featureGeometry.has("coordinates")) {
+                    JSONArray coordinatesArray = featureGeometry.getJSONArray("coordinates");
+                    if (coordinatesArray.length() > 2) {
+                        double lng = coordinatesArray.getDouble(0);
+                        double lat = coordinatesArray.getDouble(1);
 
-                            return (new LatLng(lat, lng));
-                        }
+                        return (new LatLng(lat, lng));
                     }
                 }
             } catch (JSONException e) {
@@ -717,7 +684,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
-        return "";
+        return null;
     }
 
     private void performInfoWindowDoubleClickAction(InfoWindowObject infoWindowObject) {
@@ -729,85 +696,16 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         finish();
     }
 
-    private void focusOnMyLocation(@NonNull MapboxMap mapboxMap) {
-        if (lastLocation != null) {
-            LatLng newTarget = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+    private void disableAlignBottomAndEnableAlignAbove(View view) {
+        ViewGroup.LayoutParams viewGroupParams = view.getLayoutParams();
 
-            CameraPosition newCameraPosition = new CameraPosition.Builder(mapboxMap.getCameraPosition())
-                    .target(newTarget)
-                    .build();
+        if (viewGroupParams instanceof RelativeLayout.LayoutParams) {
+            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) viewGroupParams;
 
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition), animateToNewTargetDuration);
+            relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+            relativeLayoutParams.addRule(RelativeLayout.ABOVE, R.id.rv_mapActivity_infoWindow);
 
-            // Change the marker position to the new position - This should also be animated at some point
-            if (myLocationMarker == null) {
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(newTarget);
-                myLocationMarker = mapboxMap.addMarker(markerOptions);
-            } else {
-                myLocationMarker.setPosition(newTarget);
-                mapboxMap.updateMarker(myLocationMarker);
-            }
-        } else {
-            waitingForLocation = true;
-        }
-    }
-
-    private void initGoogleApiClient() {
-        googleApiClientInitialized = true;
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        googleApiClient.connect();
-    }
-
-    private void disconnectGoogleApiClient() {
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
-    }
-
-    // GPS - Location Stuff
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(5000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-            lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        } catch (SecurityException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-            Toast.makeText(this, "Sorry but we could not get your location since the app does not have permissions to access your Location", Toast.LENGTH_LONG)
-                    .show();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(this, R.string.msg_could_not_find_your_location, Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        lastLocation = location;
-
-        if (waitingForLocation) {
-            waitingForLocation = false;
-            focusOnMyLocation(mapboxMap);
+            view.setLayoutParams(relativeLayoutParams);
         }
     }
 }

@@ -53,7 +53,7 @@ public class MapBoxDownloadTaskInstrumentedTest extends RealmRelatedInstrumented
 
         MapBoxOfflineQueueTask queryResultTask = realm.where(MapBoxOfflineQueueTask.class)
                 .contains("task", mapName)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)
                 .findFirst();
 

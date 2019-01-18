@@ -10,13 +10,68 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.MainActivity">
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="3f94f9c3caeff331b3a2bd8c2182b663ad6a955a" />
+
+        <activity
+            android:name=".activities.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activities.OfflineRegionsActivity"
+            android:label="@string/title_activity_navigation_drawer"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.TaskQueueActivity"
+            android:label="@string/title_activity_navigation_drawer"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.LowLevelManualAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.LowLevelLocationAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.HighLevelMapView"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.HighLevelLocationAddPointMapView"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.CardActivity"
+            android:label="@string/title_activity_card"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.CustomMarkerLowLevelAddPoint"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.AddUpdatePropertiesActivity"
+            android:label="@string/title_activity_add_update_properties"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.BoundsChangeListenerActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.FeatureClickStatusActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.BoundsAwareActivity"
+            android:label="@string/title_activity_bounds_aware"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.FeatureClickListenerActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.PaddedBboxCalculatorActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

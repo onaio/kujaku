@@ -2,9 +2,11 @@ package io.ona.kujaku.data.realm;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,8 +17,8 @@ import io.realm.Realm;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/01/2018.
  */
-
-public class RealmRelatedInstrumentedTest {
+@RunWith(AndroidJUnit4.class)
+public abstract class RealmRelatedInstrumentedTest {
 
     protected ArrayList<MapBoxOfflineQueueTask> addedRecords = new ArrayList<>();
     protected Context context;
@@ -38,6 +40,7 @@ public class RealmRelatedInstrumentedTest {
             }
         }
         realm.commitTransaction();
+        addedRecords.clear();
     }
 
     protected void insertValueInPrivateField(Class classWithField, Object instance, String fieldName, Object newValue) throws IllegalAccessException, NoSuchFieldException {

@@ -1,6 +1,8 @@
 package io.ona.kujaku.helpers.converters;
 
+import com.cocoahero.android.geojson.GeoJSON;
 import com.mapbox.mapboxsdk.BuildConfig;
+import com.mapbox.mapboxsdk.constants.GeometryConstants;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONException;
@@ -10,8 +12,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import utils.helpers.converters.GeoJSONFeature;
-import utils.helpers.converters.GeoJSONHelper;
+import java.util.ArrayList;
+import java.util.UUID;
+
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONHelper;
 
 import static org.junit.Assert.assertEquals;
 
@@ -107,14 +112,97 @@ public class GeoJSONHelperTest {
     }
 
     @Test
-    public void getFeatureShouldReturnMultiPointFeatureWithoutProperties() {
+    public void getFeatureShouldReturnMultiPointFeatureWithoutProperties() throws JSONException {
+        int pointsLen = 5;
+        ArrayList<LatLng> multiPoints = new ArrayList<>();
 
+        for(int i = 0; i < pointsLen; i++) {
+            multiPoints.add(generateLatLng());
+        }
+
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature(multiPoints);
+        GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
+
+        JSONObject jsonObject = new JSONObject(geoJSONHelper.getJsonFeatureCollection());
+
+
+        assertEquals(GeoJSON.TYPE_FEATURE_COLLECTION, jsonObject.getString("type"));
+        assertEquals(1, jsonObject.getJSONArray("features").length());
+        assertEquals(GeoJSON.TYPE_MULTI_POINT, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getString("type"));
+        assertEquals(0, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("properties").length());
+        assertEquals(pointsLen, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("coordinates").length());
     }
 
+    @Test
+    public void getFeatureShouldReturnPointFeatureWithProperties() throws JSONException {
+        int propertiesLen = 5;
+        ArrayList<LatLng> multiPoints = new ArrayList<>();
+        multiPoints.add(generateLatLng());
+
+        ArrayList<GeoJSONFeature.Property> multiProperties = new ArrayList<>();
+
+        for(int i = 0; i < propertiesLen; i++) {
+            multiProperties.add(new GeoJSONFeature.Property(generateRandomPropertyName(), generateRandomPropertyValue()));
+        }
+
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature(multiPoints, multiProperties);
+        GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
+
+        JSONObject jsonObject = new JSONObject(geoJSONHelper.getJsonFeatureCollection());
+
+
+        assertEquals(GeoJSON.TYPE_FEATURE_COLLECTION, jsonObject.getString("type"));
+        assertEquals(1, jsonObject.getJSONArray("features").length());
+        assertEquals(GeoJSON.TYPE_POINT, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getString("type"));
+        assertEquals(propertiesLen, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("properties").length());
+        assertEquals(3, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("coordinates").length());
+    }
 
     @Test
-    public void getFeatureShouldReturnPointFeatureWithProperties() {}
+    public void getFeatureShouldReturnMultiPointFeatureWithProperties() throws JSONException {
+        int propertiesLen = 5;
+        int pointsLen = 8;
+        ArrayList<LatLng> multiPoints = new ArrayList<>();
 
-    @Test
-    public void getFeatureShouldReturnMultiPointFeatuerWithProperties() {}
+        ArrayList<GeoJSONFeature.Property> multiProperties = new ArrayList<>();
+
+        for(int i = 0; i < propertiesLen; i++) {
+            multiProperties.add(new GeoJSONFeature.Property(generateRandomPropertyName(), generateRandomPropertyValue()));
+        }
+
+        for (int j = 0; j < pointsLen; j++) {
+            multiPoints.add(generateLatLng());
+        }
+
+        GeoJSONFeature geoJSONFeature = new GeoJSONFeature(multiPoints, multiProperties);
+        GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
+
+        JSONObject jsonObject = new JSONObject(geoJSONHelper.getJsonFeatureCollection());
+
+
+        assertEquals(GeoJSON.TYPE_FEATURE_COLLECTION, jsonObject.getString("type"));
+        assertEquals(1, jsonObject.getJSONArray("features").length());
+        assertEquals(GeoJSON.TYPE_MULTI_POINT, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getString("type"));
+        assertEquals(propertiesLen, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("properties").length());
+        assertEquals(pointsLen, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("coordinates").length());
+    }
+
+    private LatLng generateLatLng() {
+        return new LatLng(
+                (Math.random() * (GeometryConstants.MAX_LATITUDE - GeometryConstants.MIN_LATITUDE)) + GeometryConstants.MIN_LATITUDE,
+                (Math.random() * (GeometryConstants.MAX_LONGITUDE - GeometryConstants.MIN_LONGITUDE)) + GeometryConstants.MIN_LONGITUDE
+        );
+    }
+
+    private String generateRandomString() {
+        return UUID.randomUUID().toString();
+    }
+
+    private String generateRandomPropertyName() {
+        return generateRandomString();
+    }
+
+    private String generateRandomPropertyValue() {
+        return generateRandomString();
+    }
 }

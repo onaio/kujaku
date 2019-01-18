@@ -16,8 +16,9 @@ import org.robolectric.shadows.ShadowToast;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.sample.TestApplication;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
 import static org.junit.Assert.*;
 
 /**
@@ -90,18 +91,16 @@ public class MainActivityTest {
 
         Intent intent = new Intent();
         intent.putExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE, geoJSONFeatureString);
+        mainActivity.onActivityResult(MAP_ACTIVITY_REQUEST_CODE, Activity.RESULT_OK, intent);
 
-        mainActivity.onActivityResult(MainActivity.MAP_ACTIVITY_REQUEST_CODE, Activity.RESULT_OK, intent);
         assertEquals(geoJSONFeatureString, ShadowToast.getTextOfLatestToast());
-
     }
 
     @Test
     public void onActivityResultWithInvalidIntentShouldShowErrorToast() {
         Intent intent = new Intent();
+        mainActivity.onActivityResult(MAP_ACTIVITY_REQUEST_CODE, Activity.RESULT_OK, intent);
 
-        mainActivity.onActivityResult(MainActivity.MAP_ACTIVITY_REQUEST_CODE, Activity.RESULT_OK, intent);
         assertEquals(context.getString(R.string.error_msg_could_not_retrieve_chosen_feature), ShadowToast.getTextOfLatestToast());
-
     }
 }

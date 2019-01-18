@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_main_activity"
+            android:title="@string/main_activity_title"/>
+
+        <item
+            android:id="@+id/nav_offline_regions"
+            android:title="@string/offline_regions_activity_title" />
+
+        <item
+            android:id="@+id/nav_task_queue"
+            android:title="@string/task_queue_activity_title" />
+
+        <item
+            android:id="@+id/nav_low_level_manual_add_point"
+            android:title="@string/low_level_manual_add_point"/>
+
+        <item
+            android:id="@+id/nav_low_level_location_add_point"
+            android:title="@string/low_level_location_add_point"/>
+
+        <item
+            android:id="@+id/nav_high_level_add_point"
+            android:title="@string/high_level_add_point"/>
+
+        <item
+            android:id="@+id/nav_high_level_location_add_point"
+            android:title="@string/high_level_location_add_point"/>
+
+        <item
+            android:id="@+id/nav_card_activity"
+            android:title="@string/card_activity" />
+
+        <item
+            android:id="@+id/nav_low_level_add_point_custom_marker"
+            android:title="@string/low_level_add_point_custom_marker"/>
+
+        <item
+            android:id="@+id/nav_add_update_activity"
+            android:title="@string/add_update_activity_title"/>
+
+        <item
+            android:id="@+id/nav_feature_click_status"
+            android:title="@string/feature_click_status"/>
+
+        <item
+            android:id="@+id/nav_feature_click_listener"
+            android:title="@string/feature_click_listener"/>
+
+        <item
+            android:id="@+id/nav_bounding_box_listener"
+            android:title="@string/bounding_box_listener"/>
+
+        <item android:id="@+id/nav_bounds_aware_activity"
+            android:title="@string/bounds_aware_activity"/>
+
+        <item
+            android:id="@+id/nav_padded_bbox_calculator"
+            android:title="@string/padded_bbox_calculator"/>
+    </group>
+
+</menu>

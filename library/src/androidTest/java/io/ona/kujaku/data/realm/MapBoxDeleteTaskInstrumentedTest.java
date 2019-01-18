@@ -38,7 +38,7 @@ public class MapBoxDeleteTaskInstrumentedTest extends RealmRelatedInstrumentedTe
         MapBoxOfflineQueueTask queryResultTask = realm.where(MapBoxOfflineQueueTask.class)
                 .contains("task", mapboxAccessToken)
                 .contains("task", mapName)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE)
+                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
                 .equalTo("taskType", MapBoxOfflineQueueTask.TASK_TYPE_DELETE)
                 .findFirst();
 

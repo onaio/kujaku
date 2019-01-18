@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.realm.Realm;
-import utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
 /**
  * Stores/Carries data on Offline MapBox Style
@@ -29,7 +29,9 @@ public class MapBoxDownloadTask {
     private double minZoom;
     private double maxZoom;
     private LatLng topLeftBound;
+    private LatLng topRightBound;
     private LatLng bottomRightBound;
+    private LatLng bottomLeftBound;
     private String mapBoxAccessToken;
 
     private JSONObject jsonObject;
@@ -41,7 +43,9 @@ public class MapBoxDownloadTask {
             , MIN_ZOOM = "minZoom"
             , MAX_ZOOM = "maxZoom"
             , TOP_LEFT_BOUND = "topLeftBound"
+            , TOP_RIGHT_BOUND = "topRightBound"
             , BOTTOM_RIGHT_BOUND = "bottomRightBound"
+            , BOTTOM_LEFT_BOUND = "bottomLeftBound"
             , MAPBOX_ACCESS_TOKEN = "mapBoxAccessToken";
 
     public static final String BOUND_LATITUDE = "lat"
@@ -56,7 +60,9 @@ public class MapBoxDownloadTask {
                               @NonNull String mapBoxStyleUrl,
                               double minZoom, double maxZoom,
                               @NonNull LatLng topLeftBound,
+                              @NonNull LatLng topRightBound,
                               @NonNull LatLng bottomRightBound,
+                              @NonNull LatLng bottomLeftBound,
                               @NonNull String mapBoxAccessToken) {
         this.packageName = packageName;
         this.mapName = mapName;
@@ -64,7 +70,9 @@ public class MapBoxDownloadTask {
         this.minZoom = minZoom;
         this.maxZoom = maxZoom;
         this.topLeftBound = topLeftBound;
+        this.topRightBound = topRightBound;
         this.bottomRightBound = bottomRightBound;
+        this.bottomLeftBound = bottomLeftBound;
         this.mapBoxAccessToken = mapBoxAccessToken;
     }
 
@@ -80,7 +88,9 @@ public class MapBoxDownloadTask {
             maxZoom = jsonObject.getDouble(MAX_ZOOM);
 
             topLeftBound = constructLatLng(jsonObject.getJSONObject(TOP_LEFT_BOUND));
+            topRightBound = constructLatLng(jsonObject.getJSONObject(TOP_RIGHT_BOUND));
             bottomRightBound = constructLatLng(jsonObject.getJSONObject(BOTTOM_RIGHT_BOUND));
+            bottomLeftBound = constructLatLng(jsonObject.getJSONObject(BOTTOM_LEFT_BOUND));
 
         } catch (JSONException e) {
             Log.e(TAG, Log.getStackTraceString(e));
@@ -107,7 +117,9 @@ public class MapBoxDownloadTask {
         jsonObject.put(MIN_ZOOM, minZoom);
         jsonObject.put(MAX_ZOOM, maxZoom);
         jsonObject.put(TOP_LEFT_BOUND, constructLatLngJSONObject(topLeftBound));
+        jsonObject.put(TOP_RIGHT_BOUND, constructLatLngJSONObject(topRightBound));
         jsonObject.put(BOTTOM_RIGHT_BOUND, constructLatLngJSONObject(bottomRightBound));
+        jsonObject.put(BOTTOM_LEFT_BOUND, constructLatLngJSONObject(bottomLeftBound));
 
         return jsonObject;
     }
@@ -176,6 +188,23 @@ public class MapBoxDownloadTask {
         this.mapBoxAccessToken = mapBoxAccessToken;
     }
 
+
+    public LatLng getTopRightBound() {
+        return topRightBound;
+    }
+
+    public void setTopRightBound(LatLng topRightBound) {
+        this.topRightBound = topRightBound;
+    }
+
+    public LatLng getBottomLeftBound() {
+        return bottomLeftBound;
+    }
+
+    public void setBottomLeftBound(LatLng bottomLeftBound) {
+        this.bottomLeftBound = bottomLeftBound;
+    }
+
     /**
      * Converts {@link LatLng} to JSONObject so that it can be stored in
      * {@link MapBoxDownloadTask#bottomRightBound} & {@link MapBoxDownloadTask#topLeftBound}
@@ -206,7 +235,7 @@ public class MapBoxDownloadTask {
 
     /**
      * Creates a valid {@link MapBoxOfflineQueueTask} given a {@link MapBoxDownloadTask} with default
-     * {@link MapBoxOfflineQueueTask#taskStatus} = {@link MapBoxOfflineQueueTask#TASK_STATUS_INCOMPLETE}
+     * {@link MapBoxOfflineQueueTask#taskStatus} = {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
      * & adds it to the queue
      *
      * @param mapBoxDownloadTask to add to the queue
@@ -222,7 +251,7 @@ public class MapBoxDownloadTask {
             mapBoxOfflineQueueTask.setDateCreated(new Date());
             mapBoxOfflineQueueTask.setDateUpdated(new Date());
             mapBoxOfflineQueueTask.setTask(mapBoxDownloadTask.getJSONObject());
-            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE);
+            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);
             mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);
 
             realm.commitTransaction();

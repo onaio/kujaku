@@ -6,12 +6,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionDefinition;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
@@ -45,19 +45,21 @@ import java.util.concurrent.CountDownLatch;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
-import io.ona.kujaku.shadows.ShadowConnectivityReceiver;
-import io.ona.kujaku.shadows.ShadowMapBoxDeleteTask;
-import io.ona.kujaku.shadows.ShadowMapBoxDownloadTask;
-import io.ona.kujaku.shadows.ShadowOfflineManager;
-import io.ona.kujaku.shadows.ShadowRealm;
-import io.ona.kujaku.shadows.implementations.RealmDbTestImplementation;
+import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDeleteTask;
+import io.ona.kujaku.test.shadows.ShadowMapBoxDownloadTask;
+import io.ona.kujaku.test.shadows.ShadowOfflineManager;
+import io.ona.kujaku.test.shadows.ShadowRealm;
+import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
+import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
 import io.ona.kujaku.utils.NumberFormatter;
-import utils.Constants;
+import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -74,7 +76,8 @@ import static org.junit.Assert.fail;
                 ShadowMapBoxDownloadTask.class,
                 ShadowConnectivityReceiver.class,
                 ShadowRealm.class,
-                ShadowOfflineManager.class
+                ShadowOfflineManager.class,
+                ShadowRealmDatabase.class
 })
 public class MapboxOfflineDownloaderServiceTest {
 
@@ -89,7 +92,9 @@ public class MapboxOfflineDownloaderServiceTest {
     private float minZoom = 22;
     private float maxZoom = 10;
     private LatLng topLeftBound = new LatLng(9.1, 9.1);
+    private LatLng topRightBound = new LatLng(9.1, 20.5);
     private LatLng bottomRightBound = new LatLng(1.1, 20.5);
+    private LatLng bottomLeftBound = new LatLng(9.1, 1.1);
 
     private CountDownLatch latch;
     private ArrayList<Object> resultsToCheck = new ArrayList<>();
@@ -110,13 +115,13 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnFalseWhenGivenNullIntent() {
+    public void persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntent() {
         Intent sampleExtra = null;
         assertEquals(false, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleExtra));
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnFalseWhenGivenNullIntentExtras() {
+    public void persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntentExtras() {
         Intent sampleExtra = new Intent();
         assertEquals(false, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleExtra));
 
@@ -125,7 +130,7 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnTrueWhenGivenValidDeleteTask() {
+    public void persistOfflineMapTaskShouldReturnTrueWhenGivenValidDeleteTask() {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDeleteIntent(sampleServiceIntent);
 
@@ -133,10 +138,11 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistsOfflineMapTaskShouldReturnTrueWhenGivenValidDownloadTask() {
+    public void persistOfflineMapTaskShouldReturnTrueWhenGivenValidDownloadTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
 
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
     }
 
@@ -168,17 +174,18 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDeleteTask() {
+    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDeleteTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDeleteIntent(sampleServiceIntent);
 
         Calendar calendar = Calendar.getInstance();
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DELETE, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 
@@ -196,17 +203,18 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     @Test
-    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDownloadTask() {
+    public void persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDownloadTask() throws NoSuchFieldException, IllegalAccessException {
         Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
         sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
 
         Calendar calendar = Calendar.getInstance();
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", RealmDatabase.init(context));
         assertEquals(true, mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent));
 
         MapBoxOfflineQueueTask task = (MapBoxOfflineQueueTask) RealmDbTestImplementation.first();
 
         assertEquals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD, task.getTaskType());
-        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_INCOMPLETE, task.getTaskStatus());
+        assertEquals(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED, task.getTaskStatus());
         assertTrue((calendar.getTimeInMillis() - task.getDateCreated().getTime()) < 1000);
         assertTrue((calendar.getTimeInMillis() - task.getDateUpdated().getTime()) < 1000);
 
@@ -220,7 +228,9 @@ public class MapboxOfflineDownloaderServiceTest {
             jsonObject.put(MapBoxDownloadTask.MIN_ZOOM, minZoom);
             jsonObject.put(MapBoxDownloadTask.MAX_ZOOM, maxZoom);
             jsonObject.put(MapBoxDownloadTask.TOP_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topLeftBound));
+            jsonObject.put(MapBoxDownloadTask.TOP_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(topRightBound));
             jsonObject.put(MapBoxDownloadTask.BOTTOM_RIGHT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomRightBound));
+            jsonObject.put(MapBoxDownloadTask.BOTTOM_LEFT_BOUND, MapBoxDownloadTask.constructLatLngJSONObject(bottomLeftBound));
 
             assertEquals(jsonObject.toString(), task.getTask().toString());
         } catch (JSONException e) {
@@ -251,7 +261,7 @@ public class MapboxOfflineDownloaderServiceTest {
         latch.await();
 
         Intent intent = (Intent) resultsToCheck.get(0);
-        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded : 60000 while Downloading " + mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED, mapName, "MapBox Tile Count limit exceeded 60000 while Downloading " + mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
     }
 
     @Test
@@ -297,9 +307,9 @@ public class MapboxOfflineDownloaderServiceTest {
 
         insertValueInPrivateField(mapboxOfflineDownloaderService, "serviceHandler", new Handler(mapboxOfflineDownloaderService.getApplication().getMainLooper()));
 
-        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("startDownloadProgressUpdater", null);
+        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("startDownloadProgressUpdater");
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, null);
+        method.invoke(mapboxOfflineDownloaderService);
 
         mapboxOfflineDownloaderService.onStatusChanged(incompleteOfflineRegionStatus, null);
         latch.await();
@@ -327,22 +337,10 @@ public class MapboxOfflineDownloaderServiceTest {
         assertEquals(contentTitle, shadowNotification.getContentTitle());
         assertEquals(contentText, shadowNotification.getContentText());
 
-        method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("stopDownloadProgressUpdater", null);
+        method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("stopDownloadProgressUpdater");
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, null);
+        method.invoke(mapboxOfflineDownloaderService);
 
-    }
-
-    @Test
-    public void isNetworkConnectionPreferred() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("isNetworkConnectionPreferred", int.class);
-        method.setAccessible(true);
-        boolean isPreferred = (boolean) method.invoke(mapboxOfflineDownloaderService, 2);
-
-        assertFalse(isPreferred);
-        assertTrue((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_WIFI));
-        assertTrue((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_MOBILE));
-        assertFalse((boolean) method.invoke(mapboxOfflineDownloaderService, ConnectivityManager.TYPE_MOBILE_DUN));
     }
 
     @Test
@@ -382,9 +380,17 @@ public class MapboxOfflineDownloaderServiceTest {
         String expectedMapName = UUID.randomUUID().toString();
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(createSampleDownloadTask("kl", expectedMapName, sampleValidMapboxStyleURL));
 
+        // Set the offlineManager to null
+        MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, "");
+        OfflineManager offlineManager = (OfflineManager) getValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager");
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", null);
+
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
         method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
         assertEquals(expectedMapName, (String) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName"));
     }
@@ -398,9 +404,17 @@ public class MapboxOfflineDownloaderServiceTest {
         );
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
 
+        // Set the offlineManager to null
+        MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, "");
+        OfflineManager offlineManager = (OfflineManager) getValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager");
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", null);
+
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
         method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+
+        insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
         assertEquals(expectedMapName, (String) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName"));
     }
@@ -557,7 +571,9 @@ public class MapboxOfflineDownloaderServiceTest {
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeftBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
         serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
+        serviceIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
 
         return serviceIntent;
     }
@@ -660,8 +676,16 @@ public class MapboxOfflineDownloaderServiceTest {
                         25.854782
                 ),
                 new LatLng(
+                        -17.854564,
+                        25.876589
+                ),
+                new LatLng(
                         -17.875469,
                         25.876589
+                ),
+                new LatLng(
+                        -17.875469,
+                        25.854782
                 ),
                 BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
         );

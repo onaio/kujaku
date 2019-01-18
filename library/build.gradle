@@ -11,7 +11,8 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+        maven { url "https://dl.google.com/dl/android/maven2/" }
+        maven { url "http://dl.bintray.com/ona/kujaku" }
     }
 }
 
@@ -19,7 +20,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.2.4'
+version '0.5.5'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -45,7 +46,7 @@ publishing {
                 def dependenciesNode = asNode().appendNode('dependencies')
 
                 //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.compile.allDependencies.each {
+                configurations.implementation.allDependencies.each {
                     def dependencyNode = dependenciesNode.appendNode('dependency')
                     dependencyNode.appendNode('groupId', it.group)
                     dependencyNode.appendNode('artifactId', it.name)
@@ -64,10 +65,10 @@ bintray {
     pkg {
         repo = 'kujaku'
         name = project.name
-        userOrg = 'jasonrogena'
+        userOrg = 'ona'
         licenses = ['Apache-2.0']
         desc = 'Kujaku library'
-        websiteUrl = "https://github.com/jasonrogena"
+        websiteUrl = "https://ona.io"
         publish = true
         vcsUrl = "https://github.com/onaio/kujaku.git"
         version {
@@ -82,11 +83,17 @@ bintray {
 
 android {
 
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -137,43 +144,75 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
-dependencies {
-
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile('com.mapbox.mapboxsdk:mapbox-android-sdk:5.2.0-beta.3@aar') {
+dependencies { configuration ->
+    implementation "com.android.support:support-v4:${rootProject.ext.supportVersion}"
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
         transitive = true;
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-fragment'
     }
-    compile('io.ona.kujaku:utils:0.2.4') {
+
+    //implementation (project(":utils")) {
+    implementation('io.ona.kujaku:utils:0.5.0') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'appcompat-v7'
     }
-    compile 'com.android.support:appcompat-v7:26.+'
-    compile 'com.cocoahero.android:geojson:1.0.1@jar'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'com.snatik:storage:2.1.0'
-    compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
 
-    // Info Window dependencies
-    compile 'com.android.support:cardview-v7:26.+'
-    compile 'com.android.support:recyclerview-v7:26.+'
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:design:${supportVersion}"
 
-    compile 'com.google.android.gms:play-services-maps:8.4.0'
-    compile 'com.google.android.gms:play-services-location:8.4.0'
+    customDependencies(this, configuration)
+    appPermissionsDependencies(configuration)
+    infoWindowDependencies(this, configuration)
+    locationDependencies(configuration)
+    testDependencies(configuration)
+}
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.5.1'
-    testCompile 'org.robolectric:shadows-support-v4:3.4-rc2'
+private static void testDependencies(configuration) {
+    configuration.testImplementation 'junit:junit:4.12'
+    configuration.testImplementation 'org.robolectric:robolectric:3.5.1'
+    configuration.testImplementation 'org.robolectric:shadows-support-v4:3.4-rc2'
 
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    configuration.testImplementation 'org.mockito:mockito-core:1.10.19'
 
-    testCompile "org.powermock:powermock-module-junit4:1.6.2"
-    testCompile "org.powermock:powermock-module-junit4-rule:1.6.2"
-    testCompile "org.powermock:powermock-api-mockito:1.6.2"
-    testCompile "org.powermock:powermock-classloading-xstream:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-module-junit4:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-module-junit4-rule:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-api-mockito:1.6.2"
+    configuration.testImplementation "org.powermock:powermock-classloading-xstream:1.6.2"
 
-    androidTestCompile 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
+
+private static void infoWindowDependencies(instance, configuration) {
+    configuration.implementation "com.android.support:cardview-v7:${instance.supportVersion}"
+    configuration.implementation "com.android.support:recyclerview-v7:${instance.supportVersion}"
+}
+
+private static void customDependencies(instance, configuration) {
+    configuration.implementation 'com.cocoahero.android:geojson:1.0.1@jar'
+    configuration.implementation "com.android.volley:volley:${instance.volleyVersion}"
+    configuration.implementation 'com.snatik:storage:2.1.0'
+    configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
+}
+
+private static void appPermissionsDependencies(configuration) {
+    configuration.implementation 'com.karumi:dexter:5.0.0'
+}
+
+private static void locationDependencies(configuration) {
+    configuration.implementation 'com.google.android.gms:play-services-location:8.4.0'
 }

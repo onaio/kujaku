@@ -1,20 +1,25 @@
 allprojects {
     repositories {
-        maven { url "http://dl.bintray.com/jasonrogena/kujaku" }
+        maven { url "https://dl.google.com/dl/android/maven2/" }
+        maven { url "http://dl.bintray.com/ona/kujaku" }
     }
 }
 
 apply plugin: 'com.android.application'
 
 android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
     defaultConfig {
         applicationId "io.ona.kujaku.wrapper"
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -35,13 +40,16 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile(project(':library')) {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'android.arch.lifecycle:runtime:1.1.0'
+
+    implementation (project(':library')) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
     }
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:26.+'
-    testCompile 'junit:junit:4.12'
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
+    testImplementation 'junit:junit:4.12'
+
 }
