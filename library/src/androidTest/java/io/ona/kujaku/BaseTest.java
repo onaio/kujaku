@@ -1,5 +1,7 @@
 package io.ona.kujaku;
 
+import android.util.Log;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -34,8 +36,14 @@ public abstract class BaseTest {
 
     public static void setFinalStatic(Field field, Object newValue) throws NoSuchFieldException, IllegalAccessException {
         field.setAccessible(true);
+        
+        Field[] fields = Field.class.getDeclaredFields();
 
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        for (Field field1: fields) {
+            Log.e("Reflection fields", field1.getName());
+        }
+
+        Field modifiersField = Field.class.getDeclaredField("accessFlags");
         modifiersField.setAccessible(true);
         modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
