@@ -15,7 +15,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,7 +126,6 @@ public class KujakuMapViewTest extends BaseTest {
         LatLng latLng = new LatLng(14d, 23d);
 
         insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocation", latLng);
-        BaseTest.setFinalStatic(KujakuMapView.class.getDeclaredField("ANIMATE_TO_LOCATION_DURATION"), 0);
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
