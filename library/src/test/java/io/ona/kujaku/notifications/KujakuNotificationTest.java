@@ -25,7 +25,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
     @Config(sdk = 26)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithTextAndChannelIdWhenGivenContent() throws NoSuchFieldException, IllegalAccessException {
-        KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
+        KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
         String title = "sample tiTle 4";
         String channelId = UUID.randomUUID().toString();
         String content = "This is some sample content";
@@ -44,7 +44,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
     @Config(sdk = 25)
     @Test
     public void createNotificationShouldCreateValidNotifcationBuilderWithTextOnly() throws NoSuchFieldException, IllegalAccessException {
-        KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
+        KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
         String title = "sample tiTle 4";
         String content = "This is some sample content for the notification";
 
@@ -57,7 +57,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
     @Config(sdk = 26)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithChannelIdOnly() throws NoSuchFieldException, IllegalAccessException {
-        KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
+        KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
         String title = "sample tiTle 4";
         String channelId = UUID.randomUUID().toString();
 
@@ -75,7 +75,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
     @Config(sdk = 25)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithoutTextOrChannelId() throws NoSuchFieldException, IllegalAccessException {
-        KujakuNotificationImplClass2 kujakuNotification = new KujakuNotificationImplClass2();
+        KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
 
         String title = "sample tiTle 4";
         NotificationCompat.Builder builder = kujakuNotification.createNotification(title);
