@@ -56,9 +56,8 @@ import io.ona.kujaku.test.shadows.ShadowOfflineManager;
 import io.ona.kujaku.test.shadows.ShadowRealm;
 import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
 import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
-import io.ona.kujaku.utils.NumberFormatter;
 import io.ona.kujaku.utils.Constants;
-import io.realm.Realm;
+import io.ona.kujaku.utils.NumberFormatter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -455,17 +454,6 @@ public class MapboxOfflineDownloaderServiceTest {
 
         //2. Make sure performNextTask() is called
         assertTrue(mapboxOfflineDownloaderService.performNextTaskCalled);
-    }
-
-
-    private MapBoxOfflineQueueTask getTask(String mapName) {
-        Realm realm = Realm.getDefaultInstance();
-        MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realm.where(MapBoxOfflineQueueTask.class)
-                .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
-                .contains("task", mapName)
-                .findFirst();
-
-        return mapBoxOfflineQueueTask;
     }
 
     /*

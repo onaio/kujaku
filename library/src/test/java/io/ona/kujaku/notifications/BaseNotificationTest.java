@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
-import io.ona.kujaku.test.shadows.ShadowNotificationChannel;
 
 import static org.junit.Assert.assertEquals;
 
