@@ -2,7 +2,6 @@ package io.ona.kujaku.downloaders;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -29,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDownloadTask;
-import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;
 import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;

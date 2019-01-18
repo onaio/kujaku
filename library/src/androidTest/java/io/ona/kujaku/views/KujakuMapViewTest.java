@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -24,8 +23,6 @@ import org.junit.runner.RunWith;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
@@ -85,10 +82,10 @@ public class KujakuMapViewTest extends BaseTest {
         kujakuMapView.enableAddPoint(false);
 
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "canAddPoint"));
-        Assert.assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(true);
-        Assert.assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
+        assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
         kujakuMapView.enableAddPoint(false);
 
@@ -111,7 +108,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         kujakuMapView.enableAddPoint(true, onLocationChanged);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, isMapScrollingVariableName));
-        Assert.assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
+        assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "updateUserLocationOnMap"));
     }
 

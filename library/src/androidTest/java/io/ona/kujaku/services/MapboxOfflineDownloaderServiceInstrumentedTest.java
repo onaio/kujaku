@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.annotation.UiThreadTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.content.LocalBroadcastManager;
@@ -30,8 +29,8 @@ import java.util.concurrent.CountDownLatch;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
-import io.realm.Realm;
 import io.ona.kujaku.utils.Constants;
+import io.realm.Realm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -62,8 +61,6 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
     private ArrayList<Object> resultsToCheck = new ArrayList<>();
     private CountDownLatch latch;
     private ArrayList<MapBoxOfflineQueueTask> offlineQueueTasks = new ArrayList<>();
-
-    private BroadcastReceiver broadcastReceiver;
 
     @Rule
     public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
@@ -247,15 +244,14 @@ public class MapboxOfflineDownloaderServiceInstrumentedTest {
     }
 
     private void registerLocalBroadcastReceiverForDownloadServiceUpdates() {
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                resultsToCheck.add(intent);
-                latch.countDown();
-            }
-        };
         LocalBroadcastManager.getInstance(context)
-                .registerReceiver(broadcastReceiver, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
+                .registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        resultsToCheck.add(intent);
+                        latch.countDown();
+                    }
+                }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
     }
 
     private MapBoxOfflineQueueTask getTask(String mapName) {
