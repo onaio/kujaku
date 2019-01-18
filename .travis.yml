@@ -58,7 +58,7 @@ script:
   - chmod 755 gradlew
   - ls -la
   # This is supposed to run the normal project build
-  - travis_wait ./gradlew clean build --stacktrace
+  - travis_wait ./gradlew clean build connectedAndroidTest --stacktrace
 
 after_failure:
  #- pandoc opensrp-app/build/reports/tests/index.html -t plain
