@@ -28,26 +28,52 @@ public class WmtsTileMatrixSet {
         return this.tileMatrixs;
     }
 
+    private int maximumZoom = -1;
+    private int minimumZoom = -1;
+
+    /**
+     * Get the maximum Zoom authorized
+     * @return int
+     */
     public int getMaximumZoom() {
-        if (tileMatrixs == null || tileMatrixs.size() == 0) {
-            return 0;
+        if (this.maximumZoom == -1) {
+            this.setMaxAndMinZoom();
         }
 
-        this.sortTileMatrixsByIdentifier();
-        return tileMatrixs.get(tileMatrixs.size()-1).getIdentifier();
+        return this.maximumZoom;
     }
 
+    /**
+     * Get the minimum Zoom authorized
+     * @return int
+     */
     public int getMinimumZoom() {
-        if (tileMatrixs == null || tileMatrixs.size() == 0) {
-            return 0;
+        if (this.minimumZoom == -1) {
+            this.setMaxAndMinZoom();
+
         }
 
-        this.sortTileMatrixsByIdentifier();
-        return tileMatrixs.get(0).getIdentifier();
+        return this.minimumZoom;
     }
 
+    /**
+     * Init maximum Zoom and minimum Zoom
+     */
+    private void setMaxAndMinZoom() {
+        if (this.tileMatrixs == null || this.tileMatrixs.size() == 0) {
+            this.maximumZoom = this.minimumZoom = 0;
+        } else {
+            this.sortTileMatrixsByIdentifier();
+            this.maximumZoom = this.tileMatrixs.get(tileMatrixs.size() - 1).getIdentifier();
+            this.minimumZoom = this.tileMatrixs.get(0).getIdentifier();
+        }
+    }
+
+    /**
+     * Sort this.tileMatrixs by identifier field ASC
+     */
     private void sortTileMatrixsByIdentifier() {
-        Collections.sort(tileMatrixs, new Comparator<WmtsTileMatrix>() {
+        Collections.sort(this.tileMatrixs, new Comparator<WmtsTileMatrix>() {
             @Override
             public int compare(WmtsTileMatrix item1, WmtsTileMatrix item2) {
                 return item1.getIdentifier() - item2.getIdentifier();
