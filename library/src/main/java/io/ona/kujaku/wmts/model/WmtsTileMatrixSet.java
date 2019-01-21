@@ -30,6 +30,15 @@ public class WmtsTileMatrixSet {
 
     private int maximumZoom = -1;
     private int minimumZoom = -1;
+    private int tilesSize = -1;
+
+    public int getTilesSize() {
+        if (this.tilesSize == -1) {
+            this.initData();
+        }
+
+        return this.tilesSize;
+    }
 
     /**
      * Get the maximum Zoom authorized
@@ -37,7 +46,7 @@ public class WmtsTileMatrixSet {
      */
     public int getMaximumZoom() {
         if (this.maximumZoom == -1) {
-            this.setMaxAndMinZoom();
+            this.initData();
         }
 
         return this.maximumZoom;
@@ -49,7 +58,7 @@ public class WmtsTileMatrixSet {
      */
     public int getMinimumZoom() {
         if (this.minimumZoom == -1) {
-            this.setMaxAndMinZoom();
+            this.initData();
 
         }
 
@@ -59,13 +68,14 @@ public class WmtsTileMatrixSet {
     /**
      * Init maximum Zoom and minimum Zoom
      */
-    private void setMaxAndMinZoom() {
+    private void initData() {
         if (this.tileMatrixs == null || this.tileMatrixs.size() == 0) {
-            this.maximumZoom = this.minimumZoom = 0;
+            this.maximumZoom = this.minimumZoom = this.tilesSize = 0;
         } else {
             this.sortTileMatrixsByIdentifier();
             this.maximumZoom = this.tileMatrixs.get(tileMatrixs.size() - 1).getIdentifier();
             this.minimumZoom = this.tileMatrixs.get(0).getIdentifier();
+            this.tilesSize = this.tileMatrixs.get(0).getTileWidth(); // We get the tile width from the first tileMatrix
         }
     }
 

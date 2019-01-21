@@ -598,7 +598,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
                     RasterSource webMapSource = new RasterSource(
                             layer.getIdentifier(),
-                            tileSet, 256);
+                            tileSet, layer.getTilesSize());
                     mapboxMap.addSource(webMapSource);
 
                     RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
@@ -676,6 +676,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.selectWmtsStyle(layerIdentified, styleIdentifier);
         this.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
         this.setZooms(layerIdentified, capabilities);
+        this.setTilesSize(layerIdentified, capabilities);
 
         this.wmtsLayers.add(layerIdentified);
 
@@ -734,6 +735,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         layer.setMaximumZoom(maxZoom);
         layer.setMinimumZoom(minZoom);
+    }
+
+    /**
+     * Set the tiles Size for this layer
+     *
+     * @param layer
+     * @param capabilities
+     */
+    private void setTilesSize(WmtsLayer layer, WmtsCapabilities capabilities) {
+        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
+        int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);
+        layer.setTilesSize(tileSize);
     }
 
 

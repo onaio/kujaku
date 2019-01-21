@@ -37,6 +37,8 @@ public class WmtsLayer {
 
     private int minimumZoom;
 
+    private int tilesSize;
+
     public List<LanguageStringType> getTitles() {
         return this.titles;
     }
@@ -117,6 +119,14 @@ public class WmtsLayer {
 
     public void setMinimumZoom(int minZoom) {
         this.minimumZoom = minZoom;
+    }
+
+    public int getTilesSize() {
+        return this.tilesSize;
+    }
+
+    public void setTilesSize(int tilesSize) {
+        this.tilesSize = tilesSize;
     }
 
     private WmtsStyle getDefaultStyle() {

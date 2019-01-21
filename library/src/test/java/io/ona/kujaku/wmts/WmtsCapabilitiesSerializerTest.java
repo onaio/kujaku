@@ -48,9 +48,12 @@ public class WmtsCapabilitiesSerializerTest {
         Assert.assertEquals(capabilities.getLayers().size(), 1);
         Assert.assertNull(capabilities.getLayer("0123456789"));
         Assert.assertNotNull(capabilities.getLayer("Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data"));
-        Assert.assertEquals(capabilities.getMaximumTileMatrixZoom("unknwowTileMatrixIdentifier"), 0);
+        Assert.assertEquals(capabilities.getMaximumTileMatrixZoom("unknownTileMatrixIdentifier"), 0);
         Assert.assertEquals(capabilities.getMaximumTileMatrixZoom("default028mm"), 19);
         Assert.assertEquals(capabilities.getMinimumTileMatrixZoom("default028mm"), 0);
         Assert.assertEquals(capabilities.getMaximumTileMatrixZoom("GoogleMapsCompatible"), 18);
+        Assert.assertEquals(capabilities.getTilesSize("default028mm"), 256);
+        Assert.assertEquals(capabilities.getTilesSize("GoogleMapsCompatible"), 256);
+        Assert.assertEquals(capabilities.getTilesSize("unknownTileMatrixIdentifier"), 0);
     }
 }

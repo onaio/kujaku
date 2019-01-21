@@ -65,6 +65,16 @@ public class WmtsCapabilities {
         return tileMatrixSet.getMinimumZoom();
     }
 
+    public int getTilesSize(String tileMatrixIdentifier) {
+        WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
+
+        if (tileMatrixSet == null) {
+            return 0;
+        }
+
+        return tileMatrixSet.getTilesSize();
+    }
+
     private WmtsTileMatrixSet getTileMatrixSet(String tileMatrixIdentifier) {
         if (this.contents == null) {
             return null;
