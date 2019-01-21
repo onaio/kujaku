@@ -46,7 +46,7 @@ public class DownloadCompleteNotificationTest extends BaseNotificationTest {
         DownloadCompleteNotification downloadCompleteNotification = new DownloadCompleteNotification(context);
 
         assertEquals(context, downloadCompleteNotification.context);
-        assertTrue(getValueInPrivateField(DownloadProgressNotification.class.getSuperclass(), downloadCompleteNotification, "smallIcon") != null);
+        assertNotNull(getValueInPrivateField(DownloadProgressNotification.class.getSuperclass(), downloadCompleteNotification, "smallIcon"));
 
         channelIdsAdded.add(downloadCompleteNotification.CHANNEL_ID);
     }

@@ -14,7 +14,9 @@ import org.robolectric.annotation.Config;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -131,7 +133,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertEquals(channelDescription, notificationChannel.getDescription());
         assertEquals(true, notificationChannel.shouldVibrate());
         assertEquals(false, notificationChannel.shouldShowLights());
-        assertTrue(Arrays.equals(vibrationPattern, notificationChannel.getVibrationPattern()));
+        assertArrayEquals(vibrationPattern, notificationChannel.getVibrationPattern());
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -173,7 +175,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationChannel notificationChannel = notificationManager.getNotificationChannel(channelId);
 
-        assertTrue(notificationChannel != null);
+        assertNotNull(notificationChannel);
         assertEquals(channelName, notificationChannel.getName());
         assertEquals(channelDescription, notificationChannel.getDescription());
         assertEquals(false, notificationChannel.shouldVibrate());
