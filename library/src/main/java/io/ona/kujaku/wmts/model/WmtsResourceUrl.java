@@ -1,5 +1,7 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Attribute;
 
 /**
@@ -42,15 +44,18 @@ public class WmtsResourceUrl {
     private String template;
 
 
+    @NonNull
     public String getFormat() { return this.format; }
 
+    @NonNull
     public String getResourceType() { return this.resourceType; }
 
     /**
      * Return template Url
      * @return string
      */
-    public String getTemplate(String styleIdentifier, String tileMatrixSetLinkIdentifier) {
+    @NonNull
+    public String getTemplate(@NonNull String styleIdentifier, @NonNull String tileMatrixSetLinkIdentifier) {
         String _template = this.template.replace(STYLE, styleIdentifier);
         _template = _template.replace(TILE_MATRIX_SET, tileMatrixSetLinkIdentifier);
 

@@ -1,8 +1,12 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.ElementList;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * Describe a Wmts Contents object from the WMTS Capabilities object
@@ -17,15 +21,18 @@ public class WmtsContents {
     @ElementList(inline=true, entry="TileMatrixSet")
     private List<WmtsTileMatrixSet> tileMatrixSets;
 
+    @NonNull
     public List<WmtsLayer> getLayers() {
         return this.layers;
     }
 
+    @NonNull
     public List<WmtsTileMatrixSet> geTileMatrixSets() {
         return this.tileMatrixSets;
     }
 
-    public WmtsTileMatrixSet geTileMatrixSet(String tileMatrixSetIdentifier) {
+    @Nullable
+    public WmtsTileMatrixSet geTileMatrixSet(@NonNull String tileMatrixSetIdentifier) {
         for (WmtsTileMatrixSet wmtsTileMatrixSet : this.tileMatrixSets) {
             if (wmtsTileMatrixSet.getIdentifier().equals(tileMatrixSetIdentifier)) {
                 return wmtsTileMatrixSet;
@@ -42,7 +49,8 @@ public class WmtsContents {
      * @param identifier
      * @return
      */
-    public WmtsLayer getLayer(String identifier) {
+    @Nullable
+    public WmtsLayer getLayer(@NonNull String identifier) {
         for (WmtsLayer layer : this.layers) {
             if (layer.getIdentifier().equals(identifier)) {
                 return layer;

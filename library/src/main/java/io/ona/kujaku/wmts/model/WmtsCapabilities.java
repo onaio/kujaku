@@ -1,10 +1,14 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * Describe a Wmts Capabilities object
@@ -23,13 +27,18 @@ public class WmtsCapabilities {
     @Attribute(name="version", required=false)
     private String version;
 
-    public WmtsServiceIdentification getServiceIdentification() { return this.serviceIdentification; }
+    @Nullable
+    public WmtsServiceIdentification getServiceIdentification() {
+        return this.serviceIdentification;
+    }
 
+    @Nullable
     public String getVersion() {
         return this.version;
     }
 
-    public WmtsLayer getLayer(String identifier) {
+    @Nullable
+    public WmtsLayer getLayer(@NonNull String identifier) {
         if (this.contents == null) {
             return null;
         }
@@ -37,6 +46,7 @@ public class WmtsCapabilities {
         return this.contents.getLayer(identifier);
     }
 
+    @Nullable
     public List<WmtsLayer> getLayers() {
         if (this.contents == null) {
             return null;
@@ -45,7 +55,7 @@ public class WmtsCapabilities {
         return this.contents.getLayers();
     }
 
-    public int getMaximumTileMatrixZoom(String tileMatrixIdentifier) {
+    public int getMaximumTileMatrixZoom(@NonNull String tileMatrixIdentifier) {
         WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
 
         if (tileMatrixSet == null) {
@@ -55,7 +65,7 @@ public class WmtsCapabilities {
         return tileMatrixSet.getMaximumZoom();
     }
 
-    public int getMinimumTileMatrixZoom(String tileMatrixIdentifier) {
+    public int getMinimumTileMatrixZoom(@NonNull String tileMatrixIdentifier) {
         WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
 
         if (tileMatrixSet == null) {
@@ -65,7 +75,8 @@ public class WmtsCapabilities {
         return tileMatrixSet.getMinimumZoom();
     }
 
-    private WmtsTileMatrixSet getTileMatrixSet(String tileMatrixIdentifier) {
+    @Nullable
+    private WmtsTileMatrixSet getTileMatrixSet(@NonNull String tileMatrixIdentifier) {
         if (this.contents == null) {
             return null;
         }

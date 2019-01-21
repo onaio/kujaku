@@ -1,5 +1,7 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Element;
 
 /**
@@ -12,6 +14,7 @@ public class WmtsTileMatrixSetLink {
     @Element(name="TileMatrixSet")
     private String tileMatrixSet;
 
+    @NonNull
     public String getTileMatrixSet() {
         return this.tileMatrixSet;
     }
