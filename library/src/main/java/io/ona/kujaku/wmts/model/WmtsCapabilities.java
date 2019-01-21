@@ -75,16 +75,7 @@ public class WmtsCapabilities {
         return tileMatrixSet.getMinimumZoom();
     }
 
-    @Nullable
-    private WmtsTileMatrixSet getTileMatrixSet(@NonNull String tileMatrixIdentifier) {
-        if (this.contents == null) {
-            return null;
-        }
-
-        return this.contents.geTileMatrixSet(tileMatrixIdentifier);
-    }
-  
-   public int getTilesSize(String tileMatrixIdentifier) {
+    public int getTilesSize(@NonNull String tileMatrixIdentifier) {
         WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
 
         if (tileMatrixSet == null) {
@@ -92,5 +83,14 @@ public class WmtsCapabilities {
         }
 
         return tileMatrixSet.getTilesSize();
+    }
+
+    @Nullable
+    private WmtsTileMatrixSet getTileMatrixSet(@NonNull String tileMatrixIdentifier) {
+        if (this.contents == null) {
+            return null;
+        }
+
+        return this.contents.geTileMatrixSet(tileMatrixIdentifier);
     }
 }
