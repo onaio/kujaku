@@ -4,8 +4,10 @@ import android.support.annotation.NonNull;
 
 import org.simpleframework.xml.Attribute;
 
+import java.util.Locale;
+
 /**
- * Describe a Wmts Resource Url object from the WMTS Capabilities object
+ * Describes a Wmts Resource Url object from the WMTS Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
  */
@@ -32,7 +34,7 @@ public class WmtsResourceUrl {
 
     public static final String TILE_COL_X = "{x}";
     public static final String TILE_ROW_Y = "{y}";
-    public static final String TULE_MATRIX_Z = "{z}";
+    public static final String TILE_MATRIX_Z = "{z}";
 
     @Attribute(name="format")
     private String format;
@@ -42,7 +44,6 @@ public class WmtsResourceUrl {
 
     @Attribute(name="template")
     private String template;
-
 
     @NonNull
     public String getFormat() { return this.format; }
@@ -57,9 +58,9 @@ public class WmtsResourceUrl {
     @NonNull
     public String getTemplate(@NonNull String styleIdentifier, @NonNull String tileMatrixSetLinkIdentifier) {
         String _template = this.template.replace(STYLE, styleIdentifier);
+        _template = _template.replace(STYLE.toLowerCase(Locale.ROOT), styleIdentifier); // We accept the style variable "{style}"
         _template = _template.replace(TILE_MATRIX_SET, tileMatrixSetLinkIdentifier);
-
-        _template = _template.replace(TILE_MATRIX, TULE_MATRIX_Z);
+        _template = _template.replace(TILE_MATRIX, TILE_MATRIX_Z);
         _template = _template.replace(TILE_COL, TILE_COL_X);
         _template = _template.replace(TILE_ROW, TILE_ROW_Y);
         return _template;

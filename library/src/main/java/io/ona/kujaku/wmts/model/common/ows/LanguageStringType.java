@@ -8,7 +8,7 @@ import org.simpleframework.xml.Text;
 import javax.annotation.Nullable;
 
 /**
- * Describe a ows:LanguageStringType element
+ * Describes a ows:LanguageStringType element
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 16/01/18
  */

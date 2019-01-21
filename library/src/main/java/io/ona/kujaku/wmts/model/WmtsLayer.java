@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
 /**
- * Describe a Wmts Layer object from the WMTS Capabilities object
+ * Describes a Wmts Layer object from the WMTS Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
  */
@@ -40,6 +40,8 @@ public class WmtsLayer {
     private int maximumZoom;
 
     private int minimumZoom;
+  
+    private int tilesSize;
 
     @NonNull
     public List<LanguageStringType> getTitles() {
@@ -127,6 +129,14 @@ public class WmtsLayer {
 
     public void setMinimumZoom(int minZoom) {
         this.minimumZoom = minZoom;
+    }
+
+    public int getTilesSize() {
+        return this.tilesSize;
+    }
+
+    public void setTilesSize(int tilesSize) {
+        this.tilesSize = tilesSize;
     }
 
     @Nullable

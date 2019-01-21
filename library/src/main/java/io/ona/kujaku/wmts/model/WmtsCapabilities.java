@@ -11,7 +11,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * Describe a Wmts Capabilities object
+ * Describes a Wmts Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18
  */
@@ -82,5 +82,15 @@ public class WmtsCapabilities {
         }
 
         return this.contents.geTileMatrixSet(tileMatrixIdentifier);
+    }
+  
+   public int getTilesSize(String tileMatrixIdentifier) {
+        WmtsTileMatrixSet tileMatrixSet = this.getTileMatrixSet(tileMatrixIdentifier);
+
+        if (tileMatrixSet == null) {
+            return 0;
+        }
+
+        return tileMatrixSet.getTilesSize();
     }
 }

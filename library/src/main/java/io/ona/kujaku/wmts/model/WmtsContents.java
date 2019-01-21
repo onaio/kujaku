@@ -9,7 +9,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * Describe a Wmts Contents object from the WMTS Capabilities object
+ * Describes a Wmts Contents object from the WMTS Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
  */
