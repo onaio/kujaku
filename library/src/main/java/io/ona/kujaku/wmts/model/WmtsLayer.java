@@ -1,9 +1,13 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
@@ -36,26 +40,29 @@ public class WmtsLayer {
     private int maximumZoom;
 
     private int minimumZoom;
-
+  
     private int tilesSize;
 
+    @NonNull
     public List<LanguageStringType> getTitles() {
         return this.titles;
     }
 
+    @NonNull
     public String getIdentifier() {
         return this.identifier;
     }
 
-    public void setSelectedStyleIdentifier(String selectedStyleIdentifier) {
+    public void setSelectedStyleIdentifier(@NonNull String selectedStyleIdentifier) {
         this.selectedStyleIdentifier = selectedStyleIdentifier;
     }
 
-    public void setSelectedTileMatrixLinkIdentifier(String selectedTileMatrixLinkIdentifier) {
+    public void setSelectedTileMatrixLinkIdentifier(@NonNull String selectedTileMatrixLinkIdentifier) {
         this.selectedTileMatrixLinkIdentifier = selectedTileMatrixLinkIdentifier;
     }
 
-    public WmtsStyle getStyle(String styleIdentifier) {
+    @Nullable
+    public WmtsStyle getStyle(@NonNull String styleIdentifier) {
         for (WmtsStyle style : this.styles) {
             if (style.getIdentifier().equals(styleIdentifier)) {
                 return style;
@@ -65,7 +72,8 @@ public class WmtsLayer {
         return null ;
     }
 
-    public WmtsTileMatrixSetLink getTileMatrixSetLink(String tileMatrixLinkIdentifier) {
+    @Nullable
+    public WmtsTileMatrixSetLink getTileMatrixSetLink(@NonNull String tileMatrixLinkIdentifier) {
         for (WmtsTileMatrixSetLink tileMatrixSetLink : this.tileMatrixSetLinks) {
             if (tileMatrixSetLink.getTileMatrixSet().equals(tileMatrixLinkIdentifier)) {
                 return tileMatrixSetLink;
@@ -75,7 +83,8 @@ public class WmtsLayer {
         return null ;
     }
 
-    public String getTemplateUrl(String resourceType) {
+    @Nullable
+    public String getTemplateUrl(@NonNull String resourceType) {
         WmtsResourceUrl url = this.getResourceUrl(resourceType);
 
         if (url == null) {
@@ -96,6 +105,7 @@ public class WmtsLayer {
         return url.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());
     }
 
+    @Nullable
     public String getSelectedTileMatrixLinkIdentifier() {
         if (this.selectedTileMatrixLinkIdentifier == null || this.selectedTileMatrixLinkIdentifier.isEmpty()) {
             // Get First one
@@ -129,11 +139,8 @@ public class WmtsLayer {
         this.tilesSize = tilesSize;
     }
 
+    @Nullable
     private WmtsStyle getDefaultStyle() {
-        if (this.styles == null || this.styles.isEmpty()) {
-            return null;
-        }
-
         for (WmtsStyle style : this.styles) {
             if (style.isDefault()) {
                 return style;
@@ -143,11 +150,8 @@ public class WmtsLayer {
         return null;
     }
 
-    private WmtsResourceUrl getResourceUrl(String resourceType) {
-        if (this.resourceURLs == null || this.resourceURLs.isEmpty() ) {
-            return null ;
-        }
-
+    @Nullable
+    private WmtsResourceUrl getResourceUrl(@NonNull String resourceType) {
         for (WmtsResourceUrl url: this.resourceURLs) {
             if (url.getResourceType().equals(resourceType) ){
                 return url;

@@ -1,10 +1,14 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
@@ -18,7 +22,7 @@ public class WmtsStyle {
     @Attribute(name="isDefault")
     private boolean isDefault = false;
 
-    @ElementList(inline=true, entry="Title")
+    @ElementList(inline=true, entry="Title", required = false)
     private List<LanguageStringType> titles;
 
     @Element(name="Identifier")
@@ -28,10 +32,12 @@ public class WmtsStyle {
         return this.isDefault;
     }
 
+    @Nullable
     public List<LanguageStringType> getTitles() {
         return this.titles;
     }
 
+    @NonNull
     public String getIdentifier() {
         return this.identifier;
     }

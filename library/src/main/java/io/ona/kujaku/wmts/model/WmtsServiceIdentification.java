@@ -1,5 +1,7 @@
 package io.ona.kujaku.wmts.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.ElementList;
 
 import java.util.List;
@@ -15,9 +17,11 @@ public class WmtsServiceIdentification {
     @ElementList(inline=true, entry="Title")
     private List<LanguageStringType> titles;
 
+    @NonNull
     public List<LanguageStringType> getTitles() { return this.titles; }
 
-    public String getTitle(String lang) {
+    @NonNull
+    public String getTitle(@NonNull String lang) {
         String result = "No Title found";
 
         for (LanguageStringType title: this.titles) {
