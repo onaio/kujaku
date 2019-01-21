@@ -4,7 +4,7 @@ import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Text;
 
 /**
- * Describe a ows:LanguageStringType element
+ * Describes a ows:LanguageStringType element
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 16/01/18
  */

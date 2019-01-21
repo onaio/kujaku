@@ -9,7 +9,7 @@ import java.util.List;
 import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
 
 /**
- * Describe a Wmts Style object from the WMTS Capabilities object
+ * Describes a Wmts Style object from the WMTS Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
  */

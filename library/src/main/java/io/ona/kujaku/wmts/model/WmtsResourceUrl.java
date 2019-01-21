@@ -3,7 +3,7 @@ package io.ona.kujaku.wmts.model;
 import org.simpleframework.xml.Attribute;
 
 /**
- * Describe a Wmts Resource Url object from the WMTS Capabilities object
+ * Describes a Wmts Resource Url object from the WMTS Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
  */

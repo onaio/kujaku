@@ -7,7 +7,7 @@ import org.simpleframework.xml.Root;
 import java.util.List;
 
 /**
- * Describe a Wmts Capabilities object
+ * Describes a Wmts Capabilities object
  *
  * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18
  */
