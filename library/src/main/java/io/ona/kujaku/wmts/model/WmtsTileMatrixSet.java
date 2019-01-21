@@ -22,6 +22,10 @@ public class WmtsTileMatrixSet {
     @ElementList(inline=true, entry="TileMatrix")
     private List<WmtsTileMatrix> tileMatrixs;
 
+    private int maximumZoom = -1;
+    private int minimumZoom = -1;
+    private int tilesSize = -1;
+
     @NonNull
     public String getIdentifier() {
         return this.identifier;
@@ -31,10 +35,6 @@ public class WmtsTileMatrixSet {
     public List<WmtsTileMatrix> getTileMatrixs() {
         return this.tileMatrixs;
     }
-
-    private int maximumZoom = -1;
-    private int minimumZoom = -1;
-    private int tilesSize = -1;
 
     public int getTilesSize() {
         if (this.tilesSize == -1) {
