@@ -124,7 +124,7 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
         super.close();
     }
 
-    class AndroidLocationCallback extends LocationCallback {
+    private class AndroidLocationCallback extends LocationCallback {
 
         @Override
         public void onLocationResult(LocationResult locationResult) {
