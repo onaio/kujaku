@@ -161,8 +161,8 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
-    //implementation (project(":utils")) {
-    implementation('io.ona.kujaku:utils:0.5.0') {
+    implementation (project(":utils")) {
+    //implementation('io.ona.kujaku:utils:0.5.0') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
@@ -171,6 +171,7 @@ dependencies { configuration ->
 
     implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation "com.android.support:design:${supportVersion}"
+    implementation 'org.simpleframework:simple-xml:2.7.1'
 
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)
