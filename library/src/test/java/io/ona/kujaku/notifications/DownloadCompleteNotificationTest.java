@@ -35,7 +35,7 @@ public class DownloadCompleteNotificationTest extends BaseNotificationTest {
         Notification actualNotification = shadowNotificationManager.getNotification(notificationId);
         ShadowNotification shadowNotification = Shadows.shadowOf(actualNotification);
 
-        assertTrue(actualNotification != null);
+        assertNotNull(actualNotification);
         assertEquals(title, shadowNotification.getContentTitle());
         assertEquals(content, shadowNotification.getContentText());
     }

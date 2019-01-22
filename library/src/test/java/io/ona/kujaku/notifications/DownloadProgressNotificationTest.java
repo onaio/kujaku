@@ -23,7 +23,7 @@ import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 17/01/2018.
@@ -98,7 +98,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
 
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowService.getLastForegroundNotification());
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(notificationId, shadowService.getLastForegroundNotificationId());
     }
 
@@ -122,7 +122,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowNotificationManager.getNotification(notificationId));
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
         assertEquals(null, shadowNotification.getContentText());
 
@@ -146,7 +146,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowNotificationManager.getNotification(notificationId));
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
         assertEquals(null, shadowNotification.getContentText());
     }
@@ -245,7 +245,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         DownloadProgressNotification downloadProgressNotification = new DownloadProgressNotification(context);
 
         assertEquals(context, downloadProgressNotification.context);
-        assertTrue(getValueInPrivateField(DownloadProgressNotification.class.getSuperclass(), downloadProgressNotification, "smallIcon") != null);
+        assertNotNull(getValueInPrivateField(DownloadProgressNotification.class.getSuperclass(), downloadProgressNotification, "smallIcon"));
 
         channelIdsAdded.add(downloadProgressNotification.CHANNEL_ID);
     }
