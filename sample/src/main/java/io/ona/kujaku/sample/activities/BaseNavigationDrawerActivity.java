@@ -138,6 +138,12 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, CustomMarkerLowLevelAddPoint.class));
                 finish();
                 return true;
+
+            case R.id.nav_wmts:
+                startActivity(new Intent(this, WmtsActivity.class));
+                finish();
+                return true;
+
             case R.id.nav_add_update_activity:
                 startActivity(new Intent(this, AddUpdatePropertiesActivity.class));
                 finish();

@@ -40,6 +40,10 @@
             android:title="@string/low_level_add_point_custom_marker"/>
 
         <item
+            android:id="@+id/nav_wmts"
+            android:title="@string/wmts"/>
+
+        <item
             android:id="@+id/nav_add_update_activity"
             android:title="@string/add_update_activity_title"/>
 

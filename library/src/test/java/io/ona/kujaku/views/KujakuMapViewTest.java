@@ -17,6 +17,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -25,10 +26,14 @@ import java.util.concurrent.TimeUnit;
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -224,6 +229,66 @@ public class KujakuMapViewTest extends BaseTest {
 
         drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
+    }
+
+    @Test
+    public void addNullWmtsLayers() {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+        try {
+            kujakuMapView.addWmtsLayer(null);
+        }
+        catch (WmtsCapabilitiesException ex) {
+            assertEquals(ex.getMessage(), "capabilities object is null or empty");
+        }
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+    }
+
+    @Test
+    public void addFirstWmtsLayers() throws Exception {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+        kujakuMapView.addWmtsLayer(capabilities);
+
+        assertEquals(1, kujakuMapView.getWmtsLayers().size());
+        assertEquals("Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", ((WmtsLayer)kujakuMapView.getWmtsLayers().toArray()[0]).getIdentifier());
+    }
+
+    @Test
+    public void addUnknowWmtsLayers() throws Exception {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+        try {
+            kujakuMapView.addWmtsLayer(capabilities, "unknownLayer", "unknownStyle", "unknownTileMatrix");
+        } catch (WmtsCapabilitiesException ex) {
+            assertEquals(ex.getMessage(), String.format("Layer with identifier %1$s is unknown", "unknownLayer"));
+        }
+
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+    }
+
+    @Test
+    public void addKnwonWmtsLayersAndTestMaximumAndMinimumZooms() throws Exception {
+        assertEquals(0, kujakuMapView.getWmtsLayers().size());
+
+        InputStreamReader streamReader = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("Capabilities.xml"));
+        WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();
+        WmtsCapabilities capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);
+
+        kujakuMapView.addWmtsLayer(capabilities, "Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data", "default", "GoogleMapsCompatible");
+
+        assertEquals(1, kujakuMapView.getWmtsLayers().size());
+
+        WmtsLayer layer = (WmtsLayer)kujakuMapView.getWmtsLayers().toArray()[0];
+        assertEquals(layer.getMaximumZoom(), 18);
+        assertEquals(layer.getMinimumZoom(), 0);
     }
 
     @Test

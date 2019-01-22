@@ -45,6 +45,9 @@
             android:name=".activities.HighLevelLocationAddPointMapView"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".activities.WmtsActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
             android:name=".activities.CardActivity"
             android:label="@string/title_activity_card"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -64,7 +67,6 @@
         <activity
             android:name=".activities.BoundsAwareActivity"
             android:label="@string/title_activity_bounds_aware"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.FeatureClickListenerActivity"

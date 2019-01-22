@@ -30,6 +30,60 @@ To publish locally:
 
 ```
 
+## WMTS Layers
+
+### WmtsService
+
+This class reads the capabilities Xml stream and deserialize it into a WMTSCapabilities object.
+You need to provide a Capabilities URL as argument to the constructor.
+
+```
+ WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
+```
+
+Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the async task returns the result.
+
+```
+wmtsService.requestData();
+
+wmtsService.setListener(new WmtsCapabilitiesListener() {
+    @Override
+    public void onCapabilitiesReceived(WmtsCapabilities capabilities) {
+        try {
+            // kujakuMapView.addWmtsLayer(capabilities);
+        }
+        catch (Exception ex) {
+            //throw ex;
+        }
+    }
+});
+```
+
+### Add WMTS layers to the map
+
+The kujakuMapView has 4 public methods to add WMTS Layers onto the map :
+
+* This method will add the first layer of the Capabilities file with the default style and first tileMatrixSet :
+```
+public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the default style and first tileMatrixSet :
+```
+public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and first tileMatrixSet:
+```
+ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and the tileMatrixSet identified by the tileMatrixSetLinkIdentifier argument:
+```
+public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception
+```
+
+
 ## License
 
 This software is provided under the Apache 2 license, see the LICENSE file for further details.
