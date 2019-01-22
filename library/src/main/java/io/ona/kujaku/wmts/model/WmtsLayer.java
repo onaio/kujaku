@@ -105,7 +105,7 @@ public class WmtsLayer {
         return url.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());
     }
 
-    @Nullable
+    @NonNull
     public String getSelectedTileMatrixLinkIdentifier() {
         if (this.selectedTileMatrixLinkIdentifier == null || this.selectedTileMatrixLinkIdentifier.isEmpty()) {
             // Get First one
