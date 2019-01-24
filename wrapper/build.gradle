@@ -6,6 +6,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'net.ltgt.errorprone'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion

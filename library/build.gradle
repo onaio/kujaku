@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'net.ltgt.errorprone'
 
 buildscript {
     repositories {
@@ -177,6 +178,9 @@ dependencies { configuration ->
     infoWindowDependencies(this, configuration)
     locationDependencies(configuration)
     testDependencies(configuration)
+
+    annotationProcessor "com.uber.nullaway:nullaway:0.3.0"
+    errorprone "com.google.errorprone:error_prone_core:2.1.3"
 }
 
 private static void testDependencies(configuration) {
@@ -215,4 +219,13 @@ private static void appPermissionsDependencies(configuration) {
 
 private static void locationDependencies(configuration) {
     configuration.implementation 'com.google.android.gms:play-services-location:8.4.0'
+}
+
+
+tasks.withType(JavaCompile) {
+    // remove the if condition if you want to run NullAway on test code
+    if (!name.toLowerCase().contains("test")) {
+        // remove "-Xep:NullAway:ERROR" to have NullAway only emit warnings
+        options.compilerArgs += ["-Xep:NullAway:ERROR", "-XepOpt:NullAway:AnnotatedPackages=io.ona.kujaku"]
+    }
 }

@@ -9,6 +9,7 @@ allprojects {
 
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'net.ltgt.errorprone'
 
 
 ant.condition(property: 'os', value: 'windows') {

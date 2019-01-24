@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
+apply plugin: 'net.ltgt.errorprone'
 
 version '0.5.5'
 project.version = this.version
