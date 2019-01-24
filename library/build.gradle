@@ -83,6 +83,10 @@ bintray {
     publications = ['Production']
 }
 
+jacoco {
+    toolVersion = "0.7.9"
+}
+
 android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -154,10 +158,6 @@ android {
             includeAndroidResources = true
         }
     }
-
-    jacoco {
-        version = '0.7.5.201505241946'
-    }
 }
 
 dependencies { configuration ->
@@ -182,10 +182,6 @@ dependencies { configuration ->
     implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation "com.android.support:design:${supportVersion}"
     implementation 'org.simpleframework:simple-xml:2.7.1'
-
-    // JACOCO fix for missing Offline.class
-    def jacocoVersion = '0.7.5.201505241946'
-    compile "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)

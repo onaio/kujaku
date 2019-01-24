@@ -61,6 +61,9 @@ def getVersionName = { ->
     }
 }
 
+jacoco {
+    toolVersion = "0.7.9"
+}
 
 android {
 
@@ -166,6 +169,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'io.ona.kujaku', module: 'utils'
+        exclude group: 'org.jacoco'
     }
 
     configuration.implementation(instance.project(":utils")) {
@@ -173,6 +177,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
+        exclude group: 'org.jacoco'
     }
 
     configuration.implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {

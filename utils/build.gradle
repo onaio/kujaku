@@ -65,6 +65,10 @@ bintray {
     publications = ['Production']
 }
 
+jacoco {
+    toolVersion = "0.7.9"
+}
+
 android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
