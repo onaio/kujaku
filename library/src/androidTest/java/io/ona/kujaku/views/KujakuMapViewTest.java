@@ -8,6 +8,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -234,14 +235,14 @@ public class KujakuMapViewTest extends BaseTest {
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
-        int drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
 
 
         kujakuMapView.focusOnUserLocation(false);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
 
-        drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
     }
 
