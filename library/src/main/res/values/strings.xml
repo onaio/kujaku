@@ -37,4 +37,6 @@
     <string name="map_could_not_be_deleted">Map could not be deleted</string>
     <string name="map_could_not_be_downloaded">Map could not be downloaded</string>
     <string name="map_download_could_not_be_stopped">Map download could not be stopped</string>
+    <string name="location_service_disabled">Location service disabled</string>
+    <string name="location_service_disabled_dialog_explanation"><![CDATA[You will not be able to use the My Location feature in this app. To change this, go to Settings > Location]]></string>
 </resources>
