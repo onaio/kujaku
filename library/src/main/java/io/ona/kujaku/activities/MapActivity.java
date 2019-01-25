@@ -46,6 +46,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.helpers.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.utils.config.DataSourceConfig;
 import io.ona.kujaku.utils.config.KujakuConfig;
@@ -77,20 +78,27 @@ import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
 public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
     private KujakuMapView kujakuMapView;
+
+    @Nullable
     private String currentStylePath;
 
+    @Nullable
     private SortFieldConfig[] sortFields;
+    @Nullable
     private String[] dataLayers;
+    @Nullable
     private JSONObject mapboxStyleJSON;
     private static final String TAG = MapActivity.class.getSimpleName();
 
     private LinkedHashMap<String, InfoWindowObject> featuresMap = new LinkedHashMap<>();
     private ArrayList<String> featureIdList = new ArrayList<>();
+    @Nullable
     private MapboxMap mapboxMap;
     private boolean infoWindowDisplayed = false;
 
     // Info window stuff
     private RecyclerView infoWindowsRecyclerView;
+    @Nullable
     private InfoWindowLayoutManager linearLayoutManager;
     private HashMap<Integer, AlertDialog> alertDialogs;
     private int lastSelected = -1;
@@ -100,6 +108,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     private int animateToNewInfoWindowDuration = 300;
     private int screenWidth = 0;
 
+    @Nullable
     private InfoWindowAdapter infoWindowAdapter;
 
     private double maxZoom = -1;
@@ -131,6 +140,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         checkPermissions(savedInstanceState);
     }
 
+    @Nullable
     private Bundle getIntentExtras() {
         if (getIntent() != null) {
             Bundle bundle = getIntent().getExtras();
@@ -141,7 +151,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return null;
     }
 
-    private void initializeMapActivityAfterPermissionsSupplied(Bundle savedInstanceState) {
+    private void initializeMapActivityAfterPermissionsSupplied(@Nullable Bundle savedInstanceState) {
         Bundle bundle = getIntentExtras();
         if (bundle != null) {
             String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);
@@ -199,9 +209,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }, -1, null);
     }
 
-    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
+    private void initMapBoxSdk(@Nullable Bundle savedInstanceState, String mapBoxStylePath,
                                final double maxZoom, final double minZoom) {
-
         kujakuMapView.onCreate(savedInstanceState);
 
         if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
@@ -230,7 +239,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     mapboxMap.setCameraPosition(cameraPositionBuilder.build());
                 }
 
-                if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+                if (mapboxStyleJSON != null && !mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
                     kujakuMapView.focusOnUserLocation(true);
                 }
             }
@@ -247,7 +256,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         );
     }
 
-    private void initializeViews(List<Point> points, boolean enableDropPoint) {
+    private void initializeViews(@Nullable List<Point> points, boolean enableDropPoint) {
         dismissAllDialogs();
         alertDialogs = new HashMap<>();
         infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);
@@ -279,8 +288,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 public void onClick(View v) {
                     if (kujakuMapView.isCanAddPoint()) {
                         JSONObject featurePoint = kujakuMapView.dropPoint();
-                        Log.e("FEATURE POINT", featurePoint.toString());
-                        newPoints.add(featurePoint);
+                        if (featurePoint != null) {
+                            Log.e("FEATURE POINT", featurePoint.toString());
+                            newPoints.add(featurePoint);
+                        }
                     }
                 }
             });
@@ -399,8 +410,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                                 @Nullable DialogInterface.OnClickListener posOnClickListener,
                                 int negButtonText,
                                 @Nullable DialogInterface.OnClickListener negOnClickListener) {
-        if (!alertDialogs.containsKey(message)
-                || !alertDialogs.get(message).isShowing()) {
+        AlertDialog alertDialog = alertDialogs.get(message);
+        if (alertDialog == null
+                || !alertDialog.isShowing()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(title);
             builder.setMessage(message);
@@ -486,20 +498,22 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     @Override
     public void onMapClick(@NonNull LatLng point) {
-        // Convert LatLng coordinates to screen pixel and only query the rendered features.
-        final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-        List<Feature> features = mapboxMap.queryRenderedFeatures(pixel);
+        if (mapboxMap != null) {
+            // Convert LatLng coordinates to screen pixel and only query the rendered features.
+            final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+            List<Feature> features = mapboxMap.queryRenderedFeatures(pixel);
 
-        // Get the first feature within the list if one exist
-        if (features.size() > 0) {
-            for (Feature feature : features) {
+            // Get the first feature within the list if one exist
+            if (features.size() > 0) {
+                for (Feature feature : features) {
 
-                // Ensure the feature has properties defined
-                if (feature.properties() != null && feature.hasProperty("id")) {
-                    String id = feature.getProperty("id").getAsString();
-                    if (featuresMap.containsKey(id)) {
-                        focusOnFeature(id);
-                        break;
+                    // Ensure the feature has properties defined
+                    if (feature.properties() != null && feature.hasProperty("id")) {
+                        String id = feature.getProperty("id").getAsString();
+                        if (featuresMap.containsKey(id)) {
+                            focusOnFeature(id);
+                            break;
+                        }
                     }
                 }
             }
@@ -529,40 +543,42 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     }
 
     private void scrollToInfoWindowPosition(final int position, boolean informInfoWindowAdapter) {
-        if (position > -1) {
-            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position, false);
+        if (linearLayoutManager != null && infoWindowAdapter != null) {
+            if (position > -1) {
+                if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position, false);
 
-            // Supposed to scroll to the selected position
-            final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
-            int lastVisiblePosition = linearLayoutManager.findLastVisibleItemPosition();
-            int firstVisiblePosition = linearLayoutManager.findFirstVisibleItemPosition();
+                // Supposed to scroll to the selected position
+                final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+                int lastVisiblePosition = linearLayoutManager.findLastVisibleItemPosition();
+                int firstVisiblePosition = linearLayoutManager.findFirstVisibleItemPosition();
 
-            if (infoWindowViewHolder == null || (position < firstVisiblePosition || position > lastVisiblePosition)) {
-                infoWindowsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                        super.onScrollStateChanged(recyclerView, newState);
+                if (infoWindowViewHolder == null || (position < firstVisiblePosition || position > lastVisiblePosition)) {
+                    infoWindowsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                        @Override
+                        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                            super.onScrollStateChanged(recyclerView, newState);
 
-                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                            InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
-                            if (infoWindowViewHolder != null) {
-                                View v = infoWindowViewHolder.itemView;
+                            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                                InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);
+                                if (infoWindowViewHolder != null && linearLayoutManager != null) {
+                                    View v = infoWindowViewHolder.itemView;
 
-                                int offset = (screenWidth / 2) - (v.getWidth() / 2);
-                                linearLayoutManager.scrollToPositionWithOffset(position, offset);
+                                    int offset = (screenWidth / 2) - (v.getWidth() / 2);
+                                    linearLayoutManager.scrollToPositionWithOffset(position, offset);
 
-                                infoWindowViewHolder.select();
+                                    infoWindowViewHolder.select();
+                                }
+
+                                infoWindowsRecyclerView.removeOnScrollListener(this);
                             }
-
-                            infoWindowsRecyclerView.removeOnScrollListener(this);
                         }
-                    }
-                });
-                infoWindowsRecyclerView.smoothScrollToPosition(position);
+                    });
+                    infoWindowsRecyclerView.smoothScrollToPosition(position);
 
-            } else {
-                View v = infoWindowViewHolder.itemView;
-                animateScrollToPosition(v, position, infoWindowViewHolder, animateToNewInfoWindowDuration);
+                } else {
+                    View v = infoWindowViewHolder.itemView;
+                    animateScrollToPosition(v, position, infoWindowViewHolder, animateToNewInfoWindowDuration);
+                }
             }
         }
     }
@@ -580,7 +596,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 float updatedValue = (float) animation.getAnimatedValue();
                 float currentOffset = updatedValue + left;
 
-                linearLayoutManager.scrollToPositionWithOffset(position, (int) currentOffset);
+                if (linearLayoutManager != null) {
+                    linearLayoutManager.scrollToPositionWithOffset(position, (int) currentOffset);
+                }
 
                 if (updatedValue == totalOffset) {
                     infoWindowViewHolder.select();
@@ -617,16 +635,27 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         }
 
         if (latLng == null) {
-            latLng = getFeaturePoint(featuresMap.get(id)
-                    .getJsonObject());
+            InfoWindowObject infoWindowObject = featuresMap.get(id);
 
-            if (latLng == null) {
+            if (infoWindowObject != null) {
+                latLng = getFeaturePoint(infoWindowObject
+                        .getJsonObject());
+
+                if (latLng == null) {
+                    return;
+                }
+            } else {
                 return;
             }
         }
 
         if (lastSelected == position) {
-            performInfoWindowDoubleClickAction(featuresMap.get(id));
+            InfoWindowObject infoWindowObject = featuresMap.get(id);
+            if (infoWindowObject != null) {
+                performInfoWindowDoubleClickAction(infoWindowObject);
+            } else {
+                LogUtil.e(TAG, "Could not get the feature from the featuresMap");
+            }
         } else {
             showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);
             kujakuMapView.centerMap(latLng, animateToNewTargetDuration);
@@ -646,6 +675,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         focusOnFeature(-1, id, null, true);
     }
 
+    @Nullable
     private LatLng getFeaturePoint(JSONObject featureJSON) {
         if (featureJSON.has("geometry")) {
             try {
@@ -667,11 +697,13 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         return null;
     }
 
+    @Nullable
     private String getFeatureId(@NonNull InfoWindowObject infoWindowObject) throws JSONException {
         JSONObject jsonObject = infoWindowObject.getJsonObject();
         return getFeatureId(jsonObject);
     }
 
+    @Nullable
     private String getFeatureId(@NonNull JSONObject jsonObject) throws JSONException {
         if (jsonObject.has("id")) {
             return jsonObject.getString("id");
