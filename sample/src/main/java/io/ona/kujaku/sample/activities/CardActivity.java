@@ -6,14 +6,17 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
+import io.ona.kujaku.views.ScaledMapView;
 
 public class CardActivity extends BaseNavigationDrawerActivity {
 
-    private KujakuMapView kujakuMapView;
+    private ScaledMapView kujakuMapView;
 
     private boolean isCardVisible = false;
 
@@ -25,6 +28,13 @@ public class CardActivity extends BaseNavigationDrawerActivity {
         kujakuMapView = findViewById(R.id.card_activity_map_view);
 
         kujakuMapView.showCurrentLocationBtn(true);
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                mapboxMap.getUiSettings().setRotateGesturesEnabled(false);
+                mapboxMap.getUiSettings().setTiltGesturesEnabled(false);
+            }
+        });
 
         kujakuMapView.enableAddPoint(true);
 

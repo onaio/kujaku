@@ -20,7 +20,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".activities.CardActivity">
-            <io.ona.kujaku.views.KujakuMapView
+
+            <io.ona.kujaku.views.ScaledMapView
                 android:id="@+id/card_activity_map_view"
                 android:layout_marginEnd="8dp"
                 android:layout_marginLeft="8dp"
@@ -37,6 +38,38 @@
                 app:mapbox_uiLogoGravity="right|bottom"
                 app:mapbox_uiLogoMarginRight="30dp"
                 app:mapbox_uiAttributionGravity="right|end|bottom"/>
+
+            <TextView
+                android:id="@+id/scale_text"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:textAlignment="center"
+                android:background="@android:color/black"
+                android:textColor="@color/white"
+                android:paddingBottom="2dp"
+                android:layout_marginBottom="80dp"
+                android:paddingTop="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:text="100km"/>
+
+
+            <TextView
+                android:id="@+id/zoom_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:textSize="20sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginLeft="70dp"
+                android:layout_marginTop="10dp"
+                android:padding="10dp"
+                android:textColor="@android:color/white"/>
+
             <ImageButton
                 android:id="@+id/map_view_hamburger_menu"
                 app:layout_constraintTop_toTopOf="parent"
@@ -60,6 +93,7 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 android:text="Test card view"/>
+
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
 
