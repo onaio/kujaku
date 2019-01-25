@@ -173,5 +173,8 @@ dependencies {
     implementation "com.android.support:design:${rootProject.ext.supportVersion}"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
+
+    annotationProcessor nullAway
+    errorprone errorProne
 }
 

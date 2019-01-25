@@ -53,4 +53,6 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
     testImplementation 'junit:junit:4.12'
 
+    annotationProcessor nullAway
+    errorprone errorProne
 }
