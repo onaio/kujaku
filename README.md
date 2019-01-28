@@ -1,6 +1,17 @@
-# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku)
+# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion)
 
 A mapping and check-in library for Android using MapBox SDK.
+
+# Table of Contents
+
+* [Setup Instructions](#setup-instructions)
+  * [Running the Sample App](#running-sample-app)
+  * [Importing the Library](#importing-the-library)
+  * [How to publish artifacts](#how-to-publish-artifacts)
+* [How to import the library](#how-to-import-the-library)
+* [License](#license)
+* [Acknowledgements](#acknowledgements)
+* [Specification](SPECIFICATION.md)
 
 ## Setup Instructions
 
@@ -17,17 +28,52 @@ To publish new versions to the **Bintray/JFrog** account, run:
 ```
 export BINTRAY_USER=johndoe
 export BINTRAY_KEY=98sdfkmykeyhere90sdckl
-./gradlew clean assembleRelease :utils:bintrayUpload
-./gradlew clean assembleRelease :library:bintrayUpload
+./gradlew :utils:clean :utils:assembleRelease :utils:bintrayUpload
+./gradlew :library:clean :library:assembleRelease :library:bintrayUpload
 
 ```
 
 To publish locally:
 
 ```
-./gradlew clean assembleRelease :utils:publishToMavenLocal
-./gradlew clean assembleRelease :library:publishToMavenLocal
+./gradlew :utils:clean :utils:assembleRelease :utils:publishToMavenLocal
+./gradlew :library:clean :library:assembleRelease :library:publishToMavenLocal
 
+```
+
+## How to import the library
+
+To import the library:
+
+1. Add the following snippet to your app module `build.gradle`
+
+```
+...
+
+
+allprojects {
+    repositories {
+        maven { url "http://dl.bintray.com/ona/kujaku" }
+    }
+}
+
+```
+This adds the bintray repository to your configuration
+
+2. Add the following snippet to your app module `build.gradle`
+
+```
+...
+android {
+
+... 
+
+dependencies {
+    ...
+    // Kujaku dependencies
+    implementation 'io.ona.kujaku:library:0.5.5'
+    ...
+}
 ```
 
 ## WMTS Layers
@@ -86,7 +132,7 @@ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, 
 
 ## License
 
-This software is provided under the Apache 2 license, see the LICENSE file for further details.
+This software is provided under the Apache 2 license, see the [LICENSE file](LICENSE) for further details.
 
 ## Acknowledgements
 

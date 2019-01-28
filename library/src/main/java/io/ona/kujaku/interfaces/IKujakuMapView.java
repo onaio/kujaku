@@ -145,4 +145,22 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param layerIds
      */
     void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds);
+
+    /**
+     * Checks if the map warms GPS(this just means the location service that is going to be used).
+     * Warming the GPS in this case means that it starts the location services as soon as you open
+     * the map so that getting your location is instant
+     *
+     * @return
+     */
+    boolean isWarmGps();
+
+    /**
+     * Enables or disables the starting of location services as soon as the view is created.
+     * Warming the GPS in this case means that it starts the location services as soon as you open
+     * the map so that getting your location is instant
+     *
+     * @param warmGps
+     */
+    void setWarmGps(boolean warmGps);
 }
