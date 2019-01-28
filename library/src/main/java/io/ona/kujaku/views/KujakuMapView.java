@@ -3,6 +3,7 @@ package io.ona.kujaku.views;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.IntentSender;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
@@ -23,6 +24,10 @@ import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
@@ -72,6 +77,7 @@ import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
 import io.ona.kujaku.location.clients.GPSLocationClient;
 import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
@@ -156,6 +162,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
 
+    private boolean warmGps = true;
+    private boolean hasAlreadyRequestedEnableLocation = false;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -197,6 +206,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             @Override
             public void onClick(View v) {
                 focusOnUserLocation(true);
+
+                // Enable asking for enabling the location by resetting this flag in case it was true
+                hasAlreadyRequestedEnableLocation = false;
+                setWarmGps(true);
             }
         });
 
@@ -211,11 +224,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         });
 
         Map<String, Object> attributes = extractStyleValues(attributeSet);
-        String key = getContext().getString(R.string.current_location_btn_visibility);
-        if (attributes.containsKey(key)) {
-            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(key);
+        String locationBtnVisibilityKey = getContext().getString(R.string.current_location_btn_visibility);
+        if (attributes.containsKey(locationBtnVisibilityKey)) {
+            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(locationBtnVisibilityKey);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
+
+        String warmGPSKey = getContext().getString(R.string.mapbox_warmGps);
+        if (attributes.containsKey(warmGPSKey)) {
+            warmGps = (boolean) attributes.get(warmGPSKey);
+        }
+
         featureMap = new HashMap<>();
     }
 
@@ -280,9 +299,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.KujakuMapView, 0, 0);
             try {
                 boolean isCurrentLocationBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_current_location_btn_visibility, false);
+                boolean isWarmGps = typedArray.getBoolean(R.styleable.KujakuMapView_mapbox_warmGps, true);
                 attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);
+                attributes.put(getContext().getString(R.string.mapbox_warmGps), isWarmGps);
             } catch (Exception e) {
-                Log.d(TAG, e.getMessage());
+                LogUtil.e(TAG, e);
             } finally {
                 typedArray.recycle();
             }
@@ -1061,12 +1082,62 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         super.onResume();
         getMapboxMap();
         // This prevents an overlay issue the first time when requesting for permissions
-        if (Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-            if (getContext() instanceof Activity) {
-                final Activity activity = (Activity) getContext();
-                LocationSettingsHelper.checkLocationEnabled(activity);
-            }
-            warmUpLocationServices();
+        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+            checkLocationSettingsAndStartLocationServices(true);
+        }
+    }
+
+    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
+        if (getContext() instanceof Activity) {
+            Activity activity = (Activity) getContext();
+
+            LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback<LocationSettingsResult>() {
+                @Override
+                public void onResult(LocationSettingsResult result) {
+                    final Status status = result.getStatus();
+                    switch (status.getStatusCode()) {
+                        case LocationSettingsStatusCodes.SUCCESS:
+                            Log.i(TAG, "All location settings are satisfied.");
+
+                            // You can continue warming the GPS
+                            if (shouldStartNow) {
+                                warmUpLocationServices();
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings");
+
+                            // This enables us to back-off in case the user has already denied the request
+                            // to turn on location settings
+                            if (!hasAlreadyRequestedEnableLocation) {
+                                hasAlreadyRequestedEnableLocation = true;
+
+                                try {
+                                    // Show the dialog by calling startResolutionForResult(), and check the result
+                                    // in onActivityResult().
+                                    status.startResolutionForResult(activity, Constants.RequestCode.LOCATION_SETTINGS);
+                                } catch (IntentSender.SendIntentException e) {
+                                    Log.i(TAG, "PendingIntent unable to execute request.");
+                                }
+                            } else {
+                                // The user had already requested for permissions, so we should not request again
+                                // We should disable these two modes since they cannot be achieved in the current stage
+                                setWarmGps(false);
+                                focusOnUserLocation(false);
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot not created.");
+                            break;
+
+                        default:
+                            Log.e(TAG, "Unknown status code returned after checking location settings");
+                            break;
+                    }
+                }
+            });
+        } else {
+            LogUtil.e(TAG, "KujakuMapView is not started in an Activity and can therefore not start location services");
         }
     }
 
@@ -1080,6 +1151,23 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 onFeatureClickListener.onFeatureClick(features);
             }
         }
+    }
+
+    public boolean isWarmGps() {
+        return warmGps;
+    }
+
+    public void setWarmGps(boolean warmGps) {
+        // If it was not warming(started) the location services, do that now
+        boolean shouldStartNow = !this.warmGps && warmGps;
+        this.warmGps = warmGps;
+
+        if (warmGps) {
+            // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
+            // We should just re-enable the location so that the LocationClient can reconnect to the location services
+            checkLocationSettingsAndStartLocationServices(shouldStartNow);
+        }
+
     }
 }
 

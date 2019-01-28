@@ -215,5 +215,5 @@ private static void appPermissionsDependencies(configuration) {
 }
 
 private static void locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-location:8.4.0'
+    configuration.implementation 'com.google.android.gms:play-services-location:16.0.0'
 }

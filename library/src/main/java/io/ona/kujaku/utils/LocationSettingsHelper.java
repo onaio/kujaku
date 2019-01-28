@@ -24,12 +24,11 @@ public class LocationSettingsHelper {
 
     /**
      * Checks if location is currently enabled & if the location settings are at high accuracy for
-     * use in {@link io.ona.kujaku.views.KujakuMapView}. If not, a dialog is shown prompting the user
-     * to enable the location services and to a high accuracy level.
+     * use in {@link io.ona.kujaku.views.KujakuMapView}
      *
      * @param activity
      */
-    public static void checkLocationEnabled(Activity activity) {
+    public static void checkLocationEnabled(Activity activity, ResultCallback<LocationSettingsResult> resultCallback) {
         GoogleApiClient googleApiClient = new GoogleApiClient.Builder(activity)
                 .addApi(LocationServices.API).build();
         googleApiClient.connect();
@@ -43,36 +42,6 @@ public class LocationSettingsHelper {
         builder.setAlwaysShow(true);
 
         PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        Log.i(TAG, "All location settings are satisfied.");
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings ");
-
-                        try {
-                            // Show the dialog by calling startResolutionForResult(), and check the result
-                            // in onActivityResult().
-                            status.startResolutionForResult(activity, Constants.RequestCode.LOCATION_SETTINGS);
-                        } catch (IntentSender.SendIntentException e) {
-                            Log.i(TAG, "PendingIntent unable to execute request.");
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
-                        break;
-
-                    default:
-                        Log.e(TAG, "Unknown status code returned after checking location settings");
-                        break;
-                }
-            }
-        });
-
-
+        result.setResultCallback(resultCallback);
     }
 }

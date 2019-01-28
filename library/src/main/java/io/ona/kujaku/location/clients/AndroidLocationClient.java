@@ -1,19 +1,20 @@
 package io.ona.kujaku.location.clients;
 
+import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.ona.kujaku.R;
 
@@ -21,83 +22,36 @@ import io.ona.kujaku.R;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
  */
 
-public class AndroidLocationClient extends BaseLocationClient implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class AndroidLocationClient extends BaseLocationClient implements LocationListener {
 
-    private GoogleApiClient googleApiClient;
     private Location lastLocation;
+    private FusedLocationProviderClient fusedLocationClient;
+    private AndroidLocationCallback androidLocationCallback;
 
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
-
-    private boolean waitingForConnection = false;
 
     private static final String TAG = AndroidLocationClient.class.getName();
 
     public AndroidLocationClient(@NonNull Context context) {
         this.context = context;
         locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        initGoogleApiClient();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        androidLocationCallback = new AndroidLocationCallback();
     }
 
     @Override
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
-            waitingForConnection = false;
             lastLocation = null;
             setLocationListener(null);
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-
-            // Probably not a good idea, but works for now until a solution around this
-            disconnectGoogleApiClient();
+            fusedLocationClient.removeLocationUpdates(androidLocationCallback);
         }
     }
 
     @Override
     public Location getLastLocation() {
         return lastLocation;
-    }
-
-
-    private void initGoogleApiClient() {
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(context)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        googleApiClient.connect();
-    }
-
-    private void disconnectGoogleApiClient() {
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
-    }
-    
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (waitingForConnection) {
-            waitingForConnection = false;
-            if (getLocationListener() != null) {
-                requestLocationUpdates(getLocationListener());
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(context, R.string.msg_location_retrieval_taking_longer_than_expected, Toast.LENGTH_LONG)
-                .show();
-
-        stopLocationUpdates();
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(context, R.string.msg_could_not_find_your_location, Toast.LENGTH_LONG)
-                .show();
     }
 
     @Override
@@ -113,26 +67,27 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener) {
         setLocationListener(locationListener);
         if (isProviderEnabled()) {
-            if (!googleApiClient.isConnected() || googleApiClient.isConnecting()) {
-                if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
-                    initGoogleApiClient();
-                }
+            LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setInterval(updateInterval);
+            locationRequest.setFastestInterval(fastestUpdateInterval);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-                waitingForConnection = true;
-            } else {
-                LocationRequest locationRequest = new LocationRequest();
-                locationRequest.setInterval(updateInterval);
-                locationRequest.setFastestInterval(fastestUpdateInterval);
-                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            try {
+                fusedLocationClient.getLastLocation()
+                        .addOnSuccessListener((Activity) context, new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if (lastLocation == null || location.getTime() > lastLocation.getTime()) {
+                                    lastLocation = location;
+                                }
+                            }
+                        });
 
-                try {
-                    LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-                    lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-                } catch (SecurityException e) {
-                    Log.e(TAG, Log.getStackTraceString(e));
-                    Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
-                            .show();
-                }
+                fusedLocationClient.requestLocationUpdates(locationRequest, androidLocationCallback, null);
+            } catch (SecurityException e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+                Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
+                        .show();
             }
         } else {
             setLocationListener(null);
@@ -165,8 +120,31 @@ public class AndroidLocationClient extends BaseLocationClient implements GoogleA
 
     @Override
     public void close() {
-        disconnectGoogleApiClient();
-
+        stopLocationUpdates();
         super.close();
+    }
+
+    private class AndroidLocationCallback extends LocationCallback {
+
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            if (locationResult == null) {
+                return;
+            }
+
+            Location latestLocation = null;
+            for (Location location : locationResult.getLocations()) {
+                if (latestLocation == null || location.getTime() > latestLocation.getTime()) {
+                    latestLocation = location;
+                }
+            }
+
+            if (latestLocation != null) {
+                lastLocation = latestLocation;
+                if (getLocationListener() != null) {
+                    getLocationListener().onLocationChanged(lastLocation);
+                }
+            }
+        }
     }
 }
