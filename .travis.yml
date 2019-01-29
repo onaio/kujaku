@@ -65,7 +65,8 @@ script:
   - chmod 755 gradlew
   - ls -la
   # This is supposed to run the normal project build
-  - travis_wait ./gradlew clean build connectedAndroidTest --stacktrace
+  # jacocoTestReport is supposed to run both local and instrumented tests on all the modules
+  - travis_wait ./gradlew clean build jacocoTestReport coveralls --stacktrace
 
 after_failure:
  #- pandoc opensrp-app/build/reports/tests/index.html -t plain
