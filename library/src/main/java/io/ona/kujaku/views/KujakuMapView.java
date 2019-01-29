@@ -1093,24 +1093,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (isResumingFromRequestingEnableLocation) {
             isResumingFromRequestingEnableLocation = false;
             Activity activity = (Activity) getContext();
-            LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback<LocationSettingsResult>() {
-                @Override
-                public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-                    final Status status = locationSettingsResult.getStatus();
-                    if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
-                        new AlertDialog.Builder(activity)
-                                .setTitle(R.string.location_service_disabled)
-                                .setMessage(R.string.location_service_disabled_dialog_explanation)
-                                .setPositiveButton(activity.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                                    @Override public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .show();
-                    }
-
-                }
-            });
+            Dialogs.showDialogIfLocationDisabled(activity);
         }
 
     }
