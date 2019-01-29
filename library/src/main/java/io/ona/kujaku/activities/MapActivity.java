@@ -313,19 +313,17 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                     JSONObject jsonObject = sources.getJSONObject(dataSourceName);
                     if (jsonObject.has("data")) {
                         JSONObject sourceDataJSONObject = jsonObject.optJSONObject("data");
-                        if (sourceDataJSONObject != null) {
-                            if (sourceDataJSONObject.has("features")) {
-                                JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
-                                for (int i = 0; i < featuresJSONArray.length(); i++) {
-                                    JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
+                        if (sourceDataJSONObject != null && sourceDataJSONObject.has("features")) {
+                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
+                            for (int i = 0; i < featuresJSONArray.length(); i++) {
+                                JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 
-                                    String id = getFeatureId(featureJSON);
-                                    if (!TextUtils.isEmpty(id)) {
-                                        //Todo: Should check for errors here & print them in LogCat or notify the dev somehow
-                                        featuresMap.put(id, new InfoWindowObject(counter, featureJSON));
-                                        featureIdList.add(id);
-                                        counter++;
-                                    }
+                                String id = getFeatureId(featureJSON);
+                                if (!TextUtils.isEmpty(id)) {
+                                    //Todo: Should check for errors here & print them in LogCat or notify the dev somehow
+                                    featuresMap.put(id, new InfoWindowObject(counter, featureJSON));
+                                    featureIdList.add(id);
+                                    counter++;
                                 }
                             }
                         }
