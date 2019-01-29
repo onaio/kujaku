@@ -166,7 +166,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean warmGps = true;
     private boolean hasAlreadyRequestedEnableLocation = false;
-    private boolean isRequestingEnableLocation = false;
+    private boolean isResumingFromRequestingEnableLocation = false;
 
 
     public KujakuMapView(@NonNull Context context) {
@@ -1090,8 +1090,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         // Explain the consequence of rejecting enabling location
-        if (isRequestingEnableLocation) {
-            isRequestingEnableLocation = false;
+        if (isResumingFromRequestingEnableLocation) {
+            isResumingFromRequestingEnableLocation = false;
             Activity activity = (Activity) getContext();
             LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback<LocationSettingsResult>() {
                 @Override
@@ -1139,7 +1139,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             // to turn on location settings
                             if (!hasAlreadyRequestedEnableLocation) {
                                 hasAlreadyRequestedEnableLocation = true;
-                                isRequestingEnableLocation = true;
+                                isResumingFromRequestingEnableLocation = true;
 
                                 try {
                                     // Show the dialog by calling startResolutionForResult(), and check the result
