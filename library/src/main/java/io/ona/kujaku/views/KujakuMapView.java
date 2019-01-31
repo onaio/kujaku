@@ -135,6 +135,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean updateUserLocationOnMap = false;
 
+    private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
+
+    private float locationOuterCircleRadius = DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS;
+
     /**
      * Wmts Layers to add on the map
      */
@@ -205,7 +209,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true, null);
+                focusOnUserLocation(true, 25);
 
                 // Enable asking for enabling the location by resetting this flag in case it was true
                 hasAlreadyRequestedEnableLocation = false;
@@ -447,9 +451,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 );
 
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
+                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
                 userLocationOuterCircle.setProperties(
                         circleColor("#81c2ee"),
-                        circleRadius(radius == null ? 25f : radius),
+                        circleRadius(locationOuterCircleRadius),
                         circleStrokeWidth(1f),
                         circleStrokeColor("#74b7f6"),
                         circleOpacity(0.3f),
@@ -464,6 +469,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // Get the layer and update it
             if (mapboxMap != null) {
                 Source source = mapboxMap.getSource(pointsSourceId);
+
+                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
+                userLocationOuterCircle = (CircleLayer) mapboxMap.getLayer(pointsOuterLayerId);
+                userLocationOuterCircle.setProperties(circleRadius(locationOuterCircleRadius));
 
                 if (source instanceof GeoJsonSource) {
                     ((GeoJsonSource) source).setGeoJson(feature);

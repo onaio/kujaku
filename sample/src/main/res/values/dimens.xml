@@ -7,5 +7,5 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="hamburger_margin">24dp</dimen>
     <dimen name="hamburger_radius">5dp</dimen>
-    <dimen name="decrease_circle_radius_button_left_margin">40dp</dimen>
+    <dimen name="decrease_circle_radius_button_left_margin">30dp</dimen>
 </resources>

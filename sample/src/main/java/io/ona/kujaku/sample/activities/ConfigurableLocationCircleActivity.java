@@ -1,6 +1,8 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
@@ -18,6 +20,23 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.configurable_circle_activity_map_view);
+        kujakuMapView.showCurrentLocationBtn(true);
+
+        Button btnIncreaseCircleRadius = findViewById(R.id.btn_increase_circle_radius);
+        btnIncreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                kujakuMapView.focusOnUserLocation(true, 70);
+            }
+        });
+
+        Button btnDecreaseCircleRadius = findViewById(R.id.btn_decrease_circle_radius);
+        btnDecreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                kujakuMapView.focusOnUserLocation(true, 10);
+            }
+        });
     }
 
 
