@@ -216,7 +216,7 @@ public class KujakuMapViewTest extends BaseTest {
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
 
-        kujakuMapView.focusOnUserLocation(true);
+        kujakuMapView.focusOnUserLocation(true, null);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
@@ -224,7 +224,7 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
 
 
-        kujakuMapView.focusOnUserLocation(false);
+        kujakuMapView.focusOnUserLocation(false, null);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
 
         drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();

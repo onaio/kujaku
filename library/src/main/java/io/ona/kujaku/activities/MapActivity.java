@@ -231,7 +231,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 }
 
                 if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
-                    kujakuMapView.focusOnUserLocation(true);
+                    kujakuMapView.focusOnUserLocation(true, null);
                 }
             }
         });

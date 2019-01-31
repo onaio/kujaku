@@ -205,7 +205,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true);
+                focusOnUserLocation(true, null);
 
                 // Enable asking for enabling the location by resetting this flag in case it was true
                 hasAlreadyRequestedEnableLocation = false;
@@ -238,8 +238,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         featureMap = new HashMap<>();
     }
 
-    private void showUpdatedUserLocation() {
-        updateUserLocationLayer(latestLocation);
+    private void showUpdatedUserLocation(Integer radius) {
+        updateUserLocationLayer(latestLocation, radius);
 
         if (updateUserLocationOnMap || !isMapScrolled) {
             // Focus on the new location
@@ -279,7 +279,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         }
 
                         if (updateUserLocationOnMap) {
-                            showUpdatedUserLocation();
+                            showUpdatedUserLocation(null);
                         }
                     }
                 });
@@ -415,7 +415,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
             if (latestLocation != null) {
-                showUpdatedUserLocation();
+                showUpdatedUserLocation(null);
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
@@ -423,7 +423,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void updateUserLocationLayer(@NonNull LatLng latLng) {
+    private void updateUserLocationLayer(@NonNull LatLng latLng, Integer radius) {
         com.mapbox.geojson.Feature feature =
                 com.mapbox.geojson.Feature.fromGeometry(
                         com.mapbox.geojson.Point.fromLngLat(
@@ -449,7 +449,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
                 userLocationOuterCircle.setProperties(
                         circleColor("#81c2ee"),
-                        circleRadius(25f),
+                        circleRadius(radius == null ? 25f : radius),
                         circleStrokeWidth(1f),
                         circleStrokeColor("#74b7f6"),
                         circleOpacity(0.3f),
@@ -778,7 +778,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 isMapScrolled = true;
 
                 // We should assume the user no longer wants us to focus on their location
-                focusOnUserLocation(false);
+                focusOnUserLocation(false, null);
             }
 
             @Override
@@ -922,7 +922,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void focusOnUserLocation(boolean focusOnMyLocation) {
+    public void focusOnUserLocation(boolean focusOnMyLocation, Integer radius) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
@@ -930,7 +930,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
             if (latestLocation != null) {
-                showUpdatedUserLocation();
+                showUpdatedUserLocation(radius);
             }
 
         } else {
@@ -1123,7 +1123,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                 // The user had already requested for permissions, so we should not request again
                                 // We should disable these two modes since they cannot be achieved in the current stage
                                 setWarmGps(false);
-                                focusOnUserLocation(false);
+                                focusOnUserLocation(false, null);
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
