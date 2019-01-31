@@ -172,6 +172,10 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_configurable_circle:
+                startActivity(new Intent(this, ConfigurableLocationCircleActivity.class));
+                finish();
+                return true;
             default:
                 break;
         }
