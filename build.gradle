@@ -38,4 +38,5 @@ ext {
     compileSdkVersion = 27
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
+    jacocoVersion = "0.8.1"
 }
