@@ -4,6 +4,7 @@ allprojects {
         maven { url "http://dl.bintray.com/ona/kujaku" }
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.fabric.io/public' }
+        mavenLocal()
     }
 }
 
@@ -132,7 +133,7 @@ android {
 
 dependencies {
     //implementation(project(":library")) {
-    implementation('io.ona.kujaku:library:0.6.0') {
+    implementation('io.ona.kujaku:library:0.6.1') {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         //exclude group: 'io.ona.kujaku', module: 'utils'

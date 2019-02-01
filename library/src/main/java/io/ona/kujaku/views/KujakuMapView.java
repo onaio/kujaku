@@ -209,7 +209,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true, 25);
+                focusOnUserLocation(true);
 
                 // Enable asking for enabling the location by resetting this flag in case it was true
                 hasAlreadyRequestedEnableLocation = false;
@@ -242,7 +242,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         featureMap = new HashMap<>();
     }
 
-    private void showUpdatedUserLocation(Integer radius) {
+    private void showUpdatedUserLocation(Float radius) {
         updateUserLocationLayer(latestLocation, radius);
 
         if (updateUserLocationOnMap || !isMapScrolled) {
@@ -427,7 +427,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void updateUserLocationLayer(@NonNull LatLng latLng, Integer radius) {
+    private void updateUserLocationLayer(@NonNull LatLng latLng, Float radius) {
         com.mapbox.geojson.Feature feature =
                 com.mapbox.geojson.Feature.fromGeometry(
                         com.mapbox.geojson.Point.fromLngLat(
@@ -787,7 +787,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 isMapScrolled = true;
 
                 // We should assume the user no longer wants us to focus on their location
-                focusOnUserLocation(false, null);
+                focusOnUserLocation(false);
             }
 
             @Override
@@ -931,7 +931,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void focusOnUserLocation(boolean focusOnMyLocation, Integer radius) {
+    public void focusOnUserLocation(boolean focusOnMyLocation) {
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS);
+    }
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
@@ -1132,7 +1137,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                 // The user had already requested for permissions, so we should not request again
                                 // We should disable these two modes since they cannot be achieved in the current stage
                                 setWarmGps(false);
-                                focusOnUserLocation(false, null);
+                                focusOnUserLocation(false);
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
