@@ -26,7 +26,7 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         btnIncreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.focusOnUserLocation(true, 70);
+                kujakuMapView.focusOnUserLocation(true, 70f);
             }
         });
 
@@ -34,7 +34,7 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         btnDecreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.focusOnUserLocation(true, 10);
+                kujakuMapView.focusOnUserLocation(true, 10f);
             }
         });
     }

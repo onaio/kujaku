@@ -283,7 +283,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         }
 
                         if (updateUserLocationOnMap) {
-                            showUpdatedUserLocation(null);
+                            showUpdatedUserLocation(locationOuterCircleRadius);
                         }
                     }
                 });
@@ -419,7 +419,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
             if (latestLocation != null) {
-                showUpdatedUserLocation(null);
+                showUpdatedUserLocation(locationOuterCircleRadius);
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
