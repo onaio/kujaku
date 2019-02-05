@@ -132,7 +132,7 @@ android {
 
 dependencies { configuration ->
 
-    releaseTestKujakuImport(configuration)
+    developmentKujakuModulesImport(this, configuration)
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
     implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
@@ -157,14 +157,14 @@ dependencies { configuration ->
 }
 
 // This is used for normal develoment of Kujaku
-private static void developmentKujakuModulesImport(configuration) {
-    configuration.implementation(project(":library")) {
+private static void developmentKujakuModulesImport(instance, configuration) {
+    configuration.implementation(instance.project(":library")) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'io.ona.kujaku', module: 'utils'
     }
 
-    configuration.implementation(project(":utils")) {
+    configuration.implementation(instance.project(":utils")) {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
