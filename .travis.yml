@@ -70,6 +70,7 @@ script:
   - travis_wait ./gradlew clean --stacktrace
   - travis_wait ./gradlew build --stacktrace
   - travis_wait ./gradlew jacocoTestReport --stacktrace
+  - travis_wait ./gradlew jacocoFullReport --stacktrace
   - travis_wait ./gradlew coveralls --stacktrace
 
 after_failure:

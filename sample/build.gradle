@@ -10,7 +10,6 @@ allprojects {
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
 apply plugin: 'io.fabric'
-apply plugin: 'com.github.kt3k.coveralls'
 
 
 ant.condition(property: 'os', value: 'windows') {
@@ -217,8 +216,4 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     executionData = fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ])
-}
-
-coveralls {
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
 }
