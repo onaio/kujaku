@@ -110,6 +110,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private List<JSONObject> newPoints;
 
+    private static final String DATA = "data";
+    private static final String FEATURES = "features";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -315,10 +318,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             for (String dataSourceName : dataSourceNames) {
                 if (sources.has(dataSourceName)) {
                     JSONObject jsonObject = sources.getJSONObject(dataSourceName);
-                    if (jsonObject.has("data")) {
-                        JSONObject sourceDataJSONObject = jsonObject.getJSONObject("data");
-                        if (sourceDataJSONObject.has("features")) {
-                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
+                    if (jsonObject.has(DATA)) {
+                        JSONObject sourceDataJSONObject = jsonObject.optJSONObject(DATA);
+                        if (sourceDataJSONObject != null && sourceDataJSONObject.has(FEATURES)) {
+                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray(FEATURES);
                             for (int i = 0; i < featuresJSONArray.length(); i++) {
                                 JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 

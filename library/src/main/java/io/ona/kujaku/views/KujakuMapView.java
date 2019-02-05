@@ -45,8 +45,8 @@ import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
@@ -164,6 +164,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean warmGps = true;
     private boolean hasAlreadyRequestedEnableLocation = false;
+    private boolean isResumingFromRequestingEnableLocation = false;
 
 
     public KujakuMapView(@NonNull Context context) {
@@ -1085,6 +1086,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
             checkLocationSettingsAndStartLocationServices(true);
         }
+
+        // Explain the consequence of rejecting enabling location
+        if (isResumingFromRequestingEnableLocation) {
+            isResumingFromRequestingEnableLocation = false;
+            Activity activity = (Activity) getContext();
+            Dialogs.showDialogIfLocationDisabled(activity);
+        }
+
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
@@ -1111,6 +1120,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             // to turn on location settings
                             if (!hasAlreadyRequestedEnableLocation) {
                                 hasAlreadyRequestedEnableLocation = true;
+                                isResumingFromRequestingEnableLocation = true;
 
                                 try {
                                     // Show the dialog by calling startResolutionForResult(), and check the result
