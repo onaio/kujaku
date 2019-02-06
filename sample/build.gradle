@@ -132,21 +132,21 @@ android {
 }
 
 dependencies {
-    //implementation(project(":library")) {
-    implementation('io.ona.kujaku:library:0.6.1') {
-        exclude group: 'com.google.code.findbugs', module: 'jsr305'
-        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
-        //exclude group: 'io.ona.kujaku', module: 'utils'
+    implementation(project(":library")) {
+//    implementation('io.ona.kujaku:library:0.6.1') {
+//        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+//        exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
+        exclude group: 'io.ona.kujaku', module: 'utils'
     }
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
-    /*implementation(project(":utils")) {
-//    implementation('io.ona.kujaku:utils:0.4.1') {
+//    implementation(project(":utils")) {
+    implementation('io.ona.kujaku:utils:0.6.0') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
-    }*/
+    }
 
     implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
     implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
