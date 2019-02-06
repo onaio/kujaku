@@ -46,4 +46,8 @@ ext {
 
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoFullReport/jacocoFullReport.xml"
+    sourceDirs += ["utils/src/main/java"
+                   , "library/src/main/java"
+                   , "sample/src/main/java"
+                   , "wrapper/src/main/java"]
 }
