@@ -74,6 +74,9 @@
         <activity
             android:name=".activities.PaddedBboxCalculatorActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.CaseRelationshipActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
