@@ -1146,5 +1146,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
     }
+
+    @Nullable
+    @Override
+    public ILocationClient getLocationClient() {
+        return locationClient;
+    }
 }
 
