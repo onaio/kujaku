@@ -53,6 +53,7 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
         goToMyLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                kujakuMapView.setWarmGps(true, "Location disabled", "The add point features will not work. We cannot drop points without your location.");
                 kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
                     @Override
                     public void onLocationChanged(Location location) {

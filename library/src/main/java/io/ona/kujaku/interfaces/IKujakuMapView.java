@@ -165,6 +165,18 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     void setWarmGps(boolean warmGps);
 
     /**
+     * Enables or disables the starting of location services as soon as the view is created.
+     * Warming the GPS in this case means that it starts the location services as soon as you open
+     * the map so that getting your location is instant. In case the user rejects enabling location,
+     * the rejectionDialogTitle and rejectionDialogMessage will be shown in a dialog.
+     *
+     * @param warmGps
+     * @param rejectionDialogTitle
+     * @param rejectionDialogMessage
+     */
+    void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage);
+
+    /**
      * Exposes the location client being used by KujakuMapView. The location client can be null in case {@link IKujakuMapView#isWarmGps()}
      * is false or the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
      * host application.
