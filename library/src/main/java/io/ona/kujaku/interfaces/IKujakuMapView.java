@@ -17,8 +17,8 @@ import org.json.JSONException;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -163,4 +163,14 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param warmGps
      */
     void setWarmGps(boolean warmGps);
+
+    /**
+     * Exposes the location client being used by KujakuMapView. The location client can be null in case {@link IKujakuMapView#isWarmGps()}
+     * is false or the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
+     * host application.
+     *
+     * @return the location client
+     */
+    @Nullable
+    ILocationClient getLocationClient();
 }
