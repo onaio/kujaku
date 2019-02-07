@@ -7,7 +7,6 @@ import android.content.IntentSender;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
-import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
@@ -72,16 +70,12 @@ import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
-import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
-import io.ona.kujaku.location.clients.GPSLocationClient;
-import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
-import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
@@ -249,49 +243,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+        locationClient = new AndroidLocationClient(getContext());
+        locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
-            public Object[] call() throws Exception {
-                return new Object[]{ NetworkUtil.isInternetAvailable()};
-            }
-        });
-        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
-            @Override
-            public void onSuccess(Object[] objects) {
-                if ((boolean) objects[0]) {
-                    // Use the fused location API
-                    locationClient = new AndroidLocationClient(getContext());
-                } else {
-                    // Use the GPS hardware
-                    locationClient = new GPSLocationClient(getContext());
-                    // Update the location every 5 seconds
-                    locationClient.setUpdateIntervals(5000, 5000);
+            public void onLocationChanged(Location location) {
+                latestLocation = new LatLng(location.getLatitude()
+                        , location.getLongitude());
+
+                if (onLocationChangedListener != null) {
+                    onLocationChangedListener.onLocationChanged(location);
                 }
 
-                locationClient.requestLocationUpdates(new BaseLocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        latestLocation = new LatLng(location.getLatitude()
-                                , location.getLongitude());
-
-
-                        if (onLocationChangedListener != null) {
-                            onLocationChangedListener.onLocationChanged(location);
-                        }
-
-                        if (updateUserLocationOnMap) {
-                            showUpdatedUserLocation();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Exception e) {
-                LogUtil.e(TAG, e);
+                if (updateUserLocationOnMap) {
+                    showUpdatedUserLocation();
+                }
             }
         });
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
