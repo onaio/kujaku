@@ -1065,10 +1065,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             // The dialog message is supposed to be configurable only when the setWarmGps is called
             // and not a permanent change because we have other uses for warming GPS and in the widget already
-            locationEnableRejectionDialogTitle = null;
-            locationEnableRejectionDialogMessage = null;
+            resetRejectionDialogContent();
         }
-
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
