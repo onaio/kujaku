@@ -132,7 +132,8 @@ android {
 
 dependencies { configuration ->
 
-    developmentKujakuModulesImport(this, configuration)
+    //developmentKujakuModulesImport(this, configuration)
+    releaseTestKujakuImport(configuration)
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
     implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
@@ -181,6 +182,6 @@ private static void developmentKujakuModulesImport(instance, configuration) {
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK
 private static void releaseTestKujakuImport(configuration) {
-    configuration.implementation 'io.ona.kujaku:library:0.6.0'
+    configuration.implementation 'io.ona.kujaku:library:0.6.1'
 }
 
