@@ -71,7 +71,6 @@ public class ArrowLineLayer {
     public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 1.2f;
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.8f;
     public static final Float[] ARROW_HEAD_OFFSET = {0f, -7f};
-    public static final String ARROW_BEARING = "case-relationship-arrow-bearing";
     public static final float OPAQUE = 0.0f;
     public static final int ARROW_HIDDEN_ZOOM_LEVEL = 14;
     public static final float TRANSPARENT = 1.0f;
@@ -96,7 +95,7 @@ public class ArrowLineLayer {
                 ),
                 PropertyFactory.iconOffset(ARROW_HEAD_OFFSET),
                 PropertyFactory.iconRotationAlignment(ICON_ROTATION_ALIGNMENT_MAP),
-                PropertyFactory.iconRotate(get(ARROW_BEARING)),
+                PropertyFactory.iconRotate(get(ARROW_HEAD_BEARING)),
                 PropertyFactory.iconOpacity(1f )
         );
 
