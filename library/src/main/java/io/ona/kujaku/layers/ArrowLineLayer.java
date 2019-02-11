@@ -126,6 +126,12 @@ public class ArrowLineLayer {
         return arrowHeadLayer;
     }
 
+    /**
+     * Adds the layer to a {@link MapboxMap} after sorting the features, generating the
+     * {@link LineString} to draw the arrow line and {@link FeatureCollection} to draw the arrow heads.
+     *
+     * @param mapboxMap
+     */
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
         if (mapboxMap.getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {
             ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();
@@ -176,7 +182,7 @@ public class ArrowLineLayer {
                 mapboxMap.addSource(arrowHeadSource);
                 mapboxMap.addSource(lineLayerSource);
 
-                if (builder.addBelowLayerId != null) {
+                if (builder.addBelowLayerId != null && mapboxMap.getLayer(builder.addBelowLayerId) != null) {
                     mapboxMap.addLayerBelow(lineLayer, builder.addBelowLayerId);
                     mapboxMap.addLayerBelow(arrowHeadLayer, builder.addBelowLayerId);
                 } else {
