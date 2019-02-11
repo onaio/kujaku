@@ -200,7 +200,7 @@ public class ArrowLineLayer {
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+    private Bitmap getBitmapFromDrawable(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable) drawable).getBitmap();
         } else {
