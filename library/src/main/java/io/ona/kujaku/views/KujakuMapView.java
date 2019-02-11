@@ -67,6 +67,7 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
+import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
@@ -1180,6 +1181,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void resetRejectionDialogContent() {
         locationEnableRejectionDialogTitle = null;
         locationEnableRejectionDialogMessage = null;
+    }
+
+    @Override
+    public void addArrowLineLayer(@NonNull ArrowLineLayer arrowLineLayer) {
+        getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                arrowLineLayer.addLayerToMap(mapboxMap);
+            }
+        });
     }
 }
 
