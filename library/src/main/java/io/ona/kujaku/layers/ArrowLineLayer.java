@@ -1,8 +1,16 @@
 package io.ona.kujaku.layers;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;
@@ -23,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
@@ -68,12 +77,8 @@ public class ArrowLineLayer {
 
     public static final int MIN_ARROW_ZOOM = 10;
     public static final int MAX_ARROW_ZOOM = 22;
-    public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 1.2f;
-    public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.8f;
-    public static final Float[] ARROW_HEAD_OFFSET = {0f, -7f};
-    public static final float OPAQUE = 0.0f;
-    public static final int ARROW_HIDDEN_ZOOM_LEVEL = 14;
-    public static final float TRANSPARENT = 1.0f;
+    public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
+    public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
 
     private ArrowLineLayer(@NonNull Builder builder) {
         this.builder = builder;
@@ -93,7 +98,6 @@ public class ArrowLineLayer {
                         stop(MAX_ARROW_ZOOM, MAX_ZOOM_ARROW_HEAD_SCALE)
                         )
                 ),
-                PropertyFactory.iconOffset(ARROW_HEAD_OFFSET),
                 PropertyFactory.iconRotationAlignment(ICON_ROTATION_ALIGNMENT_MAP),
                 PropertyFactory.iconRotate(get(ARROW_HEAD_BEARING)),
                 PropertyFactory.iconOpacity(1f )
@@ -104,9 +108,12 @@ public class ArrowLineLayer {
         lineLayer.withProperties(
                 lineCap(Property.LINE_CAP_ROUND),
                 lineJoin(Property.LINE_JOIN_ROUND),
-                lineWidth(builder.arrowLineWidth),
                 lineColor(builder.arrowLineColor)
         );
+
+        if (builder.arrowLineWidth != 0f) {
+            lineLayer.setProperties(lineWidth(builder.arrowLineWidth));
+        }
 
         lineLayerSource = new GeoJsonSource(LINE_LAYER_SOURCE_ID);
     }
@@ -140,7 +147,6 @@ public class ArrowLineLayer {
             @Override
             public Object[] call() throws Exception {
                 // TODO: Sort the feature collection
-                // TODO: Generate the arrow features(the feature on which the arrows are going to be drawn)
                 LineString arrowLine = calculateLineString(builder.featureConfig.featureCollection);
                 FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
 
@@ -150,18 +156,33 @@ public class ArrowLineLayer {
         genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
             @Override
             public void onSuccess(Object[] objects) {
-                //TODO: Add the GeoJSON Sources to the layer now
                 LineString arrowLine = (LineString) objects[0];
                 FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];
 
                 arrowHeadSource.setGeoJson(arrowHeadFeatures);
                 lineLayerSource.setGeoJson(arrowLine);
 
+                Drawable arrowHead = AppCompatResources.getDrawable(builder.context, R.drawable.ic_arrow_head);
+                if (arrowHead == null) {
+                    return;
+                }
+
+                Drawable head = DrawableCompat.wrap(arrowHead);
+                DrawableCompat.setTint(head.mutate(), builder.arrowLineColor);
+                Bitmap icon = getBitmapFromDrawable(head);
+
+                mapboxMap.addImage(ARROW_HEAD_ICON, icon);
+
                 mapboxMap.addSource(arrowHeadSource);
                 mapboxMap.addSource(lineLayerSource);
 
-                mapboxMap.addLayer(lineLayer);
-                mapboxMap.addLayer(arrowHeadLayer);
+                if (builder.addBelowLayerId != null) {
+                    mapboxMap.addLayerBelow(lineLayer, builder.addBelowLayerId);
+                    mapboxMap.addLayerBelow(arrowHeadLayer, builder.addBelowLayerId);
+                } else {
+                    mapboxMap.addLayer(lineLayer);
+                    mapboxMap.addLayer(arrowHeadLayer);
+                }
             }
 
             @Override
@@ -171,6 +192,19 @@ public class ArrowLineLayer {
         });
 
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else {
+            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
+                    Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            return bitmap;
+        }
     }
 
     /**
@@ -243,22 +277,33 @@ public class ArrowLineLayer {
 
         private FeatureConfig featureConfig;
         private SortConfig sortConfig;
+        private Context context;
+        private String addBelowLayerId;
 
+        @ColorInt
         private int arrowLineColor;
-        private float arrowLineWidth;
+        private float arrowLineWidth = 3f;
 
-        public Builder(@NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
+        public Builder(@NonNull Context context, @NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
             this.featureConfig = featureConfig;
             this.sortConfig = sortConfig;
+            this.context = context;
+
+            setArrowLineColor(R.color.mapbox_blue);
         }
 
-        public Builder setArrowLineColor(@ColorInt int colorInt) {
-            this.arrowLineColor = colorInt;
+        public Builder setArrowLineColor(@ColorRes int colorInt) {
+            this.arrowLineColor = context.getResources().getColor(colorInt);
             return this;
         }
 
         public Builder setArrowLineWidth(float arrowLineWidth) {
             this.arrowLineWidth = arrowLineWidth;
+            return this;
+        }
+
+        public Builder setAddBelowLayerId(@NonNull String addBelowLayerId) {
+            this.addBelowLayerId = addBelowLayerId;
             return this;
         }
 
@@ -302,7 +347,7 @@ public class ArrowLineLayer {
         public enum PropertyType {
             DATE_TIME,
             STRING,
-            NUMBERS
+            NUMBER
         }
 
         private String sortProperty;
