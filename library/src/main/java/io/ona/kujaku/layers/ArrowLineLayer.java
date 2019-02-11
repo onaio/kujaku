@@ -48,6 +48,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 public class ArrowLineLayer {
 
     private static final String TAG = ArrowLineLayer.class.getName();
+    public static final String ARROW_HEAD_BEARING = "arrow-head-bearing";
 
     private Builder builder;
 
@@ -167,8 +168,8 @@ public class ArrowLineLayer {
      * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
      * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
      *
-     * @param lineString
-     * @return
+     * @param lineString the line string for which to generate arrow head features
+     * @return a {@link FeatureCollection} which represents the locations of the arrow heads and bearing property
      */
     private FeatureCollection generateArrowHeadFeatureCollection(@NonNull LineString lineString) {
         ArrayList<Feature> featureList = new ArrayList<>();
@@ -179,7 +180,7 @@ public class ArrowLineLayer {
             Point endPoint = lineStringPoints.get(i+1);
 
             Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));
-            arrowHeadFeature.addNumberProperty("arrow-head-bearing", TurfMeasurement.bearing(startPoint, endPoint));
+            arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));
 
             featureList.add(arrowHeadFeature);
         }
@@ -191,8 +192,8 @@ public class ArrowLineLayer {
      * Calculates the center points from the polygons, multi-polygons and point features and generates
      * a {@link LineString} which will be used on the {@link LineLayer}
      *
-     * @param featureCollection
-     * @return
+     * @param featureCollection including Polygons and Multi-Polygons to convert to {@link LineString}
+     * @return a {@link LineString} which can be used to draw a {@link LineLayer} on the map
      */
     private LineString calculateLineString(@NonNull FeatureCollection featureCollection) {
         ArrayList<Point> centerPoints = new ArrayList<>();
