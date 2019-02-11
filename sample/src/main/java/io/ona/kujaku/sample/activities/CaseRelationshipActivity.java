@@ -13,6 +13,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.IOException;
 
+import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -56,13 +57,17 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                     , ArrowLineLayer.SortConfig.SortOrder.DESC
                     , ArrowLineLayer.SortConfig.PropertyType.NUMBER);
 
-            arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
-                    .setArrowLineColor(R.color.mapbox_blue)
-                    .setArrowLineWidth(3)
-                    .setAddBelowLayerId("sample-cases-symbol")
-                    .build();
+            try {
+                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                        .setArrowLineColor(R.color.mapbox_blue)
+                        .setArrowLineWidth(3)
+                        .setAddBelowLayerId("sample-cases-symbol")
+                        .build();
 
-            kujakuMapView.addArrowLineLayer(arrowLineLayer);
+                kujakuMapView.addArrowLineLayer(arrowLineLayer);
+            } catch (InvalidArrowLineConfig invalidArrowLineConfig) {
+                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfig));
+            }
 
         } catch (IOException e) {
             Log.e(TAG, Log.getStackTraceString(e));

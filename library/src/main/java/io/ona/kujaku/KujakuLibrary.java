@@ -9,6 +9,8 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.jakewharton.threetenabp.AndroidThreeTen;
+
 import java.util.List;
 
 import io.ona.kujaku.data.realm.RealmDatabase;
@@ -48,6 +50,7 @@ public class KujakuLibrary {
             resumeMapDownload(context);
         }
         library = new KujakuLibrary();
+        AndroidThreeTen.init(context);
     }
 
     private static void resumeMapDownload(Context context) {

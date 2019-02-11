@@ -27,12 +27,22 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.turf.TurfMeasurement;
 
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.comparators.ArrowLineSortConfigComparator;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 
@@ -50,7 +60,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 
 /**
- *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
  */
 
@@ -80,12 +89,15 @@ public class ArrowLineLayer {
     public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
 
-    private ArrowLineLayer(@NonNull Builder builder) {
+    private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfig {
         this.builder = builder;
+        if (builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME && builder.sortConfig.getDateTimeFormat() == null) {
+            throw new InvalidArrowLineConfig("Date time format for sort configuration on a DateTime property has not been set");
+        }
 
         // Create arrow source
         arrowHeadSource = new GeoJsonSource(ARROW_HEAD_LAYER_SOURCE_ID
-                ,new GeoJsonOptions().withMaxZoom(16));
+                , new GeoJsonOptions().withMaxZoom(16));
 
         //Add arrow layer
         arrowHeadLayer = new SymbolLayer(ARROW_HEAD_LAYER_ID, ARROW_HEAD_LAYER_SOURCE_ID);
@@ -100,7 +112,7 @@ public class ArrowLineLayer {
                 ),
                 PropertyFactory.iconRotationAlignment(ICON_ROTATION_ALIGNMENT_MAP),
                 PropertyFactory.iconRotate(get(ARROW_HEAD_BEARING)),
-                PropertyFactory.iconOpacity(1f )
+                PropertyFactory.iconOpacity(1f)
         );
 
         // Add a line layer
@@ -152,8 +164,8 @@ public class ArrowLineLayer {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {
-                // TODO: Sort the feature collection
-                LineString arrowLine = calculateLineString(builder.featureConfig.featureCollection);
+                FeatureCollection sortedFeatureCollection = sortFeatures(builder.featureConfig.featureCollection, builder.sortConfig);
+                LineString arrowLine = calculateLineString(sortedFeatureCollection);
                 FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
 
                 return new Object[]{arrowLine, arrowHeadFeatures};
@@ -214,6 +226,22 @@ public class ArrowLineLayer {
     }
 
     /**
+     * Sorts the features using the {@link SortConfig} defined
+     *
+     * @param featureCollection
+     * @param sortConfig
+     * @return
+     */
+    private FeatureCollection sortFeatures(@NonNull FeatureCollection featureCollection, @NonNull SortConfig sortConfig) {
+        List<Feature> featuresList = featureCollection.features();
+        if (featuresList != null) {
+            Collections.sort(featuresList, new ArrowLineSortConfigComparator(sortConfig));
+        }
+
+        return FeatureCollection.fromFeatures(featuresList);
+    }
+
+    /**
      * Generates a {@link FeatureCollection} which is a list of {@link Feature}s that represent the
      * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
      * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
@@ -225,9 +253,9 @@ public class ArrowLineLayer {
         ArrayList<Feature> featureList = new ArrayList<>();
 
         List<Point> lineStringPoints = lineString.coordinates();
-        for (int i = 0; i < lineStringPoints.size() -1; i++) {
+        for (int i = 0; i < lineStringPoints.size() - 1; i++) {
             Point startPoint = lineStringPoints.get(i);
-            Point endPoint = lineStringPoints.get(i+1);
+            Point endPoint = lineStringPoints.get(i + 1);
 
             Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));
             arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));
@@ -276,7 +304,7 @@ public class ArrowLineLayer {
      */
     private Point getCenter(@NonNull Geometry featureGeometry) {
         double[] bbox = TurfMeasurement.bbox(featureGeometry);
-        return Point.fromLngLat((bbox[2] + bbox[0])/2, (bbox[3] + bbox[1])/2);
+        return Point.fromLngLat((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
     }
 
     public static class Builder {
@@ -313,22 +341,21 @@ public class ArrowLineLayer {
             return this;
         }
 
-        public ArrowLineLayer build() {
+        public ArrowLineLayer build() throws InvalidArrowLineConfig {
             return new ArrowLineLayer(this);
         }
     }
 
     /**
      * It supports adding the {@link Feature}s for which a relationship is supposed to be shown.
-     *
+     * <p>
      * This FeatureConfig class is supposed to support adding either adding:
      * - a {@link FeatureCollection}
      * - a list/array of layer-ids/source-ids from which the {@link Feature}s are supposed to be queried
      * - a Mapbox {@link com.mapbox.mapboxsdk.style.expressions.Expression} which defines the properties
      * of the features that we want.
-     *
+     * <p>
      * but currently it only supports adding the {@link FeatureCollection}
-     *
      */
     public static class FeatureConfig {
 
@@ -359,11 +386,40 @@ public class ArrowLineLayer {
         private String sortProperty;
         private SortOrder sortOrder;
         private PropertyType propertyType;
+        private String dateTimeFormat;
 
         public SortConfig(@NonNull String sortProperty, @NonNull SortOrder sortOrder, @NonNull PropertyType propertyType) {
             this.sortProperty = sortProperty;
             this.sortOrder = sortOrder;
             this.propertyType = propertyType;
+        }
+
+        /**
+         * The dateTimeFormat should use the patterns as described in
+         * <a href="https://developer.android.com/reference/java/time/format/DateTimeFormatter#patterns">this page</a>
+         *
+         * @param dateTimeFormat
+         * @return
+         */
+        public SortConfig setDateTimeFormat(@NonNull String dateTimeFormat) {
+            this.dateTimeFormat = dateTimeFormat;
+            return this;
+        }
+
+        public String getSortProperty() {
+            return sortProperty;
+        }
+
+        public SortOrder getSortOrder() {
+            return sortOrder;
+        }
+
+        public PropertyType getPropertyType() {
+            return propertyType;
+        }
+
+        public String getDateTimeFormat() {
+            return dateTimeFormat;
         }
     }
 }
