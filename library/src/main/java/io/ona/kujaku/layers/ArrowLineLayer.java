@@ -141,8 +141,10 @@ public class ArrowLineLayer {
             public Object[] call() throws Exception {
                 // TODO: Sort the feature collection
                 // TODO: Generate the arrow features(the feature on which the arrows are going to be drawn)
+                LineString arrowLine = calculateLineString(builder.featureConfig.featureCollection);
+                FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
 
-                return new Object[]{calculateLineString(builder.featureConfig.featureCollection)};
+                return new Object[]{arrowLine, arrowHeadFeatures};
             }
         });
         genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
@@ -158,6 +160,31 @@ public class ArrowLineLayer {
         });
 
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Generates a {@link FeatureCollection} which is a list of {@link Feature}s that represent the
+     * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
+     * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
+     *
+     * @param lineString
+     * @return
+     */
+    private FeatureCollection generateArrowHeadFeatureCollection(@NonNull LineString lineString) {
+        ArrayList<Feature> featureList = new ArrayList<>();
+
+        List<Point> lineStringPoints = lineString.coordinates();
+        for (int i = 0; i < lineStringPoints.size() -1; i++) {
+            Point startPoint = lineStringPoints.get(i);
+            Point endPoint = lineStringPoints.get(i+1);
+
+            Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));
+            arrowHeadFeature.addNumberProperty("arrow-head-bearing", TurfMeasurement.bearing(startPoint, endPoint));
+
+            featureList.add(arrowHeadFeature);
+        }
+
+        return FeatureCollection.fromFeatures(featureList);
     }
 
     /**
