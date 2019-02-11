@@ -17,6 +17,7 @@ import org.json.JSONException;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
@@ -185,4 +186,11 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      */
     @Nullable
     ILocationClient getLocationClient();
+
+    /**
+     * Adds the {@link ArrowLineLayer} to the map and renders it when the map is ready
+     *
+     * @param arrowLineLayer
+     */
+    void addArrowLineLayer(@NonNull ArrowLineLayer arrowLineLayer);
 }

@@ -152,6 +152,17 @@ public class ArrowLineLayer {
             @Override
             public void onSuccess(Object[] objects) {
                 //TODO: Add the GeoJSON Sources to the layer now
+                LineString arrowLine = (LineString) objects[0];
+                FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];
+
+                arrowHeadSource.setGeoJson(arrowHeadFeatures);
+                lineLayerSource.setGeoJson(arrowLine);
+
+                mapboxMap.addSource(arrowHeadSource);
+                mapboxMap.addSource(lineLayerSource);
+
+                mapboxMap.addLayer(lineLayer);
+                mapboxMap.addLayer(arrowHeadLayer);
             }
 
             @Override
