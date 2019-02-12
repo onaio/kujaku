@@ -1,15 +1,13 @@
 package io.ona.kujaku.sorting;
 
-import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.google.gson.internal.bind.util.ISO8601Utils;
-
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -143,7 +141,7 @@ public class Sorter {
     }
 
     private Date getDateFromISO8601(@NonNull String dateString) {
-        DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
-        return formatter.parseDateTime(dateString).toDate();
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME);
+        return DateTimeUtils.toDate(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
