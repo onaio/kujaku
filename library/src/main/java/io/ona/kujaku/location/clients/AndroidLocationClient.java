@@ -147,4 +147,8 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
             }
         }
     }
+
+    public FusedLocationProviderClient getFusedLocationClient() {
+        return fusedLocationClient;
+    }
 }

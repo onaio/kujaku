@@ -7,7 +7,6 @@ import android.content.IntentSender;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
-import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
@@ -72,16 +70,12 @@ import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
-import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.AndroidLocationClient;
-import io.ona.kujaku.location.clients.GPSLocationClient;
-import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
-import io.ona.kujaku.utils.NetworkUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
@@ -166,6 +160,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private boolean hasAlreadyRequestedEnableLocation = false;
     private boolean isResumingFromRequestingEnableLocation = false;
 
+    private String locationEnableRejectionDialogTitle;
+    private String locationEnableRejectionDialogMessage;
+
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -249,49 +246,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+        locationClient = new AndroidLocationClient(getContext());
+        locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
-            public Object[] call() throws Exception {
-                return new Object[]{ NetworkUtil.isInternetAvailable()};
-            }
-        });
-        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
-            @Override
-            public void onSuccess(Object[] objects) {
-                if ((boolean) objects[0]) {
-                    // Use the fused location API
-                    locationClient = new AndroidLocationClient(getContext());
-                } else {
-                    // Use the GPS hardware
-                    locationClient = new GPSLocationClient(getContext());
-                    // Update the location every 5 seconds
-                    locationClient.setUpdateIntervals(5000, 5000);
+            public void onLocationChanged(Location location) {
+                latestLocation = new LatLng(location.getLatitude()
+                        , location.getLongitude());
+
+                if (onLocationChangedListener != null) {
+                    onLocationChangedListener.onLocationChanged(location);
                 }
 
-                locationClient.requestLocationUpdates(new BaseLocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        latestLocation = new LatLng(location.getLatitude()
-                                , location.getLongitude());
-
-
-                        if (onLocationChangedListener != null) {
-                            onLocationChangedListener.onLocationChanged(location);
-                        }
-
-                        if (updateUserLocationOnMap) {
-                            showUpdatedUserLocation();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onError(Exception e) {
-                LogUtil.e(TAG, e);
+                if (updateUserLocationOnMap) {
+                    showUpdatedUserLocation();
+                }
             }
         });
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -1091,9 +1061,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (isResumingFromRequestingEnableLocation) {
             isResumingFromRequestingEnableLocation = false;
             Activity activity = (Activity) getContext();
-            Dialogs.showDialogIfLocationDisabled(activity);
-        }
+            Dialogs.showDialogIfLocationDisabled(activity, locationEnableRejectionDialogTitle, locationEnableRejectionDialogMessage);
 
+            // The dialog message is supposed to be configurable only when the setWarmGps is called
+            // and not a permanent change because we have other uses for warming GPS and in the widget already
+            resetRejectionDialogContent();
+        }
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
@@ -1104,6 +1077,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 @Override
                 public void onResult(LocationSettingsResult result) {
                     final Status status = result.getStatus();
+
+                    // The rejection dialog message is supposed to be configurable only when the setWarmGps is called
+                    // and not a permanent change because we have other uses for warming GPS and in the widget already
+                    if (status.getStatusCode() != LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {
+                        resetRejectionDialogContent();
+                    }
+
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
@@ -1116,7 +1096,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                             Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings");
 
-                            // This enables us to back-off in case the user has already denied the request
+                            // This enables us to back-off(in onResume) in case the user has already denied the request
                             // to turn on location settings
                             if (!hasAlreadyRequestedEnableLocation) {
                                 hasAlreadyRequestedEnableLocation = true;
@@ -1168,16 +1148,36 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     public void setWarmGps(boolean warmGps) {
+        setWarmGps(warmGps, null, null);
+    }
+
+    public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage) {
         // If it was not warming(started) the location services, do that now
         boolean shouldStartNow = !this.warmGps && warmGps;
         this.warmGps = warmGps;
 
+        locationEnableRejectionDialogTitle = rejectionDialogTitle;
+        locationEnableRejectionDialogMessage = rejectionDialogMessage;
+
         if (warmGps) {
+            // Don't back-off from request location enable since this was an explicit call to enable location
+            hasAlreadyRequestedEnableLocation = false;
             // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
             // We should just re-enable the location so that the LocationClient can reconnect to the location services
             checkLocationSettingsAndStartLocationServices(shouldStartNow);
         }
 
+    }
+
+    @Nullable
+    @Override
+    public ILocationClient getLocationClient() {
+        return locationClient;
+    }
+
+    private void resetRejectionDialogContent() {
+        locationEnableRejectionDialogTitle = null;
+        locationEnableRejectionDialogMessage = null;
     }
 }
 
