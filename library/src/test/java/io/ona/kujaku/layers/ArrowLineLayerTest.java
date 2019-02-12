@@ -15,9 +15,7 @@ import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -48,7 +46,7 @@ public class ArrowLineLayerTest extends BaseTest {
     private Context context;
 
     @Before
-    public void setup() {
+    public void setUp() {
         context = RuntimeEnvironment.application;
     }
 
@@ -372,7 +370,7 @@ public class ArrowLineLayerTest extends BaseTest {
 
         for (int i = 0; i < 5; i++) {
             Feature sortedFeature = sortedFeatures.get(i);
-            assertEquals(i , (int) sortedFeature.getNumberProperty("position"));
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
         }
     }
 
@@ -413,7 +411,168 @@ public class ArrowLineLayerTest extends BaseTest {
 
         for (int i = 0; i < 5; i++) {
             Feature sortedFeature = sortedFeatures.get(i);
-            assertEquals(i , (int) sortedFeature.getNumberProperty("position"));
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
+        }
+    }
+
+    @Test
+    public void sortFeaturesShouldSortDescByNumber() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 2000.67)
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1900)
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1200)
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1800.989348394)
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1500)
+                , new GeoJSONFeature.Property("position", 3)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-number"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
+        }
+    }
+
+    @Test
+    public void sortFeaturesShouldSortAscByNumber() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 2000.67)
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1900)
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1200)
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1800.989348394)
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 1500)
+                , new GeoJSONFeature.Property("position", 1)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-number"
+                , ArrowLineLayer.SortConfig.SortOrder.ASC
+                , ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
+        }
+    }
+
+    @Test
+    public void sortFeaturesShouldSortAscByString() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "defg")
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "abcd")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "cdef")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("position", 1)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
+                , ArrowLineLayer.SortConfig.SortOrder.ASC
+                , ArrowLineLayer.SortConfig.PropertyType.STRING);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
+        }
+    }
+
+
+    @Test
+    public void sortFeaturesShouldSortDescByString() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "defg")
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "abcd")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "cdef")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("position", 3)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.STRING);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals((int) sortedFeature.getNumberProperty("position"), i);
         }
     }
 
