@@ -435,12 +435,6 @@ public class MapboxOfflineDownloaderServiceTest {
 
         mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
 
-
-        //MapBoxOfflineQueueTask mapBoxOfflineQueueTask = getTask(mapName);
-        //offlineQueueTasks.add(mapBoxOfflineQueueTask);
-
-        //insertValueInPrivateField(mapboxOfflineDownloaderService, "currentMapBoxTask", mapBoxOfflineQueueTask);
-
         setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         registerLocalBroadcastReceiverForDownloadServiceUpdates();
 
