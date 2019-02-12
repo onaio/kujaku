@@ -14,6 +14,6 @@ public class ShadowSymbolLayer extends ShadowLayer {
 
     @Implementation
     protected  void initialize(String layerId, String sourceId) {
-
+        // Do nothing here
     }
 }
