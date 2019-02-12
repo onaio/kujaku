@@ -15,7 +15,9 @@ import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -26,10 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.ona.kujaku.BaseTest;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
 import io.ona.kujaku.test.shadows.ShadowSymbolLayer;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -49,12 +53,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void addLayerToMap() {
-
-    }
-
-    @Test
-    public void getCenterWhenGivenPolygonFeature() {
+    public void getCenterWhenGivenPolygonFeature() throws InvalidArrowLineConfig {
         ArrayList<Point> pointsList = new ArrayList<>();
 
         pointsList.add(Point.fromLngLat(9.1d, 9.1d));
@@ -85,7 +84,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenPointFeature() {
+    public void getCenterWhenGivenPointFeature() throws InvalidArrowLineConfig {
         Point pointGeometry = Point.fromLngLat(9.1d, 9.1d);
         ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
                 FeatureCollection.fromFeature(Feature.fromGeometry(pointGeometry))
@@ -106,7 +105,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenPolygonWithHolesFeature() {
+    public void getCenterWhenGivenPolygonWithHolesFeature() throws InvalidArrowLineConfig {
         ArrayList<Point> outerBoundary = new ArrayList<>();
 
         outerBoundary.add(Point.fromLngLat(9.1d, 9.1d));
@@ -146,7 +145,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenMultiPolygonFeature() {
+    public void getCenterWhenGivenMultiPolygonFeature() throws InvalidArrowLineConfig {
         ArrayList<Point> pointsListLower1 = new ArrayList<>();
 
         pointsListLower1.add(Point.fromLngLat(9.1d, 9.1d));
@@ -190,7 +189,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void calculateLineStringWhenGivenFeatureCollectionWithFeatures() {
+    public void calculateLineStringWhenGivenFeatureCollectionWithFeatures() throws InvalidArrowLineConfig {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         ArrayList<Point> pointsListLower1 = new ArrayList<>();
@@ -231,7 +230,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void calculateLineStringWhenGivenFeatureCollectionWithNoFeatures() {
+    public void calculateLineStringWhenGivenFeatureCollectionWithNoFeatures() throws InvalidArrowLineConfig {
         ArrayList<Feature> featuresList = new ArrayList<>();
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
@@ -250,7 +249,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
     
     @Test
-    public void generateArrowHeadFeatureCollection() {
+    public void generateArrowHeadFeatureCollection() throws InvalidArrowLineConfig {
         ArrayList<Point> pointsList = new ArrayList<>();
         
         pointsList.add(Point.fromLngLat(9.1d, 9.1d));
@@ -286,7 +285,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void setLayerPropertiesFromBuilder() {
+    public void setLayerPropertiesFromBuilder() throws InvalidArrowLineConfig {
         ArrayList<Feature> featuresList = new ArrayList<>();
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
@@ -313,8 +312,143 @@ public class ArrowLineLayerTest extends BaseTest {
         assertEquals(propertyValues.get("line-width").value, lineWidth);
     }
 
+    @Test
+    public void constructorShouldThrowExceptionWhenDateTimeFormatIsNotSet() {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig(""
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME);
+        boolean exceptionCaught = false;
+
+        try {
+            ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+            builder.build();
+        } catch (InvalidArrowLineConfig invalidArrowLineConfig) {
+            assertEquals("Date time format for sort configuration on a DateTime property has not been set"
+                    , invalidArrowLineConfig.getMessage());
+            exceptionCaught = true;
+        }
+
+        assertTrue(exceptionCaught);
+    }
+
+    @Test
+    public void sortFeaturesShouldSortAscByDateTime() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:03")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2014-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2016-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2015-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 1)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-date"
+                , ArrowLineLayer.SortConfig.SortOrder.ASC
+                , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+                .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals(i , (int) sortedFeature.getNumberProperty("position"));
+        }
+    }
+
+    @Test
+    public void sortFeaturesShouldSortDescByDateTime() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:03")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2014-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2016-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2015-01-01 00:00:00")
+                , new GeoJSONFeature.Property("position", 3)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-date"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+                .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "sortFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        assertEquals(5, sortedFeatures.size());
+
+        for (int i = 0; i < 5; i++) {
+            Feature sortedFeature = sortedFeatures.get(i);
+            assertEquals(i , (int) sortedFeature.getNumberProperty("position"));
+        }
+    }
+
     private void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {
         assertEquals(expected.latitude(), actual.latitude(), 0d);
         assertEquals(expected.longitude(), actual.longitude(), 0d);
+    }
+
+    private Feature generateRandomFeatureWithProperties(GeoJSONFeature.Property... properties) {
+        Feature feature  = Feature.fromGeometry(getRandomPoint());
+
+        for(GeoJSONFeature.Property property: properties) {
+            Object value = property.getValue();
+
+            if (value instanceof String) {
+                feature.addStringProperty(property.getName(), (String) value);
+            } else if (value instanceof Number) {
+                feature.addNumberProperty(property.getName(), (Number) value);
+            } else if (value instanceof Boolean) {
+                feature.addBooleanProperty(property.getName(), (Boolean) value);
+            }
+        }
+
+        return feature;
+    }
+
+    private Point getRandomPoint() {
+        double minLat = -30d;
+        double maxLat = 60d;
+        double minLon = -30d;
+        double maxLon = 60d;
+
+        return Point.fromLngLat(
+                (Math.random() * (maxLon - minLon)) + minLon,
+                (Math.random() * (maxLat - minLat)) + minLat
+        );
     }
 }
