@@ -62,7 +62,6 @@ public class MapBoxOfflineResourcesDownloaderTest {
     public void setup() {
         context = InstrumentationRegistry.getTargetContext();
         MapBoxOfflineResourcesDownloader.instance = null;
-
     }
 
     @Test
