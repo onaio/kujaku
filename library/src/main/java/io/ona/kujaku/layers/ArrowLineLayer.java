@@ -11,6 +11,7 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;
@@ -84,7 +85,8 @@ public class ArrowLineLayer {
 
     private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfig {
         this.builder = builder;
-        if (builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME && builder.sortConfig.getDateTimeFormat() == null) {
+        if (builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME
+                && TextUtils.isEmpty(builder.sortConfig.getDateTimeFormat())) {
             throw new InvalidArrowLineConfig("Date time format for sort configuration on a DateTime property has not been set");
         }
 
