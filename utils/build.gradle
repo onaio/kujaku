@@ -99,7 +99,7 @@ dependencies {
     })
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.7.2') {
         transitive = true
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'

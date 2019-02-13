@@ -116,22 +116,26 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
 
         screenWidth = getScreenWidth(this);
 
         newPoints = new ArrayList<>();
 
         Bundle bundle = getIntentExtras();
-        List<Point> points = null;
-        if (bundle != null) {
+        if (bundle != null
+                && bundle.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)
+                && bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN) != null) {
             String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
             Mapbox.getInstance(this, mapBoxAccessToken);
-            points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            List<Point> points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
             enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
+
+            setContentView(R.layout.activity_map);
+            initializeViews(points, enableDropPoint);
+            checkPermissions(savedInstanceState);
+        } else {
+            finish();
         }
-        initializeViews(points, enableDropPoint);
-        checkPermissions(savedInstanceState);
     }
 
     private Bundle getIntentExtras() {

@@ -39,11 +39,20 @@ public class MapBoxDownloadTaskInstrumentedTest extends RealmRelatedInstrumented
                 -17.875469,
                 25.876589
         );
+
+        LatLng bottomLeftBound = new LatLng(
+                -17.875469,
+                25.854782
+        );
         LatLng topLeftBound = new LatLng(
                 -17.854564,
                 25.854782
         );
-        MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(packageName, mapName, mapBoxStyleUrl, minZoom, maxZoom, topLeftBound, bottomRightBound, mapBoxAccessToken);
+        LatLng topRightBound = new LatLng(
+                -17.854564,
+                25.876589
+        );
+        MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(packageName, mapName, mapBoxStyleUrl, minZoom, maxZoom, topLeftBound, topRightBound, bottomRightBound, bottomLeftBound, mapBoxAccessToken);
 
         Date timeNow = Calendar.getInstance().getTime();
         MapBoxOfflineQueueTask mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
