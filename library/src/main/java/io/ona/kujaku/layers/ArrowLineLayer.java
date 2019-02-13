@@ -23,6 +23,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -159,7 +160,9 @@ public class ArrowLineLayer {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {
-                FeatureCollection sortedFeatureCollection = sortFeatures(builder.featureConfig.featureCollection, builder.sortConfig);
+                FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig.featureCollection
+                        , builder.featureConfig, builder.sortConfig);
+                FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
                 LineString arrowLine = calculateLineString(sortedFeatureCollection);
                 FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
 
@@ -234,6 +237,31 @@ public class ArrowLineLayer {
         }
 
         return FeatureCollection.fromFeatures(featuresList);
+    }
+
+    private FeatureCollection filterFeatures(@NonNull FeatureCollection featureCollection
+            , @NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
+        List<Feature> featuresList = featureCollection.features();
+        ArrayList<Feature> filteredFeatures = new ArrayList<>();
+
+        if (featuresList != null) {
+            PropertyValue<String> wherePropertyCondition = featureConfig.getWherePropertyEqualsCondition();
+            for (Feature feature : featuresList) {
+                //if (wherePropertyCondition != null) {
+                if (feature.hasProperty(sortConfig.getSortProperty())) {
+                    if (wherePropertyCondition != null) {
+                        if (feature.hasProperty(wherePropertyCondition.name)
+                                && feature.getStringProperty(wherePropertyCondition.name).equals(wherePropertyCondition.value)) {
+                            filteredFeatures.add(feature);
+                        }
+                    } else {
+                        filteredFeatures.add(feature);
+                    }
+                }
+            }
+        }
+
+        return FeatureCollection.fromFeatures(filteredFeatures);
     }
 
     /**
@@ -356,8 +384,19 @@ public class ArrowLineLayer {
 
         private FeatureCollection featureCollection;
 
+        private PropertyValue<String> wherePropertyEqualsCondition;
+
         public FeatureConfig(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
+        }
+
+        public FeatureConfig whereFeaturePropertyEq(@NonNull String propertyName, @NonNull String propertyValue) {
+            wherePropertyEqualsCondition = new PropertyValue<>(propertyName, propertyValue);
+            return this;
+        }
+
+        public PropertyValue<String> getWherePropertyEqualsCondition() {
+            return wherePropertyEqualsCondition;
         }
     }
 
