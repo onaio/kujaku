@@ -359,13 +359,13 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
@@ -400,13 +400,13 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
@@ -440,13 +440,13 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
@@ -480,13 +480,13 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
@@ -520,13 +520,13 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
@@ -561,19 +561,120 @@ public class ArrowLineLayerTest extends BaseTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
         ArrowLineLayer arrowLineLayer = builder.build();
 
-        FeatureCollection arrowHeadFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+        FeatureCollection sortedFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "sortFeatures"
                 , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
-        List<Feature> sortedFeatures = arrowHeadFeatureCollection.features();
+        List<Feature> sortedFeatures = sortedFeatureCollection.features();
         assertEquals(5, sortedFeatures.size());
 
         for (int i = 0; i < 5; i++) {
             Feature sortedFeature = sortedFeatures.get(i);
             assertEquals((int) sortedFeature.getNumberProperty("position"), i);
         }
+    }
+
+    @Test
+    public void filterFeatures() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "defg")
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "abcd")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "cdef")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 5)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 6)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        featureConfig.whereFeaturePropertyEq("task-status", "positive");
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.STRING);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "filterFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> filteredFeatures = filteredFeatureCollection.features();
+        assertEquals(4, filteredFeatures.size());
+
+        assertEquals(0, filteredFeatures.get(0).getNumberProperty("position"));
+        assertEquals(3, filteredFeatures.get(1).getNumberProperty("position"));
+        assertEquals(4, filteredFeatures.get(2).getNumberProperty("position"));
+        assertEquals(5, filteredFeatures.get(3).getNumberProperty("position"));
+    }
+
+    @Test
+    public void filterFeaturesShouldReturnAllFeaturesIfWhereClauseIsNotSpecified() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "defg")
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "abcd")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "cdef")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 5)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 6)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.STRING);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "filterFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> filteredFeatures = filteredFeatureCollection.features();
+        assertEquals(6, filteredFeatures.size());
+
+        assertEquals(0, filteredFeatures.get(0).getNumberProperty("position"));
+        assertEquals(1, filteredFeatures.get(1).getNumberProperty("position"));
+        assertEquals(2, filteredFeatures.get(2).getNumberProperty("position"));
+        assertEquals(3, filteredFeatures.get(3).getNumberProperty("position"));
+        assertEquals(4, filteredFeatures.get(4).getNumberProperty("position"));
+        assertEquals(5, filteredFeatures.get(5).getNumberProperty("position"));
     }
 
     private void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {
