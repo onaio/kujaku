@@ -1,12 +1,14 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.ColorRes;
 import android.util.Log;
 
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -21,8 +23,14 @@ import io.ona.kujaku.views.KujakuMapView;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.neq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.rgba;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
 
@@ -50,12 +58,15 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.onCreate(savedInstanceState);
 
         try {
-            String featureCollection = readInputStreamAsString(getAssets().open("arrow-head-features.geojson"));
+            String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
             sampleCases = FeatureCollection.fromJson(featureCollection);
             ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(sampleCases);
-            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig(""
-                    , ArrowLineLayer.SortConfig.SortOrder.DESC
-                    , ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+            featureConfig.whereFeaturePropertyEq("testStatus", "positive");
+
+            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
+                    , ArrowLineLayer.SortConfig.SortOrder.ASC
+                    , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+                    .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
 
             try {
                 arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
@@ -79,20 +90,27 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
                 mapboxMap.addSource(sampleCasesSource);
 
-                int redColor = getResources().getColor(R.color.mapbox_blue);
+                Expression colorExpression = match(get("testStatus")
+                        , rgba(0, 0, 0, 0)
+                        , stop(literal("positive"), Expression.color(getColorv16(R.color.positiveTasksColor)))
+                        , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
 
                 FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
                 fillLayer.withFilter(neq(geometryType(), "Point"));
-                fillLayer.withProperties(fillColor(redColor));
+                fillLayer.withProperties(fillColor(colorExpression));
 
                 CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
                 circleLayer.withFilter(eq(geometryType(), "Point"));
-                circleLayer.withProperties(circleColor(redColor));
+                circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
 
                 mapboxMap.addLayer(circleLayer);
                 mapboxMap.addLayer(fillLayer);
             }
         });
+    }
+
+    private int getColorv16(@ColorRes int colorRes) {
+        return getResources().getColor(colorRes);
     }
 
     @Override

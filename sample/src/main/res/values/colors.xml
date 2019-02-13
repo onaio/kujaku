@@ -8,4 +8,7 @@
 
     <color name="mapbox_navigation_route_upcoming_maneuver_arrow_color">#FFFFFF</color>
     <color name="mapbox_navigation_route_upcoming_maneuver_arrow_border_color">#2D3F53</color>
+
+    <color name="positiveTasksColor">#1976d2</color>
+    <color name="negativeTasksColor">#8e24aa</color>
 </resources>
