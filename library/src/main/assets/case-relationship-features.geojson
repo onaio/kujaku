@@ -3,7 +3,10 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:06:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -34,7 +37,10 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:11:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -69,7 +75,10 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:07:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -80,7 +89,10 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:08:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -91,7 +103,10 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:09:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -102,7 +117,10 @@
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "dateTime": "2019-01-01 00:10:45",
+        "testStatus": "positive"
+      },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -128,6 +146,58 @@
               0.32237836491690214
             ]
           ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "testStatus": "negative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.78497314453124,
+          -0.19226038138120835
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "testStatus": "negative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.36724853515625,
+          -0.22247258550187654
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "testStatus": "negative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.3974609375,
+          0.21148633617335558
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "testStatus": "negative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.07061767578125,
+          0.26916404901271473
         ]
       }
     }
