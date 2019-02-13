@@ -3,6 +3,7 @@ package io.ona.kujaku.comparisons;
 
 public class EqualToComparison extends Comparison {
     private static final String TAG = "EqualToComparison";
+    public static final String COMPARISON_NAME = "equalTo";
 
     @Override
     public boolean compare(String a, String type, String b) {
@@ -19,6 +20,6 @@ public class EqualToComparison extends Comparison {
 
     @Override
     public String getFunctionName() {
-        return "equalTo";
+        return COMPARISON_NAME;
     }
 }
