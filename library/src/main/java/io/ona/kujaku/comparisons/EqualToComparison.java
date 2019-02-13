@@ -2,7 +2,6 @@ package io.ona.kujaku.comparisons;
 
 
 public class EqualToComparison extends Comparison {
-    private static final String TAG = "EqualToComparison";
     public static final String COMPARISON_NAME = "equalTo";
 
     @Override
