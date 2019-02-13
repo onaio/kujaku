@@ -5,13 +5,17 @@ import android.support.annotation.ColorRes;
 import android.util.Log;
 
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
 
 import java.io.IOException;
 
@@ -105,6 +109,9 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
                 mapboxMap.addLayer(circleLayer);
                 mapboxMap.addLayer(fillLayer);
+
+                // Zoom to the position
+                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
             }
         });
     }
