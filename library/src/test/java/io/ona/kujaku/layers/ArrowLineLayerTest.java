@@ -577,7 +577,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void filterFeatures() throws InvalidArrowLineConfig {
+    public void filterFeaturesByStringEqualTo() throws InvalidArrowLineConfig {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -675,6 +675,56 @@ public class ArrowLineLayerTest extends BaseTest {
         assertEquals(3, filteredFeatures.get(3).getNumberProperty("position"));
         assertEquals(4, filteredFeatures.get(4).getNumberProperty("position"));
         assertEquals(5, filteredFeatures.get(5).getNumberProperty("position"));
+    }
+
+    @Test
+    public void filterFeaturesByRegex() throws InvalidArrowLineConfig {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 0)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "defg")
+                , new GeoJSONFeature.Property("position", 1)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "abcd")
+                , new GeoJSONFeature.Property("position", 2)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "cdef")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 3)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 4)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "bcde")
+                , new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 5)));
+        featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("task-status", "positive")
+                , new GeoJSONFeature.Property("position", 6)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        featureConfig.whereFeaturePropertyRegex("sample-string", ".*[abc]+.*");
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
+                , ArrowLineLayer.SortConfig.SortOrder.DESC
+                , ArrowLineLayer.SortConfig.PropertyType.STRING);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "filterFeatures"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
+        );
+
+        List<Feature> filteredFeatures = filteredFeatureCollection.features();
+        assertEquals(4, filteredFeatures.size());
+
+        assertEquals(2, filteredFeatures.get(0).getNumberProperty("position"));
+        assertEquals(3, filteredFeatures.get(1).getNumberProperty("position"));
+        assertEquals(4, filteredFeatures.get(2).getNumberProperty("position"));
+        assertEquals(5, filteredFeatures.get(3).getNumberProperty("position"));
     }
 
     private void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {

@@ -31,12 +31,16 @@ import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.comparators.ArrowLineSortConfigComparator;
+import io.ona.kujaku.comparisons.Comparison;
+import io.ona.kujaku.comparisons.EqualToComparison;
+import io.ona.kujaku.comparisons.RegexComparison;
 import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
@@ -244,14 +248,24 @@ public class ArrowLineLayer {
         List<Feature> featuresList = featureCollection.features();
         ArrayList<Feature> filteredFeatures = new ArrayList<>();
 
+        HashMap<String, Comparison> comparisons = new HashMap<>();
+
+        EqualToComparison equalToComparison = new EqualToComparison();
+        RegexComparison regexComparison = new RegexComparison();
+
+        comparisons.put(equalToComparison.getFunctionName(), equalToComparison);
+        comparisons.put(regexComparison.getFunctionName(), regexComparison);
+
         if (featuresList != null) {
-            PropertyValue<String> wherePropertyCondition = featureConfig.getWherePropertyEqualsCondition();
+            PropertyValue<String> propertyCondition = featureConfig.getPropertyCondition();
+            String comparisonType = featureConfig.getComparisonType();
+            Comparison comparison = comparisons.get(comparisonType);
+
             for (Feature feature : featuresList) {
-                //if (wherePropertyCondition != null) {
                 if (feature.hasProperty(sortConfig.getSortProperty())) {
-                    if (wherePropertyCondition != null) {
-                        if (feature.hasProperty(wherePropertyCondition.name)
-                                && feature.getStringProperty(wherePropertyCondition.name).equals(wherePropertyCondition.value)) {
+                    if (propertyCondition != null) {
+                        if (feature.hasProperty(propertyCondition.name)
+                                && comparison.compare(feature.getStringProperty(propertyCondition.name), Comparison.TYPE_STRING, propertyCondition.getValue())) {
                             filteredFeatures.add(feature);
                         }
                     } else {
@@ -384,19 +398,31 @@ public class ArrowLineLayer {
 
         private FeatureCollection featureCollection;
 
-        private PropertyValue<String> wherePropertyEqualsCondition;
+        private PropertyValue<String> propertyCondition;
+        private String comparisonType;
 
         public FeatureConfig(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
         }
 
         public FeatureConfig whereFeaturePropertyEq(@NonNull String propertyName, @NonNull String propertyValue) {
-            wherePropertyEqualsCondition = new PropertyValue<>(propertyName, propertyValue);
+            comparisonType = EqualToComparison.COMPARISON_NAME;
+            propertyCondition = new PropertyValue<>(propertyName, propertyValue);
             return this;
         }
 
-        public PropertyValue<String> getWherePropertyEqualsCondition() {
-            return wherePropertyEqualsCondition;
+        public FeatureConfig whereFeaturePropertyRegex(@NonNull String propertyName, @NonNull String regexExpression) {
+            comparisonType = RegexComparison.COMPARISON_NAME;
+            propertyCondition = new PropertyValue<>(propertyName, regexExpression);
+            return this;
+        }
+
+        public PropertyValue<String> getPropertyCondition() {
+            return propertyCondition;
+        }
+
+        public String getComparisonType() {
+            return comparisonType;
         }
     }
 
