@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class RegexComparison extends Comparison {
     private final String TAG = this.getClass().getSimpleName();
@@ -16,7 +17,7 @@ public class RegexComparison extends Comparison {
                 Pattern pattern = Pattern.compile(b);
                 Matcher matcher = pattern.matcher(a);
                 return matcher.matches();
-            } catch (Exception e) {
+            } catch (PatternSyntaxException e) {
                 Log.e(TAG, Log.getStackTraceString(e));
             }
         } else {
