@@ -31,6 +31,7 @@ import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
 import io.ona.kujaku.test.shadows.ShadowSymbolLayer;
+import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.assertEquals;
@@ -601,8 +602,9 @@ public class ArrowLineLayerTest extends BaseTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
-        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
-        featureConfig.whereFeaturePropertyEq("task-status", "positive");
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+                new FeatureFilter.Builder(featureCollection)
+                        .whereEq("task-status", "positive"));
         ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
                 , ArrowLineLayer.SortConfig.SortOrder.DESC
                 , ArrowLineLayer.SortConfig.PropertyType.STRING);
@@ -612,7 +614,6 @@ public class ArrowLineLayerTest extends BaseTest {
 
         FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "filterFeatures"
-                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
@@ -627,7 +628,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void filterFeaturesShouldReturnAllFeaturesIfWhereClauseIsNotSpecified() throws InvalidArrowLineConfig {
+    public void filterFeaturesShouldReturnAllFeaturesIfFeatureFilterIsNotSpecified() throws InvalidArrowLineConfig {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -661,13 +662,12 @@ public class ArrowLineLayerTest extends BaseTest {
 
         FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "filterFeatures"
-                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
 
         List<Feature> filteredFeatures = filteredFeatureCollection.features();
-        assertEquals(6, filteredFeatures.size());
+        assertEquals(7, filteredFeatures.size());
 
         assertEquals(0, filteredFeatures.get(0).getNumberProperty("position"));
         assertEquals(1, filteredFeatures.get(1).getNumberProperty("position"));
@@ -675,6 +675,7 @@ public class ArrowLineLayerTest extends BaseTest {
         assertEquals(3, filteredFeatures.get(3).getNumberProperty("position"));
         assertEquals(4, filteredFeatures.get(4).getNumberProperty("position"));
         assertEquals(5, filteredFeatures.get(5).getNumberProperty("position"));
+        assertEquals(6, filteredFeatures.get(6).getNumberProperty("position"));
     }
 
     @Test
@@ -702,8 +703,9 @@ public class ArrowLineLayerTest extends BaseTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
-        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
-        featureConfig.whereFeaturePropertyRegex("sample-string", ".*[abc]+.*");
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+                new FeatureFilter.Builder(featureCollection)
+                        .whereRegex("sample-string", ".*[abc]+.*"));
         ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("sample-string"
                 , ArrowLineLayer.SortConfig.SortOrder.DESC
                 , ArrowLineLayer.SortConfig.PropertyType.STRING);
@@ -713,7 +715,6 @@ public class ArrowLineLayerTest extends BaseTest {
 
         FeatureCollection filteredFeatureCollection = ReflectionHelpers.callInstanceMethod(arrowLineLayer
                 , "filterFeatures"
-                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.FeatureConfig.class, featureConfig)
                 , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.SortConfig.class, sortConfig)
         );
@@ -730,35 +731,5 @@ public class ArrowLineLayerTest extends BaseTest {
     private void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {
         assertEquals(expected.latitude(), actual.latitude(), 0d);
         assertEquals(expected.longitude(), actual.longitude(), 0d);
-    }
-
-    private Feature generateRandomFeatureWithProperties(GeoJSONFeature.Property... properties) {
-        Feature feature  = Feature.fromGeometry(getRandomPoint());
-
-        for(GeoJSONFeature.Property property: properties) {
-            Object value = property.getValue();
-
-            if (value instanceof String) {
-                feature.addStringProperty(property.getName(), (String) value);
-            } else if (value instanceof Number) {
-                feature.addNumberProperty(property.getName(), (Number) value);
-            } else if (value instanceof Boolean) {
-                feature.addBooleanProperty(property.getName(), (Boolean) value);
-            }
-        }
-
-        return feature;
-    }
-
-    private Point getRandomPoint() {
-        double minLat = -30d;
-        double maxLat = 60d;
-        double minLon = -30d;
-        double maxLon = 60d;
-
-        return Point.fromLngLat(
-                (Math.random() * (maxLon - minLon)) + minLon,
-                (Math.random() * (maxLat - minLat)) + minLat
-        );
     }
 }

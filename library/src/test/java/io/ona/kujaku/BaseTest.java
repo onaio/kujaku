@@ -1,11 +1,16 @@
 package io.ona.kujaku;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Point;
+
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
@@ -25,6 +30,36 @@ import java.lang.reflect.Modifier;
 @Config(constants = BuildConfig.class,
         manifest = Config.NONE)
 public abstract class BaseTest {
+
+    protected Feature generateRandomFeatureWithProperties(GeoJSONFeature.Property... properties) {
+        Feature feature  = Feature.fromGeometry(getRandomPoint());
+
+        for(GeoJSONFeature.Property property: properties) {
+            Object value = property.getValue();
+
+            if (value instanceof String) {
+                feature.addStringProperty(property.getName(), (String) value);
+            } else if (value instanceof Number) {
+                feature.addNumberProperty(property.getName(), (Number) value);
+            } else if (value instanceof Boolean) {
+                feature.addBooleanProperty(property.getName(), (Boolean) value);
+            }
+        }
+
+        return feature;
+    }
+
+    protected Point getRandomPoint() {
+        double minLat = -30d;
+        double maxLat = 60d;
+        double minLon = -30d;
+        double maxLon = 60d;
+
+        return Point.fromLngLat(
+                (Math.random() * (maxLon - minLon)) + minLon,
+                (Math.random() * (maxLat - minLat)) + minLat
+        );
+    }
 
     protected void insertValueInPrivateField(Class classWithField, Object instance, String fieldName, Object newValue) throws IllegalAccessException, NoSuchFieldException {
         Field instanceField = classWithField.getDeclaredField(fieldName);
