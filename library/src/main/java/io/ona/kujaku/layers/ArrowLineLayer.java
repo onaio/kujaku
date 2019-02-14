@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
@@ -23,7 +24,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -31,19 +31,16 @@ import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.comparators.ArrowLineSortConfigComparator;
-import io.ona.kujaku.comparisons.Comparison;
-import io.ona.kujaku.comparisons.EqualToComparison;
-import io.ona.kujaku.comparisons.RegexComparison;
 import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.FeatureFilter;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
@@ -164,8 +161,7 @@ public class ArrowLineLayer {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {
-                FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig.featureCollection
-                        , builder.featureConfig, builder.sortConfig);
+                FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);
                 FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
                 LineString arrowLine = calculateLineString(sortedFeatureCollection);
                 FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
@@ -243,39 +239,15 @@ public class ArrowLineLayer {
         return FeatureCollection.fromFeatures(featuresList);
     }
 
-    private FeatureCollection filterFeatures(@NonNull FeatureCollection featureCollection
-            , @NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
-        List<Feature> featuresList = featureCollection.features();
-        ArrayList<Feature> filteredFeatures = new ArrayList<>();
-
-        HashMap<String, Comparison> comparisons = new HashMap<>();
-
-        EqualToComparison equalToComparison = new EqualToComparison();
-        RegexComparison regexComparison = new RegexComparison();
-
-        comparisons.put(equalToComparison.getFunctionName(), equalToComparison);
-        comparisons.put(regexComparison.getFunctionName(), regexComparison);
-
-        if (featuresList != null) {
-            PropertyValue<String> propertyCondition = featureConfig.getPropertyCondition();
-            String comparisonType = featureConfig.getComparisonType();
-            Comparison comparison = comparisons.get(comparisonType);
-
-            for (Feature feature : featuresList) {
-                if (feature.hasProperty(sortConfig.getSortProperty())) {
-                    if (propertyCondition != null) {
-                        if (feature.hasProperty(propertyCondition.name)
-                                && comparison.compare(feature.getStringProperty(propertyCondition.name), Comparison.TYPE_STRING, propertyCondition.getValue())) {
-                            filteredFeatures.add(feature);
-                        }
-                    } else {
-                        filteredFeatures.add(feature);
-                    }
-                }
-            }
+    private FeatureCollection filterFeatures(@NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
+        if (featureConfig.getFeatureFilterBuilder() != null) {
+            return featureConfig.getFeatureFilterBuilder()
+                    .setSortProperty(sortConfig.getSortProperty())
+                    .build()
+                    .filter();
+        } else {
+            return featureConfig.getFeatureCollection();
         }
-
-        return FeatureCollection.fromFeatures(filteredFeatures);
     }
 
     /**
@@ -398,31 +370,24 @@ public class ArrowLineLayer {
 
         private FeatureCollection featureCollection;
 
-        private PropertyValue<String> propertyCondition;
-        private String comparisonType;
+        private FeatureFilter.Builder featureFilterBuilder;
 
         public FeatureConfig(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
         }
 
-        public FeatureConfig whereFeaturePropertyEq(@NonNull String propertyName, @NonNull String propertyValue) {
-            comparisonType = EqualToComparison.COMPARISON_NAME;
-            propertyCondition = new PropertyValue<>(propertyName, propertyValue);
-            return this;
+        public FeatureConfig(@NonNull FeatureFilter.Builder featureFilterBuilder) {
+            this.featureFilterBuilder = featureFilterBuilder;
+            this.featureCollection = featureFilterBuilder.getFeatureCollection();
         }
 
-        public FeatureConfig whereFeaturePropertyRegex(@NonNull String propertyName, @NonNull String regexExpression) {
-            comparisonType = RegexComparison.COMPARISON_NAME;
-            propertyCondition = new PropertyValue<>(propertyName, regexExpression);
-            return this;
+        public FeatureCollection getFeatureCollection() {
+            return featureCollection;
         }
 
-        public PropertyValue<String> getPropertyCondition() {
-            return propertyCondition;
-        }
-
-        public String getComparisonType() {
-            return comparisonType;
+        @Nullable
+        public FeatureFilter.Builder getFeatureFilterBuilder() {
+            return featureFilterBuilder;
         }
     }
 
