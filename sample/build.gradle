@@ -8,6 +8,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'jacoco'
 apply plugin: 'io.fabric'
 
 
@@ -59,6 +60,9 @@ def getVersionName = { ->
     }
 }
 
+jacoco {
+    toolVersion = jacocoVersion
+}
 
 android {
 
@@ -102,6 +106,8 @@ android {
         }
 
         debug {
+            testCoverageEnabled true
+
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
                 properties.load(project.rootProject.file("local.properties").newDataInputStream())
@@ -162,6 +168,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'io.ona.kujaku', module: 'utils'
+        exclude group: 'org.jacoco'
     }
 
     configuration.implementation(instance.project(":utils")) {
@@ -169,6 +176,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
+        exclude group: 'org.jacoco'
     }
 
     configuration.implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
@@ -184,3 +192,28 @@ private static void releaseTestKujakuImport(configuration) {
     configuration.implementation 'io.ona.kujaku:library:0.6.1'
 }
 
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
+    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
+
+    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
+                      , 'android/**/*.*', "io/realm/*.*"]
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories = files([mainSrc])
+    classDirectories = files([debugTree])
+    executionData = fileTree(dir: project.buildDir, includes: [
+            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+    ])
+}

@@ -88,7 +88,9 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpac
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
 
 /**
+ *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
+ *
  */
 
 public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
