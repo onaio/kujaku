@@ -23,6 +23,7 @@ import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
+import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.views.KujakuMapView;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
@@ -64,8 +65,9 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         try {
             String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
             sampleCases = FeatureCollection.fromJson(featureCollection);
-            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(sampleCases);
-            featureConfig.whereFeaturePropertyEq("testStatus", "positive");
+            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+                    new FeatureFilter.Builder(sampleCases)
+                            .whereEq("testStatus", "positive"));
 
             ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
                     , ArrowLineLayer.SortConfig.SortOrder.ASC
