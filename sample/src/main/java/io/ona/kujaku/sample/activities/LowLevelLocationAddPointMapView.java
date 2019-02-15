@@ -26,7 +26,6 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelLocationAddPointMapView_mapView);
         kujakuMapView.onCreate(savedInstanceState);
@@ -53,6 +52,7 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
         goToMyLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                kujakuMapView.setWarmGps(true, "Location disabled", "The add point features will not work. We cannot drop points without your location.");
                 kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
                     @Override
                     public void onLocationChanged(Location location) {

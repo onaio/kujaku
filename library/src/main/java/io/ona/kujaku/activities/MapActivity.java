@@ -110,25 +110,32 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
     private List<JSONObject> newPoints;
 
+    private static final String DATA = "data";
+    private static final String FEATURES = "features";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
 
         screenWidth = getScreenWidth(this);
 
         newPoints = new ArrayList<>();
 
         Bundle bundle = getIntentExtras();
-        List<Point> points = null;
-        if (bundle != null) {
+        if (bundle != null
+                && bundle.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)
+                && bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN) != null) {
             String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
             Mapbox.getInstance(this, mapBoxAccessToken);
-            points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            List<Point> points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
             enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
+
+            setContentView(R.layout.activity_map);
+            initializeViews(points, enableDropPoint);
+            checkPermissions(savedInstanceState);
+        } else {
+            finish();
         }
-        initializeViews(points, enableDropPoint);
-        checkPermissions(savedInstanceState);
     }
 
     private Bundle getIntentExtras() {
@@ -311,10 +318,10 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             for (String dataSourceName : dataSourceNames) {
                 if (sources.has(dataSourceName)) {
                     JSONObject jsonObject = sources.getJSONObject(dataSourceName);
-                    if (jsonObject.has("data")) {
-                        JSONObject sourceDataJSONObject = jsonObject.getJSONObject("data");
-                        if (sourceDataJSONObject.has("features")) {
-                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray("features");
+                    if (jsonObject.has(DATA)) {
+                        JSONObject sourceDataJSONObject = jsonObject.optJSONObject(DATA);
+                        if (sourceDataJSONObject != null && sourceDataJSONObject.has(FEATURES)) {
+                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray(FEATURES);
                             for (int i = 0; i < featuresJSONArray.length(); i++) {
                                 JSONObject featureJSON = featuresJSONArray.getJSONObject(i);
 

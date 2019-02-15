@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
@@ -70,7 +72,8 @@ public class KujakuLibrary {
         enableMapDownloadResume = isEnableMapDownloadResume;
     }
 
-    public void launchMapActivity(Activity hostActivity, List<Point> points, boolean enableDropPoint) {
-        ActivityLauncherHelper.launchMapActivity(hostActivity, points, enableDropPoint);
+    public void launchMapActivity(@NonNull Activity hostActivity, @NonNull String mapboxAccessToken
+            , @Nullable List<Point> points, boolean enableDropPoint) {
+        ActivityLauncherHelper.launchMapActivity(hostActivity, mapboxAccessToken, points, enableDropPoint);
     }
 }

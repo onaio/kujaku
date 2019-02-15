@@ -1,8 +1,10 @@
 package io.ona.kujaku.notifications;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 
 import org.junit.Test;
@@ -14,12 +16,14 @@ import org.robolectric.shadows.ShadowService;
 
 import java.util.UUID;
 
+import io.ona.kujaku.R;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 17/01/2018.
@@ -94,7 +98,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
 
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowService.getLastForegroundNotification());
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(notificationId, shadowService.getLastForegroundNotificationId());
     }
 
@@ -118,7 +122,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowNotificationManager.getNotification(notificationId));
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
         assertEquals(null, shadowNotification.getContentText());
 
@@ -142,7 +146,7 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         ShadowNotificationManager shadowNotificationManager = Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         ShadowNotification shadowNotification = Shadows.shadowOf(shadowNotificationManager.getNotification(notificationId));
 
-        assertTrue(shadowNotification != null);
+        assertNotNull(shadowNotification);
         assertEquals(getNotificationProgressTitle(mapName), shadowNotification.getContentTitle());
         assertEquals(null, shadowNotification.getContentText());
     }
@@ -233,5 +237,33 @@ public class DownloadProgressNotificationTest extends BaseNotificationTest {
         for (int i = 0; i < formatedDecimals.length; i++) {
             assertEquals(formatedDecimals[i], DownloadProgressNotification.formatDecimal(decimals[i]));
         }
+    }
+
+
+    @Test
+    public void constructorShouldInitialiseVariables() throws NoSuchFieldException, IllegalAccessException {
+        DownloadProgressNotification downloadProgressNotification = new DownloadProgressNotification(context);
+
+        assertEquals(context, downloadProgressNotification.context);
+        assertNotNull(getValueInPrivateField(DownloadProgressNotification.class.getSuperclass(), downloadProgressNotification, "smallIcon"));
+
+        channelIdsAdded.add(downloadProgressNotification.CHANNEL_ID);
+    }
+
+    @RequiresApi(26)
+    @Test
+    public void constructorShouldCreateValidNotificationChannel() {
+        DownloadProgressNotification downloadProgressNotification = new DownloadProgressNotification(context);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel notificationChannel = notificationManager.getNotificationChannel(DownloadProgressNotification.CHANNEL_ID);
+
+        channelIdsAdded.add(downloadProgressNotification.CHANNEL_ID);
+
+        assertEquals(context.getString(R.string.download_progress_channel_name), notificationChannel.getName());
+        assertEquals(context.getString(R.string.download_progress_channel_description), notificationChannel.getDescription());
+        assertFalse(notificationChannel.shouldVibrate());
+        assertFalse(notificationChannel.shouldShowLights());
+        assertEquals(NotificationManager.IMPORTANCE_LOW, notificationChannel.getImportance());
     }
 }

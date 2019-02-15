@@ -356,6 +356,15 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
                         -17.854564,
                         25.854782
                 ),
+
+                new LatLng(
+                        -17.854564,
+                        25.876589
+                ),
+                new LatLng(
+                        -17.875469,
+                        25.876589
+                ),
                 new LatLng(
                         -17.875469,
                         25.876589

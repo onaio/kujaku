@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco'
 
 buildscript {
     repositories {
@@ -81,6 +82,10 @@ bintray {
     publications = ['Production']
 }
 
+jacoco {
+    toolVersion = jacocoVersion
+}
+
 android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -122,6 +127,8 @@ android {
         }
 
         debug {
+            testCoverageEnabled true
+
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
                 properties.load(project.rootProject.file("local.properties").newDataInputStream())
@@ -161,8 +168,10 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
-    //implementation (project(":utils")) {
-    implementation('io.ona.kujaku:utils:0.6.0') {
+    // Comment the line below when creating releases - The line is for development of the library & utils
+    implementation (project(":utils")) {
+    // Uncomment the line below when creating releases
+    //implementation('io.ona.kujaku:utils:0.6.1') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
@@ -216,4 +225,30 @@ private static void appPermissionsDependencies(configuration) {
 
 private static void locationDependencies(configuration) {
     configuration.implementation 'com.google.android.gms:play-services-location:16.0.0'
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+}
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
+    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
+
+    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
+                      , 'android/**/*.*', "io/realm/*.*"]
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories = files([mainSrc])
+    classDirectories = files([debugTree])
+    executionData = fileTree(dir: project.buildDir, includes: [
+            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+    ])
 }

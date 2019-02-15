@@ -156,7 +156,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onSuccess(Object[] objects) {
                 points = (List<Point>) objects[0];
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
             }
             @Override
             public void onError(Exception e) {
@@ -172,7 +172,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 if (points == null || points.size() == 0) {
                     fetchDroppedPoints(onPointsFetchFinishedListener);
                 } else {
-                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
                 }
             }
         });
@@ -186,7 +186,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 if (points == null || points.size() == 0) {
                     fetchDroppedPoints(onPointsFetchFinishedListener);
                 } else {
-                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, points, true);
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
                 }
             }
         });
