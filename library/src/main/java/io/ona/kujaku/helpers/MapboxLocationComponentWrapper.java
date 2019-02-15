@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.content.Context;
 
+import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
@@ -19,7 +20,7 @@ public class MapboxLocationComponentWrapper {
     @SuppressWarnings( {"MissingPermission"})
     public static void init(MapboxMap mapboxMap, Context context) {
         locationComponent = mapboxMap.getLocationComponent();
-        locationComponent.activateLocationComponent(context);
+        locationComponent.activateLocationComponent(context, (LocationEngine) null);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.TRACKING);
         locationComponent.setRenderMode(RenderMode.NORMAL);
@@ -27,9 +28,5 @@ public class MapboxLocationComponentWrapper {
 
     public static LocationComponent getLocationComponent() {
         return locationComponent;
-    }
-
-    public static void setLocationComponent(LocationComponent locationComponent) {
-        MapboxLocationComponentWrapper.locationComponent = locationComponent;
     }
 }

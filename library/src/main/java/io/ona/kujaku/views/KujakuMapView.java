@@ -140,7 +140,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
 
-    private float locationOuterCircleRadius = DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS;
+    private float locationBufferRadius = DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS;
 
     /**
      * Wmts Layers to add on the map
@@ -246,7 +246,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void showUpdatedUserLocation(Float radius) {
-        updateUserLocationLayer(latestLocationCoordinates, radius);
+        updateUserLocation(radius);
 
         if (updateUserLocationOnMap || !isMapScrolled) {
             // Focus on the new location
@@ -286,7 +286,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         }
 
                         if (updateUserLocationOnMap) {
-                            showUpdatedUserLocation(locationOuterCircleRadius);
+                            showUpdatedUserLocation(locationBufferRadius);
                         }
                     }
                 });
@@ -422,7 +422,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
             if (latestLocationCoordinates != null) {
-                showUpdatedUserLocation(locationOuterCircleRadius);
+                showUpdatedUserLocation(locationBufferRadius);
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
@@ -430,58 +430,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void updateUserLocationLayer(@NonNull LatLng latLng, Float radius) {
-//        com.mapbox.geojson.Feature feature =
-//                com.mapbox.geojson.Feature.fromGeometry(
-//                        com.mapbox.geojson.Point.fromLngLat(
-//                                latLng.getLongitude(), latLng.getLatitude()
-//                        )
-//                );
-//
-//        if (userLocationOuterCircle == null || userLocationInnerCircle == null || pointsSource == null) {
-//            pointsSource = new GeoJsonSource(pointsSourceId);
-//            pointsSource.setGeoJson(feature);
-//
-//            if (mapboxMap != null && mapboxMap.getSource(pointsSourceId) == null) {
-//                mapboxMap.addSource(pointsSource);
-//
-//                userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
-//                userLocationInnerCircle.setProperties(
-//                        circleColor("#4387f4"),
-//                        circleRadius(5f),
-//                        circleStrokeWidth(1f),
-//                        circleStrokeColor("#dde2e4")
-//                );
-//
-//                userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
-//                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
-//                userLocationOuterCircle.setProperties(
-//                        circleColor("#81c2ee"),
-//                        circleRadius(locationOuterCircleRadius),
-//                        circleStrokeWidth(1f),
-//                        circleStrokeColor("#74b7f6"),
-//                        circleOpacity(0.3f),
-//                        circleStrokeOpacity(0.6f)
-//                );
-//
-//                mapboxMap.addLayer(userLocationOuterCircle);
-//                mapboxMap.addLayer(userLocationInnerCircle);
-//            }
-//            // TODO: What if the map already has a source layer with this source layer id
-//        } else {
-//            // Get the layer and update it
-//            if (mapboxMap != null) {
-//                Source source = mapboxMap.getSource(pointsSourceId);
-//
-//                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
-//                userLocationOuterCircle = (CircleLayer) mapboxMap.getLayer(pointsOuterLayerId);
-//                userLocationOuterCircle.setProperties(circleRadius(locationOuterCircleRadius));
-//
-//                if (source instanceof GeoJsonSource) {
-//                    ((GeoJsonSource) source).setGeoJson(feature);
-//                }
-//            }
-//        }
+    private void updateUserLocation(Float locationBufferRadius) {
+        this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
+        latestLocation.setAccuracy(this.locationBufferRadius);
+        MapboxLocationComponentWrapper.getLocationComponent().forceLocationUpdate(latestLocation);
     }
 
     @Override
