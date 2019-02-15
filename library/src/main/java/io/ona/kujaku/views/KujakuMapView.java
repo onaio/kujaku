@@ -44,7 +44,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -60,7 +59,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
@@ -80,13 +78,6 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
-
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
 
 /**
  *
