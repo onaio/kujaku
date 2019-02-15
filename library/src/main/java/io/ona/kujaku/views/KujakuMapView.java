@@ -231,7 +231,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void showUpdatedUserLocation(Float radius) {
         updateUserLocation(radius);
-
         if (updateUserLocationOnMap || !isMapScrolled) {
             // Focus on the new location
             centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));

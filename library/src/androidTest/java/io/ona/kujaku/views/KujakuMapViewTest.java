@@ -33,13 +33,12 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
