@@ -433,7 +433,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void updateUserLocation(Float locationBufferRadius) {
         this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
         latestLocation.setAccuracy(this.locationBufferRadius);
-        MapboxLocationComponentWrapper.getLocationComponent().forceLocationUpdate(latestLocation);
+        MapboxLocationComponentWrapper.getInstance().getLocationComponent().forceLocationUpdate(latestLocation);
     }
 
     @Override
@@ -1072,7 +1072,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
                             // initialize location component wrapper
-                            if (MapboxLocationComponentWrapper.getLocationComponent() == null && mapboxMap != null) {
+                            if (mapboxMap != null) {
                                 MapboxLocationComponentWrapper.init(mapboxMap, getContext());
                             }
                             // You can continue warming the GPS

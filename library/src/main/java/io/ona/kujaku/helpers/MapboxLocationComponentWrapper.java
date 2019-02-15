@@ -1,12 +1,15 @@
 package io.ona.kujaku.helpers;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+
+import io.ona.kujaku.exceptions.LocationComponentInitializationException;
 
 /**
  * @author Vincent Karuri
@@ -15,18 +18,30 @@ public class MapboxLocationComponentWrapper {
 
     private static LocationComponent locationComponent;
 
+    private static MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
+
     private MapboxLocationComponentWrapper() {}
 
     @SuppressWarnings( {"MissingPermission"})
-    public static void init(MapboxMap mapboxMap, Context context) {
-        locationComponent = mapboxMap.getLocationComponent();
+    public static void init(@NonNull MapboxMap mapboxMap,@NonNull Context context) {
+        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
+        LocationComponent locationComponent = mapboxMap.getLocationComponent();
         locationComponent.activateLocationComponent(context, (LocationEngine) null);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.TRACKING);
         locationComponent.setRenderMode(RenderMode.NORMAL);
+        MapboxLocationComponentWrapper.locationComponent = locationComponent;
     }
 
-    public static LocationComponent getLocationComponent() {
-        return locationComponent;
+    public static MapboxLocationComponentWrapper getInstance() {
+        if (mapboxLocationComponentWrapper == null) {
+            throw new LocationComponentInitializationException("The MapboxLocationComponentWrapper has not been initialized! " +
+                    "Please initialize it by calling init before calling the getInstance() method.");
+        }
+        return mapboxLocationComponentWrapper;
+    }
+
+    public LocationComponent getLocationComponent() {
+       return MapboxLocationComponentWrapper.locationComponent;
     }
 }
