@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -67,6 +68,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.BaseLocationListener;
@@ -428,57 +430,57 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void updateUserLocationLayer(@NonNull LatLng latLng, Float radius) {
-        com.mapbox.geojson.Feature feature =
-                com.mapbox.geojson.Feature.fromGeometry(
-                        com.mapbox.geojson.Point.fromLngLat(
-                                latLng.getLongitude(), latLng.getLatitude()
-                        )
-                );
-
-        if (userLocationOuterCircle == null || userLocationInnerCircle == null || pointsSource == null) {
-            pointsSource = new GeoJsonSource(pointsSourceId);
-            pointsSource.setGeoJson(feature);
-
-            if (mapboxMap != null && mapboxMap.getSource(pointsSourceId) == null) {
-                mapboxMap.addSource(pointsSource);
-
-                userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
-                userLocationInnerCircle.setProperties(
-                        circleColor("#4387f4"),
-                        circleRadius(5f),
-                        circleStrokeWidth(1f),
-                        circleStrokeColor("#dde2e4")
-                );
-
-                userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
-                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
-                userLocationOuterCircle.setProperties(
-                        circleColor("#81c2ee"),
-                        circleRadius(locationOuterCircleRadius),
-                        circleStrokeWidth(1f),
-                        circleStrokeColor("#74b7f6"),
-                        circleOpacity(0.3f),
-                        circleStrokeOpacity(0.6f)
-                );
-
-                mapboxMap.addLayer(userLocationOuterCircle);
-                mapboxMap.addLayer(userLocationInnerCircle);
-            }
-            // TODO: What if the map already has a source layer with this source layer id
-        } else {
-            // Get the layer and update it
-            if (mapboxMap != null) {
-                Source source = mapboxMap.getSource(pointsSourceId);
-
-                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
-                userLocationOuterCircle = (CircleLayer) mapboxMap.getLayer(pointsOuterLayerId);
-                userLocationOuterCircle.setProperties(circleRadius(locationOuterCircleRadius));
-
-                if (source instanceof GeoJsonSource) {
-                    ((GeoJsonSource) source).setGeoJson(feature);
-                }
-            }
-        }
+//        com.mapbox.geojson.Feature feature =
+//                com.mapbox.geojson.Feature.fromGeometry(
+//                        com.mapbox.geojson.Point.fromLngLat(
+//                                latLng.getLongitude(), latLng.getLatitude()
+//                        )
+//                );
+//
+//        if (userLocationOuterCircle == null || userLocationInnerCircle == null || pointsSource == null) {
+//            pointsSource = new GeoJsonSource(pointsSourceId);
+//            pointsSource.setGeoJson(feature);
+//
+//            if (mapboxMap != null && mapboxMap.getSource(pointsSourceId) == null) {
+//                mapboxMap.addSource(pointsSource);
+//
+//                userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
+//                userLocationInnerCircle.setProperties(
+//                        circleColor("#4387f4"),
+//                        circleRadius(5f),
+//                        circleStrokeWidth(1f),
+//                        circleStrokeColor("#dde2e4")
+//                );
+//
+//                userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
+//                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
+//                userLocationOuterCircle.setProperties(
+//                        circleColor("#81c2ee"),
+//                        circleRadius(locationOuterCircleRadius),
+//                        circleStrokeWidth(1f),
+//                        circleStrokeColor("#74b7f6"),
+//                        circleOpacity(0.3f),
+//                        circleStrokeOpacity(0.6f)
+//                );
+//
+//                mapboxMap.addLayer(userLocationOuterCircle);
+//                mapboxMap.addLayer(userLocationInnerCircle);
+//            }
+//            // TODO: What if the map already has a source layer with this source layer id
+//        } else {
+//            // Get the layer and update it
+//            if (mapboxMap != null) {
+//                Source source = mapboxMap.getSource(pointsSourceId);
+//
+//                locationOuterCircleRadius = radius == null ? locationOuterCircleRadius : radius;
+//                userLocationOuterCircle = (CircleLayer) mapboxMap.getLayer(pointsOuterLayerId);
+//                userLocationOuterCircle.setProperties(circleRadius(locationOuterCircleRadius));
+//
+//                if (source instanceof GeoJsonSource) {
+//                    ((GeoJsonSource) source).setGeoJson(feature);
+//                }
+//            }
+//        }
     }
 
     @Override
@@ -608,6 +610,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     enableFeatureClickListenerEmitter(mapboxMap);
 
                     addWmtsLayers();
+
+                    if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
+                        MapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+                    }
                 }
             });
         }
@@ -1112,7 +1118,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
-
+                            // initialize location component wrapper
+                            if (MapboxLocationComponentWrapper.getLocationComponent() == null && mapboxMap != null) {
+                                MapboxLocationComponentWrapper.init(mapboxMap, getContext());
+                            }
                             // You can continue warming the GPS
                             if (shouldStartNow) {
                                 warmUpLocationServices();
