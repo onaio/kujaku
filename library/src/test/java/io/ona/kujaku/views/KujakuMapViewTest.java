@@ -115,15 +115,9 @@ public class KujakuMapViewTest extends BaseTest {
 
         LatLng latLng = new LatLng(14d, 23d);
 
-        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocation", latLng);
+        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocationCoordinates", latLng);
         setFinalStatic(KujakuMapView.class.getDeclaredField("ANIMATE_TO_LOCATION_DURATION"), 0);
         kujakuMapView.enableAddPoint(true, onLocationChanged);
-
-        // Check if the two circle layers were added
-        // Check if geojson for current user position was added
-        // Todo: this can use a drawable icon instead of having two extra layers
-
-        assertNotNull(getValueInPrivateField(KujakuMapView.class, kujakuMapView, "pointsSource"));
 
         //Make sure the map centers on the location
         assertTrue(kujakuMapView.isMapCentered);

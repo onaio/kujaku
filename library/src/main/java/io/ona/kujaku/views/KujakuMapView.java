@@ -112,13 +112,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
 
-    private CircleLayer userLocationInnerCircle;
-    private CircleLayer userLocationOuterCircle;
-    private GeoJsonSource pointsSource;
-    private String pointsInnerLayerId = UUID.randomUUID().toString();
-    private String pointsOuterLayerId = pointsInnerLayerId + "2";
-    private String pointsSourceId = UUID.randomUUID().toString();
-
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
 
@@ -432,8 +425,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void updateUserLocation(Float locationBufferRadius) {
         this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
-        latestLocation.setAccuracy(this.locationBufferRadius);
-        MapboxLocationComponentWrapper.getInstance().getLocationComponent().forceLocationUpdate(latestLocation);
+        if (latestLocation != null) {
+            latestLocation.setAccuracy(this.locationBufferRadius);
+            MapboxLocationComponentWrapper.getInstance().getLocationComponent().forceLocationUpdate(latestLocation);
+        }
     }
 
     @Override
