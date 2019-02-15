@@ -50,7 +50,6 @@ import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.Source;
 import com.mapbox.mapboxsdk.style.sources.TileSet;
 
 import org.json.JSONException;
@@ -133,7 +132,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     protected Set<io.ona.kujaku.domain.Point> droppedPoints;
 
-    private LatLng latestLocation;
+    private LatLng latestLocationCoordinates;
+
+    private Location latestLocation;
 
     private boolean updateUserLocationOnMap = false;
 
@@ -245,11 +246,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void showUpdatedUserLocation(Float radius) {
-        updateUserLocationLayer(latestLocation, radius);
+        updateUserLocationLayer(latestLocationCoordinates, radius);
 
         if (updateUserLocationOnMap || !isMapScrolled) {
             // Focus on the new location
-            centerMap(latestLocation, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+            centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
         }
     }
 
@@ -276,9 +277,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 locationClient.requestLocationUpdates(new BaseLocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
-                        latestLocation = new LatLng(location.getLatitude()
+                        latestLocation = location;
+                        latestLocationCoordinates = new LatLng(location.getLatitude()
                                 , location.getLongitude());
-
 
                         if (onLocationChangedListener != null) {
                             onLocationChangedListener.onLocationChanged(location);
@@ -420,7 +421,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
-            if (latestLocation != null) {
+            if (latestLocationCoordinates != null) {
                 showUpdatedUserLocation(locationOuterCircleRadius);
             }
         } else {
@@ -949,7 +950,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
-            if (latestLocation != null) {
+            if (latestLocationCoordinates != null) {
                 showUpdatedUserLocation(radius);
             }
 
