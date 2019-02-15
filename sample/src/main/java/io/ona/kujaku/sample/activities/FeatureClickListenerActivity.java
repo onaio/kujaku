@@ -1,18 +1,10 @@
 package io.ona.kujaku.sample.activities;
 
-import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.util.List;
 
