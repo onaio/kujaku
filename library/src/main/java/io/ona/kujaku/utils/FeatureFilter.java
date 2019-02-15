@@ -15,9 +15,24 @@ import io.ona.kujaku.comparisons.EqualToComparison;
 import io.ona.kujaku.comparisons.RegexComparison;
 
 /**
+ * Provides the ability to filter locations or features before displaying them on the map. This filter
+ * can only perform filter operations on {@link Feature} properties. The operations that can be performed
+ * are {@code equalTo} and {@code regex} on {@code {@link String}}. Several conditions can be enforced
+ * but only using the {@code and} operator.
+ *
+ * Example usage:
+ * <code>
+ *
+ *     FeatureFilter.Builder builder = new FeatureFilter.Builder(myFeatureCollection)
+ *                                          .whereEq("propertyName", "expectedPropertyValue")
+ *                                          .whereEq("building-type", "commercial")
+ *                                          .whereRegex("district", "(Rungwe|Kilombero|Kyela|Magu|Sikonge|Kasulu)");
+ *     FeatureFilter featureFilter = builder.build();
+ *     FeatureCollection filteredFeatureCollection = featureFilter.filter();
+ * </code>
+ *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 14/02/2019
  */
-
 public class FeatureFilter {
 
     private Builder builder;
