@@ -5,7 +5,6 @@ import android.support.annotation.ColorRes;
 import android.util.Log;
 
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.Geometry;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -15,7 +14,6 @@ import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
-import com.mapbox.turf.TurfMeasurement;
 
 import java.io.IOException;
 
@@ -59,7 +57,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
-        kujakuMapView = findViewById(R.id.kmv_boundingBoxListener_mapView);
+        kujakuMapView = findViewById(R.id.kmv_caseRelationship_mapView);
         kujakuMapView.onCreate(savedInstanceState);
 
         try {
@@ -124,7 +122,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     @Override
     protected int getContentView() {
-        return R.layout.activity_bounding_box_listener_activity;
+        return R.layout.activity_case_relationship_activity;
     }
 
     @Override
