@@ -65,7 +65,6 @@ public class BoundaryLayer implements KujakuLayer {
                 .withProperties(
                         PropertyFactory.textField(Expression.toString(Expression.get(builder.labelProperty))),
                         PropertyFactory.textPadding(35f),
-                        PropertyFactory.textRotationAlignment("map"),
                         PropertyFactory.textColor(builder.labelColorInt),
                         PropertyFactory.textAllowOverlap(true)
                 );
