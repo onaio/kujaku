@@ -48,7 +48,7 @@ public class FociBoundaryActivity extends BaseNavigationDrawerActivity {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     // Zoom to the position
-                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-14.105596638939968, 32.60676728350983), 8d));
+                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-14.105596638939968, 32.60676728350983), 15d));
                 }
             });
         } catch (IOException e) {
