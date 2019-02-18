@@ -3,6 +3,8 @@ package io.ona.kujaku.sample.activities;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -51,6 +53,8 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private FeatureCollection sampleCases;
     private ArrowLineLayer arrowLineLayer;
+    private Button drawArrowsBtn;
+    private boolean alreadyDrawn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,33 +64,13 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         kujakuMapView = findViewById(R.id.kmv_caseRelationship_mapView);
         kujakuMapView.onCreate(savedInstanceState);
 
-        try {
-            String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
-            sampleCases = FeatureCollection.fromJson(featureCollection);
-            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
-                    new FeatureFilter.Builder(sampleCases)
-                            .whereEq("testStatus", "positive"));
-
-            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
-                    , ArrowLineLayer.SortConfig.SortOrder.ASC
-                    , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
-                    .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
-
-            try {
-                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
-                        .setArrowLineColor(R.color.mapbox_blue)
-                        .setArrowLineWidth(3)
-                        .setAddBelowLayerId("sample-cases-symbol")
-                        .build();
-
-                kujakuMapView.addArrowLineLayer(arrowLineLayer);
-            } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
-                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
+        drawArrowsBtn = findViewById(R.id.btn_caseRelationshipAct_drawArrows);
+        drawArrowsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawArrowsShowingRelationship();
             }
-
-        } catch (IOException e) {
-            Log.e(TAG, Log.getStackTraceString(e));
-        }
+        });
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -114,6 +98,39 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
             }
         });
+    }
+
+    private void drawArrowsShowingRelationship() {
+        if (!alreadyDrawn) {
+            try {
+                String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
+                sampleCases = FeatureCollection.fromJson(featureCollection);
+                ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+                        new FeatureFilter.Builder(sampleCases)
+                                .whereEq("testStatus", "positive"));
+
+                ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
+                        , ArrowLineLayer.SortConfig.SortOrder.ASC
+                        , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+                        .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+
+                try {
+                    arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                            .setArrowLineColor(R.color.mapbox_blue)
+                            .setArrowLineWidth(3)
+                            .setAddBelowLayerId("sample-cases-symbol")
+                            .build();
+
+                    kujakuMapView.addArrowLineLayer(arrowLineLayer);
+                    alreadyDrawn = true;
+                } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
+                    Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
+                }
+
+            } catch (IOException e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+            }
+        }
     }
 
     private int getColorv16(@ColorRes int colorRes) {
