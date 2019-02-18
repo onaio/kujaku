@@ -36,18 +36,11 @@ public class BoundaryLayer implements KujakuLayer {
     private String BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
     private String BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
 
-    private static final String ARROW_HEAD_ICON = "arrow-head-icon";
-
     private GeoJsonSource boundarySource;
     private LineLayer boundaryLineLayer;
 
     private SymbolLayer boundaryLabelLayer;
     private boolean visible = false;
-
-    public static final int MIN_ARROW_ZOOM = 10;
-    public static final int MAX_ARROW_ZOOM = 22;
-    public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
-    public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
 
     private BoundaryLayer(@NonNull Builder builder) {
         this.builder = builder;
