@@ -37,7 +37,7 @@ import java.util.UUID;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.comparators.ArrowLineSortConfigComparator;
-import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.FeatureFilter;
@@ -85,11 +85,11 @@ public class ArrowLineLayer {
     public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
 
-    private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfig {
+    private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {
         this.builder = builder;
         if (builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME
                 && TextUtils.isEmpty(builder.sortConfig.getDateTimeFormat())) {
-            throw new InvalidArrowLineConfig("Date time format for sort configuration on a DateTime property has not been set");
+            throw new InvalidArrowLineConfigException("Date time format for sort configuration on a DateTime property has not been set");
         }
 
         // Create arrow source
@@ -350,7 +350,7 @@ public class ArrowLineLayer {
             return this;
         }
 
-        public ArrowLineLayer build() throws InvalidArrowLineConfig {
+        public ArrowLineLayer build() throws InvalidArrowLineConfigException {
             return new ArrowLineLayer(this);
         }
     }

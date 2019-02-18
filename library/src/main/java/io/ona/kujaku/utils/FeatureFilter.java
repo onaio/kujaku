@@ -65,9 +65,13 @@ public class FeatureFilter {
                     }
 
                     for (FilterCondition filterCondition : filterConditions) {
-                        if (feature.hasProperty(filterCondition.getPropertyName())) {
+                        String propertyName = filterCondition.getPropertyName();
+                        if (feature.hasProperty(propertyName)) {
                             Comparison comparison = comparisons.get(filterCondition.getComparisionType());
-                            if (comparison != null && !comparison.compare(feature.getStringProperty(filterCondition.getPropertyName()), filterCondition.getValueType(), (String) filterCondition.getValue())) {
+                            if (comparison != null && !comparison.compare(
+                                    feature.getStringProperty(propertyName),
+                                    filterCondition.getValueType(),
+                                    (String) filterCondition.getValue())) {
                                 skipFeature = true;
                                 break;
                             }

@@ -1,20 +1,12 @@
 package io.ona.kujaku.comparisons;
 
 
-public class EqualToComparison extends Comparison {
+public class EqualToComparison implements Comparison {
     public static final String COMPARISON_NAME = "equalTo";
 
     @Override
     public boolean compare(String a, String type, String b) {
-        switch (type) {
-            case TYPE_STRING:
-                return a != null && a.compareTo(b) == 0;
-
-            default:
-                break;
-        }
-
-        return false;
+        return a != null && a.compareTo(b) == 0;
     }
 
     @Override
