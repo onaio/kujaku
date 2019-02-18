@@ -72,6 +72,13 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             }
         });
 
+        try {
+            String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
+            sampleCases = FeatureCollection.fromJson(featureCollection);
+        } catch (IOException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+        }
+
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -102,33 +109,26 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private void drawArrowsShowingRelationship() {
         if (!alreadyDrawn) {
+            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+                    new FeatureFilter.Builder(sampleCases)
+                            .whereEq("testStatus", "positive"));
+
+            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
+                    , ArrowLineLayer.SortConfig.SortOrder.ASC
+                    , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+                    .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+
             try {
-                String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
-                sampleCases = FeatureCollection.fromJson(featureCollection);
-                ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
-                        new FeatureFilter.Builder(sampleCases)
-                                .whereEq("testStatus", "positive"));
+                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                        .setArrowLineColor(R.color.mapbox_blue)
+                        .setArrowLineWidth(3)
+                        .setAddBelowLayerId("sample-cases-symbol")
+                        .build();
 
-                ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
-                        , ArrowLineLayer.SortConfig.SortOrder.ASC
-                        , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
-                        .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
-
-                try {
-                    arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
-                            .setArrowLineColor(R.color.mapbox_blue)
-                            .setArrowLineWidth(3)
-                            .setAddBelowLayerId("sample-cases-symbol")
-                            .build();
-
-                    kujakuMapView.addArrowLineLayer(arrowLineLayer);
-                    alreadyDrawn = true;
-                } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
-                    Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
-                }
-
-            } catch (IOException e) {
-                Log.e(TAG, Log.getStackTraceString(e));
+                kujakuMapView.addArrowLineLayer(arrowLineLayer);
+                alreadyDrawn = true;
+            } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
+                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
             }
         }
     }
