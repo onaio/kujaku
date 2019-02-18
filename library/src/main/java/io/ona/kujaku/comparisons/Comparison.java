@@ -1,9 +1,9 @@
 package io.ona.kujaku.comparisons;
 
-public abstract class Comparison {
-    public static final String TYPE_STRING = "string";
+public interface Comparison {
+    String TYPE_STRING = "string";
 
-    public abstract boolean compare(String a, String type, String b);
+    boolean compare(String a, String type, String b);
 
-    public abstract String getFunctionName();
+    String getFunctionName();
 }

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.ona.kujaku.BaseTest;
-import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
@@ -52,7 +52,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenPolygonFeature() throws InvalidArrowLineConfig {
+    public void getCenterWhenGivenPolygonFeature() throws InvalidArrowLineConfigException {
         ArrayList<Point> pointsList = new ArrayList<>();
 
         pointsList.add(Point.fromLngLat(9.1d, 9.1d));
@@ -83,7 +83,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenPointFeature() throws InvalidArrowLineConfig {
+    public void getCenterWhenGivenPointFeature() throws InvalidArrowLineConfigException {
         Point pointGeometry = Point.fromLngLat(9.1d, 9.1d);
         ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
                 FeatureCollection.fromFeature(Feature.fromGeometry(pointGeometry))
@@ -104,7 +104,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenPolygonWithHolesFeature() throws InvalidArrowLineConfig {
+    public void getCenterWhenGivenPolygonWithHolesFeature() throws InvalidArrowLineConfigException {
         ArrayList<Point> outerBoundary = new ArrayList<>();
 
         outerBoundary.add(Point.fromLngLat(9.1d, 9.1d));
@@ -144,7 +144,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void getCenterWhenGivenMultiPolygonFeature() throws InvalidArrowLineConfig {
+    public void getCenterWhenGivenMultiPolygonFeature() throws InvalidArrowLineConfigException {
         ArrayList<Point> pointsListLower1 = new ArrayList<>();
 
         pointsListLower1.add(Point.fromLngLat(9.1d, 9.1d));
@@ -188,7 +188,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void calculateLineStringWhenGivenFeatureCollectionWithFeatures() throws InvalidArrowLineConfig {
+    public void calculateLineStringWhenGivenFeatureCollectionWithFeatures() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         ArrayList<Point> pointsListLower1 = new ArrayList<>();
@@ -229,7 +229,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void calculateLineStringWhenGivenFeatureCollectionWithNoFeatures() throws InvalidArrowLineConfig {
+    public void calculateLineStringWhenGivenFeatureCollectionWithNoFeatures() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
@@ -248,7 +248,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
     
     @Test
-    public void generateArrowHeadFeatureCollection() throws InvalidArrowLineConfig {
+    public void generateArrowHeadFeatureCollection() throws InvalidArrowLineConfigException {
         ArrayList<Point> pointsList = new ArrayList<>();
         
         pointsList.add(Point.fromLngLat(9.1d, 9.1d));
@@ -284,7 +284,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void setLayerPropertiesFromBuilder() throws InvalidArrowLineConfig {
+    public void setLayerPropertiesFromBuilder() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
@@ -325,9 +325,9 @@ public class ArrowLineLayerTest extends BaseTest {
         try {
             ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
             builder.build();
-        } catch (InvalidArrowLineConfig invalidArrowLineConfig) {
+        } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
             assertEquals("Date time format for sort configuration on a DateTime property has not been set"
-                    , invalidArrowLineConfig.getMessage());
+                    , invalidArrowLineConfigException.getMessage());
             exceptionCaught = true;
         }
 
@@ -335,7 +335,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void sortFeaturesShouldSortAscByDateTime() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortAscByDateTime() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:03")
@@ -376,7 +376,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void sortFeaturesShouldSortDescByDateTime() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortDescByDateTime() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-date", "2019-01-01 00:00:03")
@@ -417,7 +417,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void sortFeaturesShouldSortDescByNumber() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortDescByNumber() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 2000.67)
@@ -457,7 +457,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void sortFeaturesShouldSortAscByNumber() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortAscByNumber() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-number", 2000.67)
@@ -497,7 +497,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void sortFeaturesShouldSortAscByString() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortAscByString() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -538,7 +538,7 @@ public class ArrowLineLayerTest extends BaseTest {
 
 
     @Test
-    public void sortFeaturesShouldSortDescByString() throws InvalidArrowLineConfig {
+    public void sortFeaturesShouldSortDescByString() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -578,7 +578,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void filterFeaturesByStringEqualTo() throws InvalidArrowLineConfig {
+    public void filterFeaturesByStringEqualTo() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -628,7 +628,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void filterFeaturesShouldReturnAllFeaturesIfFeatureFilterIsNotSpecified() throws InvalidArrowLineConfig {
+    public void filterFeaturesShouldReturnAllFeaturesIfFeatureFilterIsNotSpecified() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")
@@ -679,7 +679,7 @@ public class ArrowLineLayerTest extends BaseTest {
     }
 
     @Test
-    public void filterFeaturesByRegex() throws InvalidArrowLineConfig {
+    public void filterFeaturesByRegex() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
 
         featuresList.add(generateRandomFeatureWithProperties(new GeoJSONFeature.Property("sample-string", "efgh")

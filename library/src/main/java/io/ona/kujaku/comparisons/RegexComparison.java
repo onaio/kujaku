@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class RegexComparison extends Comparison {
+public class RegexComparison implements Comparison {
     private final String TAG = this.getClass().getSimpleName();
     public static final String COMPARISON_NAME = "regex";
 

@@ -17,7 +17,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.IOException;
 
-import io.ona.kujaku.exceptions.InvalidArrowLineConfig;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -80,8 +80,8 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                         .build();
 
                 kujakuMapView.addArrowLineLayer(arrowLineLayer);
-            } catch (InvalidArrowLineConfig invalidArrowLineConfig) {
-                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfig));
+            } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
+                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
             }
 
         } catch (IOException e) {
