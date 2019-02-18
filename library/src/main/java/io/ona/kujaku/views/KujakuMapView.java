@@ -196,7 +196,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true);
+                focusOnUserLocation(true, locationBufferRadius);
 
                 // Enable asking for enabling the location by resetting this flag in case it was true
                 hasAlreadyRequestedEnableLocation = false;
@@ -1137,6 +1137,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public ILocationClient getLocationClient() {
         return locationClient;
+    }
+
+    public void setLocationBufferRadius(float locationBufferRadius) {
+        this.locationBufferRadius = locationBufferRadius;
     }
 
     private void resetRejectionDialogContent() {
