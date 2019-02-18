@@ -66,7 +66,8 @@ public class BoundaryLayer implements KujakuLayer {
                         PropertyFactory.textField(Expression.toString(Expression.get(builder.labelProperty))),
                         PropertyFactory.textPadding(35f),
                         PropertyFactory.textRotationAlignment("map"),
-                        PropertyFactory.textColor(builder.labelColorInt)
+                        PropertyFactory.textColor(builder.labelColorInt),
+                        PropertyFactory.textAllowOverlap(true)
                 );
 
         if (builder.labelTextSize != 0f) {
@@ -142,7 +143,7 @@ public class BoundaryLayer implements KujakuLayer {
         @ColorInt
         private int labelColorInt = Color.BLACK;
         private String belowLayerId;
-        private String labelProperty = "name";
+        private String labelProperty = "";
 
         public Builder(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
@@ -180,6 +181,10 @@ public class BoundaryLayer implements KujakuLayer {
         public Builder setLabelProperty(@NonNull String labelProperty) {
             this.labelProperty = labelProperty;
             return this;
+        }
+
+        public BoundaryLayer build() {
+            return new BoundaryLayer(this);
         }
     }
 }
