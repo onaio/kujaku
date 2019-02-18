@@ -22,14 +22,24 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 /**
  * This layer enables one to add labelled foci boundaries to the {@link io.ona.kujaku.views.KujakuMapView}
- *
- * Sample usage
- *
+ * <p>
+ * Sample usage:
+ * <code>
+ * <p>
+ * BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+ * .setLabelProperty("name")
+ * .setLabelTextSize(20f)
+ * .setLabelColorInt(Color.RED)
+ * .setBoundaryColor(Color.RED)
+ * .setBoundaryWidth(6f);
+ * <p>
+ * kujakuMapView.addLayer(builder.build());
+ * </code>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 18/02/2019
  */
 public class BoundaryLayer implements KujakuLayer {
 
-    private static final String TAG = BoundaryLayer.class.getName();
     private Builder builder;
 
     private String BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();
