@@ -54,7 +54,6 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     private FeatureCollection sampleCases;
     private ArrowLineLayer arrowLineLayer;
     private Button drawArrowsBtn;
-    private boolean alreadyDrawn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +67,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         drawArrowsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawArrowsShowingRelationship();
+                toggleDrawingArrowsShowingRelationship();
             }
         });
 
@@ -107,8 +106,8 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         });
     }
 
-    private void drawArrowsShowingRelationship() {
-        if (!alreadyDrawn) {
+    private void toggleDrawingArrowsShowingRelationship() {
+        if (arrowLineLayer == null) {
             ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
                     new FeatureFilter.Builder(sampleCases)
                             .whereEq("testStatus", "positive"));
@@ -124,12 +123,17 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                         .setArrowLineWidth(3)
                         .setAddBelowLayerId("sample-cases-symbol")
                         .build();
-
-                kujakuMapView.addArrowLineLayer(arrowLineLayer);
-                alreadyDrawn = true;
             } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
                 Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
             }
+        }
+
+        if (arrowLineLayer.isVisible()) {
+            kujakuMapView.disableLayer(arrowLineLayer);
+            drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
+        } else {
+            kujakuMapView.addLayer(arrowLineLayer);
+            drawArrowsBtn.setText(R.string.draw_arrows_showing_relationship);
         }
     }
 
