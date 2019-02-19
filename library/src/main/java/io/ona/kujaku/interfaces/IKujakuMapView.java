@@ -19,6 +19,7 @@ import java.util.List;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 
@@ -192,5 +193,22 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      *
      * @param arrowLineLayer
      */
-    void addArrowLineLayer(@NonNull ArrowLineLayer arrowLineLayer);
+
+    /**
+     * Enables one to add {@link KujakuLayer}s which are grouped layers to the {@link IKujakuMapView}.
+     * Layers such as {@link ArrowLineLayer} will be added using this method. It also enables one to
+     * re-enable an already added {@link KujakuLayer} which was disabled using {@link IKujakuMapView#disableLayer(KujakuLayer)}
+     *
+     * @param kujakuLayer
+     */
+    void addLayer(@NonNull KujakuLayer kujakuLayer);
+
+    /**
+     * Enables one to disable a currently visible {@link KujakuLayer} added through
+     * {@link IKujakuMapView#addLayer(KujakuLayer)}. In case you pass a {@link KujakuLayer} that was not
+     * added, nothing happens.
+     *
+     * @param kujakuLayer
+     */
+    void disableLayer(@NonNull KujakuLayer kujakuLayer);
 }

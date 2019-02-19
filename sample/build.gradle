@@ -179,7 +179,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'org.jacoco'
     }
 
-    configuration.implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0') {
+    configuration.implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.7.2') {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'

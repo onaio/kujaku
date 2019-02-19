@@ -68,6 +68,7 @@ import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.layers.ArrowLineLayer;
+import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
@@ -165,6 +166,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private String locationEnableRejectionDialogTitle;
     private String locationEnableRejectionDialogMessage;
+
+    private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
 
 
     public KujakuMapView(@NonNull Context context) {
@@ -1178,19 +1181,41 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         return locationClient;
     }
 
-    private void resetRejectionDialogContent() {
-        locationEnableRejectionDialogTitle = null;
-        locationEnableRejectionDialogMessage = null;
+    @Override
+    public void addLayer(@NonNull KujakuLayer kujakuLayer) {
+        if (!kujakuLayers.contains(kujakuLayer)) {
+            kujakuLayers.add(kujakuLayer);
+            getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(MapboxMap mapboxMap) {
+                    kujakuLayer.addLayerToMap(mapboxMap);
+                }
+            });
+        } else {
+            getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(MapboxMap mapboxMap) {
+                    kujakuLayer.enableLayerOnMap(mapboxMap);
+                }
+            });
+        }
     }
 
     @Override
-    public void addArrowLineLayer(@NonNull ArrowLineLayer arrowLineLayer) {
-        getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                arrowLineLayer.addLayerToMap(mapboxMap);
-            }
-        });
+    public void disableLayer(@NonNull KujakuLayer kujakuLayer) {
+        if (kujakuLayers.contains(kujakuLayer)) {
+            getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(MapboxMap mapboxMap) {
+                    kujakuLayer.disableLayerOnMap(mapboxMap);
+                }
+            });
+        }
+    }
+
+    private void resetRejectionDialogContent() {
+        locationEnableRejectionDialogTitle = null;
+        locationEnableRejectionDialogMessage = null;
     }
 }
 

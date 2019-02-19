@@ -21,6 +21,7 @@ import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
@@ -48,18 +49,21 @@ import static com.mapbox.mapboxsdk.style.expressions.Expression.linear;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
 import static com.mapbox.mapboxsdk.style.layers.Property.ICON_ROTATION_ALIGNMENT_MAP;
+import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
+import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
  */
 
-public class ArrowLineLayer {
+public class ArrowLineLayer implements KujakuLayer {
 
     private static final String TAG = ArrowLineLayer.class.getName();
     public static final String ARROW_HEAD_BEARING = "arrow-head-bearing";
@@ -84,6 +88,8 @@ public class ArrowLineLayer {
     public static final int MAX_ARROW_ZOOM = 22;
     public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
+
+    private boolean visible = false;
 
     private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {
         this.builder = builder;
@@ -141,6 +147,7 @@ public class ArrowLineLayer {
      *
      * @param mapboxMap
      */
+    @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
         if (mapboxMap.getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {
             ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();
@@ -199,6 +206,8 @@ public class ArrowLineLayer {
                     mapboxMap.addLayer(lineLayer);
                     mapboxMap.addLayer(arrowHeadLayer);
                 }
+
+                visible = true;
             }
 
             @Override
@@ -208,6 +217,42 @@ public class ArrowLineLayer {
         });
 
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+        ArrayList<Layer> layers = new ArrayList<Layer>();
+        layers.add(mapboxMap.getLayerAs(LINE_LAYER_ID));
+        layers.add(mapboxMap.getLayerAs(ARROW_HEAD_LAYER_ID));
+
+        for (Layer layer: layers) {
+            if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
+                layer.setProperties(visibility(VISIBLE));
+                visible = true;
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+        ArrayList<Layer> layers = new ArrayList<Layer>();
+        layers.add(mapboxMap.getLayerAs(LINE_LAYER_ID));
+        layers.add(mapboxMap.getLayerAs(ARROW_HEAD_LAYER_ID));
+
+        for (Layer layer: layers) {
+            if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
+                layer.setProperties(visibility(NONE));
+                visible = false;
+            }
+        }
+    }
+
+    @Override
+    public boolean isVisible() {
+        return visible;
     }
 
     private Bitmap getBitmapFromDrawable(Drawable drawable) {
