@@ -84,4 +84,33 @@ public class BoundaryLayerTest extends BaseTest {
         assertEquals(ColorUtils.colorToRgbaString(colorInt), (String) propertyValues.get("text-color").value);
         assertTrue(((Expression) propertyValues.get("text-field").value).toString().contains(labelProperty));
     }
+
+    @Test
+    public void labelTextSizeExpressionOverridesTextSize() throws NoSuchFieldException, IllegalAccessException {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer boundaryLayer = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setLabelTextSizeExpression(Expression.interpolate(Expression.linear(), Expression.zoom()
+                        , Expression.stop(9, 0f)
+                        , Expression.stop(10, 20f/2)
+                        , Expression.stop(22, 20f)))
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth)
+                .build();
+
+        SymbolLayer symbolLayer = (SymbolLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLabelLayer");
+
+        ShadowLayer shadowLayer = (ShadowLayer) Shadow.extract(symbolLayer);
+        HashMap<String, PropertyValue> propertyValues = shadowLayer.getPropertyValues();
+
+        assertTrue(propertyValues.get("text-size").isExpression());
+    }
 }

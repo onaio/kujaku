@@ -1,10 +1,18 @@
 package io.ona.kujaku.layers;
 
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -12,13 +20,19 @@ import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
+
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.tasks.GenericAsyncTask;
 
 /**
  * This layer enables one to add labelled foci boundaries to the {@link io.ona.kujaku.views.KujakuMapView}
@@ -40,13 +54,17 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
  */
 public class BoundaryLayer implements KujakuLayer {
 
+    private static final String TAG = BoundaryLayer.class.getName();
+
     private Builder builder;
 
     private String BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();
+    private String BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();
     private String BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
     private String BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
 
     private GeoJsonSource boundarySource;
+    private GeoJsonSource boundaryLabelsSource;
     private LineLayer boundaryLineLayer;
 
     private SymbolLayer boundaryLabelLayer;
@@ -57,6 +75,7 @@ public class BoundaryLayer implements KujakuLayer {
 
         // Create the layers
         boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.featureCollection);
+        boundaryLabelsSource = new GeoJsonSource(BOUNDARY_LABEL_SOURCE_ID);
         boundaryLineLayer = new LineLayer(BOUNDARY_LINE_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)
                 .withProperties(
                         PropertyFactory.lineJoin("round"),
@@ -64,7 +83,7 @@ public class BoundaryLayer implements KujakuLayer {
                         PropertyFactory.lineColor(builder.boundaryColor)
                 );
 
-        boundaryLabelLayer = new SymbolLayer(BOUNDARY_LABEL_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)
+        boundaryLabelLayer = new SymbolLayer(BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LABEL_SOURCE_ID)
                 .withProperties(
                         PropertyFactory.textField(Expression.toString(Expression.get(builder.labelProperty))),
                         PropertyFactory.textPadding(35f),
@@ -75,12 +94,20 @@ public class BoundaryLayer implements KujakuLayer {
         if (builder.labelTextSize != 0f) {
             boundaryLabelLayer.setProperties(PropertyFactory.textSize(builder.labelTextSize));
         }
+
+        if (builder.labelTextSizeExpression != null) {
+            boundaryLabelLayer.setProperties(PropertyFactory.textSize(builder.labelTextSizeExpression));
+        }
     }
 
     @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
         if (mapboxMap.getLayer(BOUNDARY_LABEL_LAYER_ID) != null) {
             BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
+        }
+
+        if (mapboxMap.getSource(BOUNDARY_LABEL_SOURCE_ID) != null) {
+            BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();
         }
 
         if (mapboxMap.getSource(BOUNDARY_FEATURE_SOURCE_ID) != null) {
@@ -91,15 +118,77 @@ public class BoundaryLayer implements KujakuLayer {
             BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
         }
 
-        mapboxMap.addSource(boundarySource);
+        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+            @Override
+            public Object[] call() throws Exception {
+                return new Object[]{calculateCenterPoints(builder.featureCollection)};
+            }
+        });
 
-        if (builder.belowLayerId != null) {
-            mapboxMap.addLayerBelow(boundaryLineLayer, builder.belowLayerId);
-            mapboxMap.addLayerBelow(boundaryLabelLayer, builder.belowLayerId);
-        } else {
-            mapboxMap.addLayer(boundaryLineLayer);
-            mapboxMap.addLayer(boundaryLabelLayer);
+        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
+            @Override
+            public void onSuccess(Object[] objects) {
+                FeatureCollection boundaryCenterFeatures = (FeatureCollection) objects[0];
+
+                boundaryLabelsSource.setGeoJson(boundaryCenterFeatures);
+
+                mapboxMap.addSource(boundaryLabelsSource);
+                mapboxMap.addSource(boundarySource);
+
+                if (builder.belowLayerId != null) {
+                    mapboxMap.addLayerBelow(boundaryLineLayer, builder.belowLayerId);
+                    mapboxMap.addLayerBelow(boundaryLabelLayer, builder.belowLayerId);
+                } else {
+                    mapboxMap.addLayer(boundaryLineLayer);
+                    mapboxMap.addLayer(boundaryLabelLayer);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, Log.getStackTraceString(e));
+            }
+        });
+
+        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private FeatureCollection calculateCenterPoints(@NonNull FeatureCollection featureCollection) {
+        ArrayList<Feature> centerPoints = new ArrayList<>();
+
+        List<Feature> featureList = featureCollection.features();
+        if (featureList != null) {
+            for (Feature feature : featureList) {
+                Geometry featureGeometry = feature.geometry();
+                if (featureGeometry != null) {
+                    Point featurePoint;
+                    if (featureGeometry instanceof Point) {
+                        featurePoint = (Point) featureGeometry;
+                    } else {
+                        featurePoint = getCenter(featureGeometry);
+                    }
+
+                    centerPoints.add(Feature.fromGeometry(featurePoint, feature.properties()));
+                }
+            }
         }
+
+        return FeatureCollection.fromFeatures(centerPoints);
+    }
+
+    /**
+     * Generates the center from the {@link Geometry} of a given {@link Feature} for {@link Geometry}
+     * of types {@link com.mapbox.geojson.MultiPolygon}, {@link com.mapbox.geojson.Polygon} and
+     * {@link com.mapbox.geojson.MultiPoint}
+     *
+     * @param featureGeometry
+     * @return
+     */
+    private Point getCenter(@NonNull Geometry featureGeometry) {
+        double[] bbox = TurfMeasurement.bbox(featureGeometry);
+
+        LatLng centerLatLng  = LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]).getCenter();
+        return Point.fromLngLat(centerLatLng.getLongitude(), centerLatLng.getLatitude());
     }
 
     @Override
@@ -132,8 +221,10 @@ public class BoundaryLayer implements KujakuLayer {
 
     @Override
     public boolean isVisible() {
-        return false;
+        return visible;
     }
+
+
 
     public static class Builder {
 
@@ -146,6 +237,7 @@ public class BoundaryLayer implements KujakuLayer {
         private int labelColorInt = Color.BLACK;
         private String belowLayerId;
         private String labelProperty = "";
+        private Expression labelTextSizeExpression;
 
         public Builder(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
@@ -182,6 +274,20 @@ public class BoundaryLayer implements KujakuLayer {
 
         public Builder setLabelProperty(@NonNull String labelProperty) {
             this.labelProperty = labelProperty;
+            return this;
+        }
+
+        /**
+         * The passed {@code labelTextSizeExpression} overrides any previously set label size using
+         * {@link Builder#setLabelTextSize(float)}. To remove this expression, pass a {@code null}
+         * to this method so that the previously set label size is used. This method is availed because
+         * the default label size maintains it's size irrespective of the zoom level
+         *
+         * @param labelTextSizeExpression
+         * @return
+         */
+        public Builder setLabelTextSizeExpression(@Nullable Expression labelTextSizeExpression) {
+            this.labelTextSizeExpression = labelTextSizeExpression;
             return this;
         }
 
