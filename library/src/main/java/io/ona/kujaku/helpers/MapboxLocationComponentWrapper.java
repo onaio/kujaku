@@ -28,7 +28,7 @@ public class MapboxLocationComponentWrapper {
         LocationComponent locationComponent = mapboxMap.getLocationComponent();
         locationComponent.activateLocationComponent(context, (LocationEngine) null);
         locationComponent.setLocationComponentEnabled(true);
-        locationComponent.setCameraMode(CameraMode.TRACKING);
+        locationComponent.setCameraMode(CameraMode.NONE);
         locationComponent.setRenderMode(RenderMode.NORMAL);
         MapboxLocationComponentWrapper.locationComponent = locationComponent;
     }
