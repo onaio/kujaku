@@ -181,6 +181,7 @@ dependencies { configuration ->
     implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation "com.android.support:design:${supportVersion}"
     implementation 'org.simpleframework:simple-xml:2.7.1'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
 
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)
@@ -216,7 +217,6 @@ private static void customDependencies(instance, configuration) {
     configuration.implementation 'com.cocoahero.android:geojson:1.0.1@jar'
     configuration.implementation "com.android.volley:volley:${instance.volleyVersion}"
     configuration.implementation 'com.snatik:storage:2.1.0'
-    configuration.implementation group: 'joda-time', name: 'joda-time', version: '2.9.9'
 }
 
 private static void appPermissionsDependencies(configuration) {

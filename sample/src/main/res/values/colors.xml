@@ -5,4 +5,10 @@
     <color name="colorAccent">#FF4081</color>
     <color name="translucentGrey">#44000000</color>
     <color name="red">#ff0000</color>
+
+    <color name="mapbox_navigation_route_upcoming_maneuver_arrow_color">#FFFFFF</color>
+    <color name="mapbox_navigation_route_upcoming_maneuver_arrow_border_color">#2D3F53</color>
+
+    <color name="positiveTasksColor">#1976d2</color>
+    <color name="negativeTasksColor">#8e24aa</color>
 </resources>

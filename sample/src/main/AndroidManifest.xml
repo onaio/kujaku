@@ -76,7 +76,10 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.ConfigurableLocationCircleActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.CaseRelationshipActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
