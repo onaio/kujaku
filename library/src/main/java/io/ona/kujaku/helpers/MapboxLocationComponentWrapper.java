@@ -16,28 +16,15 @@ import io.ona.kujaku.exceptions.LocationComponentInitializationException;
  */
 public class MapboxLocationComponentWrapper {
 
-    private static LocationComponent locationComponent;
-
-    private static MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
-
-    private MapboxLocationComponentWrapper() {}
+    private LocationComponent locationComponent;
 
     @SuppressWarnings( {"MissingPermission"})
-    public static void init(@NonNull MapboxMap mapboxMap,@NonNull Context context) {
-        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
+    public void init(@NonNull MapboxMap mapboxMap, @NonNull Context context) {
         locationComponent = mapboxMap.getLocationComponent();
         locationComponent.activateLocationComponent(context, (LocationEngine) null);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.NONE);
         locationComponent.setRenderMode(RenderMode.NORMAL);
-    }
-
-    public static MapboxLocationComponentWrapper getInstance() {
-        if (mapboxLocationComponentWrapper == null) {
-            throw new LocationComponentInitializationException("The MapboxLocationComponentWrapper has not been initialized! " +
-                    "Please initialize it by calling init before calling the getInstance() method.");
-        }
-        return mapboxLocationComponentWrapper;
     }
 
     public LocationComponent getLocationComponent() {

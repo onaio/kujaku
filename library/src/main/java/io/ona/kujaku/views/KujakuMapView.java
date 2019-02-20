@@ -116,6 +116,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private Location latestLocation;
 
+    private MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
+
     private boolean updateUserLocationOnMap = false;
 
     private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
@@ -391,7 +393,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
         if (latestLocation != null) {
             latestLocation.setAccuracy(this.locationBufferRadius);
-            MapboxLocationComponentWrapper.getInstance().getLocationComponent().forceLocationUpdate(latestLocation);
+            getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
         }
     }
 
@@ -524,7 +526,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     addWmtsLayers();
 
                     if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
-                        MapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+                        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
+                        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
                     }
                 }
             });
@@ -1050,7 +1053,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             Log.i(TAG, "All location settings are satisfied.");
                             // initialize location component wrapper
                             if (mapboxMap != null) {
-                                MapboxLocationComponentWrapper.init(mapboxMap, getContext());
+                                mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
+                                mapboxLocationComponentWrapper.init(mapboxMap, getContext());
                             }
                             // You can continue warming the GPS
                             if (shouldStartNow) {
@@ -1146,6 +1150,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void resetRejectionDialogContent() {
         locationEnableRejectionDialogTitle = null;
         locationEnableRejectionDialogMessage = null;
+    }
+
+    public MapboxLocationComponentWrapper getMapboxLocationComponentWrapper() {
+        return mapboxLocationComponentWrapper;
     }
 }
 
