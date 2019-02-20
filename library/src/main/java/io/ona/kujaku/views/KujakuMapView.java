@@ -244,9 +244,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                latestLocation = location;
-                latestLocationCoordinates = new LatLng(location.getLatitude()
-                        , location.getLongitude());
+                if (location != null) {
+                    latestLocation = location;
+                    latestLocationCoordinates = new LatLng(location.getLatitude()
+                            , location.getLongitude());
+                }
 
                 if (onLocationChangedListener != null) {
                     onLocationChangedListener.onLocationChanged(location);

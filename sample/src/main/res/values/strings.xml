@@ -64,7 +64,5 @@
 
     <!-- WMTS Capabilities Url -->
     <string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>
-    <string name="title_activity_configurable_location_circle">ConfigurableLocationCircleActivity
-    </string>
     <!--<string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
 </resources>

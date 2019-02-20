@@ -76,7 +76,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.ConfigurableLocationCircleActivity"
-            android:label="@string/title_activity_configurable_location_circle"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
