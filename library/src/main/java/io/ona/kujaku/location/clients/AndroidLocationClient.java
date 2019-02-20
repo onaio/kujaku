@@ -2,21 +2,28 @@ package io.ona.kujaku.location.clients;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.GnssStatus;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.ona.kujaku.R;
+import io.ona.kujaku.utils.LocationSettingsHelper;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
@@ -33,6 +40,7 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
 
     private static final String TAG = AndroidLocationClient.class.getName();
     private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private Object gpsStatusCallback;
 
     public AndroidLocationClient(@NonNull Context context) {
         this.context = context;
@@ -48,6 +56,8 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
             setLocationListener(null);
             fusedLocationClient.removeLocationUpdates(androidLocationCallback);
         }
+
+        unregisterForGpsStatusStop();
     }
 
     @Override
@@ -85,6 +95,8 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
                         });
 
                 fusedLocationClient.requestLocationUpdates(locationRequest, androidLocationCallback, null);
+
+                registerForGpsStatusStop();
             } catch (SecurityException e) {
                 Log.e(TAG, Log.getStackTraceString(e));
                 Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
@@ -93,6 +105,63 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
         } else {
             setLocationListener(null);
             Log.e(TAG, "The provider (" + getProvider() + ") is not enabled");
+        }
+    }
+
+    private void registerForGpsStatusStop() {
+        try {
+            if (gpsStatusCallback != null) {
+                if (Build.VERSION.SDK_INT > 23) {
+                    gpsStatusCallback = new GnssStatus.Callback() {
+                        @Override
+                        public void onStopped() {
+                            resetLastLocationIfLocationServiceIsOff();
+                        }
+                    };
+                    locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
+                } else {
+                    gpsStatusCallback = new GpsStatus.Listener() {
+                        @Override
+                        public void onGpsStatusChanged(int event) {
+                            if (event == GpsStatus.GPS_EVENT_STOPPED) {
+                                // Check if location is still enabled
+                                resetLastLocationIfLocationServiceIsOff();
+                            }
+                        }
+                    };
+                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+                }
+            }
+        } catch (SecurityException ex) {
+            Log.e(TAG, Log.getStackTraceString(ex));
+        }
+    }
+
+    private void unregisterForGpsStatusStop() {
+        try {
+            if (Build.VERSION.SDK_INT > 23) {
+                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
+            } else {
+                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+            }
+        } catch (SecurityException ex) {
+            Log.e(TAG, Log.getStackTraceString(ex));
+        }
+    }
+
+    private void resetLastLocationIfLocationServiceIsOff() {
+        if (context instanceof Activity) {
+            LocationSettingsHelper.checkLocationEnabled((Activity) context, new ResultCallback<LocationSettingsResult>() {
+                @Override
+                public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+                    int statusCode = locationSettingsResult.getStatus().getStatusCode();
+
+                    if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED
+                            || statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+                        lastLocation = null;
+                    }
+                }
+            });
         }
     }
 
