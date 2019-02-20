@@ -130,10 +130,10 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
         if (arrowLineLayer.isVisible()) {
             kujakuMapView.disableLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
+            drawArrowsBtn.setText(R.string.draw_arrows_showing_relationship);
         } else {
             kujakuMapView.addLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.draw_arrows_showing_relationship);
+            drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
         }
     }
 
