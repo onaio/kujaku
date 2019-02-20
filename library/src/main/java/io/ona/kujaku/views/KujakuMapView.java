@@ -108,7 +108,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean isMapScrolled = false;
 
-    private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
+    private static final int ANIMATE_TO_LOCATION_DURATION = 50;
 
     protected Set<io.ona.kujaku.domain.Point> droppedPoints;
 
