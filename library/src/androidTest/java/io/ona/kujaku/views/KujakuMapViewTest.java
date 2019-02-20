@@ -14,6 +14,8 @@ import android.widget.LinearLayout;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -39,6 +41,7 @@ import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -62,6 +65,21 @@ public class KujakuMapViewTest extends BaseTest {
             public void run() {
                 Mapbox.getInstance(context, "sample_token");
                 kujakuMapView = new KujakuMapTestView(context);
+            }
+        });
+    }
+
+    @Test
+    public void testLocationComponentWrapperIsInitaliazed() {
+        assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper());
+    }
+
+    @Test
+    public void testLocationComponentIsInitaliazed() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper().getLocationComponent());
             }
         });
     }

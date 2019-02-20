@@ -229,6 +229,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         featureMap = new HashMap<>();
+        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
     }
 
     private void showUpdatedUserLocation(Float radius) {
@@ -528,7 +529,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     addWmtsLayers();
 
                     if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
-                        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
                         mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
                     }
                 }
@@ -1055,7 +1055,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             Log.i(TAG, "All location settings are satisfied.");
                             // initialize location component wrapper
                             if (mapboxMap != null) {
-                                mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
                                 mapboxLocationComponentWrapper.init(mapboxMap, getContext());
                             }
                             // You can continue warming the GPS
