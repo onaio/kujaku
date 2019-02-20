@@ -25,12 +25,11 @@ public class MapboxLocationComponentWrapper {
     @SuppressWarnings( {"MissingPermission"})
     public static void init(@NonNull MapboxMap mapboxMap,@NonNull Context context) {
         mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
-        LocationComponent locationComponent = mapboxMap.getLocationComponent();
+        locationComponent = mapboxMap.getLocationComponent();
         locationComponent.activateLocationComponent(context, (LocationEngine) null);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.NONE);
         locationComponent.setRenderMode(RenderMode.NORMAL);
-        MapboxLocationComponentWrapper.locationComponent = locationComponent;
     }
 
     public static MapboxLocationComponentWrapper getInstance() {
@@ -42,6 +41,6 @@ public class MapboxLocationComponentWrapper {
     }
 
     public LocationComponent getLocationComponent() {
-       return MapboxLocationComponentWrapper.locationComponent;
+       return locationComponent;
     }
 }
