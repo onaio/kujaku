@@ -134,7 +134,7 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
 
             Location latestLocation = null;
             for (Location location : locationResult.getLocations()) {
-                if (latestLocation == null || location.getTime() > latestLocation.getTime()) {
+                if (latestLocation == null || (location != null && location.getTime() > latestLocation.getTime())) {
                     latestLocation = location;
                 }
             }
