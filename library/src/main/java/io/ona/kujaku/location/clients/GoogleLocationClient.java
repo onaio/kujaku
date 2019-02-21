@@ -31,7 +31,7 @@ import io.ona.kujaku.utils.LocationSettingsHelper;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
  */
 
-public class AndroidLocationClient extends BaseLocationClient implements LocationListener {
+public class GoogleLocationClient extends BaseLocationClient implements LocationListener {
 
     private Location lastLocation;
     private FusedLocationProviderClient fusedLocationClient;
@@ -40,11 +40,11 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
 
-    private static final String TAG = AndroidLocationClient.class.getName();
+    private static final String TAG = GoogleLocationClient.class.getName();
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     private Object gpsStatusCallback;
 
-    public AndroidLocationClient(@NonNull Context context) {
+    public GoogleLocationClient(@NonNull Context context) {
         this.context = context;
         locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);

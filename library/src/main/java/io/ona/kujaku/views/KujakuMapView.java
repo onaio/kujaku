@@ -72,7 +72,7 @@ import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.location.clients.AndroidLocationClient;
+import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
@@ -251,7 +251,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        locationClient = new AndroidLocationClient(getContext());
+        locationClient = new GoogleLocationClient(getContext());
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
