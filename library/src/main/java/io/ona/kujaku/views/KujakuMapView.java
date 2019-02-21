@@ -62,6 +62,7 @@ import java.util.Set;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
@@ -109,7 +110,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean isMapScrolled = false;
 
-    private static final int ANIMATE_TO_LOCATION_DURATION = 50;
+    private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
     protected Set<io.ona.kujaku.domain.Point> droppedPoints;
 
@@ -161,7 +162,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
 
-
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -201,11 +201,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true, locationBufferRadius);
-
-                // Enable asking for enabling the location by resetting this flag in case it was true
-                hasAlreadyRequestedEnableLocation = false;
-                setWarmGps(true);
+                    // Enable asking for enabling the location by resetting this flag in case it was true
+                    hasAlreadyRequestedEnableLocation = false;
+                    setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+                        @Override
+                        public void onSuccess() {
+                            focusOnUserLocation(true, locationBufferRadius);
+                        }
+                    });
             }
         });
 
@@ -1023,7 +1026,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         getMapboxMap();
         // This prevents an overlay issue the first time when requesting for permissions
         if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-            checkLocationSettingsAndStartLocationServices(true);
+            checkLocationSettingsAndStartLocationServices(true, null);
         }
 
         // Explain the consequence of rejecting enabling location
@@ -1038,7 +1041,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
+    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
         if (getContext() instanceof Activity) {
             Activity activity = (Activity) getContext();
 
@@ -1063,6 +1066,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             // You can continue warming the GPS
                             if (shouldStartNow) {
                                 warmUpLocationServices();
+                            }
+                            if (onLocationServicesEnabledCallBack != null) {
+                                onLocationServicesEnabledCallBack.onSuccess();
                             }
                             break;
                         case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -1124,6 +1130,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage) {
+        setWarmGps(warmGps, rejectionDialogTitle, rejectionDialogMessage, null);
+    }
+
+    public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
         // If it was not warming(started) the location services, do that now
         boolean shouldStartNow = !this.warmGps && warmGps;
         this.warmGps = warmGps;
@@ -1136,9 +1146,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             hasAlreadyRequestedEnableLocation = false;
             // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
             // We should just re-enable the location so that the LocationClient can reconnect to the location services
-            checkLocationSettingsAndStartLocationServices(shouldStartNow);
+            checkLocationSettingsAndStartLocationServices(shouldStartNow, onLocationServicesEnabledCallBack);
+        } else if (onLocationServicesEnabledCallBack != null) {
+            onLocationServicesEnabledCallBack.onSuccess();
         }
-
     }
 
     @Nullable
