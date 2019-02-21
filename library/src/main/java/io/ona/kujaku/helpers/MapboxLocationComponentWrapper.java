@@ -9,8 +9,6 @@ import com.mapbox.mapboxsdk.location.modes.CameraMode;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 
-import io.ona.kujaku.exceptions.LocationComponentInitializationException;
-
 /**
  * @author Vincent Karuri
  */
