@@ -8,6 +8,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -61,6 +63,7 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
     }
 
     @Override
+    @Nullable
     public Location getLastLocation() {
         return lastLocation;
     }
@@ -110,27 +113,25 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
 
     private void registerForGpsStatusStop() {
         try {
-            if (gpsStatusCallback != null) {
-                if (Build.VERSION.SDK_INT > 23) {
-                    gpsStatusCallback = new GnssStatus.Callback() {
-                        @Override
-                        public void onStopped() {
+            if (Build.VERSION.SDK_INT > 23) {
+                gpsStatusCallback = new GnssStatus.Callback() {
+                    @Override
+                    public void onStopped() {
+                        resetLastLocationIfLocationServiceIsOff();
+                    }
+                };
+                locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
+            } else {
+                gpsStatusCallback = new GpsStatus.Listener() {
+                    @Override
+                    public void onGpsStatusChanged(int event) {
+                        if (event == GpsStatus.GPS_EVENT_STOPPED) {
+                            // Check if location is still enabled
                             resetLastLocationIfLocationServiceIsOff();
                         }
-                    };
-                    locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
-                } else {
-                    gpsStatusCallback = new GpsStatus.Listener() {
-                        @Override
-                        public void onGpsStatusChanged(int event) {
-                            if (event == GpsStatus.GPS_EVENT_STOPPED) {
-                                // Check if location is still enabled
-                                resetLastLocationIfLocationServiceIsOff();
-                            }
-                        }
-                    };
-                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
-                }
+                    }
+                };
+                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
             }
         } catch (SecurityException ex) {
             Log.e(TAG, Log.getStackTraceString(ex));
@@ -138,14 +139,18 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
     }
 
     private void unregisterForGpsStatusStop() {
-        try {
-            if (Build.VERSION.SDK_INT > 23) {
-                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
-            } else {
-                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+        if (gpsStatusCallback != null) {
+            try {
+                if (Build.VERSION.SDK_INT > 23) {
+                    locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
+                } else {
+                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+                }
+
+                gpsStatusCallback = null;
+            } catch (SecurityException ex) {
+                Log.e(TAG, Log.getStackTraceString(ex));
             }
-        } catch (SecurityException ex) {
-            Log.e(TAG, Log.getStackTraceString(ex));
         }
     }
 
@@ -194,7 +199,8 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
         super.close();
     }
 
-    private class AndroidLocationCallback extends LocationCallback {
+    @VisibleForTesting
+    protected class AndroidLocationCallback extends LocationCallback {
 
         @Override
         public void onLocationResult(LocationResult locationResult) {
@@ -217,9 +223,11 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
             }
         }
 
-        /** Determines whether one Location reading is better than the current Location fix
-         * @param location  The new Location that you want to evaluate
-         * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+        /**
+         * Determines whether one Location reading is better than the current Location fix
+         *
+         * @param location            The new Location that you want to evaluate
+         * @param currentBestLocation The current Location fix, to which you want to compare the new one
          */
         private boolean isBetterLocation(Location location, Location currentBestLocation) {
             if (currentBestLocation == null) {
@@ -264,7 +272,9 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
             return false;
         }
 
-        /** Checks whether two providers are the same */
+        /**
+         * Checks whether two providers are the same
+         */
         private boolean isSameProvider(String provider1, String provider2) {
             if (provider1 == null) {
                 return provider2 == null;

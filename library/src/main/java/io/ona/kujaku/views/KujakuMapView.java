@@ -1048,7 +1048,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void onPause() {
         if (locationClient != null && locationClient.isMonitoringLocation()) {
-            locationClient.stopLocationUpdates();
             locationClient.close();
         }
     }
