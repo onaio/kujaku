@@ -17,8 +17,8 @@ import org.json.JSONException;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
@@ -45,7 +45,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param useGPS
      * @param addPointCallback returns the location chosen by user from GPS or calls {@link AddPointCallback#onCancel()}
      *                         if the user cancels the operation
-     * @param markerOptions Specifies the marker properties
+     * @param markerOptions    Specifies the marker properties
      */
     void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions);
 
@@ -78,33 +78,31 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
 
     /**
-     *  Add new {@link com.mapbox.geojson.Feature Feature} points to the {@link io.ona.kujaku.views.KujakuMapView map}
+     * Add new {@link com.mapbox.geojson.Feature Feature} points to the {@link io.ona.kujaku.views.KujakuMapView map}
+     * <p>
+     * A {@link com.mapbox.geojson.Feature feature} will be uniquely identified by its id field and a {@link com.mapbox.geojson.Feature Feature} with
+     * an already existing feature id will be ignored and not added to the {@link io.ona.kujaku.views.KujakuMapView map}
      *
-     *  A {@link com.mapbox.geojson.Feature feature} will be uniquely identified by its id field and a {@link com.mapbox.geojson.Feature Feature} with
-     *  an already existing feature id will be ignored and not added to the {@link io.ona.kujaku.views.KujakuMapView map}
-     *
-     *  @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points to be added to the map
-     *
-     *  @throws JSONException
+     * @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points to be added to the map
+     * @throws JSONException
      */
     void addFeaturePoints(FeatureCollection featureCollection) throws JSONException;
 
 
     /**
-     *  Update the properties of {@link com.mapbox.geojson.Feature Feature} points that are already on the {@link io.ona.kujaku.views.KujakuMapView map}
+     * Update the properties of {@link com.mapbox.geojson.Feature Feature} points that are already on the {@link io.ona.kujaku.views.KujakuMapView map}
+     * <p>
+     * If the {@link com.mapbox.geojson.Feature Feature} point does not already exist, it is added to the map by calling the {@link #addFeaturePoints(FeatureCollection) addFeaturePoints}
+     * function and passing the new {@link FeatureCollection FeatureCollection}
      *
-     *  If the {@link com.mapbox.geojson.Feature Feature} point does not already exist, it is added to the map by calling the {@link #addFeaturePoints(FeatureCollection) addFeaturePoints}
-     *  function and passing the new {@link FeatureCollection FeatureCollection}
-     *
-     *  @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points whose properties will be updated on the map
-     *
-     *   @throws JSONException
+     * @param featureCollection A {@link FeatureCollection FeatureCollection} of {@link com.mapbox.geojson.Feature Feature} points whose properties will be updated on the map
+     * @throws JSONException
      */
     void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException;
 
 
     /**
-     *  Update the list of points displayed in KujakuMapView
+     * Update the list of points displayed in KujakuMapView
      * Enables the app to get notified when the bounding box of the map changes if a user performs a pinch
      * or scroll movement. The listener registers the movement once it reaches the end so as no to have
      * a huge performance hit in cases where this is used to update the map with features. In case you
@@ -122,10 +120,10 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     /**
      * This function updates the list of points displayed in KujakuMapView
+     * <p>
+     * This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers defined by the user
      *
-     *  This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers defined by the user
-     *
-     *  @param points A list of {@link Point}
+     * @param points A list of {@link Point}
      */
     void updateDroppedPoints(List<Point> points);
 
@@ -189,12 +187,6 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     ILocationClient getLocationClient();
 
     /**
-     * Adds the {@link ArrowLineLayer} to the map and renders it when the map is ready
-     *
-     * @param arrowLineLayer
-     */
-
-    /**
      * Enables one to add {@link KujakuLayer}s which are grouped layers to the {@link IKujakuMapView}.
      * Layers such as {@link ArrowLineLayer} will be added using this method. It also enables one to
      * re-enable an already added {@link KujakuLayer} which was disabled using {@link IKujakuMapView#disableLayer(KujakuLayer)}
@@ -211,4 +203,23 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param kujakuLayer
      */
     void disableLayer(@NonNull KujakuLayer kujakuLayer);
+
+    /**
+     * Enables the host application to change the frequency of the location updates and accuracy level.
+     * For cases where the host application would like to reduce on power consumption, it is a useful
+     * method to reduce the frequency of updates and accuracy level so as to achieve this. The #updateInterval might not be obeyed
+     * because other applications might request for faster updates . See
+     * <a href="https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest#setFastestInterval(long)">here</a>
+     * for more
+     *
+     * @param updateInterval        The requested #updateInterval to the location client
+     * @param fastestUpdateInterval In case the #updateInterval is not obeyed, your updates will be throttled down to this interval
+     * @param accuracyLevel         This can be {@link com.google.android.gms.location.LocationRequest#PRIORITY_HIGH_ACCURACY}
+     *                              , {@link com.google.android.gms.location.LocationRequest#PRIORITY_BALANCED_POWER_ACCURACY}
+     *                              , {@link com.google.android.gms.location.LocationRequest#PRIORITY_LOW_POWER}
+     *                              , {@link com.google.android.gms.location.LocationRequest#PRIORITY_NO_POWER}
+     *
+     * @return if the location update was applied to the location client
+     */
+    boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel);
 }

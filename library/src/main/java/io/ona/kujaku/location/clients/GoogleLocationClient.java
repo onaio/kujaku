@@ -79,13 +79,17 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     @Override
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener) {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(updateInterval);
+        locationRequest.setFastestInterval(fastestUpdateInterval);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        requestLocationUpdates(locationListener, locationRequest);
+    }
+
+    public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener
+            , @NonNull LocationRequest locationRequest) {
         setLocationListener(locationListener);
         if (isProviderEnabled()) {
-            LocationRequest locationRequest = new LocationRequest();
-            locationRequest.setInterval(updateInterval);
-            locationRequest.setFastestInterval(fastestUpdateInterval);
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
             try {
                 fusedLocationClient.getLastLocation()
                         .addOnSuccessListener((Activity) context, new OnSuccessListener<Location>() {
@@ -99,6 +103,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
                 fusedLocationClient.requestLocationUpdates(locationRequest, googleLocationCallback, null);
 
+                // This method protects itself from multiple calls
                 registerForGpsStatusStop();
             } catch (SecurityException e) {
                 Log.e(TAG, Log.getStackTraceString(e));
@@ -113,25 +118,29 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     private void registerForGpsStatusStop() {
         try {
-            if (Build.VERSION.SDK_INT > 23) {
-                gpsStatusCallback = new GnssStatus.Callback() {
-                    @Override
-                    public void onStopped() {
-                        resetLastLocationIfLocationServiceIsOff();
-                    }
-                };
-                locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
-            } else {
-                gpsStatusCallback = new GpsStatus.Listener() {
-                    @Override
-                    public void onGpsStatusChanged(int event) {
-                        if (event == GpsStatus.GPS_EVENT_STOPPED) {
-                            // Check if location is still enabled
+            // Multiple calls to this method are possible
+            // Therefore, we need to prevent multiple registration of the listener by only registering if it's null
+            if (gpsStatusCallback == null) {
+                if (Build.VERSION.SDK_INT > 23) {
+                    gpsStatusCallback = new GnssStatus.Callback() {
+                        @Override
+                        public void onStopped() {
                             resetLastLocationIfLocationServiceIsOff();
                         }
-                    }
-                };
-                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+                    };
+                    locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
+                } else {
+                    gpsStatusCallback = new GpsStatus.Listener() {
+                        @Override
+                        public void onGpsStatusChanged(int event) {
+                            if (event == GpsStatus.GPS_EVENT_STOPPED) {
+                                // Check if location is still enabled
+                                resetLastLocationIfLocationServiceIsOff();
+                            }
+                        }
+                    };
+                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
+                }
             }
         } catch (SecurityException ex) {
             Log.e(TAG, Log.getStackTraceString(ex));

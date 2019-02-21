@@ -7,6 +7,7 @@ import android.content.IntentSender;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
+import android.location.LocationListener;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
@@ -93,7 +95,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidt
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  *
  */
-
 public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
@@ -167,7 +168,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String locationEnableRejectionDialogMessage;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
-
+    private LocationListener locationListener;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -252,7 +253,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void warmUpLocationServices() {
         locationClient = new GoogleLocationClient(getContext());
-        locationClient.requestLocationUpdates(new BaseLocationListener() {
+        locationListener = new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 latestLocation = new LatLng(location.getLatitude()
@@ -266,7 +267,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     showUpdatedUserLocation();
                 }
             }
-        });
+        };
+        locationClient.requestLocationUpdates(locationListener);
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -1209,6 +1211,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 }
             });
         }
+    }
+
+    @Override
+    public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
+        if (getLocationClient() != null) {
+            LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setInterval(updateInterval);
+            locationRequest.setFastestInterval(fastestUpdateInterval);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+            getLocationClient().requestLocationUpdates(locationListener);
+            return true;
+        }
+
+        return false;
     }
 
     private void resetRejectionDialogContent() {
