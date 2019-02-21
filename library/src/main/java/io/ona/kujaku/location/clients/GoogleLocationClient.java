@@ -35,7 +35,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     private Location lastLocation;
     private FusedLocationProviderClient fusedLocationClient;
-    private AndroidLocationCallback androidLocationCallback;
+    private GoogleLocationCallback googleLocationCallback;
 
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
@@ -48,7 +48,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         this.context = context;
         locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-        androidLocationCallback = new AndroidLocationCallback();
+        googleLocationCallback = new GoogleLocationCallback();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         if (isMonitoringLocation()) {
             lastLocation = null;
             setLocationListener(null);
-            fusedLocationClient.removeLocationUpdates(androidLocationCallback);
+            fusedLocationClient.removeLocationUpdates(googleLocationCallback);
         }
 
         unregisterForGpsStatusStop();
@@ -97,7 +97,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                             }
                         });
 
-                fusedLocationClient.requestLocationUpdates(locationRequest, androidLocationCallback, null);
+                fusedLocationClient.requestLocationUpdates(locationRequest, googleLocationCallback, null);
 
                 registerForGpsStatusStop();
             } catch (SecurityException e) {
@@ -200,7 +200,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     }
 
     @VisibleForTesting
-    protected class AndroidLocationCallback extends LocationCallback {
+    protected class GoogleLocationCallback extends LocationCallback {
 
         @Override
         public void onLocationResult(LocationResult locationResult) {

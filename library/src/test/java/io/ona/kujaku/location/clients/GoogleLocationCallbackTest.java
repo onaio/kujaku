@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 21/02/2019
  */
-public class AndroidLocationCallbackTest extends BaseTest {
+public class GoogleLocationCallbackTest extends BaseTest {
 
-    private GoogleLocationClient.AndroidLocationCallback androidLocationCallback;
+    private GoogleLocationClient.GoogleLocationCallback googleLocationCallback;
     private String isSameProvider = "isSameProvider";
     private String isBetterLocation = "isBetterLocation";
     private GoogleLocationClient googleLocationClient;
@@ -31,31 +31,31 @@ public class AndroidLocationCallbackTest extends BaseTest {
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         googleLocationClient = new GoogleLocationClient(RuntimeEnvironment.application);
-        androidLocationCallback = (GoogleLocationClient.AndroidLocationCallback) getValueInPrivateField(GoogleLocationClient.class
+        googleLocationCallback = (GoogleLocationClient.GoogleLocationCallback) getValueInPrivateField(GoogleLocationClient.class
                 , googleLocationClient
-                , "androidLocationCallback");
+                , "googleLocationCallback");
     }
 
     @Test
     public void isSameProviderWhenGivenNonNullsShouldEvaluateCorrectly() {
-        assertFalse(ReflectionHelpers.callInstanceMethod(androidLocationCallback, isSameProvider
+        assertFalse(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.GPS_PROVIDER)
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
 
 
-        assertTrue(ReflectionHelpers.callInstanceMethod(androidLocationCallback, isSameProvider
+        assertTrue(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
     }
 
     @Test
     public void isSameProviderWhenGivenNullsShouldWorkOK() {
-        assertTrue(ReflectionHelpers.callInstanceMethod(androidLocationCallback, isSameProvider
+        assertTrue(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
                 , ReflectionHelpers.ClassParameter.from(String.class, null)
                 , ReflectionHelpers.ClassParameter.from(String.class, null)));
 
 
-        assertFalse(ReflectionHelpers.callInstanceMethod(androidLocationCallback, isSameProvider
+        assertFalse(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
                 , ReflectionHelpers.ClassParameter.from(String.class, null)
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
     }
@@ -71,8 +71,8 @@ public class AndroidLocationCallbackTest extends BaseTest {
         try {
             locations.add(latestLocation);
             locations.add(null);
-            androidLocationCallback.onLocationResult(LocationResult.create(locations));
-            androidLocationCallback.onLocationResult(null);
+            googleLocationCallback.onLocationResult(LocationResult.create(locations));
+            googleLocationCallback.onLocationResult(null);
         } catch (NullPointerException e) {
             errorNotThrown = false;
         }
@@ -92,7 +92,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         locations.add(generateLocation(7, timeNow - slightlyOlder));
         locations.add(generateLocation(20, timeNow - slightlyOlder));
 
-        androidLocationCallback.onLocationResult(LocationResult.create(locations));
+        googleLocationCallback.onLocationResult(LocationResult.create(locations));
 
         Location location = (Location) getValueInPrivateField(GoogleLocationClient.class, googleLocationClient, "lastLocation");
         assertEquals(7f, location.getAccuracy(), 0f);
@@ -106,7 +106,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location newLocation = generateLocation(12, timeNow);
         Location currentLocation = generateLocation(3, timeNow - significantlyOlder);
 
-        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -119,7 +119,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow);
         Location newLocation = generateLocation(3, timeNow - significantlyOlder);
 
-        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -132,7 +132,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow - olderTime);
         Location newLocation = generateLocation(3, timeNow);
 
-        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -145,7 +145,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow - olderTime);
         Location newLocation = generateLocation(12, timeNow);
 
-        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -158,7 +158,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow - olderTime);
         Location newLocation = generateLocation(20, timeNow);
 
-        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertTrue(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -171,7 +171,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow - olderTime);
         Location newLocation = generateLocation(220, timeNow);
 
-        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
@@ -184,7 +184,7 @@ public class AndroidLocationCallbackTest extends BaseTest {
         Location currentLocation = generateLocation(12, timeNow);
         Location newLocation = generateLocation(12, timeNow - olderTime);
 
-        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.AndroidLocationCallback.class, androidLocationCallback
+        assertFalse(ReflectionHelpers.callInstanceMethod(GoogleLocationClient.GoogleLocationCallback.class, googleLocationCallback
                 , isBetterLocation, ReflectionHelpers.ClassParameter.from(Location.class, newLocation)
                 , ReflectionHelpers.ClassParameter.from(Location.class, currentLocation)));
     }
