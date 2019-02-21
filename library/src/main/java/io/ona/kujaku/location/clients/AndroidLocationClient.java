@@ -208,7 +208,7 @@ public class AndroidLocationClient extends BaseLocationClient implements Locatio
                 return;
             }
 
-            Location latestLocation = null;
+            Location latestLocation = getLastLocation();
             for (Location location : locationResult.getLocations()) {
                 if (latestLocation == null || (location != null && isBetterLocation(location, latestLocation))) {
                     latestLocation = location;
