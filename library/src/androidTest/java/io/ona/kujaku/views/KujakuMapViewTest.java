@@ -75,16 +75,6 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void testLocationComponentIsInitaliazed() {
-        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(MapboxMap mapboxMap) {
-                assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper().getLocationComponent());
-            }
-        });
-    }
-
-    @Test
     public void enableAddPointShouldShowMarkerLayoutWhenPassedTrue() throws NoSuchFieldException, IllegalAccessException {
         assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
@@ -236,11 +226,31 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(View.GONE, currentLocationBtn.getVisibility());
     }
 
+
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true);
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
+
+
+        kujakuMapView.focusOnUserLocation(false);
+        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+
+        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair, drawableResId);
+    }
+
+    @Test
+    public void focusOnUserLocationWithRadiusShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
+        String updateUserLocationOnMap = "updateUserLocationOnMap";
+
+        kujakuMapView.focusOnUserLocation(true, 25f);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
