@@ -1221,7 +1221,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             locationRequest.setFastestInterval(fastestUpdateInterval);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-            getLocationClient().requestLocationUpdates(locationListener);
+            ((GoogleLocationClient) getLocationClient())
+                    .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
             return true;
         }
 
