@@ -14,6 +14,8 @@ import android.widget.LinearLayout;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -28,10 +30,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import io.ona.kujaku.BaseTest;
-import io.ona.kujaku.FakeOnLocationServicesEnabledCallBack;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
@@ -75,6 +75,16 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
+    public void testLocationComponentIsInitaliazed() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper().getLocationComponent());
+            }
+        });
+    }
+
+    @Test
     public void enableAddPointShouldShowMarkerLayoutWhenPassedTrue() throws NoSuchFieldException, IllegalAccessException {
         assertEquals(View.GONE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
@@ -83,20 +93,6 @@ public class KujakuMapViewTest extends BaseTest {
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "canAddPoint"));
         assertEquals(View.VISIBLE, kujakuMapView.findViewById(R.id.iv_mapview_locationSelectionMarker).getVisibility());
 
-    }
-
-    @Test
-    public void enableAddPointShouldInvokeOnLocationServicesEnabledCallBackIfPresent() throws NoSuchFieldException, IllegalAccessException {
-        // warm gps
-        kujakuMapView.setWarmGps(true,
-                "Location disabled",
-                "The add point features will not work. We cannot drop points without your location.",
-                new OnLocationServicesEnabledCallBack() {
-                    @Override
-                    public void onSuccess() {
-                        // do nothing
-                    }
-                });
     }
 
     @Test
@@ -257,28 +253,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
-
     }
-
-    @Test
-    public void focusOnUserLocationWithRadiusShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
-        String updateUserLocationOnMap = "updateUserLocationOnMap";
-
-        kujakuMapView.focusOnUserLocation(true, 25F);
-        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
-        ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
-
-        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
-        assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
-
-
-        kujakuMapView.focusOnUserLocation(false);
-        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
-
-        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
-        assertEquals(R.drawable.ic_cross_hair, drawableResId);
-    }
-
 
     @Test
     public void addNullWmtsLayers() {
