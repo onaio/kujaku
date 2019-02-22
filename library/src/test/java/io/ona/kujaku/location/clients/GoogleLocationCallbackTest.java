@@ -37,47 +37,31 @@ public class GoogleLocationCallbackTest extends BaseTest {
     }
 
     @Test
-    public void isSameProviderWhenGivenNonNullsShouldEvaluateCorrectly() {
-        assertFalse(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
-                , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.GPS_PROVIDER)
-                , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
-
-
+    public void isSameProviderWhenGivenSameProviderShouldReturnTrue() {
         assertTrue(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
     }
 
     @Test
-    public void isSameProviderWhenGivenNullsShouldWorkOK() {
-        assertTrue(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
-                , ReflectionHelpers.ClassParameter.from(String.class, null)
-                , ReflectionHelpers.ClassParameter.from(String.class, null)));
-
-
+    public void isSameProviderWhenGivenDifferentProvidersShouldReturnFalse() {
         assertFalse(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
-                , ReflectionHelpers.ClassParameter.from(String.class, null)
+                , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.GPS_PROVIDER)
                 , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
     }
 
     @Test
-    public void onLocationResultWhenGivenNullLocationsShouldNotThrowException() throws NoSuchFieldException, IllegalAccessException {
-        boolean errorNotThrown = true;
-        ArrayList<Location> locations = new ArrayList<>();
-        Location latestLocation = new Location("test_provider");
-        latestLocation.setLatitude(45f);
-        latestLocation.setLongitude(45f);
+    public void isSameProviderWhenGivenNullsShouldReturnTrue() {
+        assertTrue(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
+                , ReflectionHelpers.ClassParameter.from(String.class, null)
+                , ReflectionHelpers.ClassParameter.from(String.class, null)));
+    }
 
-        try {
-            locations.add(latestLocation);
-            locations.add(null);
-            googleLocationCallback.onLocationResult(LocationResult.create(locations));
-            googleLocationCallback.onLocationResult(null);
-        } catch (NullPointerException e) {
-            errorNotThrown = false;
-        }
-
-        assertTrue(errorNotThrown);
+    @Test
+    public void isSameProviderWhenGivenProviderAndNullShouldReturnFalse() {
+        assertFalse(ReflectionHelpers.callInstanceMethod(googleLocationCallback, isSameProvider
+                , ReflectionHelpers.ClassParameter.from(String.class, null)
+                , ReflectionHelpers.ClassParameter.from(String.class, LocationManager.NETWORK_PROVIDER)));
     }
 
     @Test
