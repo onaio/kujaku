@@ -159,6 +159,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private String locationEnableRejectionDialogTitle;
     private String locationEnableRejectionDialogMessage;
+    private OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
 
@@ -1025,8 +1026,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         super.onResume();
         getMapboxMap();
         // This prevents an overlay issue the first time when requesting for permissions
-        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) && !isResumingFromRequestingEnableLocation) {
             checkLocationSettingsAndStartLocationServices(true, null);
+        } else if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) && isResumingFromRequestingEnableLocation) {
+            checkLocationSettingsAndStartLocationServices(true, onLocationServicesEnabledCallBack);
         }
 
         // Explain the consequence of rejecting enabling location
@@ -1095,7 +1098,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot not created.");
+                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot be created.");
                             break;
 
                         default:
@@ -1140,15 +1143,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         locationEnableRejectionDialogTitle = rejectionDialogTitle;
         locationEnableRejectionDialogMessage = rejectionDialogMessage;
-
+        this.onLocationServicesEnabledCallBack = onLocationServicesEnabledCallBack;
         if (warmGps) {
             // Don't back-off from request location enable since this was an explicit call to enable location
             hasAlreadyRequestedEnableLocation = false;
             // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
             // We should just re-enable the location so that the LocationClient can reconnect to the location services
             checkLocationSettingsAndStartLocationServices(shouldStartNow, onLocationServicesEnabledCallBack);
-        } else if (onLocationServicesEnabledCallBack != null) {
-            onLocationServicesEnabledCallBack.onSuccess();
         }
     }
 
