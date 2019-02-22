@@ -1,7 +1,6 @@
 package io.ona.kujaku.layers;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -17,7 +16,6 @@ import com.mapbox.mapboxsdk.utils.ColorUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -25,12 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
-import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
-import io.ona.kujaku.test.shadows.ShadowSymbolLayer;
 import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
@@ -40,9 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 11/02/2019
  */
-
-@Config(shadows = {ShadowGeoJsonSource.class, ShadowSymbolLayer.class, ShadowLineLayer.class, ShadowLayer.class})
-public class ArrowLineLayerTest extends BaseTest {
+public class ArrowLineLayerTest extends BaseKujakuLayerTest {
 
     private Context context;
 
@@ -726,10 +719,5 @@ public class ArrowLineLayerTest extends BaseTest {
         assertEquals(3, filteredFeatures.get(1).getNumberProperty("position"));
         assertEquals(4, filteredFeatures.get(2).getNumberProperty("position"));
         assertEquals(5, filteredFeatures.get(3).getNumberProperty("position"));
-    }
-
-    private void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {
-        assertEquals(expected.latitude(), actual.latitude(), 0d);
-        assertEquals(expected.longitude(), actual.longitude(), 0d);
     }
 }
