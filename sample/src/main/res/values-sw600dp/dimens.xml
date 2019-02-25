@@ -2,4 +2,5 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="hamburger_margin">48dp</dimen>
     <dimen name="hamburger_radius">10dp</dimen>
+    <dimen name="decrease_circle_radius_button_left_margin">100dp</dimen>
 </resources>
