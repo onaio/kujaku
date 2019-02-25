@@ -21,6 +21,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -178,13 +179,25 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     /**
      * Exposes the location client being used by KujakuMapView. The location client can be null in case {@link IKujakuMapView#isWarmGps()}
-     * is false or the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
-     * host application.
+     * is false, the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
+     * host application or if the method is called too fast before the {@link ILocationClient} has been started
+     * (after checking for correct location settings and location permissions)
      *
      * @return the location client
      */
     @Nullable
     ILocationClient getLocationClient();
+
+    /**
+     * Exposes the location client being used by KujakuMapView. Since the location client can be null in case {@link IKujakuMapView#isWarmGps()}
+     * is false, the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
+     * host application or if the method is called too fast before the {@link ILocationClient} has been started
+     * (checking for correct location settings and location permissions before it is started). In such a case
+     * , the host application will be notified when the {@link ILocationClient} is available through the callback registered
+     *
+     * @param locationClientStartedCallback The callback to be called when the {@link ILocationClient} is available
+     */
+    void getLocationClient(@NonNull LocationClientStartedCallback locationClientStartedCallback);
 
     /**
      * Enables one to add {@link KujakuLayer}s which are grouped layers to the {@link IKujakuMapView}.

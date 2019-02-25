@@ -7,7 +7,6 @@ import android.content.IntentSender;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
-import android.location.LocationListener;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -72,6 +71,7 @@ import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
@@ -168,6 +168,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String locationEnableRejectionDialogMessage;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
+    private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -267,6 +268,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 }
             }
         });
+
+        if (locationClientCallbacks.size() > 0) {
+            for (LocationClientStartedCallback locationClientStartedCallback: locationClientCallbacks) {
+                locationClientStartedCallback.onStarted(locationClient);
+            }
+
+            locationClientCallbacks.clear();
+        }
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -1177,6 +1186,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public ILocationClient getLocationClient() {
         return locationClient;
+    }
+
+    @Override
+    public void getLocationClient(@Nullable LocationClientStartedCallback locationClientStartedCallback) {
+        if (getLocationClient() != null) {
+            locationClientStartedCallback.onStarted(getLocationClient());
+        } else {
+            if (!locationClientCallbacks.contains(locationClientStartedCallback)) {
+                locationClientCallbacks.add(locationClientStartedCallback);
+            }
+        }
     }
 
     @Override
