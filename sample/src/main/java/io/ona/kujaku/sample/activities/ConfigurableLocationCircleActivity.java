@@ -6,6 +6,7 @@ import android.widget.Button;
 
 import com.mapbox.mapboxsdk.Mapbox;
 
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
@@ -26,7 +27,12 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         btnIncreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.focusOnUserLocation(true, 70f);
+                kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+                    @Override
+                    public void onSuccess() {
+                        kujakuMapView.focusOnUserLocation(true, 70f);
+                    }
+                });
             }
         });
 
@@ -34,7 +40,12 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         btnDecreaseCircleRadius.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.focusOnUserLocation(true, 10f);
+                kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+                    @Override
+                    public void onSuccess() {
+                        kujakuMapView.focusOnUserLocation(true, 10f);
+                    }
+                });
             }
         });
     }
