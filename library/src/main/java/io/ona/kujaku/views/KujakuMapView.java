@@ -168,7 +168,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String locationEnableRejectionDialogMessage;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
-    private LocationListener locationListener;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -253,7 +252,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void warmUpLocationServices() {
         locationClient = new GoogleLocationClient(getContext());
-        locationListener = new BaseLocationListener() {
+        locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 latestLocation = new LatLng(location.getLatitude()
@@ -267,8 +266,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     showUpdatedUserLocation();
                 }
             }
-        };
-        locationClient.requestLocationUpdates(locationListener);
+        });
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
