@@ -169,9 +169,9 @@ dependencies { configuration ->
     }
 
     // Comment the line below when creating releases - The line is for development of the library & utils
-    implementation (project(":utils")) {
+//    implementation (project(":utils")) {
     // Uncomment the line below when creating releases
-    //implementation('io.ona.kujaku:utils:0.6.1') {
+    implementation('io.ona.kujaku:utils:0.6.1') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
