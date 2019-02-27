@@ -3,13 +3,11 @@ package io.ona.kujaku.sample.activities;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.text.DecimalFormat;
 
 import io.ona.kujaku.listeners.BoundsChangeListener;
-import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
