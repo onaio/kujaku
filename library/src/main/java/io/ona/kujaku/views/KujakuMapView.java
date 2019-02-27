@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
+import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -44,12 +45,10 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.Source;
 import com.mapbox.mapboxsdk.style.sources.TileSet;
 
 import org.json.JSONException;
@@ -61,11 +60,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.layers.KujakuLayer;
@@ -82,13 +82,6 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
-
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth;
 
 /**
  *
@@ -109,13 +102,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
 
-    private CircleLayer userLocationInnerCircle;
-    private CircleLayer userLocationOuterCircle;
-    private GeoJsonSource pointsSource;
-    private String pointsInnerLayerId = UUID.randomUUID().toString();
-    private String pointsOuterLayerId = pointsInnerLayerId + "2";
-    private String pointsSourceId = UUID.randomUUID().toString();
-
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
 
@@ -129,9 +115,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     protected Set<io.ona.kujaku.domain.Point> droppedPoints;
 
-    private LatLng latestLocation;
+    private LatLng latestLocationCoordinates;
+
+    private Location latestLocation;
+
+    private MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
 
     private boolean updateUserLocationOnMap = false;
+
+    private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
+
+    private float locationBufferRadius = DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS;
 
     /**
      * Wmts Layers to add on the map
@@ -166,6 +160,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private String locationEnableRejectionDialogTitle;
     private String locationEnableRejectionDialogMessage;
+    private OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
@@ -209,11 +204,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                focusOnUserLocation(true);
-
-                // Enable asking for enabling the location by resetting this flag in case it was true
-                hasAlreadyRequestedEnableLocation = false;
-                setWarmGps(true);
+                    // Enable asking for enabling the location by resetting this flag in case it was true
+                    hasAlreadyRequestedEnableLocation = false;
+                    setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+                        @Override
+                        public void onSuccess() {
+                            focusOnUserLocation(true, locationBufferRadius);
+                        }
+                    });
             }
         });
 
@@ -240,14 +238,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         featureMap = new HashMap<>();
+        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
     }
 
-    private void showUpdatedUserLocation() {
-        updateUserLocationLayer(latestLocation);
-
+    private void showUpdatedUserLocation(Float radius) {
+        updateUserLocation(radius);
         if (updateUserLocationOnMap || !isMapScrolled) {
             // Focus on the new location
-            centerMap(latestLocation, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
+            centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
         }
     }
 
@@ -256,15 +254,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                latestLocation = new LatLng(location.getLatitude()
-                        , location.getLongitude());
+                if (location != null) {
+                    latestLocation = location;
+                    latestLocationCoordinates = new LatLng(location.getLatitude()
+                            , location.getLongitude());
+                }
 
                 if (onLocationChangedListener != null) {
                     onLocationChangedListener.onLocationChanged(location);
                 }
 
                 if (updateUserLocationOnMap) {
-                    showUpdatedUserLocation();
+                    showUpdatedUserLocation(locationBufferRadius);
                 }
             }
         });
@@ -399,8 +400,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
             // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
-            if (latestLocation != null) {
-                showUpdatedUserLocation();
+            if (latestLocationCoordinates != null) {
+                showUpdatedUserLocation(locationBufferRadius);
             }
         } else {
             // This should just disable the layout and any ongoing operations for focus
@@ -408,52 +409,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void updateUserLocationLayer(@NonNull LatLng latLng) {
-        com.mapbox.geojson.Feature feature =
-                com.mapbox.geojson.Feature.fromGeometry(
-                        com.mapbox.geojson.Point.fromLngLat(
-                                latLng.getLongitude(), latLng.getLatitude()
-                        )
-                );
-
-        if (userLocationOuterCircle == null || userLocationInnerCircle == null || pointsSource == null) {
-            pointsSource = new GeoJsonSource(pointsSourceId);
-            pointsSource.setGeoJson(feature);
-
-            if (mapboxMap != null && mapboxMap.getSource(pointsSourceId) == null) {
-                mapboxMap.addSource(pointsSource);
-
-                userLocationInnerCircle = new CircleLayer(pointsInnerLayerId, pointsSourceId);
-                userLocationInnerCircle.setProperties(
-                        circleColor("#4387f4"),
-                        circleRadius(5f),
-                        circleStrokeWidth(1f),
-                        circleStrokeColor("#dde2e4")
-                );
-
-                userLocationOuterCircle = new CircleLayer(pointsOuterLayerId, pointsSourceId);
-                userLocationOuterCircle.setProperties(
-                        circleColor("#81c2ee"),
-                        circleRadius(25f),
-                        circleStrokeWidth(1f),
-                        circleStrokeColor("#74b7f6"),
-                        circleOpacity(0.3f),
-                        circleStrokeOpacity(0.6f)
-                );
-
-                mapboxMap.addLayer(userLocationOuterCircle);
-                mapboxMap.addLayer(userLocationInnerCircle);
-            }
-            // TODO: What if the map already has a source layer with this source layer id
-        } else {
-            // Get the layer and update it
-            if (mapboxMap != null) {
-                Source source = mapboxMap.getSource(pointsSourceId);
-
-                if (source instanceof GeoJsonSource) {
-                    ((GeoJsonSource) source).setGeoJson(feature);
-                }
-            }
+    private void updateUserLocation(Float locationBufferRadius) {
+        this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
+        if (latestLocation != null) {
+            latestLocation.setAccuracy(this.locationBufferRadius);
+            getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
         }
     }
 
@@ -584,6 +544,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     enableFeatureClickListenerEmitter(mapboxMap);
 
                     addWmtsLayers();
+
+                    if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
+                        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+                    }
                 }
             });
         }
@@ -908,14 +872,19 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation) {
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS);
+    }
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
         if (focusOnMyLocation) {
             isMapScrolled = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
-            if (latestLocation != null) {
-                showUpdatedUserLocation();
+            if (latestLocationCoordinates != null) {
+                showUpdatedUserLocation(radius);
             }
 
         } else {
@@ -1066,8 +1035,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         super.onResume();
         getMapboxMap();
         // This prevents an overlay issue the first time when requesting for permissions
-        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-            checkLocationSettingsAndStartLocationServices(true);
+        if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) && !isResumingFromRequestingEnableLocation) {
+            checkLocationSettingsAndStartLocationServices(true, null);
+        } else if (warmGps && Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) && isResumingFromRequestingEnableLocation) {
+            checkLocationSettingsAndStartLocationServices(true, onLocationServicesEnabledCallBack);
         }
 
         // Explain the consequence of rejecting enabling location
@@ -1082,7 +1053,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow) {
+    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
         if (getContext() instanceof Activity) {
             Activity activity = (Activity) getContext();
 
@@ -1100,10 +1071,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
-
+                            // initialize location component wrapper
+                            if (mapboxMap != null) {
+                                mapboxLocationComponentWrapper.init(mapboxMap, getContext());
+                            }
                             // You can continue warming the GPS
                             if (shouldStartNow) {
                                 warmUpLocationServices();
+                            }
+                            if (onLocationServicesEnabledCallBack != null) {
+                                onLocationServicesEnabledCallBack.onSuccess();
                             }
                             break;
                         case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -1130,7 +1107,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot not created.");
+                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot be created.");
                             break;
 
                         default:
@@ -1165,27 +1142,34 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage) {
+        setWarmGps(warmGps, rejectionDialogTitle, rejectionDialogMessage, null);
+    }
+
+    public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
         // If it was not warming(started) the location services, do that now
         boolean shouldStartNow = !this.warmGps && warmGps;
         this.warmGps = warmGps;
 
         locationEnableRejectionDialogTitle = rejectionDialogTitle;
         locationEnableRejectionDialogMessage = rejectionDialogMessage;
-
+        this.onLocationServicesEnabledCallBack = onLocationServicesEnabledCallBack;
         if (warmGps) {
             // Don't back-off from request location enable since this was an explicit call to enable location
             hasAlreadyRequestedEnableLocation = false;
             // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
             // We should just re-enable the location so that the LocationClient can reconnect to the location services
-            checkLocationSettingsAndStartLocationServices(shouldStartNow);
+            checkLocationSettingsAndStartLocationServices(shouldStartNow, onLocationServicesEnabledCallBack);
         }
-
     }
 
     @Nullable
     @Override
     public ILocationClient getLocationClient() {
         return locationClient;
+    }
+
+    public void setLocationBufferRadius(float locationBufferRadius) {
+        this.locationBufferRadius = locationBufferRadius;
     }
 
     @Override
@@ -1250,6 +1234,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void resetRejectionDialogContent() {
         locationEnableRejectionDialogTitle = null;
         locationEnableRejectionDialogMessage = null;
+    }
+
+    public MapboxLocationComponentWrapper getMapboxLocationComponentWrapper() {
+        return mapboxLocationComponentWrapper;
     }
 }
 

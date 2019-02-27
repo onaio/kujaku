@@ -73,9 +73,20 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
      * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
      *
-     * @param focusOnMyLocation
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
      */
     void focusOnUserLocation(boolean focusOnMyLocation);
+
+
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
+     * @param radius Radius of the outer circle that marks the user's current location
+     */
+    void focusOnUserLocation(boolean focusOnMyLocation, @Nullable Float radius);
 
 
     /**

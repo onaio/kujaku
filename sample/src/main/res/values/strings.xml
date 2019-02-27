@@ -46,6 +46,7 @@
     <string name="feature_click_status">Feature Click Status</string>
     <string name="bounding_box_listener">Bounding Box Listener</string>
     <string name="bounds_aware_activity">Bounds Aware Activity</string>
+    <string name="configurable_circle_activity">Configurable Circle Activity</string>
     <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
     <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
     <string name="enable_bounds_listener">"Enable Bounds Listener"</string>

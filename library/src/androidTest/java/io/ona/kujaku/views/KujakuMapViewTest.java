@@ -33,9 +33,9 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -65,6 +65,11 @@ public class KujakuMapViewTest extends BaseTest {
                 kujakuMapView = new KujakuMapTestView(context);
             }
         });
+    }
+
+    @Test
+    public void testLocationComponentWrapperIsInitaliazed() {
+        assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper());
     }
 
     @Test
@@ -125,21 +130,13 @@ public class KujakuMapViewTest extends BaseTest {
         };
 
         LatLng latLng = new LatLng(14d, 23d);
-
-        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocation", latLng);
+        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocationCoordinates", latLng);
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 kujakuMapView.enableAddPoint(true, onLocationChanged);
             }
         });
-
-        // Check if the two circle layers were added
-        // Check if geojson for current user position was added
-        // Todo: this can use a drawable icon instead of having two extra layers
-
-        assertNotNull(getValueInPrivateField(KujakuMapView.class, kujakuMapView, "pointsSource"));
-
         //Make sure the map centers on the location
         assertTrue(kujakuMapView.isMapCentered);
     }
@@ -227,11 +224,31 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(View.GONE, currentLocationBtn.getVisibility());
     }
 
+
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true);
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
+
+
+        kujakuMapView.focusOnUserLocation(false);
+        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+
+        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair, drawableResId);
+    }
+
+    @Test
+    public void focusOnUserLocationWithRadiusShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
+        String updateUserLocationOnMap = "updateUserLocationOnMap";
+
+        kujakuMapView.focusOnUserLocation(true, 25f);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
