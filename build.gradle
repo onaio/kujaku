@@ -9,14 +9,20 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
+
         classpath 'com.android.tools.build:gradle:3.2.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
         classpath 'io.fabric.tools:gradle:1.25.4'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.5.0-x'
+        classpath 'com.palantir:jacoco-coverage:0.4.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
+
+apply plugin: 'com.palantir.jacoco-full-report'
+apply plugin: 'com.github.kt3k.coveralls'
 
 allprojects {
     repositories {
@@ -29,11 +35,19 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-
 ext {
     supportVersion = '27.1.1'
     buildToolsVersion = "28.0.2"
     compileSdkVersion = 27
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
+    jacocoVersion = "0.7.9"
+}
+
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoFullReport/jacocoFullReport.xml"
+    sourceDirs += ["utils/src/main/java"
+                   , "library/src/main/java"
+                   , "sample/src/main/java"
+                   , "wrapper/src/main/java"]
 }

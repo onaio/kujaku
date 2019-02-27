@@ -46,6 +46,7 @@
     <string name="feature_click_status">Feature Click Status</string>
     <string name="bounding_box_listener">Bounding Box Listener</string>
     <string name="bounds_aware_activity">Bounds Aware Activity</string>
+    <string name="configurable_circle_activity">Configurable Circle Activity</string>
     <string name="lat_long_format">%1$+.6f, %2$+.6f</string>
     <string name="title_activity_bounds_aware">BoundsAwareActivity</string>
     <string name="enable_bounds_listener">"Enable Bounds Listener"</string>
@@ -63,5 +64,8 @@
 
     <!-- WMTS Capabilities Url -->
     <string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>
+    <string name="case_relationship_activity">Case Relationship Activity</string>
+    <string name="draw_arrows_showing_relationship">DRAW ARROWS SHOWING RELATIONSHIP</string>
+    <string name="disable_arrows_showing_relationship">DISABLE ARROWS SHOWING RELATIONSHIP</string>
     <!--<string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
 </resources>

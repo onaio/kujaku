@@ -11,8 +11,15 @@ before_cache:
 
 cache:
   directories:
+    # Android SDK
+    - $HOME/android-sdk-dl
+    - $HOME/android-sdk
+    # Gradle cache
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    # Android build cache (see http://tools.android.com/tech-docs/build-cache)
+    - $HOME/.android/build-cache
+
 
 env:
   matrix:
@@ -58,7 +65,13 @@ script:
   - chmod 755 gradlew
   - ls -la
   # This is supposed to run the normal project build
-  - travis_wait ./gradlew clean build --stacktrace
+  # jacocoTestReport is supposed to run both local and instrumented tests on all the modules
+  # Gradle issue running composite tasks in order https://github.com/gradle/gradle/issues/3300
+  - travis_wait ./gradlew clean --stacktrace
+  - travis_wait ./gradlew build --stacktrace
+  - travis_wait ./gradlew jacocoTestReport --stacktrace
+  - travis_wait ./gradlew jacocoFullReport --stacktrace
+  - travis_wait ./gradlew coveralls --stacktrace
 
 after_failure:
  #- pandoc opensrp-app/build/reports/tests/index.html -t plain

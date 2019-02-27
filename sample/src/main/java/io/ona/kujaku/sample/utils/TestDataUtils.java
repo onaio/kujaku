@@ -116,11 +116,11 @@ public class TestDataUtils {
         double newLatitude = latitude;
 
         int featureNumber = startingIndex;
-        int prevFeatureNumber = startingIndex;
+        int prevFeatureNumber = -1;
 
         List<Feature> features = new ArrayList<>();
         final int FEATURE_GROUP_SIZE = featureGroup.length;
-        while (featureNumber < numFeatures + startingIndex + 1) {
+        while (featureNumber < numFeatures + startingIndex) {
             if (prevFeatureNumber != featureNumber) {
                 JSONObject feature = new JSONObject();
                 feature.put("id", "feature_" + UUID.randomUUID());

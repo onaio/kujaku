@@ -56,8 +56,8 @@ import io.ona.kujaku.test.shadows.ShadowOfflineManager;
 import io.ona.kujaku.test.shadows.ShadowRealm;
 import io.ona.kujaku.test.shadows.ShadowRealmDatabase;
 import io.ona.kujaku.test.shadows.implementations.RealmDbTestImplementation;
-import io.ona.kujaku.utils.NumberFormatter;
 import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.NumberFormatter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -417,6 +417,37 @@ public class MapboxOfflineDownloaderServiceTest {
         insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
         assertEquals(expectedMapName, (String) getValueInPrivateField(mapboxOfflineDownloaderService, "currentMapDownloadName"));
+    }
+
+    @Test
+    public synchronized void onStatusChangedShouldShowDownloadCompleteNotificationWhenGivenCompletedOfflineRegion() throws Throwable {
+        latch = new CountDownLatch(1);
+        OfflineRegionStatus completeOfflineRegionStatus = createOfflineRegion(OfflineRegion.STATE_ACTIVE, 300, 98923, 898, 230909, 300, true, true);
+
+        // Create dummy download task & insert it into the service
+        Intent sampleServiceIntent = createMapboxOfflineDownloaderServiceIntent();
+        sampleServiceIntent = createSampleDownloadIntent(sampleServiceIntent);
+
+        String mapName = sampleServiceIntent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);
+
+        RealmDatabase realmDatabase = RealmDatabase.init(context);
+        insertValueInPrivateField(mapboxOfflineDownloaderService, "realmDatabase", realmDatabase);
+
+        mapboxOfflineDownloaderService.persistOfflineMapTask(sampleServiceIntent);
+
+        setMapNameAndDownloadAction(mapName, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+        registerLocalBroadcastReceiverForDownloadServiceUpdates();
+
+
+        mapboxOfflineDownloaderService.onStatusChanged(completeOfflineRegionStatus, null);
+        latch.await();
+
+        //1. Make sure broadcast is sent
+        Intent intent = (Intent) resultsToCheck.get(0);
+        assertBroadcastResults(intent, MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.SUCCESSFUL, mapName, "100.0", MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
+
+        //2. Make sure performNextTask() is called
+        assertTrue(mapboxOfflineDownloaderService.performNextTaskCalled);
     }
 
     /*
