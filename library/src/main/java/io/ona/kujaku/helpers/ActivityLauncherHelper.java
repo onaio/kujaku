@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -12,7 +14,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.domain.Point;
@@ -32,7 +33,8 @@ public class ActivityLauncherHelper {
 
     public static final String TAG = ActivityLauncherHelper.class.getName();
 
-    public static void launchMapActivity(Activity hostActivity, List<Point> points, boolean enableDropPoint) {
+    public static void launchMapActivity(@NonNull Activity hostActivity, @NonNull String mapboxAccessToken
+            , @Nullable List<Point> points, boolean enableDropPoint) {
         Intent intent = new Intent(hostActivity, MapActivity.class);
         createCustomStyleLayer(hostActivity.getApplicationContext(), new OnFinishedListener() {
             @Override
@@ -42,9 +44,10 @@ public class ActivityLauncherHelper {
                     intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{
                             mapboxStyleJSON.toString()
                     });
-                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
-                    intent.putParcelableArrayListExtra(PARCELABLE_POINTS_LIST, (ArrayList<? extends Parcelable>) points);
+
+                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapboxAccessToken);
                     intent.putExtra(ENABLE_DROP_POINT_BUTTON, enableDropPoint);
+                    intent.putParcelableArrayListExtra(PARCELABLE_POINTS_LIST, (ArrayList<? extends Parcelable>) points);
 
                     hostActivity.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);
                 }

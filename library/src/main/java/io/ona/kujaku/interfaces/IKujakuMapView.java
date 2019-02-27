@@ -17,8 +17,10 @@ import org.json.JSONException;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -70,9 +72,20 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
      * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
      *
-     * @param focusOnMyLocation
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
      */
     void focusOnUserLocation(boolean focusOnMyLocation);
+
+
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
+     * @param radius Radius of the outer circle that marks the user's current location
+     */
+    void focusOnUserLocation(boolean focusOnMyLocation, @Nullable Float radius);
 
 
     /**
@@ -163,4 +176,50 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param warmGps
      */
     void setWarmGps(boolean warmGps);
+
+    /**
+     * Enables or disables the starting of location services as soon as the view is created.
+     * Warming the GPS in this case means that it starts the location services as soon as you open
+     * the map so that getting your location is instant. In case the user rejects enabling location,
+     * the rejectionDialogTitle and rejectionDialogMessage will be shown in a dialog.
+     *
+     * @param warmGps
+     * @param rejectionDialogTitle
+     * @param rejectionDialogMessage
+     */
+    void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage);
+
+    /**
+     * Exposes the location client being used by KujakuMapView. The location client can be null in case {@link IKujakuMapView#isWarmGps()}
+     * is false or the {@link android.Manifest.permission#ACCESS_FINE_LOCATION} permission is not given to the
+     * host application.
+     *
+     * @return the location client
+     */
+    @Nullable
+    ILocationClient getLocationClient();
+
+    /**
+     * Adds the {@link ArrowLineLayer} to the map and renders it when the map is ready
+     *
+     * @param arrowLineLayer
+     */
+
+    /**
+     * Enables one to add {@link KujakuLayer}s which are grouped layers to the {@link IKujakuMapView}.
+     * Layers such as {@link ArrowLineLayer} will be added using this method. It also enables one to
+     * re-enable an already added {@link KujakuLayer} which was disabled using {@link IKujakuMapView#disableLayer(KujakuLayer)}
+     *
+     * @param kujakuLayer
+     */
+    void addLayer(@NonNull KujakuLayer kujakuLayer);
+
+    /**
+     * Enables one to disable a currently visible {@link KujakuLayer} added through
+     * {@link IKujakuMapView#addLayer(KujakuLayer)}. In case you pass a {@link KujakuLayer} that was not
+     * added, nothing happens.
+     *
+     * @param kujakuLayer
+     */
+    void disableLayer(@NonNull KujakuLayer kujakuLayer);
 }

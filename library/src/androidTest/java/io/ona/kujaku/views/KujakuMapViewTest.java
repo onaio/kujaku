@@ -2,20 +2,24 @@ package io.ona.kujaku.views;
 
 import android.content.Context;
 import android.location.Location;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.UiThreadTestRule;
+import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
 
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
+import org.junit.runner.RunWith;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -29,11 +33,9 @@ import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
-import io.ona.kujaku.test.shadows.implementations.KujakuMapTestView;
-import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,15 +47,29 @@ import static org.junit.Assert.assertTrue;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
  */
 
-@Config(shadows = {ShadowGeoJsonSource.class})
+@RunWith(AndroidJUnit4.class)
 public class KujakuMapViewTest extends BaseTest {
 
     private KujakuMapTestView kujakuMapView;
+    @Rule
+    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
 
     @Before
-    public void setUp() {
-        Context context = RuntimeEnvironment.application;
-        kujakuMapView = new KujakuMapTestView(context);
+    public void setUp() throws Throwable {
+        Context context = InstrumentationRegistry.getTargetContext();
+
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Mapbox.getInstance(context, "sample_token");
+                kujakuMapView = new KujakuMapTestView(context);
+            }
+        });
+    }
+
+    @Test
+    public void testLocationComponentWrapperIsInitaliazed() {
+        assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper());
     }
 
     @Test
@@ -105,7 +121,7 @@ public class KujakuMapViewTest extends BaseTest {
     }
 
     @Test
-    public void enableAddPointShouldShowLatestPositionWhenGivenOnLocationChangedAndTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void enableAddPointShouldShowLatestPositionWhenGivenOnLocationChangedAndTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException, Throwable {
         OnLocationChanged onLocationChanged = new OnLocationChanged() {
             @Override
             public void onLocationChanged(Location location) {
@@ -114,17 +130,13 @@ public class KujakuMapViewTest extends BaseTest {
         };
 
         LatLng latLng = new LatLng(14d, 23d);
-
-        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocation", latLng);
-        setFinalStatic(KujakuMapView.class.getDeclaredField("ANIMATE_TO_LOCATION_DURATION"), 0);
-        kujakuMapView.enableAddPoint(true, onLocationChanged);
-
-        // Check if the two circle layers were added
-        // Check if geojson for current user position was added
-        // Todo: this can use a drawable icon instead of having two extra layers
-
-        assertNotNull(getValueInPrivateField(KujakuMapView.class, kujakuMapView, "pointsSource"));
-
+        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocationCoordinates", latLng);
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                kujakuMapView.enableAddPoint(true, onLocationChanged);
+            }
+        });
         //Make sure the map centers on the location
         assertTrue(kujakuMapView.isMapCentered);
     }
@@ -212,6 +224,7 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(View.GONE, currentLocationBtn.getVisibility());
     }
 
+
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
@@ -220,14 +233,33 @@ public class KujakuMapViewTest extends BaseTest {
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
-        int drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
 
 
         kujakuMapView.focusOnUserLocation(false);
         assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
 
-        drawableResId = Shadows.shadowOf(imageButton.getDrawable()).getCreatedFromResId();
+        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair, drawableResId);
+    }
+
+    @Test
+    public void focusOnUserLocationWithRadiusShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
+        String updateUserLocationOnMap = "updateUserLocationOnMap";
+
+        kujakuMapView.focusOnUserLocation(true, 25f);
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+
+        int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
+        assertEquals(R.drawable.ic_cross_hair_blue, drawableResId);
+
+
+        kujakuMapView.focusOnUserLocation(false);
+        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+
+        drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
     }
 

@@ -15,6 +15,9 @@
         },
         {
           "name": "opensrp-custom-data-source-3"
+        },
+        {
+          "name": "external-geojson-source-name"
         }
       ],
       "sort_fields": [
@@ -133,6 +136,10 @@
     "composite": {
       "url": "mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7,ona.cjaamq2ga0s622wp7uda6zpam-6n4yi,ona.cjaamu1kn0v242wlo8d3isit6-9qj6r,ona.cjaatm5h10uqk2wp8qblauezh-61fw2,ona.cjaatn85a0tge33p7n9g0cs6w-0t21i,ona.cjaato0ig0wgv33qeps1r5z63-1t4t0",
       "type": "vector"
+    },
+    "external-geojson-source-name": {
+      "type": "geojson",
+      "data": "https://gist.githubusercontent.com/ekigamba/436f21630bc11a565231bde7c8fca963/raw/f229ccf7b01841eb1edd003f7871eb6610006cef/gistfile1.txt"
     },
     "opensrp-custom-data-source-0": {
       "type": "geojson",

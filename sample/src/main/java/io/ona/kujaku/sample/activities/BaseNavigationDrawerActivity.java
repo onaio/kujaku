@@ -13,6 +13,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.mapbox.mapboxsdk.Mapbox;
+
+import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 
 public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
@@ -24,6 +27,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // This should ideally be in the Application class so that it's not easily forgotten when using
+        // the KujakuMapView
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
         setContentView(getContentView());
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -171,7 +179,14 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, PaddedBboxCalculatorActivity.class));
                 finish();
                 return true;
-
+            case R.id.nav_configurable_circle:
+                startActivity(new Intent(this, ConfigurableLocationCircleActivity.class));
+                finish();
+                return true;
+            case R.id.nav_case_relationship_activity:
+                startActivity(new Intent(this, CaseRelationshipActivity.class));
+                finish();
+                return true;
             default:
                 break;
         }

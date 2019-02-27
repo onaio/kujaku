@@ -65,6 +65,14 @@
         <item
             android:id="@+id/nav_padded_bbox_calculator"
             android:title="@string/padded_bbox_calculator"/>
+
+        <item android:id="@+id/nav_configurable_circle"
+            android:title="@string/configurable_circle_activity" />
+
+        <item
+            android:id="@+id/nav_case_relationship_activity"
+            android:title="@string/case_relationship_activity"/>
+
     </group>
 
 </menu>

@@ -1,4 +1,4 @@
-# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion)
+# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
 
 A mapping and check-in library for Android using MapBox SDK.
 
