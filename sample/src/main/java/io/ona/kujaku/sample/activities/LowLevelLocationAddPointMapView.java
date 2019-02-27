@@ -13,6 +13,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 import org.json.JSONObject;
 
 import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -52,13 +53,23 @@ public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivit
         goToMyLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.setWarmGps(true, "Location disabled", "The add point features will not work. We cannot drop points without your location.");
-                kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
+                // callback
+                OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack = new OnLocationServicesEnabledCallBack() {
                     @Override
-                    public void onLocationChanged(Location location) {
-                        Log.d(TAG, new Gson().toJson(location));
+                    public void onSuccess() {
+                        kujakuMapView.enableAddPoint(true, new OnLocationChanged() {
+                            @Override
+                            public void onLocationChanged(Location location) {
+                                Log.d(TAG, new Gson().toJson(location));
+                            }
+                        });
                     }
-                });
+                };
+                // warm gps
+                kujakuMapView.setWarmGps(true,
+                        "Location disabled",
+                        "The add point features will not work. We cannot drop points without your location.",
+                        onLocationServicesEnabledCallBack);
             }
         });
     }
