@@ -30,7 +30,9 @@ import java.util.concurrent.TimeUnit;
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.callbacks.OnLocationComponentInitializedCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
@@ -70,6 +72,22 @@ public class KujakuMapViewTest extends BaseTest {
     @Test
     public void testLocationComponentWrapperIsInitaliazed() {
         assertNotNull(kujakuMapView.getMapboxLocationComponentWrapper());
+    }
+
+    @Test
+    public void testOnLocationComponentInitaliazedCallbackIsSettable() throws NoSuchFieldException, IllegalAccessException {
+        assertNull((OnLocationComponentInitializedCallback) getValueInPrivateField(MapboxLocationComponentWrapper.class,
+                kujakuMapView.getMapboxLocationComponentWrapper(), "onLocationComponentInitializedCallback"));
+
+        kujakuMapView.getMapboxLocationComponentWrapper().setOnLocationComponentInitializedCallback(new OnLocationComponentInitializedCallback() {
+            @Override
+            public void onLocationComponentInitialized() {
+                // do nothing
+            }
+        });
+
+        assertNotNull((OnLocationComponentInitializedCallback) getValueInPrivateField(MapboxLocationComponentWrapper.class,
+                kujakuMapView.getMapboxLocationComponentWrapper(), "onLocationComponentInitializedCallback"));
     }
 
     @Test
