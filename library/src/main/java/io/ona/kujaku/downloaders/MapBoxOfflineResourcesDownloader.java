@@ -8,6 +8,7 @@ import android.util.Log;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
@@ -40,6 +41,10 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * - Getting the map status {@link com.mapbox.mapboxsdk.offline.OfflineRegionStatus}
  * <p>
  * <p>
+ *
+ * CAUTION: Make sure you call {@link ConnectivityReceiver#deactivate()} when done in the lifecycle aware component
+ * you are in so that that this does not cause a memory leak
+ *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.
  */
 public class MapBoxOfflineResourcesDownloader {
@@ -356,10 +361,17 @@ public class MapBoxOfflineResourcesDownloader {
      * @param onDownloadMapListener {@link OnDownloadMapListener} Callback to receive map download updates or error description
      */
     public void resumeMapDownload(@NonNull final OfflineRegion offlineRegion, final OnDownloadMapListener onDownloadMapListener) {
+        ConnectivityReceiver.instance(context)
+                .activate();
         offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);
         offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {
             @Override
             public void onStatusChanged(OfflineRegionStatus status) {
+                if (status.isComplete()) {
+                    ConnectivityReceiver.instance(context)
+                            .deactivate();
+                }
+
                 if (onDownloadMapListener != null) {
                     onDownloadMapListener.onStatusChanged(status, offlineRegion);
                 }
@@ -375,6 +387,8 @@ public class MapBoxOfflineResourcesDownloader {
 
             @Override
             public void mapboxTileCountLimitExceeded(long limit) {
+                ConnectivityReceiver.instance(context)
+                        .deactivate();
                 String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
                 Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
