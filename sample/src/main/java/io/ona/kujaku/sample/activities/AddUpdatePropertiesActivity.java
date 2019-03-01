@@ -1,6 +1,7 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +12,9 @@ import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 
@@ -65,15 +69,24 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     }
 
     private void initializeFromStyleSource() {
-        kujakuMapView.setStyleUrl("asset://reveal-streets-style.json");
-        String geoJson = readAssetContents(this, "reveal-geojson.json");
-        kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
-        // set camera position
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(-14.1706623, 32.5987837))
-                .zoom(16)
-                .build();
-        kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        String geoJson = readAssetContents(AddUpdatePropertiesActivity.this, "reveal-geojson.json");
+                        kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
+                        // set camera position
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(-14.1706623, 32.5987837))
+                                .zoom(16)
+                                .build();
+                        kujakuMapView.setCameraPosition(cameraPosition);
+                    }
+                });
+            }
+        });
     }
 
     private void setListeners(boolean isFetchFromStyle) {

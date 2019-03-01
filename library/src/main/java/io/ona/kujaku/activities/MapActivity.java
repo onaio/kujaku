@@ -28,6 +28,7 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -211,9 +212,6 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         kujakuMapView.onCreate(savedInstanceState);
 
-        if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
-            kujakuMapView.setStyleUrl(mapBoxStylePath);
-        }
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
@@ -221,27 +219,42 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
                 MapActivity.this.mapboxMap = mapboxMap;
                 mapboxMap.addOnMapClickListener(MapActivity.this);
 
-                if (minZoom != -1) {
-                    mapboxMap.setMinZoomPreference(minZoom);
+                if (mapBoxStylePath != null && !mapBoxStylePath.isEmpty()) {
+                    mapboxMap.setStyle(new Style.Builder().fromUrl(mapBoxStylePath), new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            setupMapPosition(mapboxMap);
+                        }
+                    });
+                } else {
+                    setupMapPosition(mapboxMap);
                 }
 
-                if (maxZoom != -1) {
-                    mapboxMap.setMaxZoomPreference(maxZoom);
-                }
 
-                CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
-                boolean cameraPositionChanged = false;
-
-
-                if (cameraPositionChanged) {
-                    mapboxMap.setCameraPosition(cameraPositionBuilder.build());
-                }
-
-                if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
-                    kujakuMapView.focusOnUserLocation(true);
-                }
             }
         });
+    }
+
+    private void setupMapPosition(@NonNull MapboxMap mapboxMap) {
+        if (minZoom != -1) {
+            mapboxMap.setMinZoomPreference(minZoom);
+        }
+
+        if (maxZoom != -1) {
+            mapboxMap.setMaxZoomPreference(maxZoom);
+        }
+
+        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();
+        boolean cameraPositionChanged = false;
+
+
+        if (cameraPositionChanged) {
+            mapboxMap.setCameraPosition(cameraPositionBuilder.build());
+        }
+
+        if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {
+            kujakuMapView.focusOnUserLocation(true);
+        }
     }
 
     private LatLng getBoundsCenter(LatLng topLeftBound, LatLng bottomRightBound) {
@@ -492,7 +505,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     }
 
     @Override
-    public void onMapClick(@NonNull LatLng point) {
+    public boolean onMapClick(@NonNull LatLng point) {
         // Convert LatLng coordinates to screen pixel and only query the rendered features.
         final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
         List<Feature> features = mapboxMap.queryRenderedFeatures(pixel);
@@ -512,6 +525,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             }
         }
 
+        return false;
     }
 
     private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {

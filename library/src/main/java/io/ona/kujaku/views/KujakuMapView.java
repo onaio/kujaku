@@ -523,11 +523,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         }
                     }
 
-                    if (getPrimaryGeoJsonSource() != null && mapboxMap.getSource(getPrimaryGeoJsonSource().getId()) == null) {
-                        mapboxMap.addSource(getPrimaryGeoJsonSource());
+                    if (getPrimaryGeoJsonSource() != null && mapboxMap.getStyle().getSource(getPrimaryGeoJsonSource().getId()) == null) {
+                        mapboxMap.getStyle().addSource(getPrimaryGeoJsonSource());
                     }
-                    if (getPrimaryLayer() != null && mapboxMap.getLayer(getPrimaryLayer().getId()) == null) {
-                        mapboxMap.addLayer(getPrimaryLayer());
+                    if (getPrimaryLayer() != null && mapboxMap.getStyle().getLayer(getPrimaryLayer().getId()) == null) {
+                        mapboxMap.getStyle().addLayer(getPrimaryLayer());
                     }
                     if (isFetchSourceFromStyle) {
                         initializeSourceAndFeatureCollectionFromStyle();
@@ -558,7 +558,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         // Add WmtsLayers
         if (wmtsLayers != null) {
             for (WmtsLayer layer : wmtsLayers) {
-                if (mapboxMap.getSource(layer.getIdentifier()) == null) {
+                if (mapboxMap.getStyle().getSource(layer.getIdentifier()) == null) {
 
                     TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
                     tileSet.setMaxZoom(layer.getMaximumZoom());
@@ -567,10 +567,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     RasterSource webMapSource = new RasterSource(
                             layer.getIdentifier(),
                             tileSet, layer.getTilesSize());
-                    mapboxMap.addSource(webMapSource);
+                    mapboxMap.getStyle().addSource(webMapSource);
 
                     RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
-                    mapboxMap.addLayer(webMapLayer);
+                    mapboxMap.getStyle().addLayer(webMapLayer);
                 }
             }
         }
@@ -927,7 +927,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
@@ -952,7 +952,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
@@ -974,7 +974,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void initializeSourceAndFeatureCollectionFromStyle() {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            primaryGeoJsonSource = mapboxMap.getSourceAs(getPrimaryGeoJsonSourceId());
+            primaryGeoJsonSource = mapboxMap.getStyle().getSourceAs(getPrimaryGeoJsonSourceId());
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -1120,7 +1120,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void onMapClick(@NonNull LatLng point) {
+    public boolean onMapClick(@NonNull LatLng point) {
         if (onFeatureClickListener != null) {
             PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
             List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
@@ -1129,6 +1129,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 onFeatureClickListener.onFeatureClick(features);
             }
         }
+
+        return false;
     }
 
     public boolean isWarmGps() {
