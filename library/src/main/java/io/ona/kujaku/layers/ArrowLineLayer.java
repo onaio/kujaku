@@ -149,19 +149,19 @@ public class ArrowLineLayer implements KujakuLayer {
      */
     @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
-        if (mapboxMap.getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {
+        if (mapboxMap.getStyle().getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {
             ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();
         }
 
-        if (mapboxMap.getLayer(ARROW_HEAD_LAYER_ID) != null) {
+        if (mapboxMap.getStyle().getLayer(ARROW_HEAD_LAYER_ID) != null) {
             ARROW_HEAD_LAYER_ID = UUID.randomUUID().toString();
         }
 
-        if (mapboxMap.getSource(LINE_LAYER_SOURCE_ID) != null) {
+        if (mapboxMap.getStyle().getSource(LINE_LAYER_SOURCE_ID) != null) {
             LINE_LAYER_SOURCE_ID = UUID.randomUUID().toString();
         }
 
-        if (mapboxMap.getLayer(LINE_LAYER_ID) != null) {
+        if (mapboxMap.getStyle().getLayer(LINE_LAYER_ID) != null) {
             LINE_LAYER_ID = UUID.randomUUID().toString();
         }
 
@@ -194,17 +194,17 @@ public class ArrowLineLayer implements KujakuLayer {
                 DrawableCompat.setTint(head.mutate(), builder.arrowLineColor);
                 Bitmap icon = getBitmapFromDrawable(head);
 
-                mapboxMap.addImage(ARROW_HEAD_ICON, icon);
+                mapboxMap.getStyle().addImage(ARROW_HEAD_ICON, icon);
 
-                mapboxMap.addSource(arrowHeadSource);
-                mapboxMap.addSource(lineLayerSource);
+                mapboxMap.getStyle().addSource(arrowHeadSource);
+                mapboxMap.getStyle().addSource(lineLayerSource);
 
-                if (builder.addBelowLayerId != null && mapboxMap.getLayer(builder.addBelowLayerId) != null) {
-                    mapboxMap.addLayerBelow(lineLayer, builder.addBelowLayerId);
-                    mapboxMap.addLayerBelow(arrowHeadLayer, builder.addBelowLayerId);
+                if (builder.addBelowLayerId != null && mapboxMap.getStyle().getLayer(builder.addBelowLayerId) != null) {
+                    mapboxMap.getStyle().addLayerBelow(lineLayer, builder.addBelowLayerId);
+                    mapboxMap.getStyle().addLayerBelow(arrowHeadLayer, builder.addBelowLayerId);
                 } else {
-                    mapboxMap.addLayer(lineLayer);
-                    mapboxMap.addLayer(arrowHeadLayer);
+                    mapboxMap.getStyle().addLayer(lineLayer);
+                    mapboxMap.getStyle().addLayer(arrowHeadLayer);
                 }
 
                 visible = true;
@@ -222,8 +222,8 @@ public class ArrowLineLayer implements KujakuLayer {
     @Override
     public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         ArrayList<Layer> layers = new ArrayList<Layer>();
-        layers.add(mapboxMap.getLayerAs(LINE_LAYER_ID));
-        layers.add(mapboxMap.getLayerAs(ARROW_HEAD_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(LINE_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(ARROW_HEAD_LAYER_ID));
 
         for (Layer layer: layers) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
@@ -239,8 +239,8 @@ public class ArrowLineLayer implements KujakuLayer {
     @Override
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         ArrayList<Layer> layers = new ArrayList<Layer>();
-        layers.add(mapboxMap.getLayerAs(LINE_LAYER_ID));
-        layers.add(mapboxMap.getLayerAs(ARROW_HEAD_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(LINE_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(ARROW_HEAD_LAYER_ID));
 
         for (Layer layer: layers) {
             if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {

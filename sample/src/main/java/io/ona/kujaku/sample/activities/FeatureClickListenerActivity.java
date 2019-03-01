@@ -1,10 +1,14 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import java.util.List;
 
@@ -28,16 +32,21 @@ public class FeatureClickListenerActivity extends BaseNavigationDrawerActivity {
         super.onCreate(savedInstanceState);
 
         kujakuMapView = findViewById(R.id.kmv_featureClickListenerActivity_mapView);
-        kujakuMapView.setStyleUrl("asset://basic-feature-select-style.json");
-
-        showToast(Toasty.info(this, getString(R.string.feature_click_listener_activity_instructions)));
-
-        kujakuMapView.setOnFeatureClickListener(new OnFeatureClickListener() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onFeatureClick(List<Feature> features) {
-                showToast(Toasty.success(FeatureClickListenerActivity.this, getString(R.string.building_exc)));
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://basic-feature-select-style.json"));
+
+                showToast(Toasty.info(FeatureClickListenerActivity.this, getString(R.string.feature_click_listener_activity_instructions)));
+
+                kujakuMapView.setOnFeatureClickListener(new OnFeatureClickListener() {
+                    @Override
+                    public void onFeatureClick(List<Feature> features) {
+                        showToast(Toasty.success(FeatureClickListenerActivity.this, getString(R.string.building_exc)));
+                    }
+                }, "building");
             }
-        }, "building");
+        });
     }
 
     private void showToast(Toast newToast) {
