@@ -143,7 +143,7 @@ dependencies { configuration ->
     developmentKujakuModulesImport(this, configuration)
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
-    implementation "com.android.volley:volley:${rootProject.ext.volleyVersion}"
+    implementation "com.android.volley:volley:${volleyVersion}"
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -158,8 +158,8 @@ dependencies { configuration ->
         transitive = true;
     }
 
-    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
-    implementation "com.android.support:design:${rootProject.ext.supportVersion}"
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation "com.android.support:design:${supportVersion}"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }
@@ -181,7 +181,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'org.jacoco'
     }
 
-    configuration.implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:6.7.2') {
+    configuration.implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:${instance.mapboxSdkVersion}") {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
