@@ -139,6 +139,7 @@ android {
 
 dependencies { configuration ->
 
+    //releaseTestKujakuImport(configuration)
     developmentKujakuModulesImport(this, configuration)
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
 
