@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionError;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
@@ -713,5 +714,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void onDestroy() {
         super.onDestroy();
         stopDownloadProgressUpdater();
+        ConnectivityReceiver.instance(this)
+                .deactivate();
     }
 }
