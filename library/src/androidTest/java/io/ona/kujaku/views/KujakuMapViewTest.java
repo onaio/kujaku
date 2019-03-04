@@ -1,6 +1,7 @@
 package io.ona.kujaku.views;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.UiThreadTestRule;
@@ -11,9 +12,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 
 import org.json.JSONObject;
 import org.junit.Before;
@@ -32,6 +36,8 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationComponentInitializedCallback;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.layers.BoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
@@ -242,7 +248,6 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(View.GONE, currentLocationBtn.getVisibility());
     }
 
-
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
@@ -358,7 +363,6 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(boundsChangeListener, getValueInPrivateField(KujakuMapView.class, kujakuMapView, fieldName));
     }
 
-
     @Test
     public void setBoundsChangeListenerShouldCallListenerFirstTime() throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -378,5 +382,41 @@ public class KujakuMapViewTest extends BaseTest {
 
         countDownLatch.await(3, TimeUnit.SECONDS);
         assertEquals(1, results.size());
+    }
+
+    @Test
+    public void addLayer() throws Throwable {
+        ArrayList<Object> accessedFromInnerClassObjects = new ArrayList<>();
+
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        uiThreadTestRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                accessedFromInnerClassObjects.add(new BoundaryLayer.Builder(featureCollection)
+                        .setLabelProperty(labelProperty)
+                        .setLabelTextSize(textSize)
+                        .setLabelColorInt(colorInt)
+                        .setLabelTextSizeExpression(Expression.interpolate(Expression.linear(), Expression.zoom()
+                                , Expression.stop(9, 0f)
+                                , Expression.stop(10, 20f/2)
+                                , Expression.stop(22, 20f)))
+                        .setBoundaryColor(colorInt)
+                        .setBoundaryWidth(boundaryWidth)
+                        .build());
+            }
+        });
+
+        BoundaryLayer boundaryLayer = (BoundaryLayer) accessedFromInnerClassObjects.get(0);
+
+        kujakuMapView.addLayer(boundaryLayer);
+        ArrayList<KujakuLayer> kujakuLayers = (ArrayList<KujakuLayer>)
+                getValueInPrivateField(KujakuMapView.class, kujakuMapView, "kujakuLayers");
+        assertTrue(kujakuLayers.contains(boundaryLayer));
     }
 }

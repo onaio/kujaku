@@ -73,6 +73,10 @@
             android:id="@+id/nav_case_relationship_activity"
             android:title="@string/case_relationship_activity"/>
 
+        <item
+            android:id="@+id/nav_foci_boundary"
+            android:title="@string/foci_boundary"/>
+
     </group>
 
 </menu>
