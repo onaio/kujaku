@@ -120,14 +120,17 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 drawerLayout.closeDrawer(GravityCompat.START);
                 finish();
                 return true;
+
             case R.id.nav_offline_regions:
                 startActivity(new Intent(this, OfflineRegionsActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_task_queue:
                 startActivity(new Intent(this, TaskQueueActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_main_activity:
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
@@ -137,6 +140,7 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, HighLevelLocationAddPointMapView.class));
                 finish();
                 return true;
+
             case R.id.nav_card_activity:
                 startActivity(new Intent(this, CardActivity.class));
                 finish();
@@ -147,7 +151,7 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
-            case R.id.nav_wmts:
+            case R.id.nav_wmts_activity:
                 startActivity(new Intent(this, WmtsActivity.class));
                 finish();
                 return true;
@@ -166,10 +170,12 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, BoundsChangeListenerActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_bounds_aware_activity:
                 startActivity(new Intent(this, BoundsAwareActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_feature_click_listener:
                 startActivity(new Intent(this, FeatureClickListenerActivity.class));
                 finish();
@@ -179,10 +185,12 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, PaddedBboxCalculatorActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_configurable_circle:
                 startActivity(new Intent(this, ConfigurableLocationCircleActivity.class));
                 finish();
                 return true;
+
             case R.id.nav_case_relationship_activity:
                 startActivity(new Intent(this, CaseRelationshipActivity.class));
                 finish();
