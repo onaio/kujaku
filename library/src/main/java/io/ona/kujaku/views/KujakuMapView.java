@@ -529,6 +529,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             afterStyleLoadedOperations();
 
                             if (onDidFinishLoadingStyleListener == null) {
+                                // In case a different style is loaded with a previously loaded layer
                                 onDidFinishLoadingStyleListener = new OnDidFinishLoadingStyleListener() {
 
                                     @Override
@@ -539,6 +540,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                         if (loadedStyle != null && (currentlyLoadedStyle == null || loadedStyle != currentlyLoadedStyle)) {
                                             currentlyLoadedStyle = loadedStyle;
                                             afterStyleLoadedOperations();
+
+                                            if (kujakuLayers.size() > 0) {
+                                                for (KujakuLayer kujakuLayer: kujakuLayers) {
+                                                    // The developer might have already added it themselves when
+                                                    // loading the new style
+                                                    if (!isKujakuLayerAdded(kujakuLayer)) {
+                                                        kujakuLayer.addLayerToMap(mapboxMap);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 };
@@ -1230,14 +1241,24 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.addLayerToMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.addLayerToMap(mapboxMap);
+                        }
+                    });
                 }
             });
         } else {
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.enableLayerOnMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.enableLayerOnMap(mapboxMap);
+                        }
+                    });
                 }
             });
         }
@@ -1249,7 +1270,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.disableLayerOnMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.disableLayerOnMap(mapboxMap);
+                        }
+                    });
                 }
             });
         }
@@ -1269,6 +1295,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             ((GoogleLocationClient) getLocationClient())
                     .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
+        String[] layerIds = kujakuLayer.getLayerIds();
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+            for (String layerId: layerIds) {
+                if (mapboxMap.getStyle().getLayer(layerId) == null) {
+                    return false;
+                }
+            }
+
             return true;
         }
 

@@ -255,6 +255,11 @@ public class ArrowLineLayer implements KujakuLayer {
         return visible;
     }
 
+    @Override
+    public String[] getLayerIds() {
+        return new String[] {ARROW_HEAD_LAYER_ID, LINE_LAYER_ID};
+    }
+
     private Bitmap getBitmapFromDrawable(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable) drawable).getBitmap();

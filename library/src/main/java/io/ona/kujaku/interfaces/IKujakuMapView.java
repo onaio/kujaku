@@ -246,4 +246,13 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @return if the location update was applied to the location client
      */
     boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel);
+
+    /**
+     * Checks if the {@link com.mapbox.mapboxsdk.maps.Style} contains the {@link KujakuLayer} so
+     * as to determine whether to add it to the newly loaded {@link com.mapbox.mapboxsdk.maps.Style}
+     *
+     * @param kujakuLayer
+     * @return {@code true} if the layer IDs for the {@link KujakuLayer} are present, {@code false} otherwise
+     */
+    boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer);
 }
