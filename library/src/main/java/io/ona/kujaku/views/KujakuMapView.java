@@ -1215,11 +1215,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
-        if (updateInterval > -1 && fastestUpdateInterval > -1 && getLocationClient() != null) {
+        if (updateInterval > -1 && fastestUpdateInterval > -1 && (accuracyLevel == LocationRequest.PRIORITY_HIGH_ACCURACY
+                || accuracyLevel == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+                || accuracyLevel == LocationRequest.PRIORITY_LOW_POWER
+                || accuracyLevel == LocationRequest.PRIORITY_NO_POWER)
+                && getLocationClient() != null) {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest.setInterval(updateInterval);
             locationRequest.setFastestInterval(fastestUpdateInterval);
-            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setPriority(accuracyLevel);
 
             ((GoogleLocationClient) getLocationClient())
                     .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
