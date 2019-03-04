@@ -45,8 +45,12 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
-                selectableLayers = getLayerNames(mapboxMap.getStyle().getLayers());
-                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://basic-feature-select-style.json"));
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://basic-feature-select-style.json"), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        selectableLayers = getLayerNames(mapboxMap.getStyle().getLayers());
+                    }
+                });
 
                 mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override
@@ -68,9 +72,11 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
                         FeatureCollection featureCollection = FeatureCollection.fromFeatures((Feature[]) selectedFeatures.values().toArray(new Feature[]{}));
 
                         // Update the select layer
-                        GeoJsonSource geoJsonSource = mapboxMap.getStyle().getSourceAs("select-data");
-                        if (geoJsonSource != null) {
-                            geoJsonSource.setGeoJson(featureCollection);
+                        if (mapboxMap.getStyle() != null) {
+                            GeoJsonSource geoJsonSource = mapboxMap.getStyle().getSourceAs("select-data");
+                            if (geoJsonSource != null) {
+                                geoJsonSource.setGeoJson(featureCollection);
+                            }
                         }
 
                         return false;
