@@ -270,13 +270,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         });
 
-        if (locationClientCallbacks.size() > 0) {
-            for (LocationClientStartedCallback locationClientStartedCallback: locationClientCallbacks) {
-                locationClientStartedCallback.onStarted(locationClient);
-            }
-
-            locationClientCallbacks.clear();
+        for (LocationClientStartedCallback locationClientStartedCallback: locationClientCallbacks) {
+            locationClientStartedCallback.onStarted(locationClient);
         }
+
+        locationClientCallbacks.clear();
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -1217,7 +1215,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
-        if (getLocationClient() != null) {
+        if (updateInterval > -1 && fastestUpdateInterval > -1 && getLocationClient() != null) {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest.setInterval(updateInterval);
             locationRequest.setFastestInterval(fastestUpdateInterval);
