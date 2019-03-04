@@ -38,4 +38,12 @@ public interface KujakuLayer {
      * @return {@code true} if the layer is enabled, {@code false} otherwise
      */
     boolean isVisible();
+
+    /**
+     * Used to retrieve the layer IDs used by this {@link KujakuLayer}
+     *
+     * @return an array of layer IDs
+     */
+    @NonNull
+    String[] getLayerIds();
 }
