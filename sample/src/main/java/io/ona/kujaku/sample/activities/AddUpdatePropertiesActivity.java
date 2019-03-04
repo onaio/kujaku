@@ -41,8 +41,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
 
     private boolean isFirstClick = true;
 
-    private final String[] genericFeatureGroup =  {"White", "Black", "Hispanic", "Asian", "Other"};
-    private final String[] featureGroup =  {"Not Visited",  "Sprayed", "Not Sprayable",  "Not Sprayed"};
+    private final String[] genericFeatureGroup = {"White", "Black", "Hispanic", "Asian", "Other"};
+    private final String[] featureGroup = {"Not Visited", "Sprayed", "Not Sprayable", "Not Sprayed"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,15 +57,25 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     }
 
     private void initializeFromGenericLayer() {
-        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false, null);
-        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
-        kujakuMapView.setPrimaryLayer(circleLayer);
-        // set camera position
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(-1.284956, 36.768831))
-                .zoom(16)
-                .build();
-        kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false, null);
+                        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
+                        kujakuMapView.setPrimaryLayer(circleLayer);
+                        // set camera position
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(-1.284956, 36.768831))
+                                .zoom(16)
+                                .build();
+                        kujakuMapView.setCameraPosition(cameraPosition);
+                    }
+                });
+            }
+        });
     }
 
     private void initializeFromStyleSource() {
@@ -124,7 +134,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 try {
                     // fetch existing features
-                    List<Feature> features  = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
+                    List<Feature> features = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
                     // modify properties
                     FeatureCollection featureCollection;
                     if (isFetchFromStyle) {
@@ -189,5 +199,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     }
 
     @Override
-    protected int getSelectedNavigationItem() { return  R.id.nav_add_update_activity; }
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_add_update_activity;
+    }
 }

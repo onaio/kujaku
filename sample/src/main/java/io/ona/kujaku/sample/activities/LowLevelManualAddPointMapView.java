@@ -1,9 +1,15 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import org.json.JSONObject;
 
@@ -30,7 +36,9 @@ public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity 
             public void onClick(View v) {
                 if (kujakuMapView.isCanAddPoint()) {
                     JSONObject featurePoint = kujakuMapView.dropPoint();
-                    Log.e("FEATURE POINT", featurePoint.toString());
+                    if (featurePoint != null) {
+                        Log.e("FEATURE POINT", featurePoint.toString());
+                    }
                 }
             }
         });
@@ -44,6 +52,12 @@ public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity 
             }
         });
 
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
+            }
+        });
     }
 
     @Override
