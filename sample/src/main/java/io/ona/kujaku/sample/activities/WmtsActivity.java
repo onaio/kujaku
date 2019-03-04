@@ -76,7 +76,7 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
 
     @Override
     protected int getSelectedNavigationItem() {
-        return R.id.nav_wmts;
+        return R.id.nav_wmts_activity;
     }
 
     @Override

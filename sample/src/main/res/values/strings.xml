@@ -18,7 +18,7 @@
     <string name="high_level_add_point">High-level Add Point</string>
     <string name="high_level_location_add_point">High-level Add Point - Location services</string>
     <string name="low_level_add_point_custom_marker">Low-level Custom Marker</string>
-    <string name="wmts">Wmts</string>
+    <string name="wmts_activity">Wmts</string>
     <string name="add_update_activity_title">Add or Update</string>
     <string name="go_to_my_location">GO TO MY LOCATION</string>
     <string name="done">DONE</string>
