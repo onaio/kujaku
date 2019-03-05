@@ -7,10 +7,13 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
 import com.mapbox.mapboxsdk.offline.OfflineRegionDefinition;
 import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+import com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
+import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
@@ -40,7 +44,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/12/2017.
  */
 @RunWith(AndroidJUnit4.class)
-public class MapBoxOfflineResourcesDownloaderTest {
+public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
 
     private MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader;
     private Context context;
@@ -614,6 +618,68 @@ public class MapBoxOfflineResourcesDownloaderTest {
         });
 
         assertEquals(5, outputsFromCallbacks.get(0));
+    }
+
+    @Test
+    public void resumeMapDownloadShouldActivateConnectivityReceiver() throws Throwable {
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
+        byte[] metadata = "some map name".getBytes();
+        LatLngBounds latLngBounds = LatLngBounds.from(67, 22, 23);
+        double minZoom = 12d;
+        double maxZoom = 20d;
+        OfflineTilePyramidRegionDefinition offlineMapDefinition = new OfflineTilePyramidRegionDefinition(
+                "https://mysite.com/mapbox_style",
+                latLngBounds,
+                minZoom,
+                maxZoom,
+                1.5f);
+        OfflineRegion mockOfflineRegion = createMockOfflineRegion(metadata, offlineMapDefinition);
+
+        mapBoxOfflineResourcesDownloader.resumeMapDownload(mockOfflineRegion, null);
+        int activationCounter = (int) getValueInPrivateField(ConnectivityReceiver.class, ConnectivityReceiver.instance(context), "activationCounter");
+        assertEquals(1, activationCounter);
+    }
+
+    @Test
+    public void connectivityReceiverShouldBeDeactivatedWhenDownloadIsComplete() throws Throwable {
+        createMapboxOfflineResourcesDownloaderInstanceOnUIThread();
+        byte[] metadata = "some map name".getBytes();
+        LatLngBounds latLngBounds = LatLngBounds.from(67, 22, 23);
+        double minZoom = 12d;
+        double maxZoom = 20d;
+        OfflineTilePyramidRegionDefinition offlineMapDefinition = new OfflineTilePyramidRegionDefinition(
+                "https://mysite.com/mapbox_style",
+                latLngBounds,
+                minZoom,
+                maxZoom,
+                1.5f);
+        OfflineRegion mockOfflineRegion = createMockOfflineRegion(metadata, offlineMapDefinition);
+
+        ArrayList<Object> innerClassAccessObjects = new ArrayList<>();
+
+        Mockito.doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                 innerClassAccessObjects.add(invocation.getArgument(0));
+
+                OfflineRegionStatus offlineRegionStatus = Mockito.mock(OfflineRegionStatus.class);
+                Mockito.doReturn(true)
+                        .when(offlineRegionStatus)
+                        .isComplete();
+
+                innerClassAccessObjects.add(offlineRegionStatus);
+                return null;
+            }
+        }).when(mockOfflineRegion)
+                .setObserver(Mockito.any(OfflineRegion.OfflineRegionObserver.class));
+
+        mapBoxOfflineResourcesDownloader.resumeMapDownload(mockOfflineRegion, null);
+        int activationCounter = (int) getValueInPrivateField(ConnectivityReceiver.class, ConnectivityReceiver.instance(context), "activationCounter");
+        assertEquals(1, activationCounter);
+
+        ((OfflineRegion.OfflineRegionObserver) innerClassAccessObjects.get(0)).onStatusChanged((OfflineRegionStatus) innerClassAccessObjects.get(1));
+
+
     }
 
     /*
