@@ -534,7 +534,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
                                     @Override
                                     public void onDidFinishLoadingStyle() {
-                                        Log.e(TAG, "Finished another loading style :: ");
                                         Style loadedStyle = mapboxMap.getStyle();
 
                                         if (loadedStyle != null && (currentlyLoadedStyle == null || !loadedStyle.equals(currentlyLoadedStyle))) {
