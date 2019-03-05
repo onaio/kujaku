@@ -23,7 +23,7 @@ public interface ILocationClient {
 
     @Nullable LocationListener getLocationListener();
 
-    Location getLastLocation();
+    @Nullable Location getLastLocation();
 
     void requestLocationUpdates(@NonNull LocationListener locationListener);
 
