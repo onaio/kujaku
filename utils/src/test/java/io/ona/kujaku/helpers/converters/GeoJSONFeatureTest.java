@@ -3,9 +3,7 @@ package io.ona.kujaku.helpers.converters;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.junit.Test;
-
 import java.util.ArrayList;
-
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.*;
