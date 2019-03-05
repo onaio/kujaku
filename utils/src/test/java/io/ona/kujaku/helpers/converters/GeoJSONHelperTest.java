@@ -190,7 +190,7 @@ public class GeoJSONHelperTest {
     private LatLng generateLatLng() {
         return new LatLng(
                 (Math.random() * (GeometryConstants.MAX_LATITUDE - GeometryConstants.MIN_LATITUDE)) + GeometryConstants.MIN_LATITUDE,
-                (Math.random() * (GeometryConstants.MAX_LONGITUDE - GeometryConstants.MIN_LONGITUDE)) + GeometryConstants.MIN_LONGITUDE
+                (Math.random() * (170d - (-170d))) + GeometryConstants.MIN_LONGITUDE
         );
     }
 
