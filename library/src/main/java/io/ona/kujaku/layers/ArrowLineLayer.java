@@ -97,12 +97,26 @@ public class ArrowLineLayer implements KujakuLayer {
                 && TextUtils.isEmpty(builder.sortConfig.getDateTimeFormat())) {
             throw new InvalidArrowLineConfigException("Date time format for sort configuration on a DateTime property has not been set");
         }
+    }
 
-        // Create arrow source
-        arrowHeadSource = new GeoJsonSource(ARROW_HEAD_LAYER_SOURCE_ID
-                , new GeoJsonOptions().withMaxZoom(16));
+    private void createLineLayerSource() {
+        lineLayerSource = new GeoJsonSource(LINE_LAYER_SOURCE_ID);
+    }
 
-        //Add arrow layer
+    private void createArrowLineLayer(@NonNull Builder builder) {
+        lineLayer = new LineLayer(LINE_LAYER_ID, LINE_LAYER_SOURCE_ID);
+        lineLayer.withProperties(
+                lineCap(Property.LINE_CAP_ROUND),
+                lineJoin(Property.LINE_JOIN_ROUND),
+                lineColor(builder.arrowLineColor)
+        );
+
+        if (builder.arrowLineWidth != 0f) {
+            lineLayer.setProperties(lineWidth(builder.arrowLineWidth));
+        }
+    }
+
+    private void createArrowHeadLayer() {
         arrowHeadLayer = new SymbolLayer(ARROW_HEAD_LAYER_ID, ARROW_HEAD_LAYER_SOURCE_ID);
         arrowHeadLayer.withProperties(
                 PropertyFactory.iconImage(ARROW_HEAD_ICON),
@@ -117,20 +131,11 @@ public class ArrowLineLayer implements KujakuLayer {
                 PropertyFactory.iconRotate(get(ARROW_HEAD_BEARING)),
                 PropertyFactory.iconOpacity(1f)
         );
+    }
 
-        // Add a line layer
-        lineLayer = new LineLayer(LINE_LAYER_ID, LINE_LAYER_SOURCE_ID);
-        lineLayer.withProperties(
-                lineCap(Property.LINE_CAP_ROUND),
-                lineJoin(Property.LINE_JOIN_ROUND),
-                lineColor(builder.arrowLineColor)
-        );
-
-        if (builder.arrowLineWidth != 0f) {
-            lineLayer.setProperties(lineWidth(builder.arrowLineWidth));
-        }
-
-        lineLayerSource = new GeoJsonSource(LINE_LAYER_SOURCE_ID);
+    private void createArrowHeadSource() {
+        arrowHeadSource = new GeoJsonSource(ARROW_HEAD_LAYER_SOURCE_ID
+                , new GeoJsonOptions().withMaxZoom(16));
     }
 
     public LineLayer getLineLayer() {
@@ -149,21 +154,29 @@ public class ArrowLineLayer implements KujakuLayer {
      */
     @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
+        // Create arrow head source
         if (mapboxMap.getStyle().getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {
             ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();
         }
+        createArrowHeadSource();
 
-        if (mapboxMap.getStyle().getLayer(ARROW_HEAD_LAYER_ID) != null) {
-            ARROW_HEAD_LAYER_ID = UUID.randomUUID().toString();
-        }
-
+        // Create the arrow line source
         if (mapboxMap.getStyle().getSource(LINE_LAYER_SOURCE_ID) != null) {
             LINE_LAYER_SOURCE_ID = UUID.randomUUID().toString();
         }
+        createLineLayerSource();
 
+        // Create the arrow head layer
+        if (mapboxMap.getStyle().getLayer(ARROW_HEAD_LAYER_ID) != null) {
+            ARROW_HEAD_LAYER_ID = UUID.randomUUID().toString();
+        }
+        createArrowHeadLayer();
+
+        //Create the arrow line laye
         if (mapboxMap.getStyle().getLayer(LINE_LAYER_ID) != null) {
             LINE_LAYER_ID = UUID.randomUUID().toString();
         }
+        createArrowLineLayer(builder);
 
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
