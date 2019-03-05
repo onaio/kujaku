@@ -526,7 +526,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
                             currentlyLoadedStyle = style;
-                            afterStyleLoadedOperations();
+                            afterStyleLoadedOperations(style);
 
                             if (onDidFinishLoadingStyleListener == null) {
                                 // In case a different style is loaded with a previously loaded layer
@@ -537,9 +537,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                         Log.e(TAG, "Finished another loading style :: ");
                                         Style loadedStyle = mapboxMap.getStyle();
 
-                                        if (loadedStyle != null && (currentlyLoadedStyle == null || loadedStyle != currentlyLoadedStyle)) {
+                                        if (loadedStyle != null && (currentlyLoadedStyle == null || !loadedStyle.equals(currentlyLoadedStyle))) {
                                             currentlyLoadedStyle = loadedStyle;
-                                            afterStyleLoadedOperations();
+                                            afterStyleLoadedOperations(loadedStyle);
 
                                             if (kujakuLayers.size() > 0) {
                                                 for (KujakuLayer kujakuLayer: kujakuLayers) {
@@ -564,7 +564,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void afterStyleLoadedOperations() {
+    private void afterStyleLoadedOperations(@NonNull Style style) {
         if (KujakuMapView.this.droppedPoints != null) {
             List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
             for (io.ona.kujaku.domain.Point point : droppedPoints) {
@@ -572,18 +572,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
 
-        if (getPrimaryGeoJsonSource() != null && mapboxMap.getStyle().getSource(getPrimaryGeoJsonSource().getId()) == null) {
-            mapboxMap.getStyle().addSource(getPrimaryGeoJsonSource());
-        }
-
-        if (getPrimaryLayer() != null && mapboxMap.getStyle().getLayer(getPrimaryLayer().getId()) == null) {
-            mapboxMap.getStyle().addLayer(getPrimaryLayer());
-        }
-
-        if (isFetchSourceFromStyle) {
-            initializeSourceAndFeatureCollectionFromStyle();
-            isFetchSourceFromStyle = false;
-        }
+        addPrimaryGeoJsonSourceAndLayerToStyle(style);
 
         if (getCameraPosition() != null) {
             mapboxMap.setCameraPosition(getCameraPosition());
@@ -598,6 +587,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
             mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+        }
+    }
+
+    private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
+        if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
+            style.addSource(getPrimaryGeoJsonSource());
+        }
+
+        if (getPrimaryLayer() != null && style.getLayer(getPrimaryLayer().getId()) == null) {
+            style.addLayer(getPrimaryLayer());
+        }
+
+        if (isFetchSourceFromStyle) {
+            initializeSourceAndFeatureCollectionFromStyle(style);
+            isFetchSourceFromStyle = false;
         }
     }
 
@@ -977,7 +981,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                @Override
+                public void onStyleLoaded(@NonNull Style style) {
+                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
+                }
+            });
         }
     }
 
@@ -1021,10 +1030,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void initializeSourceAndFeatureCollectionFromStyle() {
+    private void initializeSourceAndFeatureCollectionFromStyle(@NonNull Style style) {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            primaryGeoJsonSource = mapboxMap.getStyle().getSourceAs(getPrimaryGeoJsonSourceId());
+            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
