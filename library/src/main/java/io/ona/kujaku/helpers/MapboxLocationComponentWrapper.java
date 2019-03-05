@@ -22,7 +22,7 @@ public class MapboxLocationComponentWrapper {
     @SuppressWarnings( {"MissingPermission"})
     public void init(@NonNull MapboxMap mapboxMap, @NonNull Context context) {
         locationComponent = mapboxMap.getLocationComponent();
-        locationComponent.activateLocationComponent(context, mapboxMap.getStyle());
+        locationComponent.activateLocationComponent(context, mapboxMap.getStyle(), false);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.NONE);
         locationComponent.setRenderMode(RenderMode.NORMAL);

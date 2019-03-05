@@ -585,9 +585,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         addWmtsLayers();
 
-        if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
-            mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
-        }
+        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
     }
 
     private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
@@ -1128,10 +1126,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
-                            // initialize location component wrapper
-                            /*if (mapboxMap != null) {
-                                mapboxLocationComponentWrapper.init(mapboxMap, getContext());
-                            }*/
 
                             // You can continue warming the GPS
                             if (shouldStartNow) {
