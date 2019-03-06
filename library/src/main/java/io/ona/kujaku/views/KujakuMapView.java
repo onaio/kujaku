@@ -165,9 +165,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
-    private Style currentlyLoadedStyle;
-    private OnDidFinishLoadingStyleListener onDidFinishLoadingStyleListener;
-
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -524,7 +521,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
-                            currentlyLoadedStyle = style;
                             afterStyleLoadedOperations(style);
                         }
                     });
