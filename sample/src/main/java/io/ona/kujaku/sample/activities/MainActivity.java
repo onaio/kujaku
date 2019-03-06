@@ -510,7 +510,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     }
 
     private void showInfoNotification(String title, String content) {
-        lastNotificationId++;
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle(title)
                 .setContentText(content)
