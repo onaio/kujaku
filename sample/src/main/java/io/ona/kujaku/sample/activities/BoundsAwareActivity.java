@@ -63,15 +63,11 @@ public class BoundsAwareActivity extends BaseNavigationDrawerActivity {
             }
         });
 
+        initializeGenericLayer();
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        initializeGenericLayer();
-                    }
-                });
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
             }
         });
     }

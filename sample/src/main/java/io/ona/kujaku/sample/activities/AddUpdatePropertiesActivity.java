@@ -23,6 +23,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -57,44 +59,37 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     }
 
     private void initializeFromGenericLayer() {
+        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false, null);
+        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
+        kujakuMapView.setPrimaryLayer(circleLayer);
+        // set camera position
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(-1.284956, 36.768831))
+                .zoom(16)
+                .build();
+        kujakuMapView.setCameraPosition(cameraPosition);
+
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        kujakuMapView.initializePrimaryGeoJsonSource("kujaku_primary_source", false, null);
-                        Layer circleLayer = generateMapBoxLayer("kujaku_primary_layer", kujakuMapView.getPrimaryGeoJsonSource().getId());
-                        kujakuMapView.setPrimaryLayer(circleLayer);
-                        // set camera position
-                        CameraPosition cameraPosition = new CameraPosition.Builder()
-                                .target(new LatLng(-1.284956, 36.768831))
-                                .zoom(16)
-                                .build();
-                        kujakuMapView.setCameraPosition(cameraPosition);
-                    }
-                });
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
             }
         });
     }
 
     private void initializeFromStyleSource() {
+        String geoJson = readAssetContents(AddUpdatePropertiesActivity.this, "reveal-geojson.json");
+        kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
+        // set camera position
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(-14.1706623, 32.5987837))
+                .zoom(16)
+                .build();
+        kujakuMapView.setCameraPosition(cameraPosition);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
-                        String geoJson = readAssetContents(AddUpdatePropertiesActivity.this, "reveal-geojson.json");
-                        kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
-                        // set camera position
-                        CameraPosition cameraPosition = new CameraPosition.Builder()
-                                .target(new LatLng(-14.1706623, 32.5987837))
-                                .zoom(16)
-                                .build();
-                        kujakuMapView.setCameraPosition(cameraPosition);
-                    }
-                });
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"));
             }
         });
     }
