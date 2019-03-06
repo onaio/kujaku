@@ -31,7 +31,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
-import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
