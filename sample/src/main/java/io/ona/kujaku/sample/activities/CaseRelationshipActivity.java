@@ -87,7 +87,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
                         GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
-                        mapboxMap.getStyle().addSource(sampleCasesSource);
+                        style.addSource(sampleCasesSource);
 
                         Expression colorExpression = match(get("testStatus")
                                 , rgba(0, 0, 0, 0)
@@ -102,8 +102,8 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                         circleLayer.withFilter(eq(geometryType(), "Point"));
                         circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
 
-                        mapboxMap.getStyle().addLayer(circleLayer);
-                        mapboxMap.getStyle().addLayer(fillLayer);
+                        style.addLayer(circleLayer);
+                        style.addLayer(fillLayer);
 
                         // Zoom to the position
                         mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
