@@ -40,14 +40,16 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
 
-        BoundaryLayer boundaryLayer = new BoundaryLayer.Builder(featureCollection)
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
                 .setLabelProperty(labelProperty)
                 .setLabelTextSize(textSize)
                 .setLabelColorInt(colorInt)
                 .setBoundaryColor(colorInt)
-                .setBoundaryWidth(boundaryWidth)
-                .build();
+                .setBoundaryWidth(boundaryWidth);
+        BoundaryLayer boundaryLayer = builder.build();
 
+        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryLineLayer"
+                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
         LineLayer lineLayer = (LineLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLineLayer");
 
         ShadowLayer shadowLayer = (ShadowLayer) Shadow.extract(lineLayer);
@@ -66,13 +68,16 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
 
-        BoundaryLayer boundaryLayer = new BoundaryLayer.Builder(featureCollection)
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
                 .setLabelProperty(labelProperty)
                 .setLabelTextSize(textSize)
                 .setLabelColorInt(colorInt)
                 .setBoundaryColor(colorInt)
-                .setBoundaryWidth(boundaryWidth)
-                .build();
+                .setBoundaryWidth(boundaryWidth);
+        BoundaryLayer boundaryLayer = builder.build();
+
+        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryLabelLayer"
+                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
 
         SymbolLayer symbolLayer = (SymbolLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLabelLayer");
 
@@ -93,7 +98,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
 
-        BoundaryLayer boundaryLayer = new BoundaryLayer.Builder(featureCollection)
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
                 .setLabelProperty(labelProperty)
                 .setLabelTextSize(textSize)
                 .setLabelColorInt(colorInt)
@@ -102,8 +107,11 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
                         , Expression.stop(10, 20f/2)
                         , Expression.stop(22, 20f)))
                 .setBoundaryColor(colorInt)
-                .setBoundaryWidth(boundaryWidth)
-                .build();
+                .setBoundaryWidth(boundaryWidth);
+        BoundaryLayer boundaryLayer = builder.build();
+
+        ReflectionHelpers.callInstanceMethod(BoundaryLayer.class, boundaryLayer, "createBoundaryLabelLayer"
+                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
 
         SymbolLayer symbolLayer = (SymbolLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLabelLayer");
 
