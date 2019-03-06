@@ -527,35 +527,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         public void onStyleLoaded(@NonNull Style style) {
                             currentlyLoadedStyle = style;
                             afterStyleLoadedOperations(style);
-
-                            if (onDidFinishLoadingStyleListener == null) {
-                                // In case a different style is loaded with a previously loaded layer
-                                onDidFinishLoadingStyleListener = new OnDidFinishLoadingStyleListener() {
-
-                                    @Override
-                                    public void onDidFinishLoadingStyle() {
-                                        Style loadedStyle = mapboxMap.getStyle();
-
-                                        if (loadedStyle != null && (currentlyLoadedStyle == null || !loadedStyle.equals(currentlyLoadedStyle))) {
-                                            currentlyLoadedStyle = loadedStyle;
-                                            afterStyleLoadedOperations(loadedStyle);
-
-                                            if (kujakuLayers.size() > 0) {
-                                                for (KujakuLayer kujakuLayer: kujakuLayers) {
-                                                    // The developer might have already added it themselves when
-                                                    // loading the new style
-                                                    if (!isKujakuLayerAdded(kujakuLayer)) {
-                                                        kujakuLayer.addLayerToMap(mapboxMap);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                };
-                            }
-
-                            KujakuMapView.this.removeOnDidFinishLoadingStyleListener(onDidFinishLoadingStyleListener);
-                            KujakuMapView.this.addOnDidFinishLoadingStyleListener(onDidFinishLoadingStyleListener);
                         }
                     });
                 }
