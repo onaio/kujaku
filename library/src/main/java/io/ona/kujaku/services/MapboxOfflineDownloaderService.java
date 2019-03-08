@@ -714,7 +714,11 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     public void onDestroy() {
         super.onDestroy();
         stopDownloadProgressUpdater();
-        ConnectivityReceiver.instance(this)
-                .deactivate();
+
+        if (MapBoxOfflineResourcesDownloader.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN)
+                .getConnectivityReceiverActivationCounter() > 0) {
+            ConnectivityReceiver.instance(this)
+                    .deactivate();
+        }
     }
 }

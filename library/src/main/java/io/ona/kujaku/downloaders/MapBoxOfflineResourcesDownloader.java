@@ -55,6 +55,8 @@ public class MapBoxOfflineResourcesDownloader {
     protected OfflineManager offlineManager;
     private static final String TAG = MapBoxOfflineResourcesDownloader.class.getSimpleName();
 
+    private int connectivityReceiverActivationCounter = 0;
+
     // JSON encoding/decoding
     public static final String JSON_CHARSET = "UTF-8";
     public static final String METADATA_JSON_FIELD_REGION_NAME = "FIELD_REGION_NAME";
@@ -363,6 +365,7 @@ public class MapBoxOfflineResourcesDownloader {
     public void resumeMapDownload(@NonNull final OfflineRegion offlineRegion, final OnDownloadMapListener onDownloadMapListener) {
         ConnectivityReceiver.instance(context)
                 .activate();
+        increaseConnectivityReceiverActivationCounter();
         offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);
         offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {
             @Override
@@ -370,6 +373,7 @@ public class MapBoxOfflineResourcesDownloader {
                 if (status.isComplete()) {
                     ConnectivityReceiver.instance(context)
                             .deactivate();
+                    decreaseConnectivityReceiverActivationCounter();
                 }
 
                 if (onDownloadMapListener != null) {
@@ -389,6 +393,7 @@ public class MapBoxOfflineResourcesDownloader {
             public void mapboxTileCountLimitExceeded(long limit) {
                 ConnectivityReceiver.instance(context)
                         .deactivate();
+                decreaseConnectivityReceiverActivationCounter();
                 String errorMessage = "MapBox Tile count " + limit + " limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more";
                 Log.e(TAG, errorMessage);
                 if (onDownloadMapListener != null) {
@@ -635,4 +640,15 @@ public class MapBoxOfflineResourcesDownloader {
         });
     }
 
+    public void increaseConnectivityReceiverActivationCounter() {
+        connectivityReceiverActivationCounter++;
+    }
+
+    public void decreaseConnectivityReceiverActivationCounter() {
+        connectivityReceiverActivationCounter--;
+    }
+
+    public int getConnectivityReceiverActivationCounter() {
+        return connectivityReceiverActivationCounter;
+    }
 }
