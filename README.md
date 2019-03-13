@@ -1,6 +1,6 @@
 # Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
 
-A mapping and check-in library for Android using MapBox SDK.
+A mapping and check-in library for Android using **MapBox SDK (Version 7.2.0)** 
 
 # Table of Contents
 
@@ -9,6 +9,7 @@ A mapping and check-in library for Android using MapBox SDK.
   * [Importing the Library](#importing-the-library)
   * [How to publish artifacts](#how-to-publish-artifacts)
 * [How to import the library](#how-to-import-the-library)
+* [How to use the library](#how-to-use-the-library)
 * [License](#license)
 * [Acknowledgements](#acknowledgements)
 * [Specification](SPECIFICATION.md)
@@ -71,63 +72,16 @@ android {
 dependencies {
     ...
     // Kujaku dependencies
-    implementation 'io.ona.kujaku:library:0.5.5'
+    implementation 'io.ona.kujaku:library:0.6.3'
     ...
 }
 ```
 
-## WMTS Layers
+## How to use the library
 
-### WmtsService
-
-This class reads the capabilities Xml stream and deserialize it into a WMTSCapabilities object.
-You need to provide a Capabilities URL as argument to the constructor.
-
-```
- WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
-```
-
-Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the async task returns the result.
-
-```
-wmtsService.requestData();
-
-wmtsService.setListener(new WmtsCapabilitiesListener() {
-    @Override
-    public void onCapabilitiesReceived(WmtsCapabilities capabilities) {
-        try {
-            // kujakuMapView.addWmtsLayer(capabilities);
-        }
-        catch (Exception ex) {
-            //throw ex;
-        }
-    }
-});
-```
-
-### Add WMTS layers to the map
-
-The kujakuMapView has 4 public methods to add WMTS Layers onto the map :
-
-* This method will add the first layer of the Capabilities file with the default style and first tileMatrixSet :
-```
-public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception
-```
-
-* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the default style and first tileMatrixSet :
-```
-public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception
-```
-
-* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and first tileMatrixSet:
-```
- public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception
-```
-
-* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and the tileMatrixSet identified by the tileMatrixSetLinkIdentifier argument:
-```
-public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception
-```
+The library offers a view `KujakuMapView` that provides more functionality than Mapbox. 
+- For Mapbox related functionality, [go here](https://docs.mapbox.com/android/maps/overview/)
+- For extra features provided by this library [go here](./SPECIFICATION.md)
 
 
 ## License

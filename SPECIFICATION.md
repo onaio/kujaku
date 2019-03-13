@@ -5,9 +5,10 @@
 * [What is a Geospatial Widget?](#what-is-a-geospatial-widget)
 * [Specification](#specification)
    * [Map Activity](#mapactivity)
-   * [How to create a Mapbox style with Kujaku configuration](#how-to-create-a-mapbox-style-with-kujaku-configuration)
-   * [Offline Maps Downloader Service](#offline-maps-downloader-service)
+     * [How to create a Mapbox style with Kujaku configuration](#how-to-create-a-mapbox-style-with-kujaku-configuration)
    * [Kujaku Map View](#kujaku-map-view)
+     * [Adding WMTS Layers](#1-adding-wmts-layers)
+   * [Offline Maps Downloader Service](#offline-maps-downloader-service)
    * [Helper Classes](#helper-classes)
      * [MapBoxStyleHelper class](#1-mapboxstylehelper)
      * [CoordinateUtils class](#2-coordinateutils)
@@ -24,6 +25,12 @@ The Geospatial widget is an Android SDK designed to connect to the georegistry a
 The Geospatial widget library provides a map widget and has a map download service for offline support of map layers. It primarily uses the Mapbox SDK to implement its functionalities. The library also provides some helper util functions to support certain operations involving geospatial data.
 
 # Specification
+
+The Geospatial widget is available in two forms: 
+ - Activity
+ - View
+ 
+ The view has is actively under development and directly extends the Mapbox `MapView` while the `Activity` just provides a wrapper for displaying data
 
 ## MapActivity
 
@@ -172,6 +179,61 @@ The Kujaku config is a JSON Object with the following:
           }
         ]
       }
+```
+
+## Kujaku Map View
+
+## 1. Adding WMTS Layers
+
+### WmtsService
+
+This class reads the capabilities Xml stream and deserialize it into a WMTSCapabilities object.
+You need to provide a Capabilities URL as argument to the constructor.
+
+```
+ WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
+```
+
+Call the requestData method to retrieve the Capabilities information and set a listener that will be called as soon as the async task returns the result.
+
+```
+wmtsService.requestData();
+
+wmtsService.setListener(new WmtsCapabilitiesListener() {
+    @Override
+    public void onCapabilitiesReceived(WmtsCapabilities capabilities) {
+        try {
+            // kujakuMapView.addWmtsLayer(capabilities);
+        }
+        catch (Exception ex) {
+            //throw ex;
+        }
+    }
+});
+```
+
+### Add WMTS layers to the map
+
+The `KujakuMapView` has 4 public methods to add WMTS Layers onto the map :
+
+* This method will add the first layer of the Capabilities file with the default style and first tileMatrixSet :
+```
+public void addWmtsLayer(WmtsCapabilities capabilities) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the default style and first tileMatrixSet :
+```
+public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and first tileMatrixSet:
+```
+ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws Exception
+```
+
+* This method will add the layer identified by the layerIdentifier argument of the Capabilities file with the style identified by the styleIdentifier argument and the tileMatrixSet identified by the tileMatrixSetLinkIdentifier argument:
+```
+public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception
 ```
 
 
