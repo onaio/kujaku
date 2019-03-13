@@ -86,24 +86,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
-                        GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
-                        style.addSource(sampleCasesSource);
-
-                        Expression colorExpression = match(get("testStatus")
-                                , rgba(0, 0, 0, 0)
-                                , stop(literal("positive"), Expression.color(getColorv16(R.color.positiveTasksColor)))
-                                , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
-
-                        FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
-                        fillLayer.withFilter(neq(geometryType(), "Point"));
-                        fillLayer.withProperties(fillColor(colorExpression));
-
-                        CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
-                        circleLayer.withFilter(eq(geometryType(), "Point"));
-                        circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
-
-                        style.addLayer(circleLayer);
-                        style.addLayer(fillLayer);
+                        addStructuresToMap(style);
 
                         // Zoom to the position
                         mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
@@ -111,6 +94,27 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 });
             }
         });
+    }
+
+    private void addStructuresToMap(@NonNull Style style) {
+        GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
+        style.addSource(sampleCasesSource);
+
+        Expression colorExpression = match(get("testStatus")
+                , rgba(0, 0, 0, 0)
+                , stop(literal("positive"), Expression.color(getColorv16(R.color.positiveTasksColor)))
+                , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
+
+        FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
+        fillLayer.withFilter(neq(geometryType(), "Point"));
+        fillLayer.withProperties(fillColor(colorExpression));
+
+        CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
+        circleLayer.withFilter(eq(geometryType(), "Point"));
+        circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
+
+        style.addLayer(circleLayer);
+        style.addLayer(fillLayer);
     }
 
     private void toggleDrawingArrowsShowingRelationship() {

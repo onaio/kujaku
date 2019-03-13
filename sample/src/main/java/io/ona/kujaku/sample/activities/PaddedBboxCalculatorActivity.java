@@ -14,6 +14,7 @@ import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.turf.TurfMeasurement;
 
 import org.json.JSONObject;
@@ -77,6 +78,7 @@ public class PaddedBboxCalculatorActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 PaddedBboxCalculatorActivity.this.mapboxMap = mapboxMap;
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
             }
         });
 
