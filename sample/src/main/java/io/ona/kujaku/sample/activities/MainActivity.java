@@ -35,7 +35,7 @@ import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.domain.Point;
-import io.ona.kujaku.helpers.MapBoxStyleStorage;
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.helpers.OfflineServiceHelper;
 import io.ona.kujaku.listeners.OnFinishedListener;

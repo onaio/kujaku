@@ -77,6 +77,10 @@
             android:id="@+id/nav_foci_boundary"
             android:title="@string/foci_boundary"/>
 
+        <item
+            android:id="@+id/nav_passive_record_object"
+            android:title="@string/passive_record_object_activity"/>
+
     </group>
 
 </menu>
