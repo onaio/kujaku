@@ -195,6 +195,12 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, CaseRelationshipActivity.class));
                 finish();
                 return true;
+
+            case R.id.nav_passive_record_object:
+                startActivity(new Intent(this, PassiveRecordObjectActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }

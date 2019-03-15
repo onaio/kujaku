@@ -63,10 +63,11 @@
     <string name="delete_offline_map_using_helper">Delete Offline Map Using Helper</string>
 
     <!-- WMTS Capabilities Url -->
-    <string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>
-    <!--<string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
+    <!--<string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
+    <string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>
     <string name="case_relationship_activity">Case Relationship Activity</string>
     <string name="draw_arrows_showing_relationship">DRAW ARROWS SHOWING RELATIONSHIP</string>
     <string name="disable_arrows_showing_relationship">DISABLE ARROWS SHOWING RELATIONSHIP</string>
-    <!--<string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
+    <string name="passive_record_object_activity">Passive record object</string>
+
 </resources>

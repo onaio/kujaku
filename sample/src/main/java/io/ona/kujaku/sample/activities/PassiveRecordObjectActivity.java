@@ -1,0 +1,211 @@
+package io.ona.kujaku.sample.activities;
+
+import android.location.Location;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import java.util.List;
+
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.helpers.storage.TrackingStorage;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
+import io.ona.kujaku.views.KujakuMapView;
+
+public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity implements TrackingServiceListener {
+
+    private static final String TAG = PassiveRecordObjectActivity.class.getName();
+
+    private KujakuMapView kujakuMapView;
+
+    private Button startStopBtn;
+    private Button forceLocationBtn;
+
+    private TrackingService mService = null;
+    private boolean mBound = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        kujakuMapView = findViewById(R.id.kmv_passiveRecordObject_mapView);
+        kujakuMapView.onCreate(savedInstanceState);
+        kujakuMapView.showCurrentLocationBtn(true);
+
+        this.startStopBtn = findViewById(R.id.btn_passiveRecordObject_StartStopRecording);
+        this.forceLocationBtn = findViewById(R.id.btn_passiveRecordObject_ForcePoint);
+
+        this.startStopBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (((Button)v).getText().equals("Start Recording")) {
+
+                    // Start Service
+                    kujakuMapView.startTrackingService(getApplicationContext(),
+                            PassiveRecordObjectActivity.class,
+                            PassiveRecordObjectActivity.this,
+                            new TrackingServiceHighAccuracyOptions());
+
+                    ((Button)v).setText("Stop Recording");
+                    forceLocationBtn.setEnabled(true);
+                } else {
+
+                    // Get the Tracks recorded
+                    List<Location> tracks = kujakuMapView.stopTrackingService(getApplicationContext());
+
+                    List<Location> othersTracks = new TrackingStorage().getCurrentRecordedLocations();
+                    displayTracksRecorded(othersTracks);
+
+                    ((Button)v).setText("Start Recording");
+                    forceLocationBtn.setEnabled(false);
+                }
+            }
+        });
+
+        this.forceLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                kujakuMapView.trackingServiceTakeLocation();
+            }
+        });
+
+        kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+            @Override
+            public void onSuccess() {
+                kujakuMapView.focusOnUserLocation(true);
+                startStopBtn.setEnabled(true);
+                kujakuMapView.resumeTrackingService(getApplicationContext(), PassiveRecordObjectActivity.this);
+            }
+        });
+    }
+
+
+    private void InitRecordingButton() {
+        if (TrackingService.isRunning()) {
+            startStopBtn.setText("Stop Recording");
+            forceLocationBtn.setEnabled(true);
+        } else {
+            startStopBtn.setText("Start Recording");
+            forceLocationBtn.setEnabled(true);
+        }
+    }
+
+    private void displayTracksRecorded(List<Location> locations) {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                for (Location location: locations) {
+                    kujakuMapView.dropPointOnMap( new LatLng(location.getLatitude(), location.getLongitude()), null);
+                }
+            }
+        });
+    }
+
+    /**** TrackingServiceListener ****/
+    @Override
+    public void onServiceDisconnected() {
+        Toast.makeText(getApplicationContext(), "Service disconnected", Toast.LENGTH_SHORT).show();
+        mService = null;
+        mBound = false;
+    }
+
+    @Override
+    public void onServiceConnected(TrackingService service) {
+        Toast.makeText(getApplicationContext(), "Service connected", Toast.LENGTH_SHORT).show();
+        mService = service;
+        mBound = true;
+
+        displayTracksRecorded(mService.getRecordedLocations());
+        InitRecordingButton();
+    }
+
+    @Override
+    public void onFirstLocationReceived(Location location) {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), "First Location received", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    public void onNewLocationReceived(Location location) {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
+                kujakuMapView.dropPointOnMap( new LatLng(location.getLatitude(), location.getLongitude()), null);
+            }
+        });
+    }
+
+    @Override
+    public void onCloseToDepartureLocation(Location location) {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Location recorded is closed to the departure location", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /**** TrackingServiceListener END ****/
+
+    @Override
+    protected int getContentView() {
+        return R.layout.activity_passive_record_object_map_view;
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_passive_record_object;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (kujakuMapView != null) kujakuMapView.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (kujakuMapView != null) kujakuMapView.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (kujakuMapView != null) kujakuMapView.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (kujakuMapView != null) kujakuMapView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (kujakuMapView != null) kujakuMapView.onDestroy();
+
+        // Unbind Service to be sure we can stop the TrackingService
+        if (kujakuMapView != null) kujakuMapView.unBindTrackingService(getApplicationContext());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (kujakuMapView != null) kujakuMapView.onLowMemory();
+    }
+}

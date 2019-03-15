@@ -10,6 +10,7 @@ import java.io.File;
 import static org.junit.Assert.*;
 
 import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.
