@@ -726,7 +726,7 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
     }
 
     @Test
-    public void testGetLayerIds() throws InvalidArrowLineConfigException {
+    public void getLayerIdsShouldReturnStringArrayWithLayerIds() throws InvalidArrowLineConfigException {
         ArrayList<Feature> featuresList = new ArrayList<>();
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
 
