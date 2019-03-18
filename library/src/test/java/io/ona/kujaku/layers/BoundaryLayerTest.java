@@ -168,7 +168,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
     }
 
     @Test
-    public void testGetLayerIds() {
+    public void getLayerIdsShouldReturnStringArrayWithLayerIds() {
         float textSize = 20f;
         float boundaryWidth = 6f;
         int colorInt = Color.GREEN;
