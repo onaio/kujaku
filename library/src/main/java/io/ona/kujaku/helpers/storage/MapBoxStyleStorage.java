@@ -22,8 +22,8 @@ import io.ona.kujaku.utils.Constants;
  * {@code mapboxStyleStorage.getStyleURL("asset://town_style.json")}
  * {@code mapboxStyleStorage.getStyleURL("https://companysite.com/style/style.json")}
  * {@code mapboxStyleStorage.getStyleURL("{ 'version': 8, 'name': 'kujaku-map', 'metadata': {}, }")}<br/><br/>
- * {@code mapboxStyleStorage.deleteFile("json.style", false)}
- * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style", true)}
+ * {@code mapboxStyleStorage.deleteFile("json.style", false, false)}
+ * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style", true, false)}
  * {@code mapboxStyleStorage.deleteFile("/sdcard/Downloads/json.style")}
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 09/11/2017.

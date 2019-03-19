@@ -11,7 +11,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
-import io.ona.kujaku.helpers.storage.TrackingStorage;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
@@ -27,9 +26,6 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     private Button startStopBtn;
     private Button forceLocationBtn;
 
-    private TrackingService mService = null;
-    private boolean mBound = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +40,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         this.startStopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (((Button)v).getText().equals("Start Recording")) {
+                if (((Button)v).getText().equals(getString(R.string.start_recording))) {
 
                     // Start Service
                     kujakuMapView.startTrackingService(getApplicationContext(),
@@ -52,17 +48,17 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                             PassiveRecordObjectActivity.this,
                             new TrackingServiceHighAccuracyOptions());
 
-                    ((Button)v).setText("Stop Recording");
+                    ((Button)v).setText(getString(R.string.stop_recording));
                     forceLocationBtn.setEnabled(true);
                 } else {
 
                     // Get the Tracks recorded
                     List<Location> tracks = kujakuMapView.stopTrackingService(getApplicationContext());
 
-                    List<Location> othersTracks = new TrackingStorage().getCurrentRecordedLocations();
-                    displayTracksRecorded(othersTracks);
+                    //List<Location> othersTracks = new TrackingStorage().getCurrentRecordedLocations();
+                    //displayTracksRecorded(othersTracks);
 
-                    ((Button)v).setText("Start Recording");
+                    ((Button)v).setText(getString(R.string.start_recording));
                     forceLocationBtn.setEnabled(false);
                 }
             }
@@ -110,17 +106,13 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     @Override
     public void onServiceDisconnected() {
         Toast.makeText(getApplicationContext(), "Service disconnected", Toast.LENGTH_SHORT).show();
-        mService = null;
-        mBound = false;
     }
 
     @Override
     public void onServiceConnected(TrackingService service) {
         Toast.makeText(getApplicationContext(), "Service connected", Toast.LENGTH_SHORT).show();
-        mService = service;
-        mBound = true;
 
-        displayTracksRecorded(mService.getRecordedLocations());
+        displayTracksRecorded(kujakuMapView.getTrackingServiceRecordedLocations());
         InitRecordingButton();
     }
 
