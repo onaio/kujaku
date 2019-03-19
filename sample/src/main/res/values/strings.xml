@@ -72,4 +72,9 @@
     <string name="change_foci_boundary">Change foci boundary</string>
     <string name="change_features">Change Features</string>
     <string name="passive_record_object_activity">Passive record object</string>
+    <string name="start_recording">Start Recording</string>
+    <string name="stop_recording">Stop Recording</string>
+    <string name="take_location">Take Location</string>
+
+
 </resources>

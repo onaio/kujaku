@@ -489,7 +489,7 @@ public class TrackingService extends Service {
      * Register Location
      *
      */
-    private void recordPendingLocation() {
+    private synchronized void recordPendingLocation() {
         if (pendingRecordingLocation != null) {
             Log.d(TAG, "Record pending location.");
 

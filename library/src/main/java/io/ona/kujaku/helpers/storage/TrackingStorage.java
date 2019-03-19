@@ -35,7 +35,9 @@ public class TrackingStorage extends BaseStorage {
             createFile(folderName, fileName);
         }
 
-        gsonWriteObject(folderName, fileName, new StoreLocation(location));
+        if (location != null) {
+            gsonWriteObject(folderName, fileName, new StoreLocation(location));
+        }
     }
 
     /**
@@ -45,13 +47,18 @@ public class TrackingStorage extends BaseStorage {
         // If directory previous exists, delete it
         String previousFolderName = BASE_DIRECTORY + File.separator + PREVIOUS_DIRECTORY;
         if (directoryExists(previousFolderName)) {
-            deleteFile(previousFolderName, true);
+            deleteFile(PREVIOUS_DIRECTORY, false, true);
         }
 
         // Rename current directory to previous
         renameFile(BASE_DIRECTORY, CURRENT_DIRECTORY, BASE_DIRECTORY, PREVIOUS_DIRECTORY);
     }
 
+    /**
+     * Get Current list of Locations
+     *
+     * @return
+     */
     public List<Location> getCurrentRecordedLocations() {
         String folderName = BASE_DIRECTORY + File.separator + CURRENT_DIRECTORY ;
 
@@ -82,26 +89,3 @@ public class TrackingStorage extends BaseStorage {
         return BASE_DIRECTORY;
     }
 }
-
-class StoreLocation {
-
-    String provider;
-    double latitude;
-    double longitude;
-
-    StoreLocation(Location location) {
-        this.provider = location.getProvider();
-        this.latitude = location.getLatitude();
-        this.longitude = location.getLongitude();
-
-    }
-
-    static Location locationFromStoreLocation(StoreLocation storeLocation) {
-        Location location = new Location(storeLocation.provider);
-        location.setLatitude(storeLocation.latitude);
-        location.setLongitude(storeLocation.longitude);
-
-        return location;
-    }
-}
-

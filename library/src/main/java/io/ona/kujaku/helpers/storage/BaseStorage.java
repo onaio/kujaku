@@ -173,13 +173,20 @@ public abstract class BaseStorage {
      * @param isCompletePath Flag indicating whether the Path is complete
      *                       eg. /emulated/storage/style.json is a complete path
      *                       style.json is not a complete path & will be resolved to /sdcard/{@link MapBoxStyleStorage#BASE_DIRECTORY}/styles.json
+     * @param isFolder        if it is a folder
      * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
      */
-    public boolean deleteFile(String filePath, boolean isCompletePath) {
+    public boolean deleteFile(String filePath, boolean isCompletePath, boolean isFolder) {
         if (!isCompletePath) {
-            filePath = Environment.getExternalStorageDirectory() + getDirectory() + File.separator + filePath;
+            filePath = Environment.getExternalStorageDirectory() + File.separator + getDirectory() + File.separator + filePath;
         }
-        return deleteFile(filePath);
+
+        if (!isFolder) {
+            return deleteFile(filePath);
+        } else {
+            return deleteFolder(filePath);
+        }
+
     }
 
     /**
@@ -196,6 +203,29 @@ public abstract class BaseStorage {
             return false;
         }
         return file.delete();
+    }
+
+
+    /**
+     * Deletes a folder given the complete path
+     *
+     * @param folderPath Path to the file eg. /emulated/storage/folder
+     * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
+     */
+    public boolean deleteFolder(String folderPath) {
+        File folder = new File(folderPath);
+
+        if (!folder.isDirectory()) {
+            return false;
+        }
+
+        // delete all files in there
+        File[] files = folder.listFiles();
+        for (File file: files) {
+            file.delete() ;
+        }
+
+        return folder.delete();
     }
 
     /**

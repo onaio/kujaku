@@ -469,7 +469,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         if (currentStylePath != null && currentStylePath.startsWith("file://") && currentStylePath.contains(MapBoxStyleStorage.BASE_DIRECTORY)) {
             new MapBoxStyleStorage()
-                    .deleteFile(currentStylePath.replace("file://", ""), true);
+                    .deleteFile(currentStylePath.replace("file://", ""), true, false);
         }
 
         if (kujakuMapView != null) kujakuMapView.onDestroy();

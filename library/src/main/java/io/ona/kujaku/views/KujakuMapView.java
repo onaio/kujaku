@@ -172,6 +172,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
+    /**
+     * Tracking Service
+     */
+    private TrackingService trackingService = null;
+    private boolean trackingServiceBound = false;
+    private TrackingServiceListener trackingServiceListener = null ;
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -803,7 +810,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             markerOptions.setPosition(latLng);
         }
 
-        mapboxMap.addMarker(markerOptions);
+        if (mapboxMap != null) {
+            mapboxMap.addMarker(markerOptions);
+        } else {
+            Log.e(TAG, "Impossible to add Marker as mapboxMap is null");
+        }
+
     }
 
     public boolean isCanAddPoint() {
@@ -1324,6 +1336,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
 
     /************** Tracking Service ***************/
+
+    /**
+     * Rebind to a running TrackingService instance
+     *
+     * @param context
+     * @param listener
+     */
     public void resumeTrackingService(Context context, TrackingServiceListener listener) {
         // TrackingService reconnection if connection was lost
         if (! trackingServiceBound && TrackingService.isRunning()) {
@@ -1332,6 +1351,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
+    /**
+     * Start TrackingService
+     *
+     * @param context
+     * @param cls
+     * @param trackingServiceListener
+     * @param options
+     */
     public void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options) {
         this.trackingServiceListener = trackingServiceListener;
         TrackingService.startAndBindService(context,
@@ -1340,47 +1367,89 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 options);
     }
 
+    /**
+     * Stop TrackingService
+     *
+     * @param context
+     * @return
+     */
     public List<Location> stopTrackingService(@NonNull Context context) {
-        List<Location> locations = mService.getRecordedLocations();
-        TrackingService.stopAndUnbindService(context, connection);
-        trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
-        return locations;
+        if (trackingServiceBound && trackingService != null) {
+            List<Location> locations = trackingService.getRecordedLocations();
+            TrackingService.stopAndUnbindService(context, connection);
+            trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
+            return locations;
+        }
+
+        return null;
     }
 
+    /**
+     * Unbind from TrackingService instance
+     *
+     * @param context
+     */
     public void unBindTrackingService(@NonNull Context context) {
-        TrackingService.unBindService(context, connection);
+        if (trackingServiceBound && trackingService != null) {
+            TrackingService.unBindService(context, connection);
+            trackingServiceBound = false;
+            trackingService = null ;
+        } else {
+            Log.d(TAG, "Tracking Service instance is null");
+        }
     }
 
+    /**
+     * Take a location
+     *
+     */
     public void trackingServiceTakeLocation() {
-        mService.takeLocation();
+        if (trackingServiceBound && trackingService != null) {
+            trackingService.takeLocation();
+        } else {
+            Log.e(TAG, "Tracking Service instance is null");
+        }
     }
 
-    private TrackingService mService = null;
-    private boolean trackingServiceBound = false;
-    private TrackingServiceListener trackingServiceListener = null ;
+    /**
+     * Get the recorded locations
+     *
+     * @return
+     */
+    public List<Location> getTrackingServiceRecordedLocations() {
+        if (trackingServiceBound && trackingService != null) {
+            return trackingService.getRecordedLocations();
+        }
 
+        return new ArrayList<Location>();
+    }
+    /**
+     * Connection to bind to the TrackingService instance
+     */
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to TrackingService, cast the IBinder and get TrackingService instance
             TrackingService.LocalBinder binder = (TrackingService.LocalBinder) service;
-            mService = binder.getService();
-            mService.registerTrackingServiceListener(trackingServiceListener);
+            trackingService = binder.getService();
+            trackingService.registerTrackingServiceListener(trackingServiceListener);
             trackingServiceBound = true;
             trackingServiceStatusButton.setVisibility(VISIBLE);
             trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_red);
 
-            trackingServiceListener.onServiceConnected(mService);
+            trackingServiceListener.onServiceConnected(trackingService);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             trackingServiceBound = false;
-            mService = null;
+            trackingService = null;
             trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
             trackingServiceListener.onServiceDisconnected();
         }
     };
+
+    /************** End of Tracking Service ***************/
 }
 
