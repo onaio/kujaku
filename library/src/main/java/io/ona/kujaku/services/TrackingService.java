@@ -96,11 +96,11 @@ public class TrackingService extends Service {
 
     public static class TrackingServiceStatus {
         // To record the service status
-        final static int STOPPED = 0;
-        final static int STOPPED_GPS = 1;
-        final static int WAITING_FIRST_FIX = 2;
-        final static int WAITING_FIRST_RECORD = 3;
-        final static int RUNNING = 4;
+        final public static int STOPPED = 0;
+        final public static int STOPPED_GPS = 1;
+        final public static int WAITING_FIRST_FIX = 2;
+        final public static int WAITING_FIRST_RECORD = 3;
+        final public static int RUNNING = 4;
     }
 
 
@@ -120,7 +120,7 @@ public class TrackingService extends Service {
     /**
      * Initialize service
      */
-    private void Initialize() {
+    private void initialize() {
         // Variables
         lastRecordedLocation = null;
         lastBestLocation = null;
@@ -157,7 +157,7 @@ public class TrackingService extends Service {
 
         // Make sure we start clean. The service instance still exists after
         // stopping and so the variable are not re-initialized.
-        Initialize();
+        initialize();
 
         // Start the service in foreground to avoid as much as
         // possible that the service is killed by OS.
@@ -233,11 +233,9 @@ public class TrackingService extends Service {
 
         try {
             // Remove listeners
-            if (locationManager != null) {
-                if (locationListener != null) {
-                    Log.d(TAG, "Remove location manager updates.");
-                    locationManager.removeUpdates(locationListener);
-                }
+            if (locationManager != null && locationListener != null) {
+                Log.d(TAG, "Remove location manager updates.");
+                locationManager.removeUpdates(locationListener);
             }
 
             // Stop the service thread by posting a runnable in the loop.
@@ -497,8 +495,8 @@ public class TrackingService extends Service {
             // We store the location in our list
             recordedLocations.add(pendingRecordingLocation);
 
-            InformNewTrackReceivedListener(pendingRecordingLocation);
-            InformCloseToDepartureLocationListener(pendingRecordingLocation);
+            informNewTrackReceivedListener(pendingRecordingLocation);
+            informCloseToDepartureLocationListener(pendingRecordingLocation);
 
             storage.writeLocation(pendingRecordingLocation, recordedLocations.size());
         } else {
@@ -560,7 +558,7 @@ public class TrackingService extends Service {
             }
 
             // First Location received
-            InformFirstLocationReceivedListener(location);
+            informFirstLocationReceivedListener(location);
 
             // Ignore if the accuracy is too bad:
             if (location.getAccuracy() > trackingServiceOptions.getMinAccuracy()) {
@@ -734,7 +732,7 @@ public class TrackingService extends Service {
      *
      * @param location
      */
-    private void InformFirstLocationReceivedListener(Location location) {
+    private void informFirstLocationReceivedListener(Location location) {
         if (this.trackingServiceListener != null && this.firstLocationReceived == null) {
             trackingServiceListener.onFirstLocationReceived(location);
             this.firstLocationReceived = location ;
@@ -747,7 +745,7 @@ public class TrackingService extends Service {
      *
      * @param location
      */
-    private void InformNewTrackReceivedListener(Location location) {
+    private void informNewTrackReceivedListener(Location location) {
         if (this.trackingServiceListener != null && location != null) {
             this.trackingServiceListener.onNewLocationReceived(location);
         }
@@ -759,7 +757,7 @@ public class TrackingService extends Service {
      *
      * @param location
      */
-    private void InformCloseToDepartureLocationListener(Location location) {
+    private void informCloseToDepartureLocationListener(Location location) {
         if (this.trackingServiceListener != null && location != null) {
             if (this.getNumberOfLocationsRecorded() == 1) {
                 return;

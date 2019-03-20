@@ -177,16 +177,17 @@ public abstract class BaseStorage {
      * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
      */
     public boolean deleteFile(String filePath, boolean isCompletePath, boolean isFolder) {
+        String finalPath = filePath;
+
         if (!isCompletePath) {
-            filePath = Environment.getExternalStorageDirectory() + File.separator + getDirectory() + File.separator + filePath;
+            finalPath = Environment.getExternalStorageDirectory() + File.separator + getDirectory() + File.separator + filePath;
         }
 
         if (!isFolder) {
-            return deleteFile(filePath);
+            return deleteFile(finalPath);
         } else {
-            return deleteFolder(filePath);
+            return deleteFolder(finalPath);
         }
-
     }
 
     /**
