@@ -1347,7 +1347,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         // TrackingService reconnection if connection was lost
         if (! trackingServiceBound && TrackingService.isRunning()) {
             this.trackingServiceListener = listener;
-            TrackingService.bindService(context, null, connection,null);
+            TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
         }
     }
 
