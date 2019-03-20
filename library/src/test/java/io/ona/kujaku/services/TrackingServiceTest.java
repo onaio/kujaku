@@ -118,7 +118,7 @@ public class TrackingServiceTest {
         controller = Robolectric.buildService(TrackingService.class,
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
 
-        assertEquals(simulateLocations().size(), 3); ;
+        assertEquals(simulateLocations().size(), 3);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class TrackingServiceTest {
         controller = Robolectric.buildService(TrackingService.class,
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceSaveBatteryOptions()));
 
-        assertEquals(simulateLocations().size(), 3); ;
+        assertEquals(simulateLocations().size(), 3);
     }
 
     private List<Location> simulateLocations() throws InterruptedException {
@@ -137,8 +137,6 @@ public class TrackingServiceTest {
         CountDownLatch latch1 = new CountDownLatch(1);
         CountDownLatch latch2 = new CountDownLatch(1);
         CountDownLatch latch3 = new CountDownLatch(1);
-
-        List<Location> locations;
 
         controller.get().registerTrackingServiceListener(new TrackingServiceListener() {
             @Override
@@ -156,26 +154,20 @@ public class TrackingServiceTest {
 
             @Override
             public void onCloseToDepartureLocation(Location location) {
-                Assert.assertEquals(location.getLatitude(), location1.getLatitude(),0);
-                Assert.assertEquals(location.getLongitude(), location1.getLongitude(),0);
+                assertEquals(location.getLatitude(), location1.getLatitude(),0);
+                assertEquals(location.getLongitude(), location1.getLongitude(),0);
                 latch3.countDown();
             }
 
-            /**
-             * Not tested
-             * @param service
-             */
+
             @Override
             public void onServiceConnected(TrackingService service) {
-
+                // Empty body
             }
 
-            /**
-             * Not tested
-             */
             @Override
             public void onServiceDisconnected() {
-
+                // Empty body
             }
         });
 
