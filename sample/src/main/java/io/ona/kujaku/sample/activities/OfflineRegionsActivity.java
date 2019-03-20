@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,8 +68,9 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                     Toasty.info(OfflineRegionsActivity.this, getString(R.string.you_do_not_have_offline_regions), Toast.LENGTH_LONG)
                             .show();
                 } else {
-                    String[] offlineRegionsInfo = getOfflineRegionsInfo(offlineRegions);
-                    renderOfflineRegions(listView, offlineRegionsInfo, offlineRegions);
+                    String[] offlineRegionsNames = getOfflineRegionsInfo(offlineRegions);
+                    String[] offlineRegionsInfo = new String[offlineRegionsNames.length];
+                    renderOfflineRegions(listView, offlineRegionsNames, offlineRegionsInfo, offlineRegions);
                 }
             }
 
@@ -79,6 +81,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         });
     }
 
+    @NonNull
     private String[] getOfflineRegionsInfo(final OfflineRegion[] offlineRegions) {
         String[] offlineRegionsInfoArray = new String[offlineRegions.length];
 
@@ -113,9 +116,10 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
         return offlineRegionsInfoArray;
     }
 
-    private void renderOfflineRegions(@NonNull ListView listView, String[] offlineRegionsInfo, OfflineRegion[] offlineRegions) {
-        activated = new boolean[offlineRegionsInfo.length];
-        listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, R.layout.offline_region_item, offlineRegionsInfo){
+    private void renderOfflineRegions(@NonNull ListView listView, @NonNull String[] offlineRegionNames
+            , @NonNull String[] offlineRegionsInfo, OfflineRegion[] offlineRegions) {
+        activated = new boolean[offlineRegionNames.length];
+        listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, R.layout.offline_region_item, offlineRegionNames){
             @NonNull
             @Override
             public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -126,7 +130,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                 final TextView textView = convertView.findViewById(R.id.tv_offlineRegionItem_text);
                 final Button navigateToMapBtn = convertView.findViewById(R.id.btn_offlineRegionItem_navigateToMap);
 
-                textView.setText(offlineRegionsInfo[position]);
+                textView.setText(offlineRegionNames[position]);
                 textView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -142,21 +146,25 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                             public void onStatusChanged(OfflineRegionStatus status) {
                                 double progress = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
 
-                                textView.setText(offlineRegionsInfo[position] + "\nPROGRESS : " + progress + "%");
+                                if (offlineRegionsInfo[position] != null) {
+                                    textView.setText(String.format("%s\n%s\nPROGRESS: %.2f %%", offlineRegionNames[position]
+                                            , offlineRegionsInfo[position], progress));
+                                }
 
                                 if (status.isComplete()) {
                                     navigateToMapBtn.setVisibility(View.VISIBLE);
                                 }
+
                             }
 
                             @Override
                             public void onError(OfflineRegionError error) {
-                                textView.setText(offlineRegionsInfo[position] + "\nError : " + error.getReason() + "\n" + error.getMessage());
+                                textView.setText(offlineRegionNames[position] + "\nError : " + error.getReason() + "\n" + error.getMessage());
                             }
 
                             @Override
                             public void mapboxTileCountLimitExceeded(long limit) {
-                                textView.setText(offlineRegionsInfo[position] + "\nMapbox tile limit count exceeded");
+                                textView.setText(offlineRegionNames[position] + "\nMapbox tile limit count exceeded");
                             }
                         });
 
@@ -173,7 +181,7 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                 offlineRegions[position].getStatus(new OfflineRegion.OfflineRegionStatusCallback() {
                     @Override
                     public void onStatus(OfflineRegionStatus status) {
-                        offlineRegionsInfo[position] += "\nDOWNLOADED SIZE : " + (status.getCompletedResourceSize() / 1e6) + " MB";
+                        offlineRegionsInfo[position] = "\nDOWNLOADED SIZE : " + (Formatter.formatFileSize(OfflineRegionsActivity.this, status.getCompletedResourceSize()));
                         double percentageDownload = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();
 
                         offlineRegionsInfo[position] += "\nDOWNLOADED %: " + percentageDownload + "%";
@@ -188,15 +196,15 @@ public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {
                             navigateToMapBtn.setVisibility(View.VISIBLE);
                         }
 
-                        textView.setText(offlineRegionsInfo[position]);
+                        textView.setText(offlineRegionNames[position] + "\n" + offlineRegionsInfo[position]);
                     }
 
                     @Override
                     public void onError(String error) {
-                        offlineRegionsInfo[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
+                        offlineRegionNames[position] += "\nDOWNLOADED STATUS: GET ERROR - " + error;
                         Log.e(TAG, "OFFLINE REGION STATUS : " + error);
 
-                        textView.setText(offlineRegionsInfo[position]);
+                        textView.setText(offlineRegionNames[position]);
                     }
                 });
 

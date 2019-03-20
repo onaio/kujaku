@@ -84,6 +84,9 @@
             android:name=".activities.PassiveRecordObjectActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleInstance"/>
+        <activity
+            android:name=".activities.FociBoundaryActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

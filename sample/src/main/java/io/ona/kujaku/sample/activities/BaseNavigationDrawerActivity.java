@@ -200,6 +200,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 startActivity(new Intent(this, PassiveRecordObjectActivity.class));
                 finish();
                 return true;
+                
+            case R.id.nav_foci_boundary:
+                startActivity(new Intent(this, FociBoundaryActivity.class));
+                finish();
+                return true;
 
             default:
                 break;

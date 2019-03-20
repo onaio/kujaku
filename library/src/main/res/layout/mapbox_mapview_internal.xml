@@ -16,15 +16,15 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/mapbox_compassContentDescription"/>
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
         android:visibility="gone"
         android:id="@+id/logoView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@null"
-        android:src="@drawable/mapbox_logo_icon"/>
+        app:srcCompat="@drawable/mapbox_logo_icon"/>
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
         android:visibility="gone"
         android:id="@+id/attributionView"
         android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
         android:clickable="true"
         android:focusable="true"
         android:contentDescription="@string/mapbox_attributionsIconContentDescription"
-        android:src="@drawable/mapbox_info_bg_selector"/>
+        app:srcCompat="@drawable/mapbox_info_bg_selector"/>
 
     <!-- END OF MAPBOX VIEW XML -->
 
