@@ -5,11 +5,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.mapbox.mapboxsdk.Mapbox;
-
 import org.json.JSONObject;
 
-import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 

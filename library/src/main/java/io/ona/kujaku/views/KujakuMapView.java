@@ -25,6 +25,7 @@ import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
@@ -70,9 +71,10 @@ import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.location.clients.AndroidLocationClient;
+import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
@@ -86,7 +88,6 @@ import io.ona.kujaku.wmts.model.WmtsLayer;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  *
  */
-
 public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
@@ -162,6 +163,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack;
 
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
+    private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -248,7 +250,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        locationClient = new AndroidLocationClient(getContext());
+        locationClient = new GoogleLocationClient(getContext());
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -267,6 +269,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 }
             }
         });
+
+        for (LocationClientStartedCallback locationClientStartedCallback: locationClientCallbacks) {
+            locationClientStartedCallback.onStarted(locationClient);
+        }
+
+        locationClientCallbacks.clear();
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -1016,7 +1024,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void onPause() {
         if (locationClient != null && locationClient.isMonitoringLocation()) {
-            locationClient.stopLocationUpdates();
             locationClient.close();
         }
     }
@@ -1164,6 +1171,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
+    public void getLocationClient(@Nullable LocationClientStartedCallback locationClientStartedCallback) {
+        if (getLocationClient() != null) {
+            locationClientStartedCallback.onStarted(getLocationClient());
+        } else {
+            if (!locationClientCallbacks.contains(locationClientStartedCallback)) {
+                locationClientCallbacks.add(locationClientStartedCallback);
+            }
+        }
+    }
+
+    @Override
     public void addLayer(@NonNull KujakuLayer kujakuLayer) {
         if (!kujakuLayers.contains(kujakuLayer)) {
             kujakuLayers.add(kujakuLayer);
@@ -1193,6 +1211,26 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 }
             });
         }
+    }
+
+    @Override
+    public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
+        if (updateInterval > -1 && fastestUpdateInterval > -1 && (accuracyLevel == LocationRequest.PRIORITY_HIGH_ACCURACY
+                || accuracyLevel == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+                || accuracyLevel == LocationRequest.PRIORITY_LOW_POWER
+                || accuracyLevel == LocationRequest.PRIORITY_NO_POWER)
+                && getLocationClient() != null) {
+            LocationRequest locationRequest = new LocationRequest();
+            locationRequest.setInterval(updateInterval);
+            locationRequest.setFastestInterval(fastestUpdateInterval);
+            locationRequest.setPriority(accuracyLevel);
+
+            ((GoogleLocationClient) getLocationClient())
+                    .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
+            return true;
+        }
+
+        return false;
     }
 
     private void resetRejectionDialogContent() {

@@ -13,7 +13,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowLineLayer extends ShadowLayer {
 
     @Implementation
-    protected  void initialize(String layerId, String sourceId) {
+    protected void initialize(String layerId, String sourceId) {
         // Do nothing here
     }
 }
