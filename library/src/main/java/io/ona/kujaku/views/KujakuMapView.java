@@ -78,7 +78,6 @@ import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
-import io.ona.kujaku.location.clients.AndroidLocationClient;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
