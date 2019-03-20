@@ -5,8 +5,6 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 
-import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
