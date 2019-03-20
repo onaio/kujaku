@@ -54,7 +54,7 @@ public class TrackingService extends Service {
     private final static String OPTIONS_EXTRA_NAME = "tracking_service_options";
 
     // Wait time in milli sec to wait for the service thread to exit
-    public final static long WAIT_TIME_SERVICE_THREAD = 400;
+    private final static long WAIT_TIME_SERVICE_THREAD = 400;
 
     private static volatile CountDownLatch serviceThreadRunningLatch;
 
@@ -76,7 +76,7 @@ public class TrackingService extends Service {
     private volatile Location firstLocationReceived = null ;
 
     // Tracks Options parameters
-    public TrackingServiceOptions trackingServiceOptions;
+    private TrackingServiceOptions trackingServiceOptions;
 
     // Use for notification
     private PendingIntent notificationPendingIntent;
@@ -290,10 +290,6 @@ public class TrackingService extends Service {
     private void createNotificationPendingIntent(Intent intent) {
         Class<?> cls = getActivityClassFromCanonicalName(intent);
 
-        // Creates an explicit intent for an Activity
-        Intent startActivityIntent = new Intent(this, cls)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
         // The stack builder object will contain an artificial back stack for the started Activity.
         // This ensures that navigating backward from the Activity leads out of
         // your application to the Home screen.
@@ -302,11 +298,14 @@ public class TrackingService extends Service {
 
         // Adds the back stack for the Intent (but not the Intent itself)
         if (cls != null) {
-            stackBuilder.addParentStack(cls);
-        }
+            // Creates an explicit intent for an Activity
+            Intent startActivityIntent = new Intent(this, cls)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        // Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(startActivityIntent);
+            stackBuilder.addParentStack(cls);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(startActivityIntent);
+        }
 
         notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     }
@@ -344,14 +343,16 @@ public class TrackingService extends Service {
         // FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 trackingServiceOptions.getMinTime(),
-                trackingServiceOptions.getGpsMinDistance() - trackingServiceOptions.getToleranceIntervalDistance(),
+                trackingServiceOptions.getGpsMinDistance(),
                 locationListener, Looper.myLooper());
-
-        Log.d(TAG, "Register GPS status listener.");
-
     }
 
-    public void setServiceStatus(int status) {
+    /**
+     * Set TrackingService Status
+     *
+     * @param status
+     */
+    private void setServiceStatus(int status) {
         serviceStatus = status;
     }
 
@@ -842,7 +843,8 @@ public class TrackingService extends Service {
      * @param options
      */
     public static void startAndBindService(Context context, Class<?> cls, ServiceConnection connection, TrackingServiceOptions options) {
-        Intent mIntent = TrackingService.bindService(context, cls, connection, options);
+        Intent mIntent = TrackingService.getIntent(context, cls, options);
+        TrackingService.bindService(context, mIntent, connection);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(mIntent);
@@ -851,16 +853,26 @@ public class TrackingService extends Service {
         }
     }
 
-    /**
+    /***
      * Bind service
      *
      * @param context
-     * @param cls
+     * @param intent
      * @param connection
+     */
+    public static void bindService(Context context, Intent intent, ServiceConnection connection) {
+        context.bindService(intent, connection, BIND_AUTO_CREATE);
+    }
+
+    /**
+     * Create TrackingService intent
+     *
+     * @param context
+     * @param cls
      * @param options
      * @return
      */
-    public static Intent bindService(Context context, Class<?> cls, ServiceConnection connection, TrackingServiceOptions options) {
+    public static Intent getIntent(Context context, Class<?> cls, TrackingServiceOptions options) {
         Intent mIntent = new Intent(context, TrackingService.class);
 
         if (cls != null) {
@@ -870,8 +882,6 @@ public class TrackingService extends Service {
         if (options != null) {
             mIntent.putExtra(OPTIONS_EXTRA_NAME, options);
         }
-
-        context.bindService(mIntent, connection, BIND_AUTO_CREATE);
 
         return mIntent;
     }
