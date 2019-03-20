@@ -31,12 +31,12 @@ import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 /**
- * 
  * Created by Emmanuel Otin - eo@novel-t.ch 03/20/19.
  */
 @RunWith(RobolectricTestRunner.class)
@@ -44,7 +44,6 @@ import static org.robolectric.Shadows.shadowOf;
         manifest = Config.NONE)
 public class TrackingServiceTest {
 
-    private static final String TAG = TrackingServiceTest.class.getSimpleName();
     private Context context;
 
     private ServiceController<TrackingService> controller;
@@ -119,7 +118,7 @@ public class TrackingServiceTest {
         controller = Robolectric.buildService(TrackingService.class,
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
 
-        simulateLocations();
+        assertEquals(simulateLocations().size(), 3); ;
     }
 
     @Test
@@ -127,10 +126,10 @@ public class TrackingServiceTest {
         controller = Robolectric.buildService(TrackingService.class,
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceSaveBatteryOptions()));
 
-        simulateLocations();
+        assertEquals(simulateLocations().size(), 3); ;
     }
 
-    private void simulateLocations() throws InterruptedException {
+    private List<Location> simulateLocations() throws InterruptedException {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -144,29 +143,36 @@ public class TrackingServiceTest {
         controller.get().registerTrackingServiceListener(new TrackingServiceListener() {
             @Override
             public void onFirstLocationReceived(Location location) {
-                Assert.assertEquals(location.getLatitude(), location1.getLatitude());
-                Assert.assertEquals(location.getLongitude(), location1.getLongitude());
+                assertEquals(location.getLatitude(), location1.getLatitude(),0);
+                assertEquals(location.getLongitude(), location1.getLongitude(),0);
                 latch1.countDown();
             }
 
             @Override
             public void onNewLocationReceived(Location location) {
-                Assert.assertNotNull(location);
+                assertNotNull(location);
                 latch2.countDown();
             }
 
             @Override
             public void onCloseToDepartureLocation(Location location) {
-                Assert.assertEquals(location.getLatitude(), location1.getLatitude());
-                Assert.assertEquals(location.getLongitude(), location1.getLongitude());
+                Assert.assertEquals(location.getLatitude(), location1.getLatitude(),0);
+                Assert.assertEquals(location.getLongitude(), location1.getLongitude(),0);
                 latch3.countDown();
             }
 
+            /**
+             * Not tested
+             * @param service
+             */
             @Override
             public void onServiceConnected(TrackingService service) {
 
             }
 
+            /**
+             * Not tested
+             */
             @Override
             public void onServiceDisconnected() {
 
@@ -196,8 +202,7 @@ public class TrackingServiceTest {
         latch3.await();
 
         Thread.sleep(1000);
-        locations = controller.get().getRecordedLocations();
 
-        assertEquals(locations.size(), 3);
+        return controller.get().getRecordedLocations();
     }
 }

@@ -33,7 +33,7 @@ class StoreLocation {
      * @param storeLocation
      * @return Location
      */
-    static Location locationFromStoreLocation(StoreLocation storeLocation) {
+    protected static Location locationFromStoreLocation(StoreLocation storeLocation) {
         Location location = new Location(storeLocation.provider);
         location.setLatitude(storeLocation.latitude);
         location.setLongitude(storeLocation.longitude);

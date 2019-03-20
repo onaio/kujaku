@@ -1,8 +1,5 @@
 package io.ona.kujaku.services.options;
 
-import android.app.PendingIntent;
-import android.location.Criteria;
-import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,11 +11,11 @@ import android.os.Parcelable;
 abstract public class TrackingServiceOptions implements Parcelable {
     private long minTime;
 
-    long minDistance;
-    long gpsMinDistance;
-    long toleranceIntervalDistance;
-    long distanceFromDeparture;
-    long minAccuracy;
+    protected long minDistance;
+    protected long gpsMinDistance;
+    protected long toleranceIntervalDistance;
+    protected long distanceFromDeparture;
+    protected long minAccuracy;
 
     TrackingServiceOptions() {
         this.minTime = 0;
@@ -44,7 +41,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
 
     /**
      * Define the maximum distance in meters from the first point recorded to raise the
-     * {@link io.ona.kujaku.listeners.TrackingServiceListener#onCloseToDepartureLocation(Location)} function
+     * {@link io.ona.kujaku.listeners.TrackingServiceListener#onCloseToDepartureLocation} function
      *
      * @return
      */
@@ -62,7 +59,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
     }
 
     /**
-     * Get the minimum time in seconds between getting a point from the {@link android.location.LocationManager#requestLocationUpdates(long, float, Criteria, PendingIntent)}
+     * Get the minimum time in seconds between getting a point from the {@link android.location.LocationManager#requestLocationUpdates}
      *
      * @return
      */
@@ -71,7 +68,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
     }
 
     /**
-     * Get the minimum distance in meters between getting a point from the {@link android.location.LocationManager#requestLocationUpdates(long, float, Criteria, PendingIntent)}
+     * Get the minimum distance in meters between getting a point from the {@link android.location.LocationManager#requestLocationUpdates}
      *
      * @return
      */
@@ -105,7 +102,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
      *
      * @param in
      */
-    void createFromParcel(Parcel in) {
+    protected void createFromParcel(Parcel in) {
         this.minTime = in.readLong();
         this.minDistance = in.readLong();
         this.gpsMinDistance = in.readLong();
