@@ -324,8 +324,8 @@ public class TrackingService extends Service {
         Class<?> cls = null;
         try {
             cls = Class.forName(classname);
-        } catch (Exception ex) {
-            Log.e(TAG, "Launch activity class not found");
+        } catch (ClassNotFoundException ex) {
+            Log.e(TAG, "Launch activity class not found", ex);
         }
 
         return cls;
@@ -645,8 +645,8 @@ public class TrackingService extends Service {
         public void run() {
             try {
                 Looper.myLooper().quit();
-            } catch (Exception e) {
-                Log.e(TAG, "Cannot stop service thread.", e);
+            } catch (NullPointerException ex) {
+                Log.e(TAG, "Cannot stop service thread.", ex);
             }
         }
     };
@@ -671,8 +671,9 @@ public class TrackingService extends Service {
      */
     protected void startServiceForeground() {
         String channel;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channel = createChannel();
+        }
         else {
             channel = "";
         }
@@ -903,7 +904,11 @@ public class TrackingService extends Service {
      * @param connection
      */
     public static void unBindService(Context context, ServiceConnection connection) {
-        context.unbindService(connection);
+        try {
+            context.unbindService(connection);
+        } catch (IllegalArgumentException ex){
+            Log.e(TAG, "UnBindService failed", ex);
+        }
     }
 
     /**
