@@ -141,7 +141,7 @@ public abstract class BaseStorage {
                 new File(Environment.getExternalStorageDirectory(), folderName)
                         .mkdirs();
                 return file.createNewFile();
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 Log.e(TAG, "The file already exists", ex);
             }
         }
