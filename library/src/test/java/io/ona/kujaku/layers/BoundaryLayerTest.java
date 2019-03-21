@@ -24,6 +24,7 @@ import io.ona.kujaku.test.shadows.ShadowLayer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -189,5 +190,54 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
         assertEquals(2, layerIds.length);
         assertNotNull(layerIds[0]);
         assertNotNull(layerIds[1]);
+    }
+
+    @Test
+    public void createBoundaryLabelSourceShouldInstantiateBoundaryLabelsSourceVariable() {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer boundaryLayer = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth)
+                .build();
+
+        assertNull(ReflectionHelpers.getField(boundaryLayer, "boundaryLabelsSource"));
+
+        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryLabelSource");
+
+        assertNotNull(ReflectionHelpers.getField(boundaryLayer, "boundaryLabelsSource"));
+    }
+
+    @Test
+    public void createBoundaryFeatureSourceShouldInstantiateBoundaryFeatureSourceVariable() {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth);
+
+        BoundaryLayer boundaryLayer = builder.build();
+
+        assertNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
+
+        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryFeatureSource", ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
+
+        assertNotNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
     }
 }
