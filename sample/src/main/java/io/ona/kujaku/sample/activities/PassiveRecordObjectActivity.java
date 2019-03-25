@@ -2,11 +2,15 @@ package io.ona.kujaku.sample.activities;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import java.util.List;
 
@@ -71,16 +75,22 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
             }
         });
 
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
+                kujakuMapView.focusOnUserLocation(true);
+            }
+        });
+
         kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
             @Override
             public void onSuccess() {
-                kujakuMapView.focusOnUserLocation(true);
                 startStopBtn.setEnabled(true);
                 kujakuMapView.resumeTrackingService(getApplicationContext(), PassiveRecordObjectActivity.this);
             }
         });
     }
-
 
     private void InitRecordingButton() {
         if (TrackingService.isRunning()) {
