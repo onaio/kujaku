@@ -9,6 +9,7 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import java.io.IOException;
 
@@ -48,6 +49,7 @@ public class FociBoundaryActivity extends BaseNavigationDrawerActivity {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
                     // Zoom to the position
+                    mapboxMap.setStyle(Style.MAPBOX_STREETS);
                     mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-14.105596638939968, 32.60676728350983), 15d));
                 }
             });

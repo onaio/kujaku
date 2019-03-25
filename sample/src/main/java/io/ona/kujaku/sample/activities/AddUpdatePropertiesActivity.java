@@ -1,6 +1,7 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +12,9 @@ import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 
@@ -19,6 +23,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -37,8 +43,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
 
     private boolean isFirstClick = true;
 
-    private final String[] genericFeatureGroup =  {"White", "Black", "Hispanic", "Asian", "Other"};
-    private final String[] featureGroup =  {"Not Visited",  "Sprayed", "Not Sprayable",  "Not Sprayed"};
+    private final String[] genericFeatureGroup = {"White", "Black", "Hispanic", "Asian", "Other"};
+    private final String[] featureGroup = {"Not Visited", "Sprayed", "Not Sprayable", "Not Sprayed"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +68,17 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
+
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
+            }
+        });
     }
 
     private void initializeFromStyleSource() {
-        kujakuMapView.setStyleUrl("asset://reveal-streets-style.json");
-        String geoJson = readAssetContents(this, "reveal-geojson.json");
+        String geoJson = readAssetContents(AddUpdatePropertiesActivity.this, "reveal-geojson.json");
         kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
         // set camera position
         CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -74,6 +86,12 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"));
+            }
+        });
     }
 
     private void setListeners(boolean isFetchFromStyle) {
@@ -111,7 +129,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 try {
                     // fetch existing features
-                    List<Feature> features  = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
+                    List<Feature> features = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());
                     // modify properties
                     FeatureCollection featureCollection;
                     if (isFetchFromStyle) {
@@ -176,5 +194,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     }
 
     @Override
-    protected int getSelectedNavigationItem() { return  R.id.nav_add_update_activity; }
+    protected int getSelectedNavigationItem() {
+        return R.id.nav_add_update_activity;
+    }
 }

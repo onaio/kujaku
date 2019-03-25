@@ -30,6 +30,7 @@ import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -287,13 +288,16 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
 
         int colorRes = android.support.v7.appcompat.R.color.abc_btn_colored_text_material;
-        int colorInt = context.getResources().getColor(android.support.v7.appcompat.R.color.abc_btn_colored_text_material);
+        int colorInt = context
+                .getResources()
+                .getColor(android.support.v7.appcompat.R.color.abc_btn_colored_text_material);
         float lineWidth = 67f;
 
         builder.setArrowLineColor(colorRes);
         builder.setArrowLineWidth(lineWidth);
 
         ArrowLineLayer arrowLineLayer = builder.build();
+        ReflectionHelpers.callInstanceMethod(arrowLineLayer, "createArrowLineLayer", ReflectionHelpers.ClassParameter.from(ArrowLineLayer.Builder.class, builder));
 
         LineLayer lineLayer = arrowLineLayer.getLineLayer();
         ShadowLayer shadowLayer = (ShadowLineLayer) Shadow.extract(lineLayer);
@@ -719,5 +723,22 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
         assertEquals(3, filteredFeatures.get(1).getNumberProperty("position"));
         assertEquals(4, filteredFeatures.get(2).getNumberProperty("position"));
         assertEquals(5, filteredFeatures.get(3).getNumberProperty("position"));
+    }
+
+    @Test
+    public void getLayerIdsShouldReturnStringArrayWithLayerIds() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        String[] layerIds = arrowLineLayer.getLayerIds();
+        assertEquals(2, layerIds.length);
+        assertNotNull(layerIds[0]);
+        assertNotNull(layerIds[1]);
     }
 }

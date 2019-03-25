@@ -1,11 +1,15 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -24,7 +28,6 @@ public class CardActivity extends BaseNavigationDrawerActivity {
         kujakuMapView = findViewById(R.id.card_activity_map_view);
 
         kujakuMapView.showCurrentLocationBtn(true);
-
         kujakuMapView.enableAddPoint(true);
 
         ImageButton addPointBtn = kujakuMapView.findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
@@ -42,6 +45,13 @@ public class CardActivity extends BaseNavigationDrawerActivity {
             public void onClick(View v) {
                 findViewById(R.id.feature_info_card_view).setVisibility(isCardVisible ?  View.GONE : View.VISIBLE);
                 isCardVisible = !isCardVisible;
+            }
+        });
+
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
             }
         });
     }

@@ -2,6 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +13,7 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
@@ -81,29 +83,38 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
-                GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
-                mapboxMap.addSource(sampleCasesSource);
+                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        addStructuresToMap(style);
 
-                Expression colorExpression = match(get("testStatus")
-                        , rgba(0, 0, 0, 0)
-                        , stop(literal("positive"), Expression.color(getColorv16(R.color.positiveTasksColor)))
-                        , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
-
-                FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
-                fillLayer.withFilter(neq(geometryType(), "Point"));
-                fillLayer.withProperties(fillColor(colorExpression));
-
-                CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
-                circleLayer.withFilter(eq(geometryType(), "Point"));
-                circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
-
-                mapboxMap.addLayer(circleLayer);
-                mapboxMap.addLayer(fillLayer);
-
-                // Zoom to the position
-                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
+                        // Zoom to the position
+                        mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
+                    }
+                });
             }
         });
+    }
+
+    private void addStructuresToMap(@NonNull Style style) {
+        GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
+        style.addSource(sampleCasesSource);
+
+        Expression colorExpression = match(get("testStatus")
+                , rgba(0, 0, 0, 0)
+                , stop(literal("positive"), Expression.color(getColorv16(R.color.positiveTasksColor)))
+                , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
+
+        FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
+        fillLayer.withFilter(neq(geometryType(), "Point"));
+        fillLayer.withProperties(fillColor(colorExpression));
+
+        CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
+        circleLayer.withFilter(eq(geometryType(), "Point"));
+        circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
+
+        style.addLayer(circleLayer);
+        style.addLayer(fillLayer);
     }
 
     private void toggleDrawingArrowsShowingRelationship() {

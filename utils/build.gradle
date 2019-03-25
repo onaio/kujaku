@@ -3,7 +3,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 
-version '0.6.1'
+version '0.7.0'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -106,9 +106,9 @@ dependencies {
     androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
+    implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.7.2') {
+    implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}") {
         transitive = true
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'

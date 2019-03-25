@@ -1,9 +1,15 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
@@ -45,6 +51,16 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
             }
         });
 
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.setStyle(Style.MAPBOX_STREETS);
+                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(30.96088179449847
+                        , -99.1250589414584)
+                        , 5.441840862122009)
+                );
+            }
+        });
     }
 
     @Override
