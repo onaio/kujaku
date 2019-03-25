@@ -72,17 +72,9 @@ public class BoundaryLayer implements KujakuLayer {
 
     private BoundaryLayer(@NonNull Builder builder) {
         this.builder = builder;
+    }
 
-        // Create the layers
-        boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.featureCollection);
-        boundaryLabelsSource = new GeoJsonSource(BOUNDARY_LABEL_SOURCE_ID);
-        boundaryLineLayer = new LineLayer(BOUNDARY_LINE_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)
-                .withProperties(
-                        PropertyFactory.lineJoin("round"),
-                        PropertyFactory.lineWidth(builder.boundaryWidth),
-                        PropertyFactory.lineColor(builder.boundaryColor)
-                );
-
+    private void createBoundaryLabelLayer(@NonNull Builder builder) {
         boundaryLabelLayer = new SymbolLayer(BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LABEL_SOURCE_ID)
                 .withProperties(
                         PropertyFactory.textField(Expression.toString(Expression.get(builder.labelProperty))),
@@ -100,23 +92,46 @@ public class BoundaryLayer implements KujakuLayer {
         }
     }
 
+    private void createBoundaryLineLayer(@NonNull Builder builder) {
+        boundaryLineLayer = new LineLayer(BOUNDARY_LINE_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)
+                .withProperties(
+                        PropertyFactory.lineJoin("round"),
+                        PropertyFactory.lineWidth(builder.boundaryWidth),
+                        PropertyFactory.lineColor(builder.boundaryColor)
+                );
+    }
+
+    private void createBoundaryLabelSource() {
+        boundaryLabelsSource = new GeoJsonSource(BOUNDARY_LABEL_SOURCE_ID);
+    }
+
+    private void createBoundaryFeatureSource(@NonNull Builder builder) {
+        boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.featureCollection);
+    }
+
     @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
-        if (mapboxMap.getLayer(BOUNDARY_LABEL_LAYER_ID) != null) {
-            BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
-        }
-
-        if (mapboxMap.getSource(BOUNDARY_LABEL_SOURCE_ID) != null) {
+        // Create the sources
+        if (mapboxMap.getStyle().getSource(BOUNDARY_LABEL_SOURCE_ID) != null) {
             BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();
         }
+        createBoundaryLabelSource();
 
-        if (mapboxMap.getSource(BOUNDARY_FEATURE_SOURCE_ID) != null) {
+        if (mapboxMap.getStyle().getSource(BOUNDARY_FEATURE_SOURCE_ID) != null) {
             BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();
         }
+        createBoundaryFeatureSource(builder);
 
-        if (mapboxMap.getLayer(BOUNDARY_LINE_LAYER_ID) != null) {
+        // Create the layers
+        if (mapboxMap.getStyle().getLayer(BOUNDARY_LABEL_LAYER_ID) != null) {
+            BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
+        }
+        createBoundaryLabelLayer(builder);
+
+        if (mapboxMap.getStyle().getLayer(BOUNDARY_LINE_LAYER_ID) != null) {
             BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
         }
+        createBoundaryLineLayer(builder);
 
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
@@ -132,16 +147,18 @@ public class BoundaryLayer implements KujakuLayer {
 
                 boundaryLabelsSource.setGeoJson(boundaryCenterFeatures);
 
-                mapboxMap.addSource(boundaryLabelsSource);
-                mapboxMap.addSource(boundarySource);
+                mapboxMap.getStyle().addSource(boundaryLabelsSource);
+                mapboxMap.getStyle().addSource(boundarySource);
 
                 if (builder.belowLayerId != null) {
-                    mapboxMap.addLayerBelow(boundaryLineLayer, builder.belowLayerId);
-                    mapboxMap.addLayerBelow(boundaryLabelLayer, builder.belowLayerId);
+                    mapboxMap.getStyle().addLayerBelow(boundaryLineLayer, builder.belowLayerId);
+                    mapboxMap.getStyle().addLayerBelow(boundaryLabelLayer, builder.belowLayerId);
                 } else {
-                    mapboxMap.addLayer(boundaryLineLayer);
-                    mapboxMap.addLayer(boundaryLabelLayer);
+                    mapboxMap.getStyle().addLayer(boundaryLineLayer);
+                    mapboxMap.getStyle().addLayer(boundaryLabelLayer);
                 }
+
+                visible = true;
             }
 
             @Override
@@ -194,8 +211,8 @@ public class BoundaryLayer implements KujakuLayer {
     @Override
     public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         ArrayList<Layer> layers = new ArrayList<Layer>();
-        layers.add(mapboxMap.getLayerAs(BOUNDARY_LINE_LAYER_ID));
-        layers.add(mapboxMap.getLayerAs(BOUNDARY_LABEL_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LINE_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LABEL_LAYER_ID));
 
         for (Layer layer: layers) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
@@ -208,8 +225,8 @@ public class BoundaryLayer implements KujakuLayer {
     @Override
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         ArrayList<Layer> layers = new ArrayList<Layer>();
-        layers.add(mapboxMap.getLayerAs(BOUNDARY_LINE_LAYER_ID));
-        layers.add(mapboxMap.getLayerAs(BOUNDARY_LABEL_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LINE_LAYER_ID));
+        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LABEL_LAYER_ID));
 
         for (Layer layer: layers) {
             if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
@@ -224,6 +241,10 @@ public class BoundaryLayer implements KujakuLayer {
         return visible;
     }
 
+    @Override
+    public String[] getLayerIds() {
+        return new String[] {BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LINE_LAYER_ID};
+    }
 
 
     public static class Builder {

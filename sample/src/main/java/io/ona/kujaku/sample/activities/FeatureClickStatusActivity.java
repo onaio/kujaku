@@ -12,6 +12,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
@@ -40,16 +41,20 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
         super.onCreate(savedInstanceState);
 
         kujakuMapView = findViewById(R.id.kmv_featureClickStatusActivity_mapView);
-        kujakuMapView.setStyleUrl("asset://basic-feature-select-style.json");
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
-                selectableLayers = getLayerNames(mapboxMap.getLayers());
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://basic-feature-select-style.json"), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        selectableLayers = getLayerNames(mapboxMap.getStyle().getLayers());
+                    }
+                });
 
                 mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
                     @Override
-                    public void onMapClick(@NonNull LatLng point) {
+                    public boolean onMapClick(@NonNull LatLng point) {
                         final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
                         List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, selectableLayers);
                         Log.e(TAG, "LEN: " + features.size());
@@ -67,10 +72,14 @@ public class FeatureClickStatusActivity extends BaseNavigationDrawerActivity {
                         FeatureCollection featureCollection = FeatureCollection.fromFeatures((Feature[]) selectedFeatures.values().toArray(new Feature[]{}));
 
                         // Update the select layer
-                        GeoJsonSource geoJsonSource = mapboxMap.getSourceAs("select-data");
-                        if (geoJsonSource != null) {
-                            geoJsonSource.setGeoJson(featureCollection);
+                        if (mapboxMap.getStyle() != null) {
+                            GeoJsonSource geoJsonSource = mapboxMap.getStyle().getSourceAs("select-data");
+                            if (geoJsonSource != null) {
+                                geoJsonSource.setGeoJson(featureCollection);
+                            }
                         }
+
+                        return false;
                     }
 
                 });

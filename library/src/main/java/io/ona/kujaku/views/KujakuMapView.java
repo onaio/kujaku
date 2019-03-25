@@ -34,7 +34,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.single.PermissionListener;
-import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -47,6 +46,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
@@ -533,38 +533,55 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 public void onMapReady(MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
                     mapboxMap.getUiSettings().setCompassEnabled(false);
-                    if (KujakuMapView.this.droppedPoints != null) {
-                        List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
-                        for (io.ona.kujaku.domain.Point point : droppedPoints) {
-                            dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+
+                    // Operations that require the style to be loaded
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            afterStyleLoadedOperations(style);
                         }
-                    }
-
-                    if (getPrimaryGeoJsonSource() != null && mapboxMap.getSource(getPrimaryGeoJsonSource().getId()) == null) {
-                        mapboxMap.addSource(getPrimaryGeoJsonSource());
-                    }
-                    if (getPrimaryLayer() != null && mapboxMap.getLayer(getPrimaryLayer().getId()) == null) {
-                        mapboxMap.addLayer(getPrimaryLayer());
-                    }
-                    if (isFetchSourceFromStyle) {
-                        initializeSourceAndFeatureCollectionFromStyle();
-                        isFetchSourceFromStyle = false;
-                    }
-                    if (getCameraPosition() != null) {
-                        mapboxMap.setCameraPosition(getCameraPosition());
-                    }
-                    // add bounds change listener
-                    addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
-                    callBoundsChangedListeners();
-                    enableFeatureClickListenerEmitter(mapboxMap);
-
-                    addWmtsLayers();
-
-                    if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
-                        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
-                    }
+                    });
                 }
             });
+        }
+    }
+
+    private void afterStyleLoadedOperations(@NonNull Style style) {
+        if (KujakuMapView.this.droppedPoints != null) {
+            List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
+            for (io.ona.kujaku.domain.Point point : droppedPoints) {
+                dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+            }
+        }
+
+        addPrimaryGeoJsonSourceAndLayerToStyle(style);
+
+        if (getCameraPosition() != null) {
+            mapboxMap.setCameraPosition(getCameraPosition());
+        }
+
+        // add bounds change listener
+        addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
+        callBoundsChangedListeners();
+        enableFeatureClickListenerEmitter(mapboxMap);
+
+        addWmtsLayers();
+
+        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+    }
+
+    private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
+        if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
+            style.addSource(getPrimaryGeoJsonSource());
+        }
+
+        if (getPrimaryLayer() != null && style.getLayer(getPrimaryLayer().getId()) == null) {
+            style.addLayer(getPrimaryLayer());
+        }
+
+        if (isFetchSourceFromStyle) {
+            initializeSourceAndFeatureCollectionFromStyle(style);
+            isFetchSourceFromStyle = false;
         }
     }
 
@@ -575,7 +592,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         // Add WmtsLayers
         if (wmtsLayers != null) {
             for (WmtsLayer layer : wmtsLayers) {
-                if (mapboxMap.getSource(layer.getIdentifier()) == null) {
+                if (mapboxMap.getStyle().getSource(layer.getIdentifier()) == null) {
 
                     TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
                     tileSet.setMaxZoom(layer.getMaximumZoom());
@@ -584,10 +601,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     RasterSource webMapSource = new RasterSource(
                             layer.getIdentifier(),
                             tileSet, layer.getTilesSize());
-                    mapboxMap.addSource(webMapSource);
+                    mapboxMap.getStyle().addSource(webMapSource);
 
                     RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
-                    mapboxMap.addLayer(webMapLayer);
+                    mapboxMap.getStyle().addLayer(webMapLayer);
                 }
             }
         }
@@ -665,7 +682,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         this.wmtsLayers.add(layerIdentified);
 
-        if (mapboxMap != null) {
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
             addWmtsLayers();
         }
     }
@@ -950,7 +967,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                @Override
+                public void onStyleLoaded(@NonNull Style style) {
+                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
+                }
+            });
         }
     }
 
@@ -975,7 +997,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
@@ -994,10 +1016,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
     }
 
-    private void initializeSourceAndFeatureCollectionFromStyle() {
+    private void initializeSourceAndFeatureCollectionFromStyle(@NonNull Style style) {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            primaryGeoJsonSource = mapboxMap.getSourceAs(getPrimaryGeoJsonSourceId());
+            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -1092,10 +1114,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
                             Log.i(TAG, "All location settings are satisfied.");
-                            // initialize location component wrapper
-                            if (mapboxMap != null) {
-                                mapboxLocationComponentWrapper.init(mapboxMap, getContext());
-                            }
+
                             // You can continue warming the GPS
                             if (shouldStartNow) {
                                 warmUpLocationServices();
@@ -1143,7 +1162,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void onMapClick(@NonNull LatLng point) {
+    public boolean onMapClick(@NonNull LatLng point) {
         if (onFeatureClickListener != null) {
             PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
             List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
@@ -1152,6 +1171,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 onFeatureClickListener.onFeatureClick(features);
             }
         }
+
+        return false;
     }
 
     public boolean isWarmGps() {
@@ -1211,14 +1232,24 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.addLayerToMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.addLayerToMap(mapboxMap);
+                        }
+                    });
                 }
             });
         } else {
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.enableLayerOnMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.enableLayerOnMap(mapboxMap);
+                        }
+                    });
                 }
             });
         }
@@ -1230,7 +1261,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             getMapAsync(new OnMapReadyCallback() {
                 @Override
                 public void onMapReady(MapboxMap mapboxMap) {
-                    kujakuLayer.disableLayerOnMap(mapboxMap);
+                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            kujakuLayer.disableLayerOnMap(mapboxMap);
+                        }
+                    });
                 }
             });
         }
@@ -1250,6 +1286,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             ((GoogleLocationClient) getLocationClient())
                     .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
+        String[] layerIds = kujakuLayer.getLayerIds();
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+            for (String layerId: layerIds) {
+                if (mapboxMap.getStyle().getLayer(layerId) == null) {
+                    return false;
+                }
+            }
+
             return true;
         }
 
