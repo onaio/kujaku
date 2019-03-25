@@ -592,37 +592,30 @@ public class TrackingService extends Service {
      */
     private volatile Thread serviceThread = new Thread("TrackingService") {
         public void run() {
-            try {
-                Log.d(TAG, "Tracking thread started.");
-                // preparing a looper on current thread
-                // the current thread is being detected implicitly
-                Looper.prepare();
+            Log.d(TAG, "Tracking thread started.");
+            // preparing a looper on current thread
+            // the current thread is being detected implicitly
+            Looper.prepare();
 
-                Log.d(TAG, "Register GPS status listener.");
+            Log.d(TAG, "Register GPS status listener.");
 
-                // No need to do it in thread as the listener only logs
-                // which is fast
-                // locationManager.addGpsStatusListener(gpsListener);
+            // No need to do it in thread as the listener only logs
+            // which is fast
+            // locationManager.addGpsStatusListener(gpsListener);
 
-                // now, the handler will automatically bind to the
-                // Looper that is attached to the current thread
-                // You don't need to specify the Looper explicitly
-                gpsHandler = new Handler();
+            // now, the handler will automatically bind to the
+            // Looper that is attached to the current thread
+            // You don't need to specify the Looper explicitly
+            gpsHandler = new Handler();
 
-                // Register the Location listener
-                registerLocationListener();
+            // Register the Location listener
+            registerLocationListener();
 
-                // After the following line the thread will start
-                // running the message loop and will not normally
-                // exit the loop unless a problem happens or you
-                // quit() the looper (see below)
-                Looper.loop();
-
-            } catch (Exception e) {
-                Log.e(TAG, "Service thread failed to run.", e);
-                // Stop the service as there is something really wrong
-                stopSelf();
-            }
+            // After the following line the thread will start
+            // running the message loop and will not normally
+            // exit the loop unless a problem happens or you
+            // quit() the looper (see below)
+            Looper.loop();
 
             Log.d(TAG, "Exiting looper.");
 
@@ -643,10 +636,11 @@ public class TrackingService extends Service {
     private Runnable stopServiceThread = new Runnable() {
         @Override
         public void run() {
-            try {
-                Looper.myLooper().quit();
-            } catch (NullPointerException ex) {
-                Log.e(TAG, "Cannot stop service thread.", ex);
+            Looper looper = Looper.myLooper();
+            if (looper != null) {
+                looper.quit();
+            } else {
+                Log.e(TAG, "Cannot stop service thread.");
             }
         }
     };
