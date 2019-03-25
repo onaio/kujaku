@@ -4,6 +4,7 @@ package io.ona.kujaku.services;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Parcel;
 
 import org.junit.After;
 import org.junit.Before;
@@ -73,7 +74,9 @@ public class TrackingServiceTest {
 
     @After
     public void tearDown() {
-        controller.destroy();
+        if (controller != null) {
+            controller.destroy();
+        }
     }
 
     @Test
@@ -125,6 +128,40 @@ public class TrackingServiceTest {
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceSaveBatteryOptions()));
 
         assertEquals(simulateLocations().size(), 3);
+    }
+
+    @Test
+    public void testParcelableTrackingServiceHighAccuracyOptions() {
+        TrackingServiceHighAccuracyOptions options = new TrackingServiceHighAccuracyOptions();
+        Parcel parcel = Parcel.obtain();
+        options.writeToParcel(parcel, options.describeContents());
+        parcel.setDataPosition(0);
+
+        TrackingServiceHighAccuracyOptions createdFromParcel = TrackingServiceHighAccuracyOptions.CREATOR.createFromParcel(parcel);
+        assertEquals(createdFromParcel.getDistanceFromDeparture(), 10);
+        assertEquals(createdFromParcel.getGpsMinDistance(), 0);
+        assertEquals(createdFromParcel.getMinAccuracy(), 50);
+        assertEquals(createdFromParcel.getMinDistance(), 5);
+        assertEquals(createdFromParcel.getMinTime(), 0);
+        assertEquals(createdFromParcel.getToleranceIntervalDistance(), 1);
+
+    }
+
+    @Test
+    public void testParcelableTrackingServiceSaveBatteryOptions() {
+        TrackingServiceSaveBatteryOptions options = new TrackingServiceSaveBatteryOptions();
+        Parcel parcel = Parcel.obtain();
+        options.writeToParcel(parcel, options.describeContents());
+        parcel.setDataPosition(0);
+
+        TrackingServiceSaveBatteryOptions createdFromParcel = TrackingServiceSaveBatteryOptions.CREATOR.createFromParcel(parcel);
+        assertEquals(createdFromParcel.getDistanceFromDeparture(), 10);
+        assertEquals(createdFromParcel.getGpsMinDistance(), 5);
+        assertEquals(createdFromParcel.getMinAccuracy(), 50);
+        assertEquals(createdFromParcel.getMinDistance(), 5);
+        assertEquals(createdFromParcel.getMinTime(), 0);
+        assertEquals(createdFromParcel.getToleranceIntervalDistance(), 1);
+
     }
 
     private List<Location> simulateLocations() throws InterruptedException {

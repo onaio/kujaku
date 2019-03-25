@@ -11,7 +11,10 @@ import java.io.InputStreamReader;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
+import io.ona.kujaku.wmts.model.WmtsStyle;
 import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.realm.internal.Capabilities;
 
 /**
  *
@@ -55,5 +58,24 @@ public class WmtsCapabilitiesSerializerTest {
         Assert.assertEquals(capabilities.getTilesSize("default028mm"), 256);
         Assert.assertEquals(capabilities.getTilesSize("GoogleMapsCompatible"), 256);
         Assert.assertEquals(capabilities.getTilesSize("unknownTileMatrixIdentifier"), 0);
+
+        WmtsLayer layer = capabilities.getLayer("Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data");
+
+        // Style :
+        WmtsStyle style = layer.getStyle("default");
+        Assert.assertTrue(style.isDefault());
+        Assert.assertEquals(style.getIdentifier(), "default");
+        Assert.assertEquals(style.getTitles().size(), 1);
+
+        //TileMatrixSet
+        Assert.assertNotNull(layer.getTileMatrixSetLink("default028mm"));
+
+        // WmtsLayers
+        layer.setMaximumZoom(capabilities.getMaximumTileMatrixZoom("default028mm"));
+        layer.setMinimumZoom(capabilities.getMinimumTileMatrixZoom("default028mm"));
+
+        Assert.assertEquals(layer.getMaximumZoom(),19);
+        Assert.assertEquals(layer.getMinimumZoom(),0);
+
     }
 }
