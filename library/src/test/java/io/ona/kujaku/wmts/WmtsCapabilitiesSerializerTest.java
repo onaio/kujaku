@@ -14,7 +14,6 @@ import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
 import io.ona.kujaku.wmts.model.WmtsStyle;
 import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
-import io.realm.internal.Capabilities;
 
 /**
  *
