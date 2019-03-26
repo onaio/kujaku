@@ -192,7 +192,7 @@ public class TrackingService extends Service {
                         // Start the thread processing notifications
                         serviceThread.start();
 
-                    } catch (Exception e) {
+                    } catch (IllegalThreadStateException e) {
 
                         Log.e(TAG, "Failed to start service thread.", e);
                         setServiceStatus(TrackingServiceStatus.STOPPED);
@@ -249,7 +249,7 @@ public class TrackingService extends Service {
                 wakeLock.release();
             }
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             Log.e(TAG, "Failed to stop service properly.", e);
         }
 
@@ -435,7 +435,6 @@ public class TrackingService extends Service {
             }
 
         } // End test new location within time tolerance
-
     }
 
     /**
