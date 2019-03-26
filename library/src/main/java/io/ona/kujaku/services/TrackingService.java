@@ -362,85 +362,80 @@ public class TrackingService extends Service {
     private synchronized void processLocation(Location location) {
         double distanceBetweenLocations;
 
-        try {
-            if (lastRecordedLocation == null) {
-                Log.d(TAG, "First location since service started or GPS was lost");
+        if (lastRecordedLocation == null) {
+            Log.d(TAG, "First location since service started or GPS was lost");
 
-                // Create pending
-                overwritePendingLocation(location);
+            // Create pending
+            overwritePendingLocation(location);
 
-                // Create a fake last recorded location to have a fix
-                // reference point to compare new tracks to.
-                // We cannot compare new tracks always to the pending
-                // one using toleranceInterval as the
-                // pending location can be updated for ever theoretically
-                // if the accuracy keeps being better
-                lastRecordedLocation = location;
+            // Create a fake last recorded location to have a fix
+            // reference point to compare new tracks to.
+            // We cannot compare new tracks always to the pending
+            // one using toleranceInterval as the
+            // pending location can be updated for ever theoretically
+            // if the accuracy keeps being better
+            lastRecordedLocation = location;
 
-                return;
-            }
+            return;
+        }
 
-            // lastRecordedLocation is not null
-            distanceBetweenLocations = location.distanceTo(lastRecordedLocation);
+        // lastRecordedLocation is not null
+        distanceBetweenLocations = location.distanceTo(lastRecordedLocation);
 
+        Log.d(TAG,
+                "Distance to last recorded location (m) = "
+                        + Double.toString(distanceBetweenLocations));
+
+        if ((distanceBetweenLocations < (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {
+            Log.d(TAG, "New location too close from last recorded location.");
+            return;
+        }
+
+        if (distanceBetweenLocations < (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {
             Log.d(TAG,
-                    "Distance to last recorded location (m) = "
-                            + Double.toString(distanceBetweenLocations));
+                    "New location within distance tolerance from last recorded location.");
 
-            if ((distanceBetweenLocations < (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {
-                Log.d(TAG, "New location too close from last recorded location.");
-                return;
-            }
-
-            if (distanceBetweenLocations < (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {
+            // Check if there is a pending location
+            if (pendingRecordingLocation == null) {
                 Log.d(TAG,
-                        "New location within distance tolerance from last recorded location.");
-
-                // Check if there is a pending location
-                if (pendingRecordingLocation == null) {
-                    Log.d(TAG,
-                            "No pending location.");
+                        "No pending location.");
+                overwritePendingLocation(location);
+                return;
+            } else {
+                if (selectLocation(location, pendingRecordingLocation)) {
                     overwritePendingLocation(location);
+                    Log.d(TAG, "New location is better than pending location.");
+
                     return;
+
                 } else {
-                    if (selectLocation(location, pendingRecordingLocation)) {
-                        overwritePendingLocation(location);
-                        Log.d(TAG, "New location is better than pending location.");
+                    Log.d(TAG,
+                            "New location has worse accuracy than pending one.");
+                    return;
 
-                        return;
+                } // end test on better location
 
-                    } else {
-                        Log.d(TAG,
-                                "New location has worse accuracy than pending one.");
-                        return;
+            } // end test if pending
 
-                    } // end test on better location
-
-                } // end test if pending
+        } else {
+            Log.d(TAG, "New location out of distance tolerance.");
+            if (pendingRecordingLocation == null) {
+                // As this location is out of tolerance, the next one will also be.
+                // So we record it now. We cannot wait for better accuracy.
+                overwritePendingLocation(location);
+                recordPendingLocation();
+                return;
 
             } else {
-                Log.d(TAG, "New location out of distance tolerance.");
-                if (pendingRecordingLocation == null) {
-                    // As this location is out of tolerance, the next one will also be.
-                    // So we record it now. We cannot wait for better accuracy.
-                    overwritePendingLocation(location);
-                    recordPendingLocation();
-                    return;
+                // Record pending which becomes the last location
+                recordPendingLocation();
+                // Recursive call as we have a new lastRecordedLocation
+                processLocation(location);
+                return;
+            }
 
-                } else {
-                    // Record pending which becomes the last location
-                    recordPendingLocation();
-                    // Recursive call as we have a new lastRecordedLocation
-                    processLocation(location);
-                    return;
-                }
+        } // End test new location within time tolerance
 
-            } // End test new location within time tolerance
-
-        } catch (Exception e) {
-
-            Log.e(TAG, "Error when processing location.", e);
-        }
     }
 
     /**

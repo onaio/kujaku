@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.helpers.storage.TrackingStorage;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
@@ -120,6 +121,10 @@ public class TrackingServiceTest {
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
 
         assertEquals(simulateLocations().size(), 3);
+
+        TrackingStorage storage = new TrackingStorage();
+        List<Location> locations = storage.getCurrentRecordedLocations();
+        assertEquals(locations.size(), 3);
     }
 
     @Test
@@ -128,6 +133,10 @@ public class TrackingServiceTest {
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceSaveBatteryOptions()));
 
         assertEquals(simulateLocations().size(), 3);
+
+        TrackingStorage storage = new TrackingStorage();
+        List<Location> locations = storage.getCurrentRecordedLocations();
+        assertEquals(locations.size(), 3);
     }
 
     @Test
