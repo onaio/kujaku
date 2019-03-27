@@ -128,8 +128,8 @@ public class KujakuMapViewTest extends BaseTest {
 
     @Test
     public void enableAddPointShouldEnableLocationUpdatesWhenGivenOnLocationChangedAndTrue() throws NoSuchFieldException, IllegalAccessException {
-        String isMapScrollingVariableName = "isMapScrolled";
-        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, isMapScrollingVariableName, true);
+        String updateCameraUserLocationOnMap = "updateCameraUserLocationOnMap";
+        insertValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap, false);
 
         OnLocationChanged onLocationChanged = new OnLocationChanged() {
             @Override
@@ -139,7 +139,7 @@ public class KujakuMapViewTest extends BaseTest {
         };
 
         kujakuMapView.enableAddPoint(true, onLocationChanged);
-        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, isMapScrollingVariableName));
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap));
         assertEquals(onLocationChanged, getValueInPrivateField(KujakuMapView.class, kujakuMapView, "onLocationChangedListener"));
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, "updateUserLocationOnMap"));
     }
@@ -251,9 +251,11 @@ public class KujakuMapViewTest extends BaseTest {
     @Test
     public void focusOnUserLocationShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
+        String updateCameraUserLocationOnMap = "updateCameraUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
         int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
@@ -261,7 +263,8 @@ public class KujakuMapViewTest extends BaseTest {
 
 
         kujakuMapView.focusOnUserLocation(false);
-        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap));
 
         drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
@@ -270,9 +273,11 @@ public class KujakuMapViewTest extends BaseTest {
     @Test
     public void focusOnUserLocationWithRadiusShouldChangeTargetIconWhenCalled() throws NoSuchFieldException, IllegalAccessException {
         String updateUserLocationOnMap = "updateUserLocationOnMap";
+        String updateCameraUserLocationOnMap = "updateCameraUserLocationOnMap";
 
         kujakuMapView.focusOnUserLocation(true, 25f);
         assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap));
         ImageButton imageButton = kujakuMapView.findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
 
         int drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
@@ -280,7 +285,8 @@ public class KujakuMapViewTest extends BaseTest {
 
 
         kujakuMapView.focusOnUserLocation(false);
-        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertTrue((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateUserLocationOnMap));
+        assertFalse((boolean) getValueInPrivateField(KujakuMapView.class, kujakuMapView, updateCameraUserLocationOnMap));
 
         drawableResId = (int) getValueInPrivateField(ImageView.class, imageButton, "mResource");
         assertEquals(R.drawable.ic_cross_hair, drawableResId);
