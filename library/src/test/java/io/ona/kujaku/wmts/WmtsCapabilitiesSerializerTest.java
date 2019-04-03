@@ -76,5 +76,14 @@ public class WmtsCapabilitiesSerializerTest {
         Assert.assertEquals(layer.getMaximumZoom(),19);
         Assert.assertEquals(layer.getMinimumZoom(),0);
 
+        Assert.assertNull(layer.getTemplateUrl(""));
+        String templateUrl = "https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/tile/1.0.0/Vegetation_Mapping_Texas_Ecological_Mapping_Systems_Data/default/default028mm/{z}/{y}/{x}.png";
+        Assert.assertEquals(templateUrl, layer.getTemplateUrl("tile"));
+
+        Assert.assertEquals(layer.getSelectedTileMatrixLinkIdentifier(),"default028mm");
+
+        // Tile Size
+        layer.setTilesSize(60);
+        Assert.assertEquals(layer.getTilesSize(), 60);
     }
 }
