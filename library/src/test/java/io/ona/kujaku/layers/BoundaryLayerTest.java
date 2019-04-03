@@ -6,13 +6,18 @@ import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -23,6 +28,7 @@ import java.util.List;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -239,5 +245,118 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
         ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryFeatureSource", ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
 
         assertNotNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
+    }
+
+    @Test
+    public void removeLayerOnMapShouldReturnFalseWhenStyleIsNotReady() {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth);
+
+        BoundaryLayer boundaryLayer = builder.build();
+
+        MapboxMap mapboxMap = Mockito.mock(MapboxMap.class);
+        Style style = Mockito.mock(Style.class);
+
+        Mockito.doReturn(false)
+                .when(style)
+                .isFullyLoaded();
+
+        Mockito.doReturn(style)
+                .when(mapboxMap)
+                .getStyle();
+
+        assertFalse(boundaryLayer.removeLayerOnMap(mapboxMap));
+    }
+
+
+    @Test
+    public void removeLayerOnMapShouldReturnTrueWhenStyleIsReadyAndRemoveLayersAndSources() {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth);
+
+        BoundaryLayer boundaryLayer = builder.build();
+
+        assertNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
+
+        MapboxMap mapboxMap = Mockito.mock(MapboxMap.class);
+        Style style = Mockito.mock(Style.class);
+
+        SymbolLayer boundaryLabelLayer = Mockito.mock(SymbolLayer.class);
+        LineLayer boundaryLineLayer = Mockito.mock(LineLayer.class);
+        GeoJsonSource boundarySource = new GeoJsonSource("some-id");
+        GeoJsonSource boundaryLabelsSource = new GeoJsonSource("some-id-2");
+
+        Mockito.doReturn(true)
+                .when(style)
+                .isFullyLoaded();
+
+        Mockito.doReturn(style)
+                .when(mapboxMap)
+                .getStyle();
+
+        ReflectionHelpers.setField(boundaryLayer, "boundaryLabelLayer", boundaryLabelLayer);
+        ReflectionHelpers.setField(boundaryLayer, "boundaryLineLayer", boundaryLineLayer);
+        ReflectionHelpers.setField(boundaryLayer, "boundarySource", boundarySource);
+        ReflectionHelpers.setField(boundaryLayer, "boundaryLabelsSource", boundaryLabelsSource);
+
+        assertTrue(boundaryLayer.removeLayerOnMap(mapboxMap));
+
+        Mockito.verify(style, Mockito.times(1))
+                .removeLayer(ArgumentMatchers.eq(boundaryLabelLayer));
+        Mockito.verify(style, Mockito.times(1))
+                .removeLayer(ArgumentMatchers.eq(boundaryLineLayer));
+        Mockito.verify(style, Mockito.times(1))
+                .removeSource(ArgumentMatchers.eq(boundarySource));
+        Mockito.verify(style, Mockito.times(1))
+                .removeSource(ArgumentMatchers.eq(boundaryLabelsSource));
+    }
+
+    @Test
+    public void updateFeaturesShouldUpdateFeatureCollection() {
+        float textSize = 20f;
+        float boundaryWidth = 6f;
+        int colorInt = Color.GREEN;
+        String labelProperty = "district-name";
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+                .setLabelProperty(labelProperty)
+                .setLabelTextSize(textSize)
+                .setLabelColorInt(colorInt)
+                .setBoundaryColor(colorInt)
+                .setBoundaryWidth(boundaryWidth);
+
+        BoundaryLayer boundaryLayer = builder.build();
+
+        FeatureCollection updatedFeatureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        boundaryLayer.updateFeatures(updatedFeatureCollection);
+
+        assertEquals(updatedFeatureCollection, ReflectionHelpers.getField(
+                ReflectionHelpers.getField(boundaryLayer, "builder"), "featureCollection")
+        );
     }
 }

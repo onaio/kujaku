@@ -11,6 +11,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
@@ -149,7 +150,7 @@ public class KujakuMapViewTest extends BaseTest {
                 , LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         Mockito.verify(googleLocationClient, Mockito.times(1))
-                .requestLocationUpdates(Mockito.any(LocationListener.class), Mockito.any(LocationRequest.class));
+                .requestLocationUpdates(ArgumentMatchers.isNull(), Mockito.any(LocationRequest.class));
     }
 
     @Test

@@ -9,12 +9,18 @@ import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.MultiPolygon;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyValue;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -30,6 +36,7 @@ import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -740,5 +747,124 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
         assertEquals(2, layerIds.length);
         assertNotNull(layerIds[0]);
         assertNotNull(layerIds[1]);
+    }
+
+
+    @Test
+    public void removeLayerOnMapShouldReturnFalseWhenStyleIsNotReady() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        MapboxMap mapboxMap = Mockito.mock(MapboxMap.class);
+        Style style = Mockito.mock(Style.class);
+
+        Mockito.doReturn(false)
+                .when(style)
+                .isFullyLoaded();
+
+        Mockito.doReturn(style)
+                .when(mapboxMap)
+                .getStyle();
+
+        assertFalse(arrowLineLayer.removeLayerOnMap(mapboxMap));
+    }
+
+
+    @Test
+    public void removeLayerOnMapShouldReturnTrueWhenStyleIsReadyAndRemoveLayersAndSources() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        MapboxMap mapboxMap = Mockito.mock(MapboxMap.class);
+        Style style = Mockito.mock(Style.class);
+
+        SymbolLayer arrowHeadLayer = Mockito.mock(SymbolLayer.class);
+        LineLayer lineLayer = Mockito.mock(LineLayer.class);
+        GeoJsonSource arrowHeadSource = new GeoJsonSource("some-id");
+        GeoJsonSource lineLayerSource = new GeoJsonSource("some-id-2");
+
+        Mockito.doReturn(true)
+                .when(style)
+                .isFullyLoaded();
+
+        Mockito.doReturn(style)
+                .when(mapboxMap)
+                .getStyle();
+
+        ReflectionHelpers.setField(arrowLineLayer, "arrowHeadLayer", arrowHeadLayer);
+        ReflectionHelpers.setField(arrowLineLayer, "lineLayer", lineLayer);
+        ReflectionHelpers.setField(arrowLineLayer, "arrowHeadSource", arrowHeadSource);
+        ReflectionHelpers.setField(arrowLineLayer, "lineLayerSource", lineLayerSource);
+
+        assertTrue(arrowLineLayer.removeLayerOnMap(mapboxMap));
+
+        Mockito.verify(style, Mockito.times(1))
+                .removeLayer(ArgumentMatchers.eq(arrowHeadLayer));
+        Mockito.verify(style, Mockito.times(1))
+                .removeLayer(ArgumentMatchers.eq(lineLayer));
+        Mockito.verify(style, Mockito.times(1))
+                .removeSource(ArgumentMatchers.eq(arrowHeadSource));
+        Mockito.verify(style, Mockito.times(1))
+                .removeSource(ArgumentMatchers.eq(lineLayerSource));
+    }
+
+    @Test
+    public void updateFeaturesShouldUpdateFeatureCollectionWhenNoFilterIsBeingUsed() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        FeatureCollection updatedFeatureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        arrowLineLayer.updateFeatures(updatedFeatureCollection);
+
+        assertEquals(updatedFeatureCollection, ReflectionHelpers.getField(
+                ReflectionHelpers.getField(
+                        ReflectionHelpers.getField(arrowLineLayer, "builder")
+                        , "featureConfig")
+                , "featureCollection")
+        );
+    }
+
+    @Test
+    public void updateFeaturesShouldUpdateFilterBuilderFeatureCollectionWhenFeatureFilterIsBeingUsed() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        FeatureFilter.Builder builder = new FeatureFilter.Builder(featureCollection)
+                .whereEq("type", "building");
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(builder);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer arrowLineLayer = new ArrowLineLayer.Builder(context, featureConfig, sortConfig).build();
+
+        FeatureCollection updatedFeatureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
+
+        arrowLineLayer.updateFeatures(updatedFeatureCollection);
+
+        assertEquals(updatedFeatureCollection, ((FeatureFilter.Builder) ReflectionHelpers.getField(
+                ReflectionHelpers.getField(
+                        ReflectionHelpers.getField(arrowLineLayer, "builder")
+                        , "featureConfig")
+                , "featureFilterBuilder")).getFeatureCollection()
+        );
     }
 }
