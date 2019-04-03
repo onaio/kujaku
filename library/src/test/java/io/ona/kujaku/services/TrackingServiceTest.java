@@ -181,12 +181,12 @@ public class TrackingServiceTest {
         ServiceConnection connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-
+                // empty
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-
+                // empty
             }
         };
 
