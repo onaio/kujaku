@@ -195,14 +195,9 @@ private static void testDependencies(configuration) {
     configuration.testImplementation 'org.robolectric:robolectric:3.5.1'
     configuration.testImplementation 'org.robolectric:shadows-support-v4:3.4-rc2'
 
-    configuration.testImplementation 'org.mockito:mockito-core:1.10.19'
+    configuration.testImplementation 'org.mockito:mockito-inline:2.25.0'
 
-    configuration.testImplementation "org.powermock:powermock-module-junit4:1.6.2"
-    configuration.testImplementation "org.powermock:powermock-module-junit4-rule:1.6.2"
-    configuration.testImplementation "org.powermock:powermock-api-mockito:1.6.2"
-    configuration.testImplementation "org.powermock:powermock-classloading-xstream:1.6.2"
-
-    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestImplementation 'org.mockito:mockito-android:2.25.1'
     configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

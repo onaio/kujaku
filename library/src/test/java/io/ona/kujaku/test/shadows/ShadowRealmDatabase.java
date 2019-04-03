@@ -3,7 +3,6 @@ package io.ona.kujaku.test.shadows;
 import android.content.Context;
 
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -17,8 +16,6 @@ public class ShadowRealmDatabase {
 
     @Implementation
     public static RealmDatabase init(Context context) {
-        PowerMockito.mockStatic(RealmDatabase.class);
-
         RealmDatabase realmDatabase = Mockito.mock(RealmDatabase.class);
 
         return realmDatabase;
