@@ -1,9 +1,12 @@
 package io.ona.kujaku.services;
 
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.IBinder;
 import android.os.Parcel;
 
 import org.junit.After;
@@ -171,6 +174,25 @@ public class TrackingServiceTest {
         assertEquals(createdFromParcel.getMinTime(), 0);
         assertEquals(createdFromParcel.getToleranceIntervalDistance(), 1);
 
+    }
+
+    @Test
+    public void testStartAndBindService() {
+        ServiceConnection connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+
+            }
+        };
+
+        TrackingService.startAndBindService(context, MapActivity.class, connection, new TrackingServiceHighAccuracyOptions());
+        assertEquals(TrackingService.getTrackingServiceStatus(), 0);
+        TrackingService.stopAndUnbindService(context, connection);
     }
 
     private List<Location> simulateLocations() throws InterruptedException {
