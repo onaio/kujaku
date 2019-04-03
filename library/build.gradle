@@ -197,7 +197,7 @@ private static void testDependencies(configuration) {
 
     configuration.testImplementation 'org.mockito:mockito-inline:2.25.0'
 
-    configuration.androidTestImplementation 'org.mockito:mockito-android:2.25.1'
+    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
     configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
