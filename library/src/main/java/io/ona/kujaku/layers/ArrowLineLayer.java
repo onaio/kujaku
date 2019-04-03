@@ -21,6 +21,7 @@ import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
@@ -90,6 +91,7 @@ public class ArrowLineLayer implements KujakuLayer {
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
 
     private boolean visible = false;
+    private boolean isRemoved = false;
 
     private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {
         this.builder = builder;
@@ -271,6 +273,78 @@ public class ArrowLineLayer implements KujakuLayer {
     @Override
     public String[] getLayerIds() {
         return new String[] {ARROW_HEAD_LAYER_ID, LINE_LAYER_ID};
+    }
+
+    @Override
+    public boolean removeLayerOnMap(@NonNull MapboxMap mapboxMap) {
+        setRemoved(true);
+
+        // Remove the layers & sources
+        Style style = mapboxMap.getStyle();
+        if (style != null && style.isFullyLoaded()) {
+            style.removeLayer(arrowHeadLayer);
+            style.removeLayer(lineLayer);
+
+            style.removeSource(arrowHeadSource);
+            style.removeSource(lineLayerSource);
+
+            return true;
+        } else {
+            Log.e(TAG, "Could not remove the layers & source because the the style is null or not fully loaded");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isRemoved() {
+        return isRemoved;
+    }
+
+    @Override
+    public void setRemoved(boolean isRemoved) {
+        this.isRemoved = isRemoved;
+    }
+
+    @Override
+    public void updateFeatures(@NonNull FeatureCollection featureCollection) {
+        if (this.builder.featureConfig.featureCollection != null) {
+            this.builder.featureConfig.featureCollection = featureCollection;
+        }
+
+        if (this.builder.featureConfig.featureFilterBuilder != null) {
+            this.builder.featureConfig.featureFilterBuilder.setFeatureCollection(featureCollection);
+        }
+
+        if (lineLayer != null) {
+            GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+                @Override
+                public Object[] call() throws Exception {
+                    FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);
+                    FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
+                    LineString arrowLine = calculateLineString(sortedFeatureCollection);
+                    FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+
+                    return new Object[]{arrowLine, arrowHeadFeatures};
+                }
+            });
+            genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
+                @Override
+                public void onSuccess(Object[] objects) {
+                    LineString arrowLine = (LineString) objects[0];
+                    FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];
+
+                    arrowHeadSource.setGeoJson(arrowHeadFeatures);
+                    lineLayerSource.setGeoJson(arrowLine);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, Log.getStackTraceString(e));
+                }
+            });
+
+            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     private Bitmap getBitmapFromDrawable(Drawable drawable) {

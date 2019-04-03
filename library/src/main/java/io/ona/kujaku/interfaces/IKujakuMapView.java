@@ -255,4 +255,6 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @return {@code true} if the layer IDs for the {@link KujakuLayer} are present, {@code false} otherwise
      */
     boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer);
+
+    void removeLayer(@NonNull KujakuLayer kujakuLayer);
 }

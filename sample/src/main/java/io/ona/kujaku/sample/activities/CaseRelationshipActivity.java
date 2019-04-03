@@ -20,12 +20,15 @@ import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.utils.FeatureFilter;
+import io.ona.kujaku.utils.IOUtil;
 import io.ona.kujaku.views.KujakuMapView;
 
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
@@ -55,6 +58,8 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private FeatureCollection sampleCases;
     private ArrowLineLayer arrowLineLayer;
+    private GeoJsonSource sampleCasesSource;
+
     private Button drawArrowsBtn;
 
     @Override
@@ -97,7 +102,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     }
 
     private void addStructuresToMap(@NonNull Style style) {
-        GeoJsonSource sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
+        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
         style.addSource(sampleCasesSource);
 
         Expression colorExpression = match(get("testStatus")
@@ -145,6 +150,24 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         } else {
             kujakuMapView.addLayer(arrowLineLayer);
             drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
+
+            new Thread(() -> {
+                try {
+                    Thread.sleep(5000);
+
+                    String featureCollectionString = IOUtil.readInputStreamAsString(getAssets().open("alternative_arrow_line.geojson"));
+
+                    runOnUiThread(() -> {
+                        // Update the features
+                        FeatureCollection newFeatureCollection = FeatureCollection.fromJson(featureCollectionString);
+
+                        sampleCasesSource.setGeoJson(newFeatureCollection);
+                        arrowLineLayer.updateFeatures(newFeatureCollection);
+                    });
+                } catch (InterruptedException | IOException e) {
+                    Log.e(TAG, Log.getStackTraceString(e));
+                }
+            });
         }
     }
 

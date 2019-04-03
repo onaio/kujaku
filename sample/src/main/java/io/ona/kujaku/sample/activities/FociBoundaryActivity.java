@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -43,7 +44,8 @@ public class FociBoundaryActivity extends BaseNavigationDrawerActivity {
                     .setBoundaryColor(Color.RED)
                     .setBoundaryWidth(6f);
 
-            kujakuMapView.addLayer(builder.build());
+            BoundaryLayer boundaryLayer = builder.build();
+            kujakuMapView.addLayer(boundaryLayer);
 
             kujakuMapView.getMapAsync(new OnMapReadyCallback() {
                 @Override
@@ -51,6 +53,20 @@ public class FociBoundaryActivity extends BaseNavigationDrawerActivity {
                     // Zoom to the position
                     mapboxMap.setStyle(Style.MAPBOX_STREETS);
                     mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-14.105596638939968, 32.60676728350983), 15d));
+
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(6000);
+
+                            String featureCollectionString = IOUtil.readInputStreamAsString(getAssets().open("alternative_boundary.geojson"));
+
+                            runOnUiThread(() -> {
+                                boundaryLayer.updateFeatures(FeatureCollection.fromFeature(Feature.fromJson(featureCollectionString)));
+                            });
+                        } catch (InterruptedException | IOException e) {
+                            Log.e(TAG, Log.getStackTraceString(e));
+                        }
+                    }).start();
                 }
             });
         } catch (IOException e) {

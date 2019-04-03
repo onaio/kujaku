@@ -14,6 +14,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
@@ -69,6 +70,7 @@ public class BoundaryLayer implements KujakuLayer {
 
     private SymbolLayer boundaryLabelLayer;
     private boolean visible = false;
+    private boolean isRemoved = false;
 
     private BoundaryLayer(@NonNull Builder builder) {
         this.builder = builder;
@@ -246,6 +248,66 @@ public class BoundaryLayer implements KujakuLayer {
         return new String[] {BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LINE_LAYER_ID};
     }
 
+    @Override
+    public boolean removeLayerOnMap(@NonNull MapboxMap mapboxMap) {
+        setRemoved(true);
+
+        // Remove the layers & sources
+        Style style = mapboxMap.getStyle();
+        if (style != null && style.isFullyLoaded()) {
+            style.removeLayer(boundaryLabelLayer);
+            style.removeLayer(boundaryLineLayer);
+
+            style.removeSource(boundarySource);
+            style.removeSource(boundaryLabelsSource);
+
+            return true;
+        } else {
+            Log.e(TAG, "Could not remove the layers & source because the the style is null or not fully loaded");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isRemoved() {
+        return isRemoved;
+    }
+
+    @Override
+    public void setRemoved(boolean isRemoved) {
+        this.isRemoved = isRemoved;
+    }
+
+    @Override
+    public void updateFeatures(@NonNull FeatureCollection featureCollection) {
+        this.builder.featureCollection = featureCollection;
+
+        if (boundaryLabelLayer != null) {
+            GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
+                @Override
+                public Object[] call() throws Exception {
+                    return new Object[]{calculateCenterPoints(builder.featureCollection)};
+                }
+            });
+
+            genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
+                @Override
+                public void onSuccess(Object[] objects) {
+                    FeatureCollection boundaryCenterFeatures = (FeatureCollection) objects[0];
+
+                    boundaryLabelsSource.setGeoJson(boundaryCenterFeatures);
+                    boundarySource.setGeoJson(featureCollection);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, Log.getStackTraceString(e));
+                }
+            });
+
+            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+    }
 
     public static class Builder {
 
