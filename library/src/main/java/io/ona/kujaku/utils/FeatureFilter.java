@@ -125,6 +125,10 @@ public class FeatureFilter {
             return featureCollection;
         }
 
+        public void setFeatureCollection(@NonNull FeatureCollection featureCollection) {
+            this.featureCollection = featureCollection;
+        }
+
         @Nullable
         public String getSortProperty() {
             return sortProperty;
