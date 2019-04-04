@@ -658,12 +658,10 @@ public class TrackingService extends Service {
      * To ensure the service is not killed too easily
      */
     protected void startServiceForeground() {
-        String channel;
+        String channel = "";
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channel = createChannel();
-        }
-        else {
-            channel = "";
         }
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
