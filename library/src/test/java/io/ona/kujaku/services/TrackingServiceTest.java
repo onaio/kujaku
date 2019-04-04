@@ -51,29 +51,9 @@ public class TrackingServiceTest {
 
     private ServiceController<TrackingService> controller;
 
-    private Location location1;
-    private Location location2;
-    private Location location3;
-
     @Before
     public void setUp() {
         context = RuntimeEnvironment.application;
-
-        location1 = new Location(GPS_PROVIDER);
-        location1.setAccuracy(20);
-        location1.setLongitude(6.055484);
-        location1.setLatitude(46.2182335);
-
-        location2 = new Location(GPS_PROVIDER);
-        location2.setAccuracy(19);
-        location2.setLongitude(6.055485);
-        location2.setLatitude(46.2182335);
-
-        location3 = new Location(GPS_PROVIDER);
-        location3.setAccuracy(20);
-        location3.setLongitude(1.1);
-        location3.setLatitude(1.1);
-
     }
 
     @After
@@ -91,6 +71,8 @@ public class TrackingServiceTest {
         assertEquals(TrackingService.TrackingServiceStatus.STOPPED, TrackingService.getTrackingServiceStatus());
         assertFalse(TrackingService.isRunning());
         assertNull(null, controller.get().getRecordedLocations());
+
+        controller.destroy();
     }
 
     @Test
@@ -101,6 +83,7 @@ public class TrackingServiceTest {
         controller.create().startCommand(0,0);
         assertEquals(TrackingService.TrackingServiceStatus.STOPPED_GPS, TrackingService.getTrackingServiceStatus());
 
+        controller.destroy();
     }
 
     @Test
@@ -116,30 +99,8 @@ public class TrackingServiceTest {
 
         assertEquals(TrackingService.TrackingServiceStatus.WAITING_FIRST_FIX, TrackingService.getTrackingServiceStatus());
         assertTrue(TrackingService.isRunning());
-    }
 
-    @Test
-    public void testStartingServiceHighAccuracy() throws InterruptedException  {
-        controller = Robolectric.buildService(TrackingService.class,
-                TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
-
-        assertEquals(simulateLocations().size(), 3);
-
-        TrackingStorage storage = new TrackingStorage();
-        List<Location> locations = storage.getCurrentRecordedLocations();
-        assertEquals(locations.size(), 3);
-    }
-
-    @Test
-    public void testStartingServiceSaveBattery() throws InterruptedException {
-        controller = Robolectric.buildService(TrackingService.class,
-                TrackingService.getIntent(context, MapActivity.class, new TrackingServiceSaveBatteryOptions()));
-
-        assertEquals(simulateLocations().size(), 3);
-
-        TrackingStorage storage = new TrackingStorage();
-        List<Location> locations = storage.getCurrentRecordedLocations();
-        assertEquals(locations.size(), 3);
+        controller.destroy();
     }
 
     @Test
@@ -191,24 +152,52 @@ public class TrackingServiceTest {
         };
 
         TrackingService.startAndBindService(context, MapActivity.class, connection, new TrackingServiceHighAccuracyOptions());
-        assertEquals(TrackingService.getTrackingServiceStatus(), 0);
         TrackingService.stopAndUnbindService(context, connection);
     }
 
-    private List<Location> simulateLocations() throws InterruptedException {
+    @Test
+    public void testServiceWithLocationInDistanceTolerance() throws InterruptedException {
+        controller = Robolectric.buildService(TrackingService.class,
+                TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
+
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
 
+        Location locationDeparture = new Location(GPS_PROVIDER);
+        locationDeparture.setAccuracy(20);
+        locationDeparture.setLongitude(6.054989);
+        locationDeparture.setLatitude(46.218049);
+
+        Location location_1 = new Location(GPS_PROVIDER);
+        location_1.setAccuracy(18);
+        location_1.setLongitude(6.055042);
+        location_1.setLatitude(46.218084);
+
+        Location location_2 = new Location(GPS_PROVIDER);
+        location_2.setAccuracy(20);
+        location_2.setLongitude(6.055096);
+        location_2.setLatitude(46.218119);
+
+        Location location_3 = new Location(GPS_PROVIDER);
+        location_3.setAccuracy(20);
+        location_3.setLongitude(6.055697);
+        location_3.setLatitude(46.218561);
+
+        float distance = locationDeparture.distanceTo(location_1);
+        assertEquals(distance, 5, 1); // 5 meters +-1 meter
+
+        distance = location_1.distanceTo(location_2);
+        assertEquals(distance, 5, 1); // 5 meters +-1 meter
+
         CountDownLatch latch1 = new CountDownLatch(1);
         CountDownLatch latch2 = new CountDownLatch(1);
-        CountDownLatch latch3 = new CountDownLatch(1);
 
         controller.get().registerTrackingServiceListener(new TrackingServiceListener() {
             @Override
             public void onFirstLocationReceived(Location location) {
-                assertEquals(location.getLatitude(), location1.getLatitude(),0);
-                assertEquals(location.getLongitude(), location1.getLongitude(),0);
+                assertEquals(location.getLatitude(), locationDeparture.getLatitude(),0);
+                assertEquals(location.getLongitude(), locationDeparture.getLongitude(),0);
                 latch1.countDown();
             }
 
@@ -220,9 +209,7 @@ public class TrackingServiceTest {
 
             @Override
             public void onCloseToDepartureLocation(Location location) {
-                assertEquals(location.getLatitude(), location1.getLatitude(),0);
-                assertEquals(location.getLongitude(), location1.getLongitude(),0);
-                latch3.countDown();
+                assertNotNull(location);
             }
 
 
@@ -241,26 +228,47 @@ public class TrackingServiceTest {
 
         Thread.sleep(2000); // TaskService thread waiting for running
 
-        location1.setTime(System.currentTimeMillis());
-        shadowLocationManager.simulateLocation(location1);
+        locationDeparture.setTime(System.currentTimeMillis());
+        shadowLocationManager.simulateLocation(locationDeparture);
         latch1.await();
 
         Thread.sleep(1000);
-        location2.setTime(System.currentTimeMillis());   // Too close from first point
-        shadowLocationManager.simulateLocation(location2);
+        location_1.setTime(System.currentTimeMillis());
+        shadowLocationManager.simulateLocation(location_1);
 
         Thread.sleep(1000);
-        location3.setTime(System.currentTimeMillis());     // register location1
-        shadowLocationManager.simulateLocation(location3);
+        location_2.setTime(System.currentTimeMillis());     // register location_1
+        shadowLocationManager.simulateLocation(location_2);
         latch2.await();
-
-        Thread.sleep(1000);
-        location1.setTime(System.currentTimeMillis());  // register location3 & location1
-        shadowLocationManager.simulateLocation(location1);
-        latch3.await();
-
         Thread.sleep(1000);
 
-        return controller.get().getRecordedLocations();
+        location_3.setTime(System.currentTimeMillis());     // register location_2
+        shadowLocationManager.simulateLocation(location_3);
+        Thread.sleep(1000);
+
+        locationDeparture.setTime(System.currentTimeMillis()); // register location_3
+        shadowLocationManager.simulateLocation(locationDeparture);
+
+        List<Location> list = controller.get().getRecordedLocations();
+        assertEquals(list.size(), 4);
+
+        assertEquals(list.get(0).getLatitude(), location_1.getLatitude(),0);
+        assertEquals(list.get(0).getLongitude(), location_1.getLongitude(),0);
+
+        assertEquals(list.get(1).getLatitude(), location_2.getLatitude(),0);
+        assertEquals(list.get(1).getLongitude(), location_2.getLongitude(),0);
+
+        assertEquals(list.get(2).getLatitude(), location_3.getLatitude(),0);
+        assertEquals(list.get(2).getLongitude(), location_3.getLongitude(),0);
+
+        assertEquals(list.get(3).getLatitude(), locationDeparture.getLatitude(),0);
+        assertEquals(list.get(3).getLongitude(), locationDeparture.getLongitude(),0);
+
+        TrackingStorage storage = new TrackingStorage();
+        List<Location> storageList = storage.getCurrentRecordedLocations();
+
+        assertEquals(list.size(), storageList.size());
+
+        controller.destroy();
     }
 }

@@ -244,7 +244,7 @@ public class TrackingService extends Service {
                 gpsHandler.post(stopServiceThread);
             }
 
-            if (wakeLock != null) {
+            if (wakeLock != null && wakeLock.isHeld()) {
                 Log.d(TAG, "Release wake lock.");
                 wakeLock.release();
             }
