@@ -658,12 +658,10 @@ public class TrackingService extends Service {
      * To ensure the service is not killed too easily
      */
     protected void startServiceForeground() {
-        String channel;
+        String channel = "";
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channel = createChannel();
-        }
-        else {
-            channel = "";
         }
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
@@ -919,4 +917,23 @@ public class TrackingService extends Service {
         return TrackingService.serviceStatus;
     }
 
+    /**
+     * Return Recorded Locations
+     *
+     * @return
+     */
+    public static List<Location> getCurrentRecordedLocations() {
+        TrackingStorage storage = new TrackingStorage();
+        return storage.getCurrentRecordedLocations();
+    }
+
+    /**
+     * Return Previous Recorded Locations
+     *
+     * @return
+     */
+    public static List<Location> getPreviousRecordedLocations() {
+        TrackingStorage storage = new TrackingStorage();
+        return storage.getPreviousRecordedLocations();
+    }
 }
