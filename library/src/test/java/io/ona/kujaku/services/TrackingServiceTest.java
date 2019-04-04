@@ -51,9 +51,36 @@ public class TrackingServiceTest {
 
     private ServiceController<TrackingService> controller;
 
+    private String connectionStatus = "";
+
+    private Location locationDeparture;
+    private Location location_1;
+    private Location location_2;
+    private Location location_3;
+
     @Before
     public void setUp() {
         context = RuntimeEnvironment.application;
+
+        locationDeparture = new Location(GPS_PROVIDER);
+        locationDeparture.setAccuracy(20);
+        locationDeparture.setLongitude(6.054989);
+        locationDeparture.setLatitude(46.218049);
+
+        location_1 = new Location(GPS_PROVIDER);
+        location_1.setAccuracy(18);
+        location_1.setLongitude(6.055042);
+        location_1.setLatitude(46.218084);
+
+        location_2 = new Location(GPS_PROVIDER);
+        location_2.setAccuracy(20);
+        location_2.setLongitude(6.055096);
+        location_2.setLatitude(46.218119);
+
+        location_3 = new Location(GPS_PROVIDER);
+        location_3.setAccuracy(20);
+        location_3.setLongitude(6.055697);
+        location_3.setLatitude(46.218561);
     }
 
     @After
@@ -138,21 +165,32 @@ public class TrackingServiceTest {
     }
 
     @Test
-    public void testStartAndBindService() {
+    public void testStartAndBindService() throws InterruptedException {
+        CountDownLatch latch1 = new CountDownLatch(1);
+        CountDownLatch latch2 = new CountDownLatch(1);
+
         ServiceConnection connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                // empty
+                connectionStatus = "connected";
+                latch1.countDown();
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                // empty
+                connectionStatus = "disconnected";
+                latch2.countDown();
             }
         };
 
+        assertEquals(connectionStatus, "");
         TrackingService.startAndBindService(context, MapActivity.class, connection, new TrackingServiceHighAccuracyOptions());
+        latch1.await();
+        assertEquals(connectionStatus, "connected");
+
         TrackingService.stopAndUnbindService(context, connection);
+        latch2.await();
+        assertEquals(connectionStatus, "disconnected");
     }
 
     @Test
@@ -163,26 +201,6 @@ public class TrackingServiceTest {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
-
-        Location locationDeparture = new Location(GPS_PROVIDER);
-        locationDeparture.setAccuracy(20);
-        locationDeparture.setLongitude(6.054989);
-        locationDeparture.setLatitude(46.218049);
-
-        Location location_1 = new Location(GPS_PROVIDER);
-        location_1.setAccuracy(18);
-        location_1.setLongitude(6.055042);
-        location_1.setLatitude(46.218084);
-
-        Location location_2 = new Location(GPS_PROVIDER);
-        location_2.setAccuracy(20);
-        location_2.setLongitude(6.055096);
-        location_2.setLatitude(46.218119);
-
-        Location location_3 = new Location(GPS_PROVIDER);
-        location_3.setAccuracy(20);
-        location_3.setLongitude(6.055697);
-        location_3.setLatitude(46.218561);
 
         float distance = locationDeparture.distanceTo(location_1);
         assertEquals(distance, 5, 1); // 5 meters +-1 meter
