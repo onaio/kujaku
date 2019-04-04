@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.os.Parcel;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -165,7 +164,6 @@ public class TrackingServiceTest {
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
 
-
         Location locationDeparture = new Location(GPS_PROVIDER);
         locationDeparture.setAccuracy(20);
         locationDeparture.setLongitude(6.054989);
@@ -187,10 +185,10 @@ public class TrackingServiceTest {
         location_3.setLatitude(46.218561);
 
         float distance = locationDeparture.distanceTo(location_1);
-        Assert.assertEquals(distance, 5, 1); // 5 meters +-1 meter
+        assertEquals(distance, 5, 1); // 5 meters +-1 meter
 
         distance = location_1.distanceTo(location_2);
-        Assert.assertEquals(distance, 5, 1); // 5 meters +-1 meter
+        assertEquals(distance, 5, 1); // 5 meters +-1 meter
 
         CountDownLatch latch1 = new CountDownLatch(1);
         CountDownLatch latch2 = new CountDownLatch(1);
