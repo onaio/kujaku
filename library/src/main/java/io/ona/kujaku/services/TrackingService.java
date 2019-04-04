@@ -917,4 +917,23 @@ public class TrackingService extends Service {
         return TrackingService.serviceStatus;
     }
 
+    /**
+     * Return Recorded Locations
+     *
+     * @return
+     */
+    public static List<Location> getCurrentRecordedLocations() {
+        TrackingStorage storage = new TrackingStorage();
+        return storage.getCurrentRecordedLocations();
+    }
+
+    /**
+     * Return Previous Recorded Locations
+     *
+     * @return
+     */
+    public static List<Location> getPreviousRecordedLocations() {
+        TrackingStorage storage = new TrackingStorage();
+        return storage.getPreviousRecordedLocations();
+    }
 }

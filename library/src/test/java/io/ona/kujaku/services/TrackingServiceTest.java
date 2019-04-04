@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.activities.MapActivity;
-import io.ona.kujaku.helpers.storage.TrackingStorage;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
@@ -282,10 +281,9 @@ public class TrackingServiceTest {
         assertEquals(list.get(3).getLatitude(), locationDeparture.getLatitude(),0);
         assertEquals(list.get(3).getLongitude(), locationDeparture.getLongitude(),0);
 
-        TrackingStorage storage = new TrackingStorage();
-        List<Location> storageList = storage.getCurrentRecordedLocations();
-
-        assertEquals(list.size(), storageList.size());
+        assertEquals(list.size(), TrackingService.getCurrentRecordedLocations().size());
+        controller.startCommand(0,0);
+        assertEquals(list.size(), TrackingService.getPreviousRecordedLocations().size());
 
         controller.destroy();
     }
