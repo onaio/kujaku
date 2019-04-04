@@ -1,5 +1,7 @@
 package io.ona.kujaku.helpers;
 
+import android.location.Location;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +10,8 @@ import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.helpers.storage.TrackingStorage;
+
+import static android.location.LocationManager.GPS_PROVIDER;
 
 /**
  * Created by Emmanuel Otin - eo@novel-t.ch on 03/04/2019.
@@ -28,7 +32,7 @@ public class TrackingStorageTest {
 
 
     @Test
-    public void baseStorageDeleteFolder() {
+    public void baseStorageDeleteFolderTest() {
         TrackingStorage storage = new TrackingStorage();
         Assert.assertTrue(storage.createFile(".KujakuTracking/test", "test.file"));
         Assert.assertTrue(storage.directoryExists(".KujakuTracking/test"));
@@ -39,7 +43,7 @@ public class TrackingStorageTest {
     }
 
     @Test
-    public void baseStorageReadFile() {
+    public void baseStorageReadFileTest() {
         TrackingStorage storage = new TrackingStorage();
         String content = "This is a writing test";
 
@@ -48,5 +52,21 @@ public class TrackingStorageTest {
 
         Assert.assertEquals(content + '\n', getContent);
         Assert.assertTrue(storage.deleteFile("test", false, true));
+    }
+
+    @Test
+    public void initLocationStorageTest() {
+        TrackingStorage storage = new TrackingStorage();
+        storage.initLocationStorage();
+
+        Location location = new Location(GPS_PROVIDER);
+        location.setLatitude(1.1);
+        location.setLongitude(1.2);
+        storage.writeLocation(location, 1);
+
+        Assert.assertEquals(storage.getCurrentRecordedLocations().size(),1);
+        storage.initLocationStorage();
+        Assert.assertEquals(storage.getPreviousRecordedLocations().size(),1);
+        Assert.assertEquals(storage.getCurrentRecordedLocations().size(),0);
     }
 }

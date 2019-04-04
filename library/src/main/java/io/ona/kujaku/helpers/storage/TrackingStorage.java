@@ -61,8 +61,27 @@ public class TrackingStorage extends BaseStorage {
      */
     public List<Location> getCurrentRecordedLocations() {
         String folderName = BASE_DIRECTORY + File.separator + CURRENT_DIRECTORY ;
+        return getRecordedLocations(folderName);
+    }
 
-        List<Location> result = new ArrayList<Location>();
+    /**
+     * Get Preivous list of Locations
+     *
+     * @return
+     */
+    public List<Location> getPreviousRecordedLocations() {
+        String folderName = BASE_DIRECTORY + File.separator + PREVIOUS_DIRECTORY ;
+        return getRecordedLocations(folderName);
+    }
+
+    /**
+     * Get List of Locations in a specific folder
+     *
+     * @param folderName
+     * @return
+     */
+    private List<Location> getRecordedLocations(String folderName) {
+        List<Location> result = new ArrayList<>();
 
         if (directoryExists(folderName)) {
             File directory = new File(Environment.getExternalStorageDirectory(), folderName);
