@@ -1,6 +1,7 @@
 package io.ona.kujaku.helpers;
 
 import android.location.Location;
+import android.os.Environment;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +53,29 @@ public class TrackingStorageTest {
 
         Assert.assertEquals(content + '\n', getContent);
         Assert.assertTrue(storage.deleteFile("test", false, true));
+    }
+
+    @Test
+    public void baseStorageReadFileCompletePathTest() {
+        TrackingStorage storage = new TrackingStorage();
+        String content = "This is a writing test";
+
+        storage.writeToFile(".KujakuTracking/test", "test.file", content);
+
+        String getContent = storage.readFile(Environment.getExternalStorageDirectory() +"/.KujakuTracking/test", "test.file", true);
+
+        Assert.assertEquals(content + '\n', getContent);
+        Assert.assertTrue(storage.deleteFile("test", false, true));
+    }
+
+    @Test
+    public void baseStorageDeleteFolderWhichIsAFileTest() {
+        TrackingStorage storage = new TrackingStorage();
+        String content = "This is a writing test";
+
+        storage.writeToFile(".KujakuTracking/test", "test.file", content);
+        Assert.assertFalse(storage.deleteFolder(Environment.getExternalStorageDirectory() +"/.KujakuTracking/test/test.file"));
+        Assert.assertTrue(storage.deleteFile("test/test.file", false, false));
     }
 
     @Test
