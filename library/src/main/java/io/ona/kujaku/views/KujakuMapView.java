@@ -86,6 +86,7 @@ import io.ona.kujaku.utils.LocationPermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.StoragePermissionListener;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
 
@@ -945,11 +946,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void checkPermissions() {
         if (getContext() instanceof Activity) {
             final Activity activity = (Activity) getContext();
-            PermissionListener dialogPermissionListener = new LocationPermissionListener(activity);
+            PermissionListener dialogLocationPermissionListener = new LocationPermissionListener(activity);
 
             Dexter.withActivity(activity)
                     .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    .withListener(dialogPermissionListener)
+                    .withListener(dialogLocationPermissionListener)
+                    .check();
+
+            PermissionListener dialogStoragePermissionListener = new StoragePermissionListener(activity);
+
+            Dexter.withActivity(activity)
+                    .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .withListener(dialogStoragePermissionListener)
                     .check();
         } else {
             Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
