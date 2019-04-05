@@ -66,7 +66,9 @@
     <string name="wmts_capabilities_url">https://tpwd.texas.gov/arcgis/rest/services/Vegetation_Mapping/Texas_Ecological_Mapping_Systems_Data/mapserver/WMTS/1.0.0/WMTSCapabilities.xml</string>
     <!--<string name="wmts_capabilities_url">https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</string>-->
     <string name="case_relationship_activity">Case Relationship Activity</string>
-    <string name="draw_arrows_showing_relationship">DRAW ARROWS SHOWING RELATIONSHIP</string>
+    <string name="draw_arrows">DRAW ARROWS</string>
     <string name="disable_arrows_showing_relationship">DISABLE ARROWS SHOWING RELATIONSHIP</string>
     <string name="foci_boundary">Foci Boundary</string>
+    <string name="change_foci_boundary">Change foci boundary</string>
+    <string name="change_features">Change Features</string>
 </resources>
