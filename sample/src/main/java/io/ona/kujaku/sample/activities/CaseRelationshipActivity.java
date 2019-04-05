@@ -20,11 +20,10 @@ import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.layers.ArrowLineLayer;
+import io.ona.kujaku.layers.BoundaryLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.utils.FeatureFilter;
@@ -56,11 +55,21 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     private static final String TAG = CaseRelationshipActivity.class.getName();
     private static final String CASES_SOURCE_ID = "sample-cases-source";
 
-    private FeatureCollection sampleCases;
     private ArrowLineLayer arrowLineLayer;
     private GeoJsonSource sampleCasesSource;
 
     private Button drawArrowsBtn;
+    private Button changeFeatureBtn;
+
+    private FeatureCollection boundaryFeatureCollection1;
+    private FeatureCollection boundaryFeatureCollection2;
+
+    private LatLng focusPoint1;
+    private LatLng focusPoint2;
+
+    private BoundaryLayer boundaryLayer;
+
+    private boolean showingFeatureCollection1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,19 +80,29 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.onCreate(savedInstanceState);
 
         drawArrowsBtn = findViewById(R.id.btn_caseRelationshipAct_drawArrows);
+        changeFeatureBtn = findViewById(R.id.btn_caseRelationshipAct_change);
+
         drawArrowsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleDrawingArrowsShowingRelationship();
+                changeFeatureBtn.setEnabled(true);
             }
         });
 
         try {
-            String featureCollection = readInputStreamAsString(getAssets().open("case-relationship-features.geojson"));
-            sampleCases = FeatureCollection.fromJson(featureCollection);
+            boundaryFeatureCollection1 = FeatureCollection.fromJson(
+                    readInputStreamAsString(getAssets().open("case-relationship-features.geojson"))
+            );
+            boundaryFeatureCollection2 = FeatureCollection.fromJson(
+                    IOUtil.readInputStreamAsString(getAssets().open("alternative_arrow_line.geojson"))
+            );
         } catch (IOException e) {
             Log.e(TAG, Log.getStackTraceString(e));
         }
+
+        focusPoint1 = new LatLng(0.15380840901698828, 37.66387939453125);
+        focusPoint2 = new LatLng(-0.44219531715407406, 37.5457763671875);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -94,15 +113,32 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                         addStructuresToMap(style);
 
                         // Zoom to the position
-                        mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.15380840901698828, 37.66387939453125), 8d));
+                        mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(focusPoint1, 8d));
                     }
                 });
+            }
+        });
+
+        changeFeatureBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (showingFeatureCollection1) {
+                    sampleCasesSource.setGeoJson(boundaryFeatureCollection2);
+                    arrowLineLayer.updateFeatures(boundaryFeatureCollection2);
+                    changeFocus(focusPoint2);
+                    showingFeatureCollection1 = false;
+                } else {
+                    sampleCasesSource.setGeoJson(boundaryFeatureCollection1);
+                    arrowLineLayer.updateFeatures(boundaryFeatureCollection1);
+                    changeFocus(focusPoint1);
+                    showingFeatureCollection1 = true;
+                }
             }
         });
     }
 
     private void addStructuresToMap(@NonNull Style style) {
-        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, sampleCases);
+        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, boundaryFeatureCollection1);
         style.addSource(sampleCasesSource);
 
         Expression colorExpression = match(get("testStatus")
@@ -125,7 +161,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     private void toggleDrawingArrowsShowingRelationship() {
         if (arrowLineLayer == null) {
             ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
-                    new FeatureFilter.Builder(sampleCases)
+                    new FeatureFilter.Builder(boundaryFeatureCollection1)
                             .whereEq("testStatus", "positive"));
 
             ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
@@ -142,33 +178,26 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
                 Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
             }
+
+            showingFeatureCollection1 = true;
         }
 
         if (arrowLineLayer.isVisible()) {
             kujakuMapView.disableLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.draw_arrows_showing_relationship);
+            drawArrowsBtn.setText(R.string.draw_arrows);
         } else {
             kujakuMapView.addLayer(arrowLineLayer);
             drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
-
-            new Thread(() -> {
-                try {
-                    Thread.sleep(5000);
-
-                    String featureCollectionString = IOUtil.readInputStreamAsString(getAssets().open("alternative_arrow_line.geojson"));
-
-                    runOnUiThread(() -> {
-                        // Update the features
-                        FeatureCollection newFeatureCollection = FeatureCollection.fromJson(featureCollectionString);
-
-                        sampleCasesSource.setGeoJson(newFeatureCollection);
-                        arrowLineLayer.updateFeatures(newFeatureCollection);
-                    });
-                } catch (InterruptedException | IOException e) {
-                    Log.e(TAG, Log.getStackTraceString(e));
-                }
-            });
         }
+    }
+
+    private void changeFocus(@NonNull LatLng point) {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(point, 8d));
+            }
+        });
     }
 
     private int getColorv16(@ColorRes int colorRes) {
