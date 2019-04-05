@@ -7,14 +7,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
@@ -105,9 +106,11 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     private void displayTracksRecorded(List<Location> locations) {
         this.runOnUiThread(new Runnable() {
             public void run() {
+                List<Point> points = new ArrayList<>();
                 for (Location location: locations) {
-                    kujakuMapView.dropPointOnMap( new LatLng(location.getLatitude(), location.getLongitude()), null);
+                    points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
                 }
+                kujakuMapView.updateDroppedPoints(points);
             }
         });
     }
@@ -140,7 +143,9 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         this.runOnUiThread(new Runnable() {
             public void run() {
                 Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
-                kujakuMapView.dropPointOnMap( new LatLng(location.getLatitude(), location.getLongitude()), null);
+                List<Point> points = new ArrayList<>();
+                points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
+                kujakuMapView.updateDroppedPoints(points);
             }
         });
     }
