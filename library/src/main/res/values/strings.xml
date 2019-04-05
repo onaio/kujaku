@@ -42,4 +42,6 @@
     <string name="tracking_service_notification_title">Kujaku Tracking service</string>
     <string name="tracking_service_channel_name">Kujaku Tracking service channel</string>
     <string name="tracking_service_channel_id">@string/tracking_service_channel_name</string>
+    <string name="storage_permission">Storage Permission</string>
+    <string name="storage_permission_reason">We need the storage permission to store Locations from the TrackerService</string>
 </resources>
