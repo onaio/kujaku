@@ -187,7 +187,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             drawArrowsBtn.setText(R.string.draw_arrows);
         } else {
             kujakuMapView.addLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.disable_arrows_showing_relationship);
+            drawArrowsBtn.setText(R.string.disable_remove_arrows);
         }
     }
 

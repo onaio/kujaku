@@ -39,26 +39,22 @@
                 android:id="@+id/btn_caseRelationshipAct_drawArrows"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
                 android:text="@string/draw_arrows"
-                android:layout_marginLeft="20dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/btn_caseRelationshipAct_change"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/kmv_caseRelationship_mapView" />
+                android:layout_marginBottom="5dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/btn_caseRelationshipAct_change"/>
 
             <Button
                 android:id="@+id/btn_caseRelationshipAct_change"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
-                android:layout_marginLeft="20dp"
                 android:enabled="false"
                 android:text="@string/change_features"
-                app:layout_constraintEnd_toStartOf="@+id/kmv_caseRelationship_mapView"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/btn_caseRelationshipAct_drawArrows" />
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
 
         </android.support.constraint.ConstraintLayout>
 
