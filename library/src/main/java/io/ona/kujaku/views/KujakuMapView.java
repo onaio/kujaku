@@ -801,7 +801,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         dropPointOnMap(latLng, null);
     }
 
-    public void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptionsParam) {
+    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptionsParam) {
         MarkerOptions markerOptions = markerOptionsParam;
         if (markerOptions == null) {
             markerOptions = new MarkerOptions()
