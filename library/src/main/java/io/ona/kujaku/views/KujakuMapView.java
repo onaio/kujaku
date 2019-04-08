@@ -1235,6 +1235,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void addLayer(@NonNull KujakuLayer kujakuLayer) {
+        kujakuLayer.setRemoved(false);
         if (!kujakuLayers.contains(kujakuLayer)) {
             kujakuLayers.add(kujakuLayer);
             getMapAsync(new OnMapReadyCallback() {
@@ -1243,7 +1244,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
-                            kujakuLayer.addLayerToMap(mapboxMap);
+                            if (!kujakuLayer.isRemoved()) {
+                                kujakuLayer.addLayerToMap(mapboxMap);
+                            }
                         }
                     });
                 }
@@ -1255,7 +1258,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
-                            kujakuLayer.enableLayerOnMap(mapboxMap);
+                            if (!kujakuLayer.isRemoved()) {
+                                kujakuLayer.enableLayerOnMap(mapboxMap);
+                            }
                         }
                     });
                 }
@@ -1314,6 +1319,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         return false;
+    }
+
+    @Override
+    public void removeLayer(@NonNull KujakuLayer kujakuLayer) {
+        if (isKujakuLayerAdded(kujakuLayer)) {
+            kujakuLayer.removeLayerOnMap(mapboxMap);
+        } else {
+            kujakuLayer.setRemoved(true);
+        }
+
+        kujakuLayers.remove(kujakuLayer);
     }
 
     private void resetRejectionDialogContent() {

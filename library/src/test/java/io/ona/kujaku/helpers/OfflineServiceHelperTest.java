@@ -56,7 +56,7 @@ public class OfflineServiceHelperTest extends BaseTest {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Intent intent = invocation.getArgumentAt(0, Intent.class);
+                Intent intent = invocation.getArgument(0);
 
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_STYLE_URL));
@@ -102,7 +102,7 @@ public class OfflineServiceHelperTest extends BaseTest {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Intent intent = invocation.getArgumentAt(0, Intent.class);
+                Intent intent = invocation.getArgument(0);
 
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN));
@@ -132,7 +132,7 @@ public class OfflineServiceHelperTest extends BaseTest {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Intent intent = invocation.getArgumentAt(0, Intent.class);
+                Intent intent = invocation.getArgument(0);
 
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME));
                 results.add(intent.getStringExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN));
