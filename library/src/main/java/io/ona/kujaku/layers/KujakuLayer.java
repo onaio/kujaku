@@ -2,6 +2,7 @@ package io.ona.kujaku.layers;
 
 import android.support.annotation.NonNull;
 
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 
 /**
@@ -46,4 +47,12 @@ public interface KujakuLayer {
      */
     @NonNull
     String[] getLayerIds();
+
+    boolean removeLayerOnMap(@NonNull MapboxMap mapboxMap);
+
+    boolean isRemoved();
+
+    void setRemoved(boolean isRemoved);
+
+    void updateFeatures(@NonNull FeatureCollection featureCollection);
 }

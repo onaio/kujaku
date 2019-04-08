@@ -662,7 +662,7 @@ public class MapboxOfflineDownloaderServiceTest {
                 Field stateField = offlineRegionClass.getDeclaredField("state");
                 stateField.setAccessible(true);
 
-                int passedState = invocationOnMock.getArgumentAt(0, int.class);
+                int passedState = invocationOnMock.getArgument(0);
                 stateField.set(offlineRegion, passedState);
 
                 return null;
@@ -678,10 +678,8 @@ public class MapboxOfflineDownloaderServiceTest {
         // Mock the OfflineRegion.delete(OfflineRegionDeleteCallback)
         Mockito.doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-
-                // Just call the callback directly if gotten to this point i.e. The OfflineRegion is not null
-                OfflineRegion.OfflineRegionDeleteCallback offlineRegionDeleteCallback = invocationOnMock.getArgumentAt(0, OfflineRegion.OfflineRegionDeleteCallback.class);
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                OfflineRegion.OfflineRegionDeleteCallback offlineRegionDeleteCallback = invocation.getArgument(0);
                 offlineRegionDeleteCallback.onDelete();
 
                 return null;
