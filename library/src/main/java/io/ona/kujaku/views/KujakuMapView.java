@@ -33,7 +33,7 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
-import com.karumi.dexter.listener.single.PermissionListener;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -82,11 +82,10 @@ import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
-import io.ona.kujaku.utils.LocationPermissionListener;
+import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
-import io.ona.kujaku.utils.StoragePermissionListener;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
 
@@ -810,12 +809,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             markerOptions.setPosition(latLng);
         }
 
-        if (mapboxMap != null) {
-            mapboxMap.addMarker(markerOptions);
-        } else {
-            Log.e(TAG, "Impossible to add Marker as mapboxMap is null");
-        }
-
+        mapboxMap.addMarker(markerOptions);
     }
 
     public boolean isCanAddPoint() {
@@ -946,19 +940,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void checkPermissions() {
         if (getContext() instanceof Activity) {
             final Activity activity = (Activity) getContext();
-            PermissionListener dialogLocationPermissionListener = new LocationPermissionListener(activity);
+
+            MultiplePermissionsListener dialogMultiplePermissionListener = new KujakuMultiplePermissionListener(activity);
 
             Dexter.withActivity(activity)
-                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    .withListener(dialogLocationPermissionListener)
+                    .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .withListener(dialogMultiplePermissionListener)
                     .check();
 
-            PermissionListener dialogStoragePermissionListener = new StoragePermissionListener(activity);
-
-            Dexter.withActivity(activity)
-                    .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .withListener(dialogStoragePermissionListener)
-                    .check();
         } else {
             Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
         }
