@@ -1,7 +1,6 @@
 package io.ona.kujaku.test.shadows;
 
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -16,8 +15,6 @@ public class ShadowRealm {
 
     @Implementation
     public static Realm getDefaultInstance() {
-        PowerMockito.mockStatic(Realm.class);
-
         Realm mockRealm = Mockito.mock(Realm.class);
 
         return mockRealm;
