@@ -65,6 +65,7 @@ public class TrackingService extends Service {
     private volatile LocationManager locationManager;
 
     private volatile Handler gpsHandler;
+    private Handler uiHandler;
 
     private volatile Location lastRecordedLocation;
     private volatile Location pendingRecordingLocation;
@@ -602,6 +603,9 @@ public class TrackingService extends Service {
             // You don't need to specify the Looper explicitly
             gpsHandler = new Handler();
 
+            // Ui Handler
+            uiHandler = new Handler(Looper.getMainLooper());
+
             // Register the Location listener
             registerLocationListener();
 
@@ -666,7 +670,7 @@ public class TrackingService extends Service {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
                 .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                .setContentTitle(getString(R.string.tracking_service_notification_title))
+                .setContentTitle(getString(R.string.app_name))
                 .setOngoing(true)
                 .setWhen(System.currentTimeMillis());
 
@@ -721,7 +725,12 @@ public class TrackingService extends Service {
      */
     private void informFirstLocationReceivedListener(Location location) {
         if (this.trackingServiceListener != null && this.firstLocationReceived == null) {
-            trackingServiceListener.onFirstLocationReceived(location);
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onFirstLocationReceived(location);
+                }
+            });
             this.firstLocationReceived = location ;
         }
         this.setServiceStatus(TrackingServiceStatus.WAITING_FIRST_RECORD);
@@ -734,7 +743,12 @@ public class TrackingService extends Service {
      */
     private void informNewTrackReceivedListener(Location location) {
         if (this.trackingServiceListener != null && location != null) {
-            this.trackingServiceListener.onNewLocationReceived(location);
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onNewLocationReceived(location);
+                }
+            });
         }
         this.setServiceStatus(TrackingServiceStatus.RUNNING);
     }
@@ -753,7 +767,12 @@ public class TrackingService extends Service {
             Location departure = this.getFirstLocationRecorded();
 
             if (departure != null && departure.distanceTo(location) <= trackingServiceOptions.getDistanceFromDeparture()) {
-                this.trackingServiceListener.onCloseToDepartureLocation(location);
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        trackingServiceListener.onCloseToDepartureLocation(location);
+                    }
+                });
             }
         }
     }
@@ -845,8 +864,8 @@ public class TrackingService extends Service {
      * @param intent
      * @param connection
      */
-    public static void bindService(Context context, Intent intent, ServiceConnection connection) {
-        context.bindService(intent, connection, BIND_AUTO_CREATE);
+    public static boolean bindService(Context context, Intent intent, ServiceConnection connection) {
+        return context.bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
     /**
