@@ -26,20 +26,20 @@ public class KujakuMultiplePermissionListener extends BaseMultiplePermissionsLis
 
     @Override
     public void onPermissionsChecked(MultiplePermissionsReport report) {
-        if ( report.isAnyPermissionPermanentlyDenied()) {
+        if (report.isAnyPermissionPermanentlyDenied() || !report.areAllPermissionsGranted()) {
             new AlertDialog.Builder(context)
-                    .setTitle(title)
-                    .setMessage(message)
-                    .setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
 
-                            if (context instanceof Activity) {
-                                ((Activity) context).finish();
-                            }
+                        if (context instanceof Activity) {
+                            ((Activity) context).finish();
                         }
-                    })
-                    .show();
+                    }
+                })
+                .show();
         }
     }
 }
