@@ -756,8 +756,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
-                // isMapScrolled = true;
-                // updateCameraUserLocationOnMap = false;
                 // We should assume the user no longer wants us to focus on their location
                 focusOnUserLocation(false);
             }
@@ -857,6 +855,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             locationClient.setListener(null);
             locationClient = null;
         }
+
+        // Unbind TrackingService if bound
+        this.unBindTrackingService(getContext());
     }
 
     @Override
@@ -1339,11 +1340,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param context
      * @param listener
      */
-    public void resumeTrackingService(Context context, TrackingServiceListener listener) {
+    public boolean resumeTrackingService(Context context, TrackingServiceListener listener) {
         // TrackingService reconnection if connection was lost
         if (! trackingServiceBound && TrackingService.isRunning()) {
             this.trackingServiceListener = listener;
-            TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
+            return TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
+        } else {
+            return false;
         }
     }
 
@@ -1373,8 +1376,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (trackingServiceBound && trackingService != null) {
             List<Location> locations = trackingService.getRecordedLocations();
             TrackingService.stopAndUnbindService(context, connection);
+            trackingServiceBound = false;
+            trackingService = null ;
             trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
             return locations;
+        }  else {
+            Log.d(TAG, "Tracking Service instance is null or not Tracking Service is not bounded");
         }
 
         return null;
@@ -1434,7 +1441,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingServiceStatusButton.setVisibility(VISIBLE);
             trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_red);
 
-            trackingServiceListener.onServiceConnected(trackingService);
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onServiceConnected(trackingService);
+                }
+            });
         }
 
         @Override
@@ -1442,7 +1454,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingServiceBound = false;
             trackingService = null;
             trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
-            trackingServiceListener.onServiceDisconnected();
+
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onServiceDisconnected();
+                }
+            });
         }
     };
 

@@ -131,32 +131,20 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
 
     @Override
     public void onFirstLocationReceived(Location location) {
-        this.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), "First Location received", Toast.LENGTH_LONG).show();
-            }
-        });
+        Toast.makeText(getApplicationContext(), "First Location received", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onNewLocationReceived(Location location) {
-        this.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
-                List<Point> points = new ArrayList<>();
-                points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
-                kujakuMapView.updateDroppedPoints(points);
-            }
-        });
+        Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
+        List<Point> points = new ArrayList<>();
+        points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
+        kujakuMapView.updateDroppedPoints(points);
     }
 
     @Override
     public void onCloseToDepartureLocation(Location location) {
-        this.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), "Location recorded is closed to the departure location", Toast.LENGTH_LONG).show();
-            }
-        });
+        Toast.makeText(getApplicationContext(), "Location recorded is closed to the departure location", Toast.LENGTH_LONG).show();
     }
 
     /**** TrackingServiceListener END ****/
@@ -199,9 +187,6 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     protected void onDestroy() {
         super.onDestroy();
         if (kujakuMapView != null) kujakuMapView.onDestroy();
-
-        // Unbind Service to be sure we can stop the TrackingService
-        if (kujakuMapView != null) kujakuMapView.unBindTrackingService(getApplicationContext());
     }
 
     @Override
