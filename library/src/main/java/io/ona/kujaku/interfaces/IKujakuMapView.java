@@ -4,6 +4,8 @@ package io.ona.kujaku.interfaces;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
 
+import android.content.Context;
+import android.location.Location;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,6 +25,8 @@ import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
@@ -257,4 +261,59 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer);
 
     void removeLayer(@NonNull KujakuLayer kujakuLayer);
+
+
+    /**
+     * Start the instance of TrackingService that record filtered locations regarding the given {@link TrackingServiceOptions}
+     * You need to register a {@link TrackingServiceListener} to receive notifications as
+     * - {@link TrackingServiceListener#onFirstLocationReceived(Location)}
+     * - {@link TrackingServiceListener#onNewLocationReceived(Location)}
+     * - etc.
+     * The Class arguments is used to instantiate an activity when clicking the service notification
+     *
+     * @param context
+     * @param cls
+     * @param trackingServiceListener
+     * @param options
+     */
+    void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options);
+
+    /**
+     * Stop the instance of TrackingService
+     * It returns a collection of recorded Locations
+     *
+     * @param context
+     * @return
+     */
+    List<Location> stopTrackingService(@NonNull Context context);
+
+    /**
+     * Unbind from the TrackingService instance to be able to stop the service
+     *
+     * @param context
+     */
+    void unBindTrackingService(@NonNull Context context);
+
+    /**
+     * This method can bind to an existing instance of the TrackingService already running
+     * You need to register a {@link TrackingServiceListener} to receive notifications
+     *
+     * @param context
+     * @param listener
+     * @return
+     */
+    boolean resumeTrackingService(Context context, TrackingServiceListener listener);
+
+    /**
+     * This method force the TrackingService to take a location
+     *
+     */
+    void trackingServiceTakeLocation();
+
+    /**
+     * This method returns the collection of recorded locations
+     *
+     * @return
+     */
+    List<Location> getTrackingServiceRecordedLocations();
 }
