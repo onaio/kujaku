@@ -263,7 +263,7 @@ public class TrackingServiceTest {
         shadowLocationManager.simulateLocation(location_3);
         Thread.sleep(1000);
 
-        locationDeparture.setTime(System.currentTimeMillis()); // register location_3
+        locationDeparture.setTime(System.currentTimeMillis()); // register location_3 and location departure
         shadowLocationManager.simulateLocation(locationDeparture);
 
         List<Location> list = controller.get().getRecordedLocations();
