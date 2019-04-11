@@ -72,7 +72,7 @@ android {
 dependencies {
     ...
     // Kujaku dependencies
-    implementation 'io.ona.kujaku:library:0.6.3'
+    implementation 'io.ona.kujaku:library:0.7.1'
     ...
 }
 ```
