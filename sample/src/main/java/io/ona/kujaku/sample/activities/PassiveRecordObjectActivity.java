@@ -19,6 +19,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.views.KujakuMapView;
 
@@ -51,7 +52,8 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                     kujakuMapView.startTrackingService(getApplicationContext(),
                             PassiveRecordObjectActivity.class,
                             PassiveRecordObjectActivity.this,
-                            new TrackingServiceHighAccuracyOptions());
+                            new TrackingServiceHighAccuracyOptions(),
+                            new TrackingServiceDefaultUIConfiguration());
 
                     ((Button)v).setText(getString(R.string.stop_recording));
                     forceLocationBtn.setEnabled(true);
