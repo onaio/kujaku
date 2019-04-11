@@ -79,6 +79,7 @@ import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
@@ -177,6 +178,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private TrackingService trackingService = null;
     private boolean trackingServiceBound = false;
     private TrackingServiceListener trackingServiceListener = null ;
+    private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -1356,12 +1358,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param trackingServiceListener
      * @param options
      */
-    public void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options) {
+    public void startTrackingService(@NonNull Context context,
+                                     @NonNull Class<?> cls,
+                                     @NonNull TrackingServiceListener trackingServiceListener,
+                                     TrackingServiceOptions options,
+                                     @NonNull TrackingServiceUIConfiguration uiConfiguration) {
         this.trackingServiceListener = trackingServiceListener;
+        this.trackingServiceUIConfiguration = uiConfiguration;
         TrackingService.startAndBindService(context,
                 cls,
                 connection,
                 options);
+        initTrackingServiceIcon();
     }
 
     /**
@@ -1376,7 +1384,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             TrackingService.stopAndUnbindService(context, connection);
             trackingServiceBound = false;
             trackingService = null ;
-            trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
             return locations;
         }  else {
             Log.d(TAG, "Tracking Service instance is null or not Tracking Service is not bounded");
@@ -1436,8 +1444,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingService = binder.getService();
             trackingService.registerTrackingServiceListener(trackingServiceListener);
             trackingServiceBound = true;
-            trackingServiceStatusButton.setVisibility(VISIBLE);
-            trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_red);
+
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getRecordingDrawable());
 
             ((Activity)getContext()).runOnUiThread(new Runnable() {
                 @Override
@@ -1451,7 +1459,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         public void onServiceDisconnected(ComponentName arg0) {
             trackingServiceBound = false;
             trackingService = null;
-            trackingServiceStatusButton.setImageResource(R.drawable.ic_recording_gray);
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
 
             ((Activity)getContext()).runOnUiThread(new Runnable() {
                 @Override
@@ -1461,6 +1469,31 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             });
         }
     };
+
+    /**
+     * Init TrackingService icon
+     */
+    private void initTrackingServiceIcon() {
+        LayoutParams layoutParams = new LayoutParams((int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
+                ,(int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
+        layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();
+
+        layoutParams.setMargins((int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
+                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
+                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
+                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
+
+        trackingServiceStatusButton.setLayoutParams(layoutParams);
+
+        trackingServiceStatusButton.setPadding((int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
+
+        trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());
+        trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
+        trackingServiceStatusButton.setVisibility(trackingServiceUIConfiguration.displayIcons() ? VISIBLE : GONE);
+    }
 
     /************** End of Tracking Service ***************/
 }
