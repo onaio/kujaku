@@ -104,15 +104,11 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     }
 
     private void displayTracksRecorded(List<Location> locations) {
-        this.runOnUiThread(new Runnable() {
-            public void run() {
-                List<Point> points = new ArrayList<>();
-                for (Location location: locations) {
-                    points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
-                }
-                kujakuMapView.updateDroppedPoints(points);
-            }
-        });
+        List<Point> points = new ArrayList<>();
+        for (Location location: locations) {
+            points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
+        }
+        kujakuMapView.updateDroppedPoints(points);
     }
 
     /**** TrackingServiceListener ****/

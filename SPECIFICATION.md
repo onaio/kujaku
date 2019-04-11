@@ -236,6 +236,49 @@ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) 
 public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws Exception
 ```
 
+## 2. Using Tracking Service
+
+The Tracking Service is a foreground service providing Locations points regarding some options.
+The application needs to register the TrackingService listener to be able to receive notifications when :
+- First location as been received
+- A new location has been recorded
+- A location has been recorded close to the first location recorded
+
+### API available
+
+The `KujakuMapView` has public methods to control the TrackingService :
+
+* This method starts the Tracking Service and need the context, the class of the host activity, an instance of TrackingServiceListener and options
+```
+public void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options)
+```
+
+* This method stops the Tracking Service et returns a collection of collected Locations
+```
+public List<Location> stopTrackingService(@NonNull Context context)
+```
+
+* This method can bind to an already running instance of the TrackingService
+```
+public boolean resumeTrackingService(Context context, TrackingServiceListener listener)
+```
+
+* This method allows the user to force take a location. The last received pending location is then recorded
+```
+public void trackingServiceTakeLocation()
+```
+
+* This method returns a collection of collected Locations 
+```
+public List<Location> getTrackingServiceRecordedLocations()
+```
+
+### TrackingService options
+
+The abstract class `TrackingServiceOptions` provides parameters to the TrackingService instance.
+2 classes extending the `TrackingServiceOptions` are available but you can create your own TrackingServiceOptions instance if needed.
+All parameters are explained in the `TrackingServiceOptions` class.
+
 
 ## Offline Maps Downloader Service
 

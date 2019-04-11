@@ -404,7 +404,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
-        //isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
 
         if (canAddPoint) {
@@ -911,7 +910,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
         if (focusOnMyLocation) {
-            //isMapScrolled = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
