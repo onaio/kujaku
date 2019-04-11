@@ -12,7 +12,8 @@ import io.ona.kujaku.services.TrackingService;
 public interface TrackingServiceListener {
 
     /**
-     * When first location is received
+     * When first location is received.
+     * This location is not registered by the Tracker Service but you can force the recording by using the {@link TrackingService#takeLocation()} method
      *
      * @param location
      */

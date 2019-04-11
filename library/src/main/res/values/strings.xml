@@ -39,6 +39,7 @@
     <string name="map_download_could_not_be_stopped">Map download could not be stopped</string>
     <string name="location_service_disabled">Location service disabled</string>
     <string name="location_service_disabled_dialog_explanation"><![CDATA[You will not be able to use the My Location feature in this app. To change this, go to Settings > Location]]></string>
+    <string name="tracking_service_name">Tracking service</string>
     <string name="tracking_service_channel_name">Kujaku Tracking service channel</string>
     <string name="tracking_service_channel_id">@string/tracking_service_channel_name</string>
 </resources>
