@@ -298,8 +298,7 @@ public class TrackingService extends Service {
         // Adds the back stack for the Intent (but not the Intent itself)
         if (cls != null) {
             // Creates an explicit intent for an Activity
-            Intent startActivityIntent = new Intent(this, cls)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            Intent startActivityIntent = new Intent(this, cls);
 
             stackBuilder.addParentStack(cls);
             // Adds the Intent that starts the Activity to the top of the stack
@@ -670,7 +669,7 @@ public class TrackingService extends Service {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
                 .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                .setContentTitle(getString(R.string.app_name))
+                .setContentTitle(String.format("%1$s %2$s", getString(R.string.app_name), getString(R.string.tracking_service_name)) )
                 .setOngoing(true)
                 .setWhen(System.currentTimeMillis());
 
