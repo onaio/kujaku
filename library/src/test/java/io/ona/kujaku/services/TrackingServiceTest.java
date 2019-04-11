@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
 import android.os.Parcel;
+import android.view.Gravity;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,8 +26,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.R;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
 
@@ -161,6 +164,27 @@ public class TrackingServiceTest {
         assertEquals(createdFromParcel.getMinTime(), 0);
         assertEquals(createdFromParcel.getToleranceIntervalDistance(), 1);
 
+    }
+
+    @Test
+    public void testTrackingServiceDefaultUiConfiguration() {
+       TrackingServiceDefaultUIConfiguration uiTrackingService = new TrackingServiceDefaultUIConfiguration();
+       assertTrue(uiTrackingService.displayIcons());
+
+       assertEquals(uiTrackingService.getBackgroundDrawable(), R.drawable.circle_button_black_border);
+       assertEquals(uiTrackingService.getRecordingDrawable(), R.drawable.ic_recording_red);
+       assertEquals(uiTrackingService.getStoppedDrawable(), R.drawable.ic_recording_gray);
+
+       assertEquals(uiTrackingService.getLayoutWidth(), R.dimen.tracking_service_location_dimen);
+       assertEquals(uiTrackingService.getLayoutHeight(), R.dimen.tracking_service_location_dimen);
+
+       assertEquals(uiTrackingService.getLayoutMarginLeft(), R.dimen.tracking_service_location_margin);
+       assertEquals(uiTrackingService.getLayoutMarginTop(), R.dimen.tracking_service_location_margin);
+       assertEquals(uiTrackingService.getLayoutMarginRight(), R.dimen.tracking_service_location_margin);
+       assertEquals(uiTrackingService.getLayoutMarginBottom(), R.dimen.tracking_service_location_margin);
+
+       assertEquals(uiTrackingService.getPadding(), R.dimen.tracking_service_location_padding);
+       assertEquals(uiTrackingService.getLayoutGravity(), Gravity.TOP | Gravity.LEFT);
     }
 
     @Test

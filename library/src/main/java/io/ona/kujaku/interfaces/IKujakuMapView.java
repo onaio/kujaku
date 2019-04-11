@@ -26,6 +26,7 @@ import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
@@ -262,7 +263,6 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     void removeLayer(@NonNull KujakuLayer kujakuLayer);
 
-
     /**
      * Start the instance of TrackingService that record filtered locations regarding the given {@link TrackingServiceOptions}
      * You need to register a {@link TrackingServiceListener} to receive notifications as
@@ -275,8 +275,13 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param cls
      * @param trackingServiceListener
      * @param options
+     * @param uiConfiguration
      */
-    void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options);
+    void startTrackingService(@NonNull Context context,
+                              @NonNull Class<?> cls,
+                              @NonNull TrackingServiceListener trackingServiceListener,
+                              TrackingServiceOptions options,
+                              @NonNull TrackingServiceUIConfiguration uiConfiguration);
 
     /**
      * Stop the instance of TrackingService
