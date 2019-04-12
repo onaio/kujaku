@@ -3,6 +3,7 @@ package io.ona.kujaku.sample.activities;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
@@ -43,17 +45,22 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         this.startStopBtn = findViewById(R.id.btn_passiveRecordObject_StartStopRecording);
         this.forceLocationBtn = findViewById(R.id.btn_passiveRecordObject_ForcePoint);
 
+        kujakuMapView.initTrackingService(PassiveRecordObjectActivity.this,
+                new TrackingServiceDefaultUIConfiguration(),
+                new TrackingServiceHighAccuracyOptions());
+
         this.startStopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (((Button)v).getText().equals(getString(R.string.start_recording))) {
 
                     // Start Service
-                    kujakuMapView.startTrackingService(getApplicationContext(),
-                            PassiveRecordObjectActivity.class,
-                            PassiveRecordObjectActivity.this,
-                            new TrackingServiceHighAccuracyOptions(),
-                            new TrackingServiceDefaultUIConfiguration());
+                    try {
+                        kujakuMapView.startTrackingService(getApplicationContext(),
+                                PassiveRecordObjectActivity.class);
+                    } catch (TrackingServiceNotInitializedException ex) {
+                        Log.e(TAG, "Error while starting the Tracking Service", ex);
+                    }
 
                     ((Button)v).setText(getString(R.string.stop_recording));
                     forceLocationBtn.setEnabled(true);
@@ -90,7 +97,6 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
             @Override
             public void onSuccess() {
                 startStopBtn.setEnabled(true);
-                kujakuMapView.resumeTrackingService(getApplicationContext(), PassiveRecordObjectActivity.this);
             }
         });
     }

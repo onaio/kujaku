@@ -67,6 +67,7 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
@@ -79,7 +80,9 @@ import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
+import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
@@ -89,6 +92,8 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
  *
@@ -179,6 +184,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private boolean trackingServiceBound = false;
     private TrackingServiceListener trackingServiceListener = null ;
     private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;
+    private TrackingServiceOptions trackingServiceOptions = null;
+    private boolean trackingServiceInitialized = false;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -858,7 +865,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         // Unbind TrackingService if bound
-        this.unBindTrackingService(getContext());
+        this.unBindTrackingService(getApplicationContext());
     }
 
     @Override
@@ -1092,6 +1099,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // and not a permanent change because we have other uses for warming GPS and in the widget already
             resetRejectionDialogContent();
         }
+
+        this.resumeTrackingService(getApplicationContext());
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
@@ -1335,15 +1344,32 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     /************** Tracking Service ***************/
 
     /**
+     * Init TrackingService
+     *
+     * @param trackingServiceListener
+     * @param uiConfiguration
+     * @param options
+     */
+    public void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
+                                    TrackingServiceUIConfiguration uiConfiguration,
+                                    TrackingServiceOptions options) {
+        this.trackingServiceListener = trackingServiceListener;
+        this.trackingServiceUIConfiguration = uiConfiguration != null ? uiConfiguration : new TrackingServiceDefaultUIConfiguration();
+        this.trackingServiceOptions = options != null ? options : new TrackingServiceHighAccuracyOptions();
+        this.trackingServiceInitialized = true;
+    }
+
+
+    /**
      * Rebind to a running TrackingService instance
      *
      * @param context
-     * @param listener
+     * @return
      */
-    public boolean resumeTrackingService(Context context, TrackingServiceListener listener) {
+    public boolean resumeTrackingService(Context context) {
         // TrackingService reconnection if connection was lost
         if (! trackingServiceBound && TrackingService.isRunning()) {
-            this.trackingServiceListener = listener;
+            initTrackingServiceIcon();
             return TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
         } else {
             return false;
@@ -1355,20 +1381,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      * @param context
      * @param cls
-     * @param trackingServiceListener
-     * @param options
      */
     public void startTrackingService(@NonNull Context context,
-                                     @NonNull Class<?> cls,
-                                     @NonNull TrackingServiceListener trackingServiceListener,
-                                     TrackingServiceOptions options,
-                                     @NonNull TrackingServiceUIConfiguration uiConfiguration) {
-        this.trackingServiceListener = trackingServiceListener;
-        this.trackingServiceUIConfiguration = uiConfiguration;
+                                     @NonNull Class<?> cls) throws TrackingServiceNotInitializedException {
+        if (! this.trackingServiceInitialized) {
+            throw new TrackingServiceNotInitializedException();
+        }
+
         TrackingService.startAndBindService(context,
                 cls,
                 connection,
-                options);
+                this.trackingServiceOptions);
+
         initTrackingServiceIcon();
     }
 
@@ -1398,7 +1422,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      * @param context
      */
-    public void unBindTrackingService(@NonNull Context context) {
+    private void unBindTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
             TrackingService.unBindService(context, connection);
             trackingServiceBound = false;
