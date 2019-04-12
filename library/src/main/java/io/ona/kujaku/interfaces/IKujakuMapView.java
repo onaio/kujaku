@@ -20,6 +20,7 @@ import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
@@ -263,25 +264,32 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
     void removeLayer(@NonNull KujakuLayer kujakuLayer);
 
+
     /**
-     * Start the instance of TrackingService that record filtered locations regarding the given {@link TrackingServiceOptions}
+     * Init the TrackingService
      * You need to register a {@link TrackingServiceListener} to receive notifications as
-     * - {@link TrackingServiceListener#onFirstLocationReceived(Location)}
-     * - {@link TrackingServiceListener#onNewLocationReceived(Location)}
-     * - etc.
+     *  - {@link TrackingServiceListener#onFirstLocationReceived(Location)}
+     *  - {@link TrackingServiceListener#onNewLocationReceived(Location)}
+     *  - etc.
+     *
+     *  You can pass a Tracking Service UI Configuration {@link TrackingServiceUIConfiguration} and options {@link TrackingServiceOptions}
+     *
+     * @param trackingServiceListener
+     * @param uiConfiguration
+     * @param options
+     */
+    void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
+                             TrackingServiceUIConfiguration uiConfiguration,
+                             TrackingServiceOptions options);
+
+    /**
+     * Start the instance of TrackingService that record filtered locations
      * The Class arguments is used to instantiate an activity when clicking the service notification
      *
      * @param context
      * @param cls
-     * @param trackingServiceListener
-     * @param options
-     * @param uiConfiguration
      */
-    void startTrackingService(@NonNull Context context,
-                              @NonNull Class<?> cls,
-                              @NonNull TrackingServiceListener trackingServiceListener,
-                              TrackingServiceOptions options,
-                              @NonNull TrackingServiceUIConfiguration uiConfiguration);
+    void startTrackingService(@NonNull Context context, @NonNull Class<?> cls) throws TrackingServiceNotInitializedException;
 
     /**
      * Stop the instance of TrackingService
@@ -293,21 +301,12 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     List<Location> stopTrackingService(@NonNull Context context);
 
     /**
-     * Unbind from the TrackingService instance to be able to stop the service
+     *  This method can bind to an existing instance of the TrackingService already running
      *
      * @param context
-     */
-    void unBindTrackingService(@NonNull Context context);
-
-    /**
-     * This method can bind to an existing instance of the TrackingService already running
-     * You need to register a {@link TrackingServiceListener} to receive notifications
-     *
-     * @param context
-     * @param listener
      * @return
      */
-    boolean resumeTrackingService(Context context, TrackingServiceListener listener);
+     boolean resumeTrackingService(Context context);
 
     /**
      * This method force the TrackingService to take a location
