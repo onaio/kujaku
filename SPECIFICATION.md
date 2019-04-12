@@ -248,9 +248,14 @@ The application needs to register the TrackingService listener to be able to rec
 
 The `KujakuMapView` has public methods to control the TrackingService :
 
-* This method starts the Tracking Service and need the context, the class of the host activity, an instance of TrackingServiceListener and options
+* This method initialize the Tracking Service and need an instance of TrackingServiceListener and instance of TrackingServiceOptions
 ```
-public void startTrackingService(@NonNull Context context, @NonNull Class<?> cls, @NonNull TrackingServiceListener trackingServiceListener, TrackingServiceOptions options)
+ void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener, TrackingServiceUIConfiguration uiConfiguration, TrackingServiceOptions options);
+```
+
+* This method starts the Tracking Service and need the context and the class of the host activity
+```
+ void startTrackingService(@NonNull Context context, @NonNull Class<?> cls) throws TrackingServiceNotInitializedException;
 ```
 
 * This method stops the Tracking Service et returns a collection of collected Locations
@@ -260,7 +265,7 @@ public List<Location> stopTrackingService(@NonNull Context context)
 
 * This method can bind to an already running instance of the TrackingService
 ```
-public boolean resumeTrackingService(Context context, TrackingServiceListener listener)
+public boolean resumeTrackingService(Context context)
 ```
 
 * This method allows the user to force take a location. The last received pending location is then recorded
@@ -277,8 +282,12 @@ public List<Location> getTrackingServiceRecordedLocations()
 
 The abstract class `TrackingServiceOptions` provides parameters to the TrackingService instance.
 2 classes extending the `TrackingServiceOptions` are available but you can create your own TrackingServiceOptions instance if needed.
-All parameters are explained in the `TrackingServiceOptions` class.
+All parameters are explained in the `TrackingServiceOptions`class.
 
+### TrackingService UI configuration
+
+The abstract class `TrackingServiceUIConfiguration` provides ui configuration to the TrackingService instance.
+1 class extending the `TrackingServiceUIConfiguration` is available but you can create your own TrackingServiceUIConfiguration instance if needed.
 
 ## Offline Maps Downloader Service
 
