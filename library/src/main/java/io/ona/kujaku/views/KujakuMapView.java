@@ -1368,7 +1368,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     public boolean resumeTrackingService(Context context) {
         // TrackingService reconnection if connection was lost
-        if (! trackingServiceBound && TrackingService.isRunning()) {
+        if (! trackingServiceBound && TrackingService.isRunning() && trackingServiceInitialized) {
             initTrackingServiceIcon();
             return TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
         } else {
@@ -1498,25 +1498,27 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * Init TrackingService icon
      */
     private void initTrackingServiceIcon() {
-        LayoutParams layoutParams = new LayoutParams((int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
-                ,(int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
-        layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();
+        if (this.trackingServiceInitialized && this.trackingServiceUIConfiguration != null) {
+            LayoutParams layoutParams = new LayoutParams((int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
+                    , (int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
+            layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();
 
-        layoutParams.setMargins((int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
-                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
-                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
-                (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
+            layoutParams.setMargins((int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
 
-        trackingServiceStatusButton.setLayoutParams(layoutParams);
+            trackingServiceStatusButton.setLayoutParams(layoutParams);
 
-        trackingServiceStatusButton.setPadding((int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
+            trackingServiceStatusButton.setPadding((int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
 
-        trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());
-        trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
-        trackingServiceStatusButton.setVisibility(trackingServiceUIConfiguration.displayIcons() ? VISIBLE : GONE);
+            trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
+            trackingServiceStatusButton.setVisibility(trackingServiceUIConfiguration.displayIcons() ? VISIBLE : GONE);
+        }
     }
 
     /************** End of Tracking Service ***************/
