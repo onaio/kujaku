@@ -31,7 +31,7 @@
     <string name="current_location_btn_visibility">current_location_btn_visibility</string>
     <string name="mapbox_warmGps">mapbox_warmGps</string>
     <string name="kujaku_permission">Location &amp; Storage Permissions</string>
-    <string name="kujaku_permission_reason">We need the location &amp; storage permissions to run the kujaku MapView</string>
+    <string name="kujaku_permission_reason">We need the location permission to focus on your location in the map. The storage permission is required to store you route during route-tracking</string>
     <string name="error_occurred_download_map">Error occurred downloading %1$s</string>
     <string name="mapbox_tile_count_limit_of_exceeded">Mapbox tile count limit of %1$d</string>
     <string name="map_could_not_be_deleted">Map could not be deleted</string>
