@@ -1405,6 +1405,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public List<Location> stopTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
             List<Location> locations = trackingService.getRecordedLocations();
+            trackingService.unregisterTrackingServiceListener();
             TrackingService.stopAndUnbindService(context, connection);
             trackingServiceBound = false;
             trackingService = null ;
@@ -1424,6 +1425,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     private void unBindTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
+            trackingService.unregisterTrackingServiceListener();
             TrackingService.unBindService(context, connection);
             trackingServiceBound = false;
             trackingService = null ;
@@ -1481,6 +1483,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            if (trackingService != null) {
+                trackingService.unregisterTrackingServiceListener();
+            }
             trackingServiceBound = false;
             trackingService = null;
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
