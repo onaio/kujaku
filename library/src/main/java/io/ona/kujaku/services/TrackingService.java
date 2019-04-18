@@ -713,8 +713,16 @@ public class TrackingService extends Service {
      *
      * @param listener
      */
-    public void registerTrackingServiceListener(TrackingServiceListener listener) {
+    public void registerTrackingServiceListener(@NonNull TrackingServiceListener listener) {
         this.trackingServiceListener = listener;
+    }
+
+    /**
+     * Unregister listener
+     *
+     */
+    public void unregisterTrackingServiceListener() {
+        this.trackingServiceListener = null;
     }
 
     /**
