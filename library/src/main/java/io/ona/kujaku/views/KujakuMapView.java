@@ -436,7 +436,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
         if (latestLocation != null) {
             latestLocation.setAccuracy(this.locationBufferRadius);
-            getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
+
+            if (getMapboxLocationComponentWrapper().getLocationComponent() != null) {
+                getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
+            }
         }
     }
 
