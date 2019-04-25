@@ -82,6 +82,8 @@ android {
         versionCode getMasterCommitCount()
         versionName getVersionName()
 
+        multiDexEnabled true
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -162,6 +164,15 @@ dependencies { configuration ->
     implementation "com.android.support:design:${supportVersion}"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
+
+
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
+    // Optional, if you use support library fragments:
+    debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
+
+    implementation 'com.android.support:multidex:1.0.3'
+
 }
 
 // This is used for normal develoment of Kujaku

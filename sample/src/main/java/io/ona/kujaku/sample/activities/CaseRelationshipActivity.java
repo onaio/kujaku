@@ -1,5 +1,6 @@
 package io.ona.kujaku.sample.activities;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
@@ -7,7 +8,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -20,12 +23,15 @@ import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.BoundaryLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
+import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.IOUtil;
 import io.ona.kujaku.views.KujakuMapView;
@@ -135,6 +141,36 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 }
             }
         });
+
+        List<Location> locations = TrackingService.getCurrentRecordedLocations();
+
+        ArrayList<Feature> featureList = new ArrayList<>();
+
+        int pos = 0;
+        for (Location location: locations) {
+            Feature feature = Feature.fromGeometry(Point.fromLngLat(location.getLongitude(), location.getLatitude()));
+            feature.addNumberProperty("pos", location.getTime());
+            featureList.add(feature);
+            pos++;
+        }
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featureList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("pos", ArrowLineLayer.SortConfig.SortOrder.ASC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        try {
+            ArrowLineLayer arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                    .setArrowLineColor(R.color.light_red)
+                    .build();
+
+            kujakuMapView.addLayer(arrowLineLayer);
+        } catch (InvalidArrowLineConfigException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+        }
+
+
+
     }
 
     private void addStructuresToMap(@NonNull Style style) {

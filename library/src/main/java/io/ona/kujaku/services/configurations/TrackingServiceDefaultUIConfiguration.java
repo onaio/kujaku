@@ -11,7 +11,6 @@ import io.ona.kujaku.R;
 public class TrackingServiceDefaultUIConfiguration extends TrackingServiceUIConfiguration{
 
     public TrackingServiceDefaultUIConfiguration() {
-        super();
 
         this.displayTrackingServiceIcons = true;
 
@@ -30,5 +29,7 @@ public class TrackingServiceDefaultUIConfiguration extends TrackingServiceUIConf
         this.padding = R.dimen.tracking_service_location_padding;
 
         this.layoutGravity = Gravity.TOP | Gravity.LEFT;
+
+        this.displayTrackingServiceIcons = false;
     }
 }

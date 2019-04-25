@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
+import com.squareup.leakcanary.LeakCanary;
 
 import io.fabric.sdk.android.Fabric;
 import io.ona.kujaku.KujakuLibrary;
@@ -16,7 +17,6 @@ import static io.ona.kujaku.sample.util.Constants.DATABASE_NAME;
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
  */
-
 public class MyApplication extends Application {
 
     private static final String TAG = MyApplication.class.getName();
@@ -31,6 +31,13 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         application = this;
+
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            return;
+        }
+
+        LeakCanary.install(this);
+        // Normal app init code...
 
         // activate Crashlytics
         CrashlyticsCore debugDisabledCrashLytics = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();

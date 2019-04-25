@@ -68,8 +68,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
     private String[] basicPermissions = new String[]{
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            //Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            //Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
     // Kujaku library uses notification ids 80 to 2080

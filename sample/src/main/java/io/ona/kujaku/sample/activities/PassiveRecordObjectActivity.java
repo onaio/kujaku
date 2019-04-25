@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -17,7 +19,9 @@ import java.util.List;
 
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
+import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
@@ -33,6 +37,9 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
 
     private Button startStopBtn;
     private Button forceLocationBtn;
+
+    private ArrowLineLayer currentTrack;
+    private FeatureCollection featureCollection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +59,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         this.startStopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (((Button)v).getText().equals(getString(R.string.start_recording))) {
+                if (((Button) v).getText().equals(getString(R.string.start_recording))) {
 
                     // Start Service
                     try {
@@ -62,7 +69,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                         Log.e(TAG, "Error while starting the Tracking Service", ex);
                     }
 
-                    ((Button)v).setText(getString(R.string.stop_recording));
+                    ((Button) v).setText(getString(R.string.stop_recording));
                     forceLocationBtn.setEnabled(true);
                 } else {
 
@@ -72,7 +79,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                     //List<Location> othersTracks = new TrackingStorage().getCurrentRecordedLocations();
                     //displayTracksRecorded(othersTracks);
 
-                    ((Button)v).setText(getString(R.string.start_recording));
+                    ((Button) v).setText(getString(R.string.start_recording));
                     forceLocationBtn.setEnabled(false);
                 }
             }
@@ -99,6 +106,25 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                 startStopBtn.setEnabled(true);
             }
         });
+
+        ArrayList<Feature> featureList = new ArrayList<>();
+        featureCollection = FeatureCollection.fromFeatures(featureList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("pos"
+                , ArrowLineLayer.SortConfig.SortOrder.ASC
+                , ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        try {
+            currentTrack = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                    .setArrowLineColor(R.color.dark_red)
+                    .build();
+
+            kujakuMapView.addLayer(currentTrack);
+        } catch (InvalidArrowLineConfigException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+        }
+
     }
 
     private void InitRecordingButton() {
@@ -113,9 +139,22 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
 
     private void displayTracksRecorded(List<Location> locations) {
         List<Point> points = new ArrayList<>();
-        for (Location location: locations) {
-            points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
+        for (Location location : locations) {
+            Point point = new Point(location.hashCode(), location.getLatitude(), location.getLongitude());
+            points.add(point);
+
+            Feature feature = Feature.fromGeometry(com.mapbox.geojson.Point.fromLngLat(location.getLongitude(), location.getLatitude()));
+            feature.addNumberProperty("pos", location.getTime());
+
+            if (featureCollection != null) {
+                featureCollection.features().add(feature);
+            }
         }
+
+        if (currentTrack != null && featureCollection != null) {
+            currentTrack.updateFeatures(featureCollection);
+        }
+
         kujakuMapView.updateDroppedPoints(points);
     }
 
@@ -144,6 +183,14 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         List<Point> points = new ArrayList<>();
         points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
         kujakuMapView.updateDroppedPoints(points);
+
+        if (currentTrack != null) {
+            Feature feature = Feature.fromGeometry(com.mapbox.geojson.Point.fromLngLat(location.getLongitude(), location.getLatitude()));
+            feature.addNumberProperty("pos", location.getTime());
+
+            featureCollection.features().add(feature);
+            currentTrack.updateFeatures(featureCollection);
+        }
     }
 
     @Override
