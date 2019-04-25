@@ -40,8 +40,7 @@ public class MyApplication extends Application {
         // Normal app init code...
 
         // activate Crashlytics
-        CrashlyticsCore debugDisabledCrashLytics = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();
-        Fabric.with(this, new Crashlytics.Builder().core(debugDisabledCrashLytics).build());
+        Fabric.with(this, new Crashlytics());  // initialize fabric
 
         KujakuLibrary.setEnableMapDownloadResume(false);
         KujakuLibrary.init(this); // must initialize KujakuLibrary
