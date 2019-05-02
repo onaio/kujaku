@@ -30,8 +30,8 @@
     <string name="location_disabled_location_permissions_not_granted">Sorry but we could not get your location since the app does not have permissions to access your Location</string>
     <string name="current_location_btn_visibility">current_location_btn_visibility</string>
     <string name="mapbox_warmGps">mapbox_warmGps</string>
-    <string name="location_permission">Location Permission</string>
-    <string name="location_permission_reason">We need the location permission to focus on your location in the map</string>
+    <string name="kujaku_permission">Location &amp; Storage Permissions</string>
+    <string name="kujaku_permission_reason">We need the location permission to focus on your location in the map. The storage permission is required to store you route during route-tracking</string>
     <string name="error_occurred_download_map">Error occurred downloading %1$s</string>
     <string name="mapbox_tile_count_limit_of_exceeded">Mapbox tile count limit of %1$d</string>
     <string name="map_could_not_be_deleted">Map could not be deleted</string>
@@ -39,4 +39,7 @@
     <string name="map_download_could_not_be_stopped">Map download could not be stopped</string>
     <string name="location_service_disabled">Location service disabled</string>
     <string name="location_service_disabled_dialog_explanation"><![CDATA[You will not be able to use the My Location feature in this app. To change this, go to Settings > Location]]></string>
+    <string name="tracking_service_name">Tracking service</string>
+    <string name="tracking_service_channel_name">Kujaku Tracking service channel</string>
+    <string name="tracking_service_channel_id">@string/tracking_service_channel_name</string>
 </resources>

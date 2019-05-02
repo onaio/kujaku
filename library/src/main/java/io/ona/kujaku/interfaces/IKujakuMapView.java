@@ -4,6 +4,8 @@ package io.ona.kujaku.interfaces;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
 
+import android.content.Context;
+import android.location.Location;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,11 +20,15 @@ import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
@@ -257,4 +263,61 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer);
 
     void removeLayer(@NonNull KujakuLayer kujakuLayer);
+
+
+    /**
+     * Init the TrackingService
+     * You need to register a {@link TrackingServiceListener} to receive notifications as
+     *  - {@link TrackingServiceListener#onFirstLocationReceived(Location)}
+     *  - {@link TrackingServiceListener#onNewLocationReceived(Location)}
+     *  - etc.
+     *
+     *  You can pass a Tracking Service UI Configuration {@link TrackingServiceUIConfiguration} and options {@link TrackingServiceOptions}
+     *
+     * @param trackingServiceListener
+     * @param uiConfiguration
+     * @param options
+     */
+    void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
+                             TrackingServiceUIConfiguration uiConfiguration,
+                             TrackingServiceOptions options);
+
+    /**
+     * Start the instance of TrackingService that record filtered locations
+     * The Class arguments is used to instantiate an activity when clicking the service notification
+     *
+     * @param context
+     * @param cls
+     */
+    void startTrackingService(@NonNull Context context, @NonNull Class<?> cls) throws TrackingServiceNotInitializedException;
+
+    /**
+     * Stop the instance of TrackingService
+     * It returns a collection of recorded Locations
+     *
+     * @param context
+     * @return
+     */
+    List<Location> stopTrackingService(@NonNull Context context);
+
+    /**
+     *  This method can bind to an existing instance of the TrackingService already running
+     *
+     * @param context
+     * @return
+     */
+     boolean resumeTrackingService(Context context);
+
+    /**
+     * This method force the TrackingService to take a location
+     *
+     */
+    void trackingServiceTakeLocation();
+
+    /**
+     * This method returns the collection of recorded locations
+     *
+     * @return
+     */
+    List<Location> getTrackingServiceRecordedLocations();
 }

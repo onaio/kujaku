@@ -47,7 +47,7 @@
         android:visibility="gone"
         android:src="@drawable/mapbox_markerview_icon_default"/>
 
-    <!-- This is the target button shown on the bottom-right -->
+    <!-- This is the target button shown on the up-right -->
     <ImageButton
         android:id="@+id/ib_mapview_focusOnMyLocationIcon"
         android:layout_width="@dimen/my_location_button_dimen"
@@ -58,6 +58,19 @@
         android:layout_gravity="top|right"
         android:padding="10dp"
         android:background="@drawable/circle_button"
+        android:visibility="gone" />
+
+    <!-- This is the recording button shown on the up-left -->
+    <ImageView
+        android:id="@+id/iv_mapview_tracking_service_status"
+        android:layout_width="@dimen/tracking_service_location_dimen"
+        android:layout_height="@dimen/tracking_service_location_dimen"
+        android:src="@drawable/ic_recording_gray"
+        android:layout_marginTop="@dimen/tracking_service_location_margin"
+        android:layout_marginLeft="@dimen/tracking_service_location_margin"
+        android:layout_gravity="top|left"
+        android:padding="@dimen/tracking_service_location_padding"
+        android:background="@drawable/circle_button_black_border"
         android:visibility="gone" />
 
     <android.support.design.widget.CoordinatorLayout

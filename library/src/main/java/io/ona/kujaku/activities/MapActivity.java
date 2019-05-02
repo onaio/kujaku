@@ -44,7 +44,7 @@ import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
 import io.ona.kujaku.domain.Point;
-import io.ona.kujaku.helpers.MapBoxStyleStorage;
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
@@ -467,9 +467,9 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
     protected void onDestroy() {
         super.onDestroy();
 
-        if (currentStylePath != null && currentStylePath.startsWith("file://") && currentStylePath.contains(MapBoxStyleStorage.DIRECTORY)) {
+        if (currentStylePath != null && currentStylePath.startsWith("file://") && currentStylePath.contains(MapBoxStyleStorage.BASE_DIRECTORY)) {
             new MapBoxStyleStorage()
-                    .deleteFile(currentStylePath.replace("file://", ""), true);
+                    .deleteFile(currentStylePath.replace("file://", ""), true, false);
         }
 
         if (kujakuMapView != null) kujakuMapView.onDestroy();

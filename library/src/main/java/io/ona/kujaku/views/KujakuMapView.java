@@ -2,11 +2,14 @@ package io.ona.kujaku.views;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
+import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -30,7 +33,7 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
 import com.karumi.dexter.Dexter;
-import com.karumi.dexter.listener.single.PermissionListener;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -64,6 +67,7 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
@@ -74,14 +78,22 @@ import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
+import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
+import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
-import io.ona.kujaku.utils.LocationPermissionListener;
+import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
  *
@@ -101,6 +113,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private Button cancelAddingPoint;
     private MapboxMap mapboxMap;
     private ImageButton currentLocationBtn;
+    private ImageView trackingServiceStatusButton;
 
     private ILocationClient locationClient;
     private Toast currentlyShownToast;
@@ -108,8 +121,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private LinearLayout addPointButtonsLayout;
 
     private OnLocationChanged onLocationChangedListener;
-
-    private boolean isMapScrolled = false;
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
@@ -122,6 +133,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
 
     private boolean updateUserLocationOnMap = false;
+    private boolean updateCameraUserLocationOnMap = false;
 
     private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
 
@@ -165,6 +177,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
+    /**
+     * Tracking Service
+     */
+    private TrackingService trackingService = null;
+    private boolean trackingServiceBound = false;
+    private TrackingServiceListener trackingServiceListener = null ;
+    private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;
+    private TrackingServiceOptions trackingServiceOptions = null;
+    private boolean trackingServiceInitialized = false;
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -197,6 +219,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);
         addPointBtn = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
+        trackingServiceStatusButton = findViewById(R.id.iv_mapview_tracking_service_status);
 
         getMapboxMap();
         cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
@@ -206,6 +229,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             public void onClick(View v) {
                     // Enable asking for enabling the location by resetting this flag in case it was true
                     hasAlreadyRequestedEnableLocation = false;
+                    updateCameraUserLocationOnMap = true;
                     setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
                         @Override
                         public void onSuccess() {
@@ -242,8 +266,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void showUpdatedUserLocation(Float radius) {
-        updateUserLocation(radius);
-        if (updateUserLocationOnMap || !isMapScrolled) {
+        if (updateUserLocationOnMap) {
+            updateUserLocation(radius);
+        }
+
+        if (updateCameraUserLocationOnMap) {
             // Focus on the new location
             centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
         }
@@ -264,9 +291,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     onLocationChangedListener.onLocationChanged(location);
                 }
 
-                if (updateUserLocationOnMap) {
-                    showUpdatedUserLocation(locationBufferRadius);
-                }
+                showUpdatedUserLocation(locationBufferRadius);
             }
         });
 
@@ -388,7 +413,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
-        isMapScrolled = false;
         this.enableAddPoint(canAddPoint);
 
         if (canAddPoint) {
@@ -396,8 +420,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             // 1. Focus on the location for the first time is a must
             // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
-            // 3. Show the circle icon on the currrent position -> This will happen whenever there are location updates
+            // 3. Show the circle icon on the current position -> This will happen whenever there are location updates
             updateUserLocationOnMap = true;
+            updateCameraUserLocationOnMap = true;
             if (latestLocationCoordinates != null) {
                 showUpdatedUserLocation(locationBufferRadius);
             }
@@ -739,8 +764,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
-                isMapScrolled = true;
-
                 // We should assume the user no longer wants us to focus on their location
                 focusOnUserLocation(false);
             }
@@ -840,6 +863,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             locationClient.setListener(null);
             locationClient = null;
         }
+
+        // Unbind TrackingService if bound
+        this.unBindTrackingService(getApplicationContext());
     }
 
     @Override
@@ -893,17 +919,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
         if (focusOnMyLocation) {
-            isMapScrolled = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
             // Enable the listener & show the current user location
             updateUserLocationOnMap = true;
+            updateCameraUserLocationOnMap = true;
             if (latestLocationCoordinates != null) {
                 showUpdatedUserLocation(radius);
             }
 
         } else {
-            updateUserLocationOnMap = false;
+            updateCameraUserLocationOnMap = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
     }
@@ -922,12 +948,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void checkPermissions() {
         if (getContext() instanceof Activity) {
             final Activity activity = (Activity) getContext();
-            PermissionListener dialogPermissionListener = new LocationPermissionListener(activity);
+
+            MultiplePermissionsListener dialogMultiplePermissionListener = new KujakuMultiplePermissionListener(activity);
 
             Dexter.withActivity(activity)
-                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    .withListener(dialogPermissionListener)
+                    .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .withListener(dialogMultiplePermissionListener)
                     .check();
+
         } else {
             Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
         }
@@ -1071,6 +1099,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             // and not a permanent change because we have other uses for warming GPS and in the widget already
             resetRejectionDialogContent();
         }
+
+        this.resumeTrackingService(getApplicationContext());
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
@@ -1309,5 +1339,193 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public MapboxLocationComponentWrapper getMapboxLocationComponentWrapper() {
         return mapboxLocationComponentWrapper;
     }
+
+
+    /************** Tracking Service ***************/
+
+    /**
+     * Init TrackingService
+     *
+     * @param trackingServiceListener
+     * @param uiConfiguration
+     * @param options
+     */
+    public void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
+                                    TrackingServiceUIConfiguration uiConfiguration,
+                                    TrackingServiceOptions options) {
+        this.trackingServiceListener = trackingServiceListener;
+        this.trackingServiceUIConfiguration = uiConfiguration != null ? uiConfiguration : new TrackingServiceDefaultUIConfiguration();
+        this.trackingServiceOptions = options != null ? options : new TrackingServiceHighAccuracyOptions();
+        this.trackingServiceInitialized = true;
+    }
+
+
+    /**
+     * Rebind to a running TrackingService instance
+     *
+     * @param context
+     * @return
+     */
+    public boolean resumeTrackingService(Context context) {
+        // TrackingService reconnection if connection was lost
+        if (! trackingServiceBound && TrackingService.isRunning() && trackingServiceInitialized) {
+            initTrackingServiceIcon();
+            return TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Start TrackingService
+     *
+     * @param context
+     * @param cls
+     */
+    public void startTrackingService(@NonNull Context context,
+                                     @NonNull Class<?> cls) throws TrackingServiceNotInitializedException {
+        if (! this.trackingServiceInitialized) {
+            throw new TrackingServiceNotInitializedException();
+        }
+
+        TrackingService.startAndBindService(context,
+                cls,
+                connection,
+                this.trackingServiceOptions);
+
+        initTrackingServiceIcon();
+    }
+
+    /**
+     * Stop TrackingService
+     *
+     * @param context
+     * @return
+     */
+    public List<Location> stopTrackingService(@NonNull Context context) {
+        if (trackingServiceBound && trackingService != null) {
+            List<Location> locations = trackingService.getRecordedLocations();
+            trackingService.unregisterTrackingServiceListener();
+            TrackingService.stopAndUnbindService(context, connection);
+            trackingServiceBound = false;
+            trackingService = null ;
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
+            return locations;
+        }  else {
+            Log.d(TAG, "Tracking Service instance is null or not Tracking Service is not bounded");
+        }
+
+        return null;
+    }
+
+    /**
+     * Unbind from TrackingService instance
+     *
+     * @param context
+     */
+    private void unBindTrackingService(@NonNull Context context) {
+        if (trackingServiceBound && trackingService != null) {
+            trackingService.unregisterTrackingServiceListener();
+            TrackingService.unBindService(context, connection);
+            trackingServiceBound = false;
+            trackingService = null ;
+        } else {
+            Log.d(TAG, "Tracking Service instance is null");
+        }
+    }
+
+    /**
+     * Take a location
+     *
+     */
+    public void trackingServiceTakeLocation() {
+        if (trackingServiceBound && trackingService != null) {
+            trackingService.takeLocation();
+        } else {
+            Log.e(TAG, "Tracking Service instance is null");
+        }
+    }
+
+    /**
+     * Get the recorded locations
+     *
+     * @return
+     */
+    public List<Location> getTrackingServiceRecordedLocations() {
+        if (trackingServiceBound && trackingService != null) {
+            return trackingService.getRecordedLocations();
+        }
+
+        return new ArrayList<Location>();
+    }
+    /**
+     * Connection to bind to the TrackingService instance
+     */
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to TrackingService, cast the IBinder and get TrackingService instance
+            TrackingService.LocalBinder binder = (TrackingService.LocalBinder) service;
+            trackingService = binder.getService();
+            trackingService.registerTrackingServiceListener(trackingServiceListener);
+            trackingServiceBound = true;
+
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getRecordingDrawable());
+
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onServiceConnected(trackingService);
+                }
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            if (trackingService != null) {
+                trackingService.unregisterTrackingServiceListener();
+            }
+            trackingServiceBound = false;
+            trackingService = null;
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
+
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    trackingServiceListener.onServiceDisconnected();
+                }
+            });
+        }
+    };
+
+    /**
+     * Init TrackingService icon
+     */
+    private void initTrackingServiceIcon() {
+        if (this.trackingServiceInitialized && this.trackingServiceUIConfiguration != null) {
+            LayoutParams layoutParams = new LayoutParams((int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
+                    , (int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
+            layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();
+
+            layoutParams.setMargins((int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
+                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
+
+            trackingServiceStatusButton.setLayoutParams(layoutParams);
+
+            trackingServiceStatusButton.setPadding((int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
+
+            trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());
+            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
+            trackingServiceStatusButton.setVisibility(trackingServiceUIConfiguration.displayIcons() ? VISIBLE : GONE);
+        }
+    }
+
+    /************** End of Tracking Service ***************/
 }
 
