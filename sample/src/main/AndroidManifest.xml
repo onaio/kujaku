@@ -86,6 +86,9 @@
         <activity
             android:name=".activities.FociBoundaryActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.PassiveRecordObjectActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
