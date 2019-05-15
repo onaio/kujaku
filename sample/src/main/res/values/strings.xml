@@ -75,6 +75,8 @@
     <string name="start_recording">Start Recording</string>
     <string name="stop_recording">Stop Recording</string>
     <string name="take_location">Take Location</string>
+    <string name="only_cases">Only Cases</string>
+    <string name="show_all">Show All</string>
 
 
 </resources>

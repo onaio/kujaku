@@ -30,6 +30,7 @@ import io.ona.kujaku.utils.FeatureFilter;
 import io.ona.kujaku.utils.IOUtil;
 import io.ona.kujaku.views.KujakuMapView;
 
+import static com.mapbox.mapboxsdk.style.expressions.Expression.all;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
@@ -60,6 +61,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private Button drawArrowsBtn;
     private Button changeFeatureBtn;
+    private Button filterFeaturesBtn;
 
     private FeatureCollection boundaryFeatureCollection1;
     private FeatureCollection boundaryFeatureCollection2;
@@ -67,9 +69,10 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     private LatLng focusPoint1;
     private LatLng focusPoint2;
 
-    private BoundaryLayer boundaryLayer;
-
     private boolean showingFeatureCollection1;
+    private Expression defaultCircleLayerExpression = eq(geometryType(), "Point");
+    private Expression defaultFillLayerExpression = neq(geometryType(), "Point");
+    private Expression testStatusPositiveExpression = eq(get("testStatus"), "positive");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +84,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
         drawArrowsBtn = findViewById(R.id.btn_caseRelationshipAct_drawArrows);
         changeFeatureBtn = findViewById(R.id.btn_caseRelationshipAct_change);
+        filterFeaturesBtn = findViewById(R.id.btn_caseRelationshipAct_filter);
 
         drawArrowsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,6 +139,13 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 }
             }
         });
+
+        filterFeaturesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleFeatureFilter();
+            }
+        });
     }
 
     private void addStructuresToMap(@NonNull Style style) {
@@ -147,11 +158,11 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
 
         FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
-        fillLayer.withFilter(neq(geometryType(), "Point"));
+        fillLayer.withFilter(defaultFillLayerExpression);
         fillLayer.withProperties(fillColor(colorExpression));
 
         CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
-        circleLayer.withFilter(eq(geometryType(), "Point"));
+        circleLayer.withFilter(defaultCircleLayerExpression);
         circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
 
         style.addLayer(circleLayer);
@@ -190,6 +201,41 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             drawArrowsBtn.setText(R.string.disable_remove_arrows);
         }
     }
+
+    private void toggleFeatureFilter() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        FillLayer fillLayer = style.getLayerAs("sample-cases-fill");
+                        CircleLayer circleLayer = style.getLayerAs("sample-cases-symbol");
+
+                        if (fillLayer != null && circleLayer != null) {
+                            Expression fillLayerExpression = fillLayer.getFilter();
+
+                            if (fillLayerExpression != null) {
+                                String filterExString = fillLayerExpression.toString();
+
+                                if (filterExString.contains("testStatus")) {
+                                    // Already filtered then reset
+                                    fillLayer.setFilter(defaultFillLayerExpression);
+                                    circleLayer.setFilter(defaultCircleLayerExpression);
+                                    filterFeaturesBtn.setText(R.string.only_cases);
+                                } else {
+                                    fillLayer.setFilter(all(defaultFillLayerExpression, testStatusPositiveExpression));
+                                    circleLayer.setFilter(all(defaultCircleLayerExpression, testStatusPositiveExpression));
+                                    filterFeaturesBtn.setText(R.string.show_all);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
 
     private void changeFocus(@NonNull LatLng point) {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {

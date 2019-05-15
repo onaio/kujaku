@@ -52,6 +52,16 @@
                 android:layout_marginBottom="5dp"
                 android:enabled="false"
                 android:text="@string/change_features"
+                app:layout_constraintBottom_toTopOf="@id/btn_caseRelationshipAct_filter"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+
+            <Button
+                android:id="@+id/btn_caseRelationshipAct_filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:text="@string/only_cases"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"/>
