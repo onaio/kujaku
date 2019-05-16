@@ -126,16 +126,18 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
         changeFeatureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (showingFeatureCollection1) {
-                    sampleCasesSource.setGeoJson(boundaryFeatureCollection2);
-                    arrowLineLayer.updateFeatures(boundaryFeatureCollection2);
-                    changeFocus(focusPoint2);
-                    showingFeatureCollection1 = false;
-                } else {
-                    sampleCasesSource.setGeoJson(boundaryFeatureCollection1);
-                    arrowLineLayer.updateFeatures(boundaryFeatureCollection1);
-                    changeFocus(focusPoint1);
-                    showingFeatureCollection1 = true;
+                if (sampleCasesSource != null && arrowLineLayer != null ) {
+                    if (showingFeatureCollection1) {
+                        sampleCasesSource.setGeoJson(boundaryFeatureCollection2);
+                        arrowLineLayer.updateFeatures(boundaryFeatureCollection2);
+                        changeFocus(focusPoint2);
+                        showingFeatureCollection1 = false;
+                    } else {
+                        sampleCasesSource.setGeoJson(boundaryFeatureCollection1);
+                        arrowLineLayer.updateFeatures(boundaryFeatureCollection1);
+                        changeFocus(focusPoint1);
+                        showingFeatureCollection1 = true;
+                    }
                 }
             }
         });
