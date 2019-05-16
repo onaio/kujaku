@@ -191,7 +191,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK
 private static void releaseTestKujakuImport(configuration) {
-    configuration.implementation 'io.ona.kujaku:library:0.7.2'
+    configuration.implementation 'io.ona.kujaku:library:0.7.3'
 }
 
 tasks.withType(Test) {
