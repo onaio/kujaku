@@ -75,5 +75,8 @@
     <string name="foci_boundary">Foci Boundary</string>
     <string name="change_foci_boundary">Change foci boundary</string>
     <string name="change_features">Change Features</string>
+    <string name="drawing_boundaries_activity">Drawing Boundaries</string>
+    <string name="drawing_boundaries_delete">Delete Point</string>
+
 
 </resources>

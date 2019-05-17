@@ -206,6 +206,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_drawing_boundaries:
+                startActivity(new Intent(this, DrawingBoundariesActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }
