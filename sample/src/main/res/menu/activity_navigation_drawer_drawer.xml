@@ -89,6 +89,10 @@
             android:id="@+id/nav_base_layer_switcher_plugin"
             android:title="@string/base_layer_switcher_plugin"/>
 
+        <item
+            android:id="@+id/nav_drawing_boundaries"
+            android:title="@string/drawing_boundaries_activity"/>
+
     </group>
 
 </menu>
