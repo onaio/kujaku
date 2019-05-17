@@ -187,6 +187,8 @@ private static void developmentKujakuModulesImport(instance, configuration) {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
     }
+
+    configuration.implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${instance.mapboxAnnotationPluginVersion}"
 }
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK

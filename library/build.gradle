@@ -168,6 +168,8 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
+    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${mapboxAnnotationPluginVersion}"
+
     // Comment the line below when creating releases - The line is for development of the library & utils
     //implementation (project(":utils")) {
     // Uncomment the line below when creating releases

@@ -206,7 +206,6 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
-
             case R.id.nav_passive_record_object:
                 startActivity(new Intent(this, PassiveRecordObjectActivity.class));
                 finish();
@@ -214,6 +213,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
             case R.id.nav_base_layer_switcher_plugin:
                 startActivity(new Intent(this, BaseLayerSwitcherActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_drawing_boundaries:
+                startActivity(new Intent(this, DrawingBoundariesActivity.class));
                 finish();
                 return true;
 

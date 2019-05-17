@@ -34,13 +34,14 @@ task clean(type: Delete) {
 }
 
 ext {
-    supportVersion = '27.1.1'
+    supportVersion = '28.0.0'
     buildToolsVersion = "28.0.3"
-    compileSdkVersion = 27
+    compileSdkVersion = 28
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
     jacocoVersion = "0.7.9"
     mapboxSdkVersion = "7.2.0"
+    mapboxAnnotationPluginVersion = "0.6.0"
 }
 
 coveralls {
@@ -49,4 +50,14 @@ coveralls {
                    , "library/src/main/java"
                    , "sample/src/main/java"
                    , "wrapper/src/main/java"]
+}
+
+subprojects {
+    project.configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.getkeepsafe.relinker') {
+                details.useVersion "1.3.1"
+            }
+        }
+    }
 }
