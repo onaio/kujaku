@@ -85,6 +85,10 @@
             android:id="@+id/nav_passive_record_object"
             android:title="@string/passive_record_object_activity"/>
 
+        <item
+            android:id="@+id/nav_base_layer_switcher_plugin"
+            android:title="@string/base_layer_switcher_plugin"/>
+
     </group>
 
 </menu>

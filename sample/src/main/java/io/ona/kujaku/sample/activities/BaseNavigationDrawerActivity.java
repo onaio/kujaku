@@ -212,6 +212,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_base_layer_switcher_plugin:
+                startActivity(new Intent(this, BaseLayerSwitcherActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }

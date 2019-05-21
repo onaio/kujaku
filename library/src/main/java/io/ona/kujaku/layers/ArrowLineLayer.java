@@ -351,6 +351,8 @@ public class ArrowLineLayer implements KujakuLayer {
             style.removeSource(arrowHeadSource);
             style.removeSource(lineLayerSource);
 
+            visible = false;
+
             return true;
         } else {
             Log.e(TAG, "Could not remove the layers & source because the the style is null or not fully loaded");

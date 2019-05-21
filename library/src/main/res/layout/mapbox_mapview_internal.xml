@@ -73,6 +73,18 @@
         android:background="@drawable/circle_button_black_border"
         android:visibility="gone" />
 
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_mapview_layerSwitcher"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="20dp"
+        app:srcCompat="@drawable/ic_layers"
+        app:backgroundTint="@color/white"
+        android:visibility="gone" />
+
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
