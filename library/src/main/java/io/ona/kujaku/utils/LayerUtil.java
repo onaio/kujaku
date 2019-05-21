@@ -4,9 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.BackgroundLayer;
 import com.mapbox.mapboxsdk.style.layers.CircleLayer;
@@ -18,12 +15,9 @@ import com.mapbox.mapboxsdk.style.layers.HeatmapLayer;
 import com.mapbox.mapboxsdk.style.layers.HillshadeLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
-import com.mapbox.mapboxsdk.style.sources.Source;
-import com.mapbox.mapboxsdk.style.sources.VectorSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -254,69 +248,6 @@ public class LayerUtil {
             return !Double.isNaN(jsonArray.optDouble(0)) && !Double.isNaN(jsonArray.optDouble(1));
         } else {
             return !Double.isNaN(jsonArray.optDouble(0));
-        }
-    }
-
-    @Nullable
-    public Source getSource(@NonNull String sourceId, @NonNull String sourceJson) {
-        Source source = null;
-        try {
-            JSONObject jsonObject = new JSONObject(sourceJson);
-            String sourceType = jsonObject.getString(TYPE);
-            String url = jsonObject.optString(URL);
-
-            if (sourceType.equals(SOURCE_TYPE.VECTOR)) {
-                VectorSource vectorSource;
-                //TileSet tileSet = new TileSet()
-                if (url != null) {
-                    vectorSource = new VectorSource(sourceId, url);
-                } else {
-
-                }
-            }
-
-        } catch (JSONException e) {
-            Timber.e(e);
-            return null;
-        }
-
-        return source;
-    }
-
-    protected Object convertJsonArray(@NonNull JsonArray jsonArray) {
-
-        /*for (int i = 1; i < jsonArray.size(); i++) {
-            JsonElement jsonElement = jsonArray.get(i);
-            if (jsonElement instanceof JsonArray) {
-                JsonArray nestedArray = (JsonArray) jsonElement;
-                Object[] array = new Object[nestedArray.size()];
-                for (int j = 0; j < nestedArray.size(); j++) {
-                    JsonElement element = nestedArray.get(j);
-                    if (element instanceof JsonPrimitive) {
-                        array[j] = convertToValue((JsonPrimitive) element);
-                    } else {
-                        throw new IllegalArgumentException("Nested literal arrays are not supported.");
-                    }
-                }
-
-                arguments.add(new Expression.ExpressionLiteralArray(array));
-            } else {
-                arguments.add(convert(jsonElement));
-            }
-        }*/
-        return null;
-    }
-
-    @NonNull
-    protected Object convertToValue(@NonNull JsonPrimitive jsonPrimitive) {
-        if (jsonPrimitive.isBoolean()) {
-            return jsonPrimitive.getAsBoolean();
-        } else if (jsonPrimitive.isNumber()) {
-            return jsonPrimitive.getAsFloat();
-        } else if (jsonPrimitive.isString()) {
-            return jsonPrimitive.getAsString();
-        } else {
-            return jsonPrimitive;
         }
     }
 }
