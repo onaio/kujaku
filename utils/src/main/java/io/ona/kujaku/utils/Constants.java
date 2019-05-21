@@ -43,4 +43,9 @@ public abstract class Constants {
         // Todo: Document that this request code should not be used inside the activities
         public static final int LOCATION_SETTINGS = 8688;
     }
+
+    // Constants used inside the library only
+    public class Style {
+        public static final String BACKGROUND_LAYER_ID = "background";
+    }
 }
