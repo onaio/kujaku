@@ -113,7 +113,7 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
     }
 
     public void showPopup(@NonNull View anchorView) {
-        popupMenu = new PopupMenu(kujakuMapView.getContext(), anchorView, Gravity.START);
+        popupMenu = new PopupMenu(kujakuMapView.getContext(), anchorView, Gravity.START, 0, R.style.PopupMenu);
         popupMenu.setOnMenuItemClickListener(this);
         popupMenu.inflate(R.menu.layer_switcher_popup_menu);
 
@@ -122,7 +122,7 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
 
         int counter = 0;
         for (BaseLayer baseLayer: getBaseLayers()) {
-            menu.add(0, baseLayer.hashCode(), counter, baseLayer.getDisplayName());
+            menu.add(R.id.checkableLayerGroup, baseLayer.hashCode(), counter, baseLayer.getDisplayName());
 
             if (currentBaseLayer != null && (baseLayer == currentBaseLayer || baseLayer.getId().equals(currentBaseLayer.getId()))) {
                 menu.getItem(counter).setChecked(true);

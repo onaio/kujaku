@@ -31,7 +31,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView = findViewById(R.id.kmv_baseLayerSwitcher_mapView);
         kujakuMapView.onCreate(savedInstanceState);
-        kujakuMapView.enableAddPoint(true);
+        kujakuMapView.focusOnUserLocation(true);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
