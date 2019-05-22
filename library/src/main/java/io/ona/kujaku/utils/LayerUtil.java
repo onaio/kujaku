@@ -2,6 +2,7 @@ package io.ona.kujaku.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
 import com.mapbox.mapboxsdk.style.expressions.Expression;
@@ -232,8 +233,9 @@ public class LayerUtil {
         return layer;
     }
 
+    @VisibleForTesting
     @NonNull
-    private Float[] getFloatArray(JSONArray jsonArray) throws JSONException {
+    protected Float[] getFloatArray(JSONArray jsonArray) throws JSONException {
         Float[] lineDashArrayValue = new Float[jsonArray.length()];
 
         for (int i = 0; i < jsonArray.length(); i++) {
