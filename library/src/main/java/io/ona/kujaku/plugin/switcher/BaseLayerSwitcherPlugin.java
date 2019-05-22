@@ -51,6 +51,9 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
 
         for (BaseLayer addedBaseLayer: baseLayers) {
             if (addedBaseLayer.getId().equals(baseLayer.getId())) {
+                if (isDefault && currentBaseLayer != null && !currentBaseLayer.getId().equals(baseLayer.getId())) {
+                    showBaseLayer(baseLayer);
+                }
                 return false;
             }
         }
