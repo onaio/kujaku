@@ -2,7 +2,6 @@ package io.ona.kujaku.plugin.switcher.layer;
 
 import android.support.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
@@ -19,9 +18,6 @@ import java.util.List;
 
 public class SatelliteBaseLayer extends BaseLayer {
 
-    private RasterSource rasterSource;
-    private RasterLayer rasterLayer;
-
     private String satelliteLayerId = "satellite";
     private String satelliteSourceId = "mapbox://mapbox.satellite";
 
@@ -33,9 +29,9 @@ public class SatelliteBaseLayer extends BaseLayer {
     }
 
     private void createLayersAndSources() {
-        rasterSource = new RasterSource(satelliteSourceId, "mapbox://mapbox.satellite", 256);
+        RasterSource rasterSource = new RasterSource(satelliteSourceId, "mapbox://mapbox.satellite", 256);
 
-        rasterLayer = new RasterLayer(satelliteLayerId, satelliteSourceId);
+        RasterLayer rasterLayer = new RasterLayer(satelliteLayerId, satelliteSourceId);
         rasterLayer.setSourceLayer("mapbox_satellite_full");
         rasterLayer.setProperties(PropertyFactory.rasterOpacity(1f)
                 , PropertyFactory.rasterSaturation(-0.55f)

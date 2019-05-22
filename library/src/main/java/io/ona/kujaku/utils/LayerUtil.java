@@ -78,6 +78,7 @@ public class LayerUtil {
             String sourceLayer = jsonObject.optString(SOURCE_LAYER);
             String filter = jsonObject.optString(FILTER);
             Expression filterExpression = null;
+
             ArrayList<PropertyValue> propertyValues = new ArrayList<>();
 
             if (!jsonObject.optString(LAYOUT).equals("")) {
@@ -93,14 +94,8 @@ public class LayerUtil {
                         JSONArray jsonArray = (JSONArray) value;
 
                         if (isJSONArrayOfNumbers(jsonArray)) {
-                            if (key.equals("text-offset")) {
-                                Float[] lineDashArrayValue = new Float[jsonArray.length()];
-
-                                for (int i = 0; i < jsonArray.length(); i++) {
-                                    lineDashArrayValue[i] = Double.valueOf(jsonArray.getDouble(i)).floatValue();
-                                }
-
-                                value = lineDashArrayValue;
+                            if ("text-offset".equals(key)) {
+                                value = getFloatArray(jsonArray);
                             }
                         } else {
                             value = Expression.raw(value.toString());
@@ -129,14 +124,8 @@ public class LayerUtil {
                         JSONArray jsonArray = (JSONArray) value;
 
                         if (isJSONArrayOfNumbers(jsonArray)) {
-                            if (key.equals("line-dasharray") || key.equals("line-translate") || key.equals("text-translate")) {
-                                Float[] lineDashArrayValue = new Float[jsonArray.length()];
-
-                                for (int i = 0; i < jsonArray.length(); i++) {
-                                    lineDashArrayValue[i] = Double.valueOf(jsonArray.getDouble(i)).floatValue();
-                                }
-
-                                value = lineDashArrayValue;
+                            if ("line-dasharray".equals(key) || "line-translate".equals(key) || "text-translate".equals(key)) {
+                                value = getFloatArray(jsonArray);
                             }
                         } else {
                             value = Expression.raw(value.toString());
@@ -241,6 +230,17 @@ public class LayerUtil {
         }
 
         return layer;
+    }
+
+    @NonNull
+    private Float[] getFloatArray(JSONArray jsonArray) throws JSONException {
+        Float[] lineDashArrayValue = new Float[jsonArray.length()];
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            lineDashArrayValue[i] = Double.valueOf(jsonArray.getDouble(i)).floatValue();
+        }
+
+        return lineDashArrayValue;
     }
 
     private boolean isJSONArrayOfNumbers(@NonNull JSONArray jsonArray) {

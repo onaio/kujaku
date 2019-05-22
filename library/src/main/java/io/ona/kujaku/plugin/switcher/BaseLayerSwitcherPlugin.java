@@ -126,7 +126,7 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
             MenuItem menuItem = menu.add(R.id.checkableLayerGroup, baseLayer.hashCode(), counter, baseLayer.getDisplayName());
             menuItem.setCheckable(true);
 
-            if (currentBaseLayer != null && (baseLayer == currentBaseLayer || baseLayer.getId().equals(currentBaseLayer.getId()))) {
+            if (currentBaseLayer != null && (baseLayer.equals(currentBaseLayer) || baseLayer.getId().equals(currentBaseLayer.getId()))) {
                 menu.getItem(counter).setChecked(true);
             }
 
@@ -188,9 +188,5 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
             Timber.e("The style has not fully loaded and the baseLayer %s of ID(%s) cannot be added"
                     , baseLayer.getDisplayName(), baseLayer.getId());
         }
-    }
-
-    private void removePreviousBaseLayer(@NonNull BaseLayer baseLayer) {
-        kujakuMapView.removeLayer(baseLayer);
     }
 }
