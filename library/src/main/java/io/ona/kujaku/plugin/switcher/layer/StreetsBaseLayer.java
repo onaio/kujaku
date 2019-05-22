@@ -3,7 +3,6 @@ package io.ona.kujaku.plugin.switcher.layer;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -31,20 +30,16 @@ import timber.log.Timber;
 
 public class StreetsBaseLayer extends BaseLayer {
 
-    private VectorSource streetSource;
     private String streetSourceId = "composite";
     private ArrayList<Source> sourcesList = new ArrayList<>();
     private LinkedHashSet<Layer> layers = new LinkedHashSet<>();
 
-    private Context context;
-
     public StreetsBaseLayer(@NonNull Context context) {
-        this.context = context;
         createLayersAndSources(context);
     }
 
     protected void createLayersAndSources(@NonNull Context context) {
-        streetSource = new VectorSource(streetSourceId, "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2");
+        VectorSource streetSource = new VectorSource(streetSourceId, "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2");
         sourcesList.add(streetSource);
 
         LayerUtil layerUtil = new LayerUtil();
