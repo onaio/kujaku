@@ -9,7 +9,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-
     <style name="PopupMenu" parent="android:Widget.Material.PopupMenu" tools:targetApi="21">
         <item name="android:popupElevation">0dp</item>
     </style>

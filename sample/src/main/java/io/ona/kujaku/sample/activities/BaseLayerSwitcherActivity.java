@@ -42,7 +42,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                 mapboxMap.getStyle(new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
-                        BaseLayerSwitcherPlugin baseLayerSwitcherPlugin = new BaseLayerSwitcherPlugin(kujakuMapView, mapboxMap, style);
+                        BaseLayerSwitcherPlugin baseLayerSwitcherPlugin = new BaseLayerSwitcherPlugin(kujakuMapView, style);
                         SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
                         StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(BaseLayerSwitcherActivity.this);
 
