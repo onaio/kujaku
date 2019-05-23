@@ -14,6 +14,7 @@ public class ShadowRasterLayer extends ShadowLayer {
 
     @Implementation
     protected void initialize(String layerId, String sourceId) {
-        // Do nothing here
+        shadowLayerId = layerId;
+        System.err.println("initialize called");
     }
 }
