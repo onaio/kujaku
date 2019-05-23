@@ -287,13 +287,28 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
         );
 
         assertEquals(3, multiLineString.coordinates().size());
-        Point point1 = multiLineString.coordinates().get(0).get(0);
-        List<Point> line3 = multiLineString.coordinates().get(2);
 
-        assertPointEquals(Point.fromLngLat(6.5d, 6.5d), point1);
-        assertEquals(2, line3.size());
-        assertPointEquals(Point.fromLngLat(11.1d, 9.1d), line3.get(0));
-        assertPointEquals(Point.fromLngLat(9.1d, 2.1d), line3.get(1));
+        boolean firstPointFound = false;
+        boolean secondPointFound = false;
+        boolean thirdPointFound = false;
+
+        for (List<Point> lineString: multiLineString.coordinates()) {
+            if (!firstPointFound && lineString.get(0).latitude() == 6.5d && lineString.get(0).longitude() == 6.5d) {
+                firstPointFound = true;
+            }
+
+            if (!secondPointFound && lineString.get(0).latitude() == 9.1d && lineString.get(0).longitude() == 11.1d) {
+                secondPointFound = true;
+            }
+
+            if (!thirdPointFound && lineString.get(1).latitude() == 2.1d && lineString.get(1).longitude() == 9.1d) {
+                thirdPointFound = true;
+            }
+        }
+
+        assertTrue(firstPointFound);
+        assertTrue(secondPointFound);
+        assertTrue(thirdPointFound);
     }
 
     @Test
@@ -977,7 +992,7 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
         assertEquals(7, propertyValueHashMap.size());
 
         assertEquals(1f, propertyValueHashMap.get("icon-opacity").value);
-        assertEquals("arrow-head-bearing", propertyValueHashMap.get("icon-rotate").value);
+        assertTrue(propertyValueHashMap.get("icon-rotate").toString().contains("arrow-head-bearing"));
         assertEquals("map", propertyValueHashMap.get("icon-rotation-alignment").value);
         assertEquals(true, propertyValueHashMap.get("icon-allow-overlap").value);
         assertEquals(true, propertyValueHashMap.get("icon-ignore-placement").value);
