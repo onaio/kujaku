@@ -209,7 +209,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
-                      , 'android/**/*.*', "io/realm/*.*"]
+                      , 'android/**/*.*', "io/realm/*.*", "io/ona/kujaku/sample/activities/*.*"]
     def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
