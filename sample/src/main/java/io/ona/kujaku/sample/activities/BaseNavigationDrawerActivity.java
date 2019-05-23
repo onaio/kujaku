@@ -191,8 +191,13 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
-            case R.id.nav_case_relationship_activity:
-                startActivity(new Intent(this, CaseRelationshipActivity.class));
+            case R.id.nav_one_to_one_case_relationship_activity:
+                startActivity(new Intent(this, OneToOneCaseRelationshipActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_one_to_many_case_relationship_activity:
+                startActivity(new Intent(this, OneToManyCaseRelationshipActivity.class));
                 finish();
                 return true;
 
