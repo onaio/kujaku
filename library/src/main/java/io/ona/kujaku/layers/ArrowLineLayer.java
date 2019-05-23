@@ -68,28 +68,50 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 /**
  * Enables one to show a 1-to-1 or 1-to-many relationship between features. It's limits enables it
  * to show a many-to-many relationship by referencing the same child-case from multiple index-cases.
- *
- * Sample usage:
- *
+ * <p>
+ * Sample code when creating a 1-to-1 relationship:
+ * <p>
+ * <p>
  * <code>
- *
- *            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
- *                    new FeatureFilter.Builder(boundaryFeatureCollection1)
- *                            .whereEq("testStatus", "positive"));
- *
- *            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
- *                    , ArrowLineLayer.SortConfig.SortOrder.ASC
- *                    , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
- *                    .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
- *
- *
- *            arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
- *                    .setArrowLineColor(R.color.mapbox_blue)
- *                    .setArrowLineWidth(3)
- *                    .setAddBelowLayerId("sample-cases-symbol")
- *                    .build();
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq("testStatus", "positive"));
+ * <p>
+ * ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
+ * , ArrowLineLayer.SortConfig.SortOrder.ASC
+ * , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+ * .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+ * <p>
+ * <p>
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId("sample-cases-symbol")
+ * .build();
  * </code>
- *
+ * <p>
+ * <p>
+ * Sample code when creating a 1-to-many relationship:
+ * <p>
+ * <p>
+ * <code>
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq("testStatus", "positive"));
+ * <p>
+ * ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig("childCases");
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, oneToManyConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId("sample-cases-symbol")
+ * .build();
+ * </code>
+ * <p>
+ * <p>
+ * For the 1-to-many relationship, you need to have a property on the index case feature that defines
+ * a string array of child cases. The string array is the id of each GeoJSON Feature that is a direct child
+ * case of this index case
+ * <p><p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
  */
 
@@ -741,6 +763,11 @@ public class ArrowLineLayer implements KujakuLayer {
         }
     }
 
+    /**
+     * It supports adding the one-to-many configuration that is going to be used to link {@Link Feature}s
+     * for which we are drawing an arrow line. It enables for a one-to-many relationship between {@link Feature}s. You
+     * define the property which contains the child-case IDs
+     */
     public static class OneToManyConfig {
 
         private String childrenDefinitionProperty;
