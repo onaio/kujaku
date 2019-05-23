@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -22,7 +21,6 @@ import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.R;
 import io.ona.kujaku.plugin.switcher.layer.BaseLayer;
 import io.ona.kujaku.plugin.switcher.layer.SatelliteBaseLayer;
-import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer;
 import io.ona.kujaku.test.shadows.ShadowBackgroundLayer;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowRasterLayer;
@@ -30,7 +28,9 @@ import io.ona.kujaku.test.shadows.ShadowRasterSource;
 import io.ona.kujaku.test.shadows.ShadowVectorSource;
 import io.ona.kujaku.views.KujakuMapView;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-22
@@ -43,12 +43,11 @@ public class BaseLayerSwitcherPluginTest extends BaseTest {
 
     private BaseLayerSwitcherPlugin baseLayerSwitcherPlugin;
     private KujakuMapView kujakuMapView;
-    private Style style;
 
     @Before
     public void setUp() {
         kujakuMapView = Mockito.mock(KujakuMapView.class);
-        style = Mockito.mock(Style.class);
+        Style style = Mockito.mock(Style.class);
 
         baseLayerSwitcherPlugin = Mockito.spy(new BaseLayerSwitcherPlugin(kujakuMapView, style));
     }
@@ -156,45 +155,4 @@ public class BaseLayerSwitcherPluginTest extends BaseTest {
         Mockito.verify(menuItem, Mockito.times(1))
                 .setChecked(Mockito.eq(true));
     }
-
-    /*@Test
-    public void showBaseLayerShouldAddBaseLayerAndMakeItCurrentBaseLayer() {
-        SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
-        StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(RuntimeEnvironment.application);
-
-        baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, false);
-        baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
-
-        Mockito.doReturn(true)
-                .when(style)
-                .isFullyLoaded();
-
-        assertNull(ReflectionHelpers.getField(baseLayerSwitcherPlugin, "currentBaseLayer"));
-
-        baseLayerSwitcherPlugin.showBaseLayer(satelliteBaseLayer);
-
-        Mockito.verify(kujakuMapView, Mockito.times(1))
-                .addLayer(Mockito.eq(satelliteBaseLayer));
-        assertEquals(satelliteBaseLayer, ReflectionHelpers.getField(baseLayerSwitcherPlugin, "currentBaseLayer"));
-    }*/
-
-    /*@Test
-    public void showBaseLayerShouldDisablePreviousBaseLayer() {
-        SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
-        StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(RuntimeEnvironment.application);
-
-        baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, false);
-        baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
-
-        Mockito.doReturn(true)
-                .when(style)
-                .isFullyLoaded();
-
-        ReflectionHelpers.setField(baseLayerSwitcherPlugin, "currentBaseLayer", streetsBaseLayer);
-
-        baseLayerSwitcherPlugin.showBaseLayer(satelliteBaseLayer);
-
-        Mockito.verify(kujakuMapView, Mockito.times(1))
-                .removeLayer(Mockito.eq(satelliteBaseLayer));
-    }*/
 }
