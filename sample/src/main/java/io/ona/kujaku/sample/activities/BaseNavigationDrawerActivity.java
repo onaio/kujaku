@@ -221,6 +221,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_cgr_integration:
+                startActivity(new Intent(this, CGRIntegrationActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="io.ona.kujaku.sample">
+
+    <uses-sdk
+        tools:overrideLibrary="com.example.cgradapter_android"/>
 
     <application
         android:name=".MyApplication"
@@ -91,6 +95,9 @@
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.BaseLayerSwitcherActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.CGRIntegrationActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.DrawingBoundariesActivity"

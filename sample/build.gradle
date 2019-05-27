@@ -4,6 +4,7 @@ allprojects {
         maven { url "http://dl.bintray.com/ona/kujaku" }
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.fabric.io/public' }
+        maven { url 'http://nexus.terraframe.com/content/groups/allrepos' }
         mavenLocal()
     }
 }
@@ -61,6 +62,44 @@ def getVersionName = { ->
     }
 }
 
+// LOAD PROPERTIES FILE
+Properties properties = new Properties()
+String[] propertyKeys = ["cgr.username", "cgr.password", "cgr.url", "mapbox.sdk.token"]
+
+if (project.rootProject.file("local.properties").exists()) {
+    properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
+    if (properties != null) {
+        boolean containsAllKeys = true
+
+        for (String propertyKey: propertyKeys) {
+            if (!properties.containsKey(propertyKey)) {
+                containsAllKeys = false;
+                break
+            }
+        }
+
+        if (!containsAllKeys) {
+            println(("One of the required config variables is not set in your local.properties. Make sure you have " + propertyKeys.join(", ")))
+        }
+    } else {
+        println("Properties was null!! The file does not exist or contains nothing")
+    }
+} else {
+    println("local.properties does not exist")
+}
+
+if (properties == null) {
+    properties = new Properties();
+}
+
+for (String propertyKey: propertyKeys) {
+    if (!properties.containsKey(propertyKey)) {
+        properties.put(propertyKey, "\"\"")
+    }
+}
+
+
 jacoco {
     toolVersion = jacocoVersion
 }
@@ -82,6 +121,7 @@ android {
         versionCode getMasterCommitCount()
         versionName getVersionName()
 
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -90,39 +130,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (project.rootProject.file("local.properties").exists()) {
-                Properties properties = new Properties()
-                properties.load(project.rootProject.file("local.properties").newDataInputStream())
-                if (properties != null &&
-                        properties.containsKey("mapbox.sdk.token")) {
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
-                } else {
-                    println("One of the required config variables is not set in your local.properties");
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
-                }
-            } else {
-                println("local.properties does not exist");
-                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
-            }
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
+            buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
+            buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
+            buildConfigField "String", "CGR_URL", properties["cgr.url"]
         }
 
         debug {
             testCoverageEnabled true
-
-            if (project.rootProject.file("local.properties").exists()) {
-                Properties properties = new Properties()
-                properties.load(project.rootProject.file("local.properties").newDataInputStream())
-                if (properties != null &&
-                        properties.containsKey("mapbox.sdk.token")) {
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
-                } else {
-                    println("One of the required config variables is not set in your local.properties");
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
-                }
-            } else {
-                println("local.properties does not exist");
-                buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
-            }
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
+            buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
+            buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
+            buildConfigField "String", "CGR_URL", properties["cgr.url"]
         }
     }
 
@@ -160,6 +179,16 @@ dependencies { configuration ->
 
     implementation "com.android.support:appcompat-v7:${supportVersion}"
     implementation "com.android.support:design:${supportVersion}"
+
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    implementation ("com.cgr.adapter:cgradapter-android:0.3.0") {
+        exclude group: "com.android.support", module: "appcompat-v7"
+    }
+    implementation "com.cgr.adapter:cgradapter-common:0.3.2-SNAPSHOT"
+
+    implementation 'com.android.support:multidex:1.0.3'
+
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }
