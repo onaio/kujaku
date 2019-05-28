@@ -92,6 +92,7 @@
     <string name="_1_to_many_case_relationship_activity">1-to-Many Case Relationship Activity</string>
     <string name="base_layer_switcher_plugin">Base Layer Switcher Plugin</string>
     <string name="cgr_browser">CGR Browser</string>
+    <string name="cgr_instructions">Click on a highlighted region to see it\'s sub-regions</string>
 
 
 </resources>
