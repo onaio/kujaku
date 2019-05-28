@@ -81,13 +81,6 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                         loadCGR();
                     }
                 });
-
-                // TODO: Focus on Cambodia
-                // TODO: Explain to the user that they should click on a specific location to get focus and get more
-                // TODO: Enable double click to zoom(Maybe)
-                // TODO: Load the
-
-                // TODO: Create a layer to show the boundary and CGR locations
             }
         });
     }
@@ -145,6 +138,9 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                 // Add the country geoobject
                 cambodiaCountry = (GeoObject) objects[0];
                 currentDrillDown = (ChildTreeNode) objects[1];
+                
+                Toast.makeText(CGRIntegrationActivity.this, R.string.cgr_instructions, Toast.LENGTH_LONG)
+                        .show();
 
                 locationsGeoJsonSource.setGeoJson(cambodiaCountry.toJSON().toString());
                 centerOnGeoObject(cambodiaCountry);
