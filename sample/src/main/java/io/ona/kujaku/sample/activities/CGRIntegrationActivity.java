@@ -4,13 +4,20 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -19,6 +26,7 @@ import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
 import com.vividsolutions.jts.geom.Point;
 
 import org.commongeoregistry.adapter.android.AndroidHttpCredentialConnector;
@@ -31,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
-import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.sample.BuildConfig;
@@ -50,11 +57,13 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
     private GeoObject cambodiaCountry;
     private ChildTreeNode currentDrillDown;
+    private ChildTreeNode cambodiaCountryDrillDown;
+
+    private Button restartDrillDownBtn;
 
     private AndroidRegistryClient client;
 
     private String layerId = "cgr-admin-boundaries";
-    private static final double ZOOM = 6.45262d;
 
     private static final String LABEL_LAYER_ID = "label-layer-name";
     private static final String LABEL_SOURCE_ID = "label-source-id";
@@ -67,6 +76,8 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
         kujakuMapView = findViewById(R.id.kmv_cgrIntegration_mapView);
         kujakuMapView.onCreate(savedInstanceState);
+
+        restartDrillDownBtn = findViewById(R.id.btn_cgrIntegration_restartDrillDownBtn);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -83,6 +94,21 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                 });
             }
         });
+
+
+        restartDrillDownBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currentDrillDown = cambodiaCountryDrillDown;
+                startDrillDown();
+            }
+        });
+    }
+
+    private void startDrillDown() {
+        locationsGeoJsonSource.setGeoJson(cambodiaCountry.toJSON().toString());
+        centerOnBoundingBox(cambodiaCountry);
+        createLabelSource(cambodiaCountry);
     }
 
     private void addAdministrativeLayer(@NonNull Style style) {
@@ -96,8 +122,11 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
         symbolLayer =  new SymbolLayer(LABEL_LAYER_ID, LABEL_SOURCE_ID)
                         .withProperties(
                                 PropertyFactory.textField(Expression.toString(Expression.get("displayLabel"))),
-                                PropertyFactory.textPadding(35f),
+                                PropertyFactory.textSize(20f),
                                 PropertyFactory.textColor(Color.BLACK),
+                                PropertyFactory.textHaloColor(Color.WHITE),
+                                PropertyFactory.textHaloWidth(1f),
+                                PropertyFactory.textHaloBlur(.5f),
                                 PropertyFactory.textAllowOverlap(true)
                         );
         labelSource = new GeoJsonSource(LABEL_SOURCE_ID);
@@ -114,6 +143,8 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
         connector.setCredentials(BuildConfig.CGR_USERNAME, BuildConfig.CGR_PASSWORD);
         connector.setServerUrl(BuildConfig.CGR_URL);
         connector.initialize();
+
+        AlertDialog alertDialog = setProgressDialog();
 
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
@@ -136,15 +167,16 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
             @Override
             public void onSuccess(Object[] objects) {
                 // Add the country geoobject
+                alertDialog.dismiss();
+                restartDrillDownBtn.setEnabled(true);
+
                 cambodiaCountry = (GeoObject) objects[0];
                 currentDrillDown = (ChildTreeNode) objects[1];
-                
-                Toast.makeText(CGRIntegrationActivity.this, R.string.cgr_instructions, Toast.LENGTH_LONG)
-                        .show();
+                cambodiaCountryDrillDown = currentDrillDown;
 
-                locationsGeoJsonSource.setGeoJson(cambodiaCountry.toJSON().toString());
-                centerOnGeoObject(cambodiaCountry);
-                createLabelSource(cambodiaCountry);
+                showToast(R.string.cgr_instructions);
+
+                startDrillDown();
 
                 // Set click listener
                 kujakuMapView.setOnFeatureClickListener(CGRIntegrationActivity.this, layerId);
@@ -153,10 +185,36 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
             @Override
             public void onError(Exception e) {
                 Timber.e(e);
+                alertDialog.dismiss();
+
+                Snackbar snackbar = Snackbar.make(kujakuMapView, R.string.error_occurred_check_internet_connection, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction(R.string.retry, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        loadCGR();
+                    }
+                });
+                snackbar.show();
             }
         });
 
         genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void showToast(@StringRes int stringRes) {
+        Toast.makeText(CGRIntegrationActivity.this, stringRes, Toast.LENGTH_LONG)
+                .show();
+    }
+
+    public AlertDialog setProgressDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false);
+        builder.setView(LayoutInflater.from(this).inflate(R.layout.dialog_progress, null));
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        return dialog;
     }
 
     @Override
@@ -218,44 +276,8 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
             if (feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName()) && feature.hasProperty(DefaultAttribute.TYPE.getName())) {
                 Timber.e("Feature clicked %s", new Gson().toJson(feature));
-                centerOnGeoObject(feature);
 
                 if (feature.hasProperty(DefaultAttribute.TYPE.getName()) && feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName())) {
-                /*GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
-                    @Override
-                    public Object[] call() throws Exception {
-                        return new Object[]{
-                                client.getChildGeoObjects(feature.getStringProperty(DefaultAttribute.UID.getName())
-                                , feature.getStringProperty(DefaultAttribute.TYPE.getName())
-                                , new String[]{}
-                                , false)
-                        };
-                    }
-                });
-                genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
-                    @Override
-                    public void onSuccess(Object[] objects) {
-                        ChildTreeNode childGeoObjects = (ChildTreeNode) objects[0];
-
-                        // Show the children on the map
-                        List<ChildTreeNode> childTreeNodes = childGeoObjects.getChildren();
-                        List<Feature> features = new ArrayList<>();
-
-                        for (ChildTreeNode childTreeNode: childTreeNodes) {
-                            features.add(Feature.fromJson(childTreeNode.getGeoObject().toJSON().toString()));
-                        }
-
-                        FeatureCollection featureCollection = FeatureCollection.fromFeatures(features);
-                        locationsGeoJsonSource.setGeoJson(featureCollection);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Timber.e(e);
-                    }
-                });
-                genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);*/
-
                     ChildTreeNode childTreeNode = null;
 
                     if (feature.getStringProperty(DefaultAttribute.UID.getName()).equals(currentDrillDown.getGeoObject().getUid())) {
@@ -274,12 +296,48 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                     List<GeoObject> renderFeatures = new ArrayList<>();
                     List<Feature> listFeatures = new ArrayList<>();
 
+                    double[] bbox = null;
+
                     for (ChildTreeNode childTreeNode1 : childTreeNodes) {
-                        renderFeatures.add(childTreeNode1.getGeoObject());
-                        listFeatures.add(Feature.fromJson(childTreeNode1.getGeoObject().toJSON().toString()));
+                        GeoObject childGeoObject = childTreeNode1.getGeoObject();
+
+                        if (childGeoObject.getGeometry() != null) {
+                            renderFeatures.add(childGeoObject);
+                            Feature mapboxFeature = Feature.fromJson(childTreeNode1.getGeoObject().toJSON().toString());
+
+                            Geometry featureGeometry = mapboxFeature.geometry();
+                            if (featureGeometry != null) {
+                                double[] featureBbox = TurfMeasurement.bbox(featureGeometry);
+
+                                if (bbox == null) {
+                                    bbox = featureBbox;
+                                } else {
+                                    if (featureBbox[0] < bbox[0]) {
+                                        bbox[0] = featureBbox[0];
+                                    }
+
+                                    if (featureBbox[1] < bbox[1]) {
+                                        bbox[1] = featureBbox[1];
+                                    }
+
+                                    if (featureBbox[2] > bbox[2]) {
+                                        bbox[2] = featureBbox[2];
+                                    }
+
+                                    if (featureBbox[3] > bbox[3]) {
+                                        bbox[3] = featureBbox[3];
+                                    }
+                                }
+
+                                listFeatures.add(mapboxFeature);
+                            }
+                        }
                     }
 
                     if (listFeatures.size() > 0) {
+                        if (bbox != null) {
+                            centerOnBoundingBox(bbox);
+                        }
 
                         FeatureCollection featureCollection = FeatureCollection.fromFeatures(listFeatures);
                         locationsGeoJsonSource.setGeoJson(featureCollection);
@@ -293,33 +351,27 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
         }
     }
 
-    private void centerOnGeoObject(@NonNull GeoObject geoObject) {
-        Point center = getCenter(geoObject);
-
+    private void centerOnBoundingBox(@NonNull GeoObject geoObject) {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(center.getY()
-                                , center.getX())
-                        , ZOOM)
-                );
+                Geometry geometry = Feature.fromJson(geoObject.toJSON().toString()).geometry();
+                if (geometry != null) {
+                    double[] bbox = TurfMeasurement.bbox(geometry);
+                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(
+                            LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]), 50)
+                    );
+                }
             }
         });
     }
 
-    private void centerOnGeoObject(@NonNull Feature geoObject) {
-        com.mapbox.geojson.Point center = ArrowLineLayer.getCenter(geoObject.geometry());
-
+    private void centerOnBoundingBox(@NonNull double[] bbox) {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                double currentZoom = mapboxMap.getCameraPosition().zoom;
-
-                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(center.latitude()
-                                , center.longitude())
-                        , currentZoom)
+                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(
+                        LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]), 50)
                 );
             }
         });
@@ -330,19 +382,18 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
         for (GeoObject geoObject: geoObjects) {
             //Get the center
-            Point center = geoObject.getGeometry().getCentroid();
-            com.mapbox.geojson.Point point = com.mapbox.geojson.Point.fromLngLat(center.getX(), center.getY());
+            com.vividsolutions.jts.geom.Geometry geometry = geoObject.getGeometry();
+            if (geometry != null) {
+                Point center = geometry.getCentroid();
+                com.mapbox.geojson.Point point = com.mapbox.geojson.Point.fromLngLat(center.getX(), center.getY());
 
-            Feature feature = Feature.fromGeometry(point);
-            feature.addStringProperty("displayLabel", geoObject.getDisplayLabel().getValue());
+                Feature feature = Feature.fromGeometry(point);
+                feature.addStringProperty("displayLabel", geoObject.getDisplayLabel().getValue());
 
-            features.add(feature);
+                features.add(feature);
+            }
         }
 
         labelSource.setGeoJson(FeatureCollection.fromFeatures(features));
-    }
-
-    private Point getCenter(@NonNull GeoObject geoObject) {
-        return geoObject.getGeometry().getCentroid();
     }
 }

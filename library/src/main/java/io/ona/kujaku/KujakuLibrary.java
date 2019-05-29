@@ -50,6 +50,7 @@ public class KujakuLibrary {
             KujakuNetworkChangeReceiver.registerNetworkChangesBroadcastReceiver(context);
             resumeMapDownload(context);
         }
+
         library = new KujakuLibrary();
         AndroidThreeTen.init(context);
 
