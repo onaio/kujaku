@@ -37,6 +37,8 @@ public class MyApplication extends MultiDexApplication {
         KujakuLibrary.setEnableMapDownloadResume(false);
         KujakuLibrary.init(this); // must initialize KujakuLibrary
         getRepository(); // initialize KujakuRepository
+
+        Timber.plant(new Timber.DebugTree());
     }
 
     public static MyApplication getInstance() {

@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="io.ona.kujaku.sample.activities.CGRIntegrationActivity">
+        tools:context=".activities.CGRIntegrationActivity">
 
         <include layout="@layout/app_bar"/>
 
@@ -36,9 +36,18 @@
                 app:mapbox_warmGps="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" >
+                app:layout_constraintTop_toTopOf="parent"/>
 
-            </io.ona.kujaku.views.KujakuMapView>
+            <Button
+                android:id="@+id/btn_cgrIntegration_restartDrillDownBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginBottom="21dp"
+                android:enabled="false"
+                android:text="@string/restart_drill_down"/>
 
         </android.support.constraint.ConstraintLayout>
 
