@@ -270,12 +270,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void showUpdatedUserLocation(Float radius) {
+        showUpdatedUserLocation(radius, 1f);
+    }
+
+    private void showUpdatedUserLocation(Float radius, Float distanceMoved) {
         if (updateUserLocationOnMap) {
             updateUserLocation(radius);
         }
 
-        if (updateCameraUserLocationOnMap) {
-            // Focus on the new location
+        if (updateCameraUserLocationOnMap && distanceMoved != 0) {
+            // Focus on the new location only if device moved
             centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
         }
     }
@@ -285,7 +289,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                float distanceMoved = -1;
                 if (location != null) {
+                    if (latestLocation != null) {
+                        distanceMoved = latestLocation.distanceTo(location);
+                    }
                     latestLocation = location;
                     latestLocationCoordinates = new LatLng(location.getLatitude()
                             , location.getLongitude());
@@ -295,9 +303,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     onLocationChangedListener.onLocationChanged(location);
                 }
 
-                if (!disableMyLocationOnMapMove || (location != null && latestLocation.distanceTo(location) != 0)) {
-                    showUpdatedUserLocation(locationBufferRadius);
-                }
+                showUpdatedUserLocation(locationBufferRadius, distanceMoved);
             }
         });
 
