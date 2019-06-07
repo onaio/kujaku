@@ -1546,6 +1546,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /************** End of Tracking Service ***************/
 
+    @Override
     public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {
         this.disableMyLocationOnMapMove = disableMyLocationOnMapMove;
     }
