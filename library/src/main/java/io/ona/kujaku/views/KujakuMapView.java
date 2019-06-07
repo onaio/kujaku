@@ -187,6 +187,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private TrackingServiceOptions trackingServiceOptions = null;
     private boolean trackingServiceInitialized = false;
 
+    private int resourceId;
+    private boolean disableMyLocationOnMapMove = false;
+
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -291,7 +295,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     onLocationChangedListener.onLocationChanged(location);
                 }
 
-                showUpdatedUserLocation(locationBufferRadius);
+                if (!disableMyLocationOnMapMove || (location != null && latestLocation.distanceTo(location) != 0)) {
+                    showUpdatedUserLocation(locationBufferRadius);
+                }
             }
         });
 
@@ -767,8 +773,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
-                // We should assume the user no longer wants us to focus on their location
-                focusOnUserLocation(false);
+                if (!disableMyLocationOnMapMove) {
+                    // We should assume the user no longer wants us to focus on their location
+                    focusOnUserLocation(false);
+                }
             }
 
             @Override
@@ -946,6 +954,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void changeImageButtonResource(ImageButton imageButton, int resourceId) {
         imageButton.setImageResource(resourceId);
+        this.resourceId = resourceId;
     }
 
     private void checkPermissions() {
@@ -1530,5 +1539,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /************** End of Tracking Service ***************/
+
+    public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {
+        this.disableMyLocationOnMapMove = disableMyLocationOnMapMove;
+    }
 }
 
