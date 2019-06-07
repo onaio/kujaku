@@ -237,7 +237,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
                         @Override
                         public void onSuccess() {
-                            focusOnUserLocation(true, locationBufferRadius);
+                            focusOnUserLocation(resourceId == 0 || resourceId == R.drawable.ic_cross_hair, locationBufferRadius);
                         }
                     });
             }
