@@ -320,4 +320,10 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @return
      */
     List<Location> getTrackingServiceRecordedLocations();
+
+    /**
+     * This method enables/disables the disabling of my location button on moving or zooming map
+     * @param disableMyLocationOnMapMove boolean to disable disabling my location button on map move
+     */
+    void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove);
 }
