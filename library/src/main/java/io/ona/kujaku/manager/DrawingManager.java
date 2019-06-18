@@ -29,7 +29,6 @@ import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 public class DrawingManager {
 
     private List<KujakuCircle> circles;
-    //private KujakuCircle firstCircle;
     private KujakuCircle currentCircle;
 
     private FillManager fillManager;
@@ -170,6 +169,9 @@ public class DrawingManager {
         return null;
     }
 
+    /**
+     * Creation of middle points between 2 real points
+     */
     private void createMiddlePoints() {
         if (this.getKujakuCircles().size() > 1) {
             List<KujakuCircleOptions> newCirclesOptions = new ArrayList<>();
@@ -191,21 +193,8 @@ public class DrawingManager {
                 }
 
                 if (circle1 != null && circle2 != null) {
-
-                    double lonEast = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle1.getLatLng().getLongitude() : circle2.getLatLng().getLongitude();
-                    double lonWest = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle2.getLatLng().getLongitude() : circle1.getLatLng().getLongitude();
-                    double latNorth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle1.getLatLng().getLatitude() : circle2.getLatLng().getLatitude() ;
-                    double latSouth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle2.getLatLng().getLatitude() : circle1.getLatLng().getLatitude() ;
-
-                    LatLng latLng =
-                            LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
-
-                    newCirclesOptions.add(new KujakuCircleOptions()
-                            .withMiddleCircle(circleMiddleOptions.getMiddleCircle())
-                            .withDraggable(circleMiddleOptions.getDraggable())
-                            .withCircleRadius(circleMiddleOptions.getCircleRadius())
-                            .withCircleColor(circleMiddleOptions.getCircleColor())
-                            .withLatLng(latLng));
+                    KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, circleMiddleOptions) ;
+                    newCirclesOptions.add(newKujakuCircleOptions);
                     newCirclesOptions.add(this.getKujakuCircles().get(i).getCircleOptions());
 
                     circle1 = circle2;
@@ -216,20 +205,8 @@ public class DrawingManager {
             if (circle1 != null) {
                 circle2 = this.getKujakuCircles().get(0).getCircle();
 
-                double lonEast = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle1.getLatLng().getLongitude() : circle2.getLatLng().getLongitude();
-                double lonWest = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle2.getLatLng().getLongitude() : circle1.getLatLng().getLongitude();
-                double latNorth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle1.getLatLng().getLatitude() : circle2.getLatLng().getLatitude() ;
-                double latSouth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle2.getLatLng().getLatitude() : circle1.getLatLng().getLatitude() ;
-
-                LatLng latLng =
-                        LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
-
-                newCirclesOptions.add(new KujakuCircleOptions()
-                        .withMiddleCircle(circleMiddleOptions.getMiddleCircle())
-                        .withDraggable(circleMiddleOptions.getDraggable())
-                        .withCircleRadius(circleMiddleOptions.getCircleRadius())
-                        .withCircleColor(circleMiddleOptions.getCircleColor())
-                        .withLatLng(latLng));
+                KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, circleMiddleOptions) ;
+                newCirclesOptions.add(newKujakuCircleOptions);
             }
 
             this.deleteAll();
@@ -237,6 +214,35 @@ public class DrawingManager {
         }
     }
 
+    /**
+     * Create new KujakuCircleOptions between circle1 and circle2 lat long. Copy options from parameter options
+     *
+     * @param circle1
+     * @param circle2
+     * @param options
+     * @return
+     */
+    private KujakuCircleOptions createMiddleKujakuCircleOptions(Circle circle1, Circle circle2, KujakuCircleOptions options) {
+        double lonEast = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle1.getLatLng().getLongitude() : circle2.getLatLng().getLongitude();
+        double lonWest = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle2.getLatLng().getLongitude() : circle1.getLatLng().getLongitude();
+        double latNorth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle1.getLatLng().getLatitude() : circle2.getLatLng().getLatitude() ;
+        double latSouth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle2.getLatLng().getLatitude() : circle1.getLatLng().getLatitude() ;
+
+        LatLng latLng =
+                LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
+
+        return new KujakuCircleOptions()
+                .withMiddleCircle(options.getMiddleCircle())
+                .withDraggable(options.getDraggable())
+                .withCircleRadius(options.getCircleRadius())
+                .withCircleColor(options.getCircleColor())
+                .withLatLng(latLng);
+    }
+
+    /**
+     * Refresh the entire Polygon appearance
+     *
+     */
     private void refreshPolygon() {
         fillManager.deleteAll();
         fillManager.updateSource();
@@ -267,6 +273,12 @@ public class DrawingManager {
         }
     }
 
+    /***
+     * Create a new Circle and add it to the circle list
+     *
+     * @param options
+     * @return
+     */
     public Circle create(@NonNull KujakuCircleOptions options) {
         Circle circle = circleManager.create(options);
         KujakuCircle previousCircle = null;
@@ -275,22 +287,22 @@ public class DrawingManager {
         }
         KujakuCircle kujakuCircle = new KujakuCircle(circle, previousCircle, options.getMiddleCircle());
         circles.add(kujakuCircle);
-//        if (circles.size() == 1) {
-//            //firstCircle = kujakuCircle;
-//        }
+
         return circle;
     }
 
-    public List<Circle> createFromList(@NonNull List<KujakuCircleOptions> options) {
-        List<Circle> list = new ArrayList<>();
+    /**
+     * Create circles from list of KujakuCircleOptions
+     *
+     * @param options
+     */
+    private void createFromList(@NonNull List<KujakuCircleOptions> options) {
         for (KujakuCircleOptions option: options) {
-            list.add(this.create(option));
+            this.create(option);
         }
         if (this.circles.size() >= 2) {
             this.getKujakuCircles().get(0).setPreviousCircle(this.getKujakuCircles().get(this.getKujakuCircles().size() - 1));
         }
-
-        return list;
     }
 
     /**
@@ -387,8 +399,6 @@ public class DrawingManager {
         }
 
         circleManager.update(circle);
-
-
     }
 
     /**
