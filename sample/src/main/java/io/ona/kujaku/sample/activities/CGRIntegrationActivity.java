@@ -22,6 +22,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
@@ -47,12 +48,14 @@ import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.views.KujakuMapView;
 import timber.log.Timber;
 
+import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
+
 public class CGRIntegrationActivity extends BaseNavigationDrawerActivity implements OnFeatureClickListener {
 
     private KujakuMapView kujakuMapView;
 
     private GeoJsonSource locationsGeoJsonSource;
-    private SymbolLayer symbolLayer;
     private GeoJsonSource labelSource;
 
     private GeoObject cambodiaCountry;
@@ -63,7 +66,8 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
     private AndroidRegistryClient client;
 
-    private String layerId = "cgr-admin-boundaries";
+    private String fillLayerId = "cgr-admin-boundaries";
+    private String pointLayerId = "cgr-admin-location-points";
 
     private static final String LABEL_LAYER_ID = "label-layer-name";
     private static final String LABEL_SOURCE_ID = "label-source-id";
@@ -89,12 +93,12 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                     public void onStyleLoaded(@NonNull Style style) {
                         style.removeLayer("Thailand 2");
                         addAdministrativeLayer(style);
-                        loadCGR();
+
+                        callSafeLoadCGR();
                     }
                 });
             }
         });
-
 
         restartDrillDownBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +107,23 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                 startDrillDown();
             }
         });
+    }
+
+    private void callSafeLoadCGR() {
+        try {
+            loadCGR();
+        } catch (Exception e) {
+            Timber.e(e);
+
+            Snackbar snackbar = Snackbar.make(kujakuMapView, "Oops! An error occurred", Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction(R.string.retry, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    callSafeLoadCGR();
+                }
+            });
+            snackbar.show();
+        }
     }
 
     private void startDrillDown() {
@@ -114,27 +135,38 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
     private void addAdministrativeLayer(@NonNull Style style) {
         String adminSource = "cgr-admin-boundary-source";
 
-        FillLayer fillLayer = new FillLayer(layerId, adminSource);
+        FillLayer fillLayer = new FillLayer(fillLayerId, adminSource);
         fillLayer.withProperties(PropertyFactory.fillOpacity(0.75f)
-                , PropertyFactory.fillColor("rgba(161, 202, 241, 0.75)"));
+                , PropertyFactory.fillColor("rgba(161, 202, 241, 0.75)")
+                , PropertyFactory.fillOutlineColor(Color.BLACK));
+
+        CircleLayer cityDotLayer = new CircleLayer(pointLayerId, adminSource);
+        cityDotLayer.withFilter(eq(geometryType(), "Point"))
+                .withProperties(PropertyFactory.circleColor(Color.BLACK)
+                , PropertyFactory.circleRadius(5F)
+                , PropertyFactory.circleStrokeColor(Color.WHITE)
+                , PropertyFactory.circleStrokeWidth(1F));
 
         locationsGeoJsonSource = new GeoJsonSource(adminSource);
-        symbolLayer =  new SymbolLayer(LABEL_LAYER_ID, LABEL_SOURCE_ID)
-                        .withProperties(
-                                PropertyFactory.textField(Expression.toString(Expression.get("displayLabel"))),
-                                PropertyFactory.textSize(20f),
-                                PropertyFactory.textColor(Color.BLACK),
-                                PropertyFactory.textHaloColor(Color.WHITE),
-                                PropertyFactory.textHaloWidth(1f),
-                                PropertyFactory.textHaloBlur(.5f),
-                                PropertyFactory.textAllowOverlap(true)
-                        );
+        SymbolLayer polygonAdminLayer = new SymbolLayer(LABEL_LAYER_ID, LABEL_SOURCE_ID)
+                .withProperties(
+                        PropertyFactory.textField(Expression.toString(Expression.get("displayLabel"))),
+                        PropertyFactory.textSize(20f),
+                        PropertyFactory.textColor(Color.BLACK),
+                        PropertyFactory.textHaloColor(Color.WHITE),
+                        PropertyFactory.textHaloWidth(1f),
+                        PropertyFactory.textHaloBlur(.5f),
+                        PropertyFactory.textAllowOverlap(true),
+                        PropertyFactory.textOffset(new Float[]{0F, 1F})
+                );
+
         labelSource = new GeoJsonSource(LABEL_SOURCE_ID);
 
         style.addSource(locationsGeoJsonSource);
         style.addSource(labelSource);
         style.addLayer(fillLayer);
-        style.addLayer(symbolLayer);
+        style.addLayer(cityDotLayer);
+        style.addLayer(polygonAdminLayer);
     }
 
     private void loadCGR() {
@@ -179,7 +211,7 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                 startDrillDown();
 
                 // Set click listener
-                kujakuMapView.setOnFeatureClickListener(CGRIntegrationActivity.this, layerId);
+                kujakuMapView.setOnFeatureClickListener(CGRIntegrationActivity.this, fillLayerId);
             }
 
             @Override
@@ -271,83 +303,89 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
 
     @Override
     public void onFeatureClick(List<Feature> features) {
-        if (features.size() > 0) {
-            final Feature feature = features.get(0);
+        try {
+            if (features.size() > 0) {
+                final Feature feature = features.get(0);
 
-            if (feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName()) && feature.hasProperty(DefaultAttribute.TYPE.getName())) {
-                Timber.e("Feature clicked %s", new Gson().toJson(feature));
+                if (feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName()) && feature.hasProperty(DefaultAttribute.TYPE.getName())) {
+                    Timber.e("Feature clicked %s", new Gson().toJson(feature));
 
-                if (feature.hasProperty(DefaultAttribute.TYPE.getName()) && feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName())) {
-                    ChildTreeNode childTreeNode = null;
+                    if (feature.hasProperty(DefaultAttribute.TYPE.getName()) && feature.hasProperty(DefaultAttribute.UID.getName()) && feature.hasProperty(DefaultAttribute.CODE.getName())) {
+                        ChildTreeNode childTreeNode = null;
 
-                    if (feature.getStringProperty(DefaultAttribute.UID.getName()).equals(currentDrillDown.getGeoObject().getUid())) {
-                        childTreeNode = currentDrillDown;
-                    } else {
-                        for (ChildTreeNode childTreeNode1 : currentDrillDown.getChildren()) {
-                            if (childTreeNode1.getGeoObject().getUid().equals(feature.getStringProperty(DefaultAttribute.UID.getName()))) {
-                                currentDrillDown = childTreeNode1;
-                                childTreeNode = childTreeNode1;
-                            }
-                        }
-                    }
-
-                    List<ChildTreeNode> childTreeNodes = childTreeNode.getChildren();
-
-                    List<GeoObject> renderFeatures = new ArrayList<>();
-                    List<Feature> listFeatures = new ArrayList<>();
-
-                    double[] bbox = null;
-
-                    for (ChildTreeNode childTreeNode1 : childTreeNodes) {
-                        GeoObject childGeoObject = childTreeNode1.getGeoObject();
-
-                        if (childGeoObject.getGeometry() != null) {
-                            renderFeatures.add(childGeoObject);
-                            Feature mapboxFeature = Feature.fromJson(childTreeNode1.getGeoObject().toJSON().toString());
-
-                            Geometry featureGeometry = mapboxFeature.geometry();
-                            if (featureGeometry != null) {
-                                double[] featureBbox = TurfMeasurement.bbox(featureGeometry);
-
-                                if (bbox == null) {
-                                    bbox = featureBbox;
-                                } else {
-                                    if (featureBbox[0] < bbox[0]) {
-                                        bbox[0] = featureBbox[0];
-                                    }
-
-                                    if (featureBbox[1] < bbox[1]) {
-                                        bbox[1] = featureBbox[1];
-                                    }
-
-                                    if (featureBbox[2] > bbox[2]) {
-                                        bbox[2] = featureBbox[2];
-                                    }
-
-                                    if (featureBbox[3] > bbox[3]) {
-                                        bbox[3] = featureBbox[3];
-                                    }
+                        if (feature.getStringProperty(DefaultAttribute.UID.getName()).equals(currentDrillDown.getGeoObject().getUid())) {
+                            childTreeNode = currentDrillDown;
+                        } else {
+                            for (ChildTreeNode childTreeNode1 : currentDrillDown.getChildren()) {
+                                if (childTreeNode1.getGeoObject().getUid().equals(feature.getStringProperty(DefaultAttribute.UID.getName()))) {
+                                    currentDrillDown = childTreeNode1;
+                                    childTreeNode = childTreeNode1;
                                 }
-
-                                listFeatures.add(mapboxFeature);
                             }
                         }
-                    }
 
-                    if (listFeatures.size() > 0) {
-                        if (bbox != null) {
-                            centerOnBoundingBox(bbox);
+                        List<ChildTreeNode> childTreeNodes = childTreeNode.getChildren();
+
+                        List<GeoObject> renderFeatures = new ArrayList<>();
+                        List<Feature> listFeatures = new ArrayList<>();
+
+                        double[] bbox = null;
+
+                        for (ChildTreeNode childTreeNode1 : childTreeNodes) {
+                            GeoObject childGeoObject = childTreeNode1.getGeoObject();
+
+                            if (childGeoObject.getGeometry() != null) {
+                                renderFeatures.add(childGeoObject);
+                                Feature mapboxFeature = Feature.fromJson(childTreeNode1.getGeoObject().toJSON().toString());
+
+                                Geometry featureGeometry = mapboxFeature.geometry();
+                                if (featureGeometry != null) {
+                                    double[] featureBbox = TurfMeasurement.bbox(featureGeometry);
+
+                                    if (bbox == null) {
+                                        bbox = featureBbox;
+                                    } else {
+                                        if (featureBbox[0] < bbox[0]) {
+                                            bbox[0] = featureBbox[0];
+                                        }
+
+                                        if (featureBbox[1] < bbox[1]) {
+                                            bbox[1] = featureBbox[1];
+                                        }
+
+                                        if (featureBbox[2] > bbox[2]) {
+                                            bbox[2] = featureBbox[2];
+                                        }
+
+                                        if (featureBbox[3] > bbox[3]) {
+                                            bbox[3] = featureBbox[3];
+                                        }
+                                    }
+
+                                    listFeatures.add(mapboxFeature);
+                                }
+                            }
                         }
 
-                        FeatureCollection featureCollection = FeatureCollection.fromFeatures(listFeatures);
-                        locationsGeoJsonSource.setGeoJson(featureCollection);
-                        createLabelSource(renderFeatures.toArray(new GeoObject[]{}));
-                    } else {
-                        Toast.makeText(CGRIntegrationActivity.this, "This is the last hierarchy item", Toast.LENGTH_LONG)
-                                .show();
+                        if (listFeatures.size() > 0) {
+                            if (bbox != null) {
+                                centerOnBoundingBox(bbox);
+                            }
+
+                            FeatureCollection featureCollection = FeatureCollection.fromFeatures(listFeatures);
+                            locationsGeoJsonSource.setGeoJson(featureCollection);
+                            createLabelSource(renderFeatures.toArray(new GeoObject[]{}));
+                        } else {
+                            Toast.makeText(CGRIntegrationActivity.this, "This is the last hierarchy item", Toast.LENGTH_LONG)
+                                    .show();
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            Timber.e(e);
+            Snackbar snackbar = Snackbar.make(kujakuMapView, R.string.an_error_occurred_click_feature_again, Snackbar.LENGTH_INDEFINITE);
+            snackbar.show();
         }
     }
 

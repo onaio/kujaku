@@ -182,10 +182,9 @@ dependencies { configuration ->
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    implementation ("com.cgr.adapter:cgradapter-android:0.3.0") {
+    implementation ("com.cgr.adapter:cgradapter-android:0.3.3") {
         exclude group: "com.android.support", module: "appcompat-v7"
     }
-    implementation "com.cgr.adapter:cgradapter-common:0.3.2-SNAPSHOT"
 
     implementation 'com.android.support:multidex:1.0.3'
 
