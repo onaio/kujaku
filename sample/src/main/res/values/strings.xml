@@ -80,6 +80,8 @@
 
     <string name="drawing_boundaries_activity">Drawing Boundaries</string>
     <string name="drawing_boundaries_delete">Delete Point</string>
+    <string name="drawing_boundaries_start_draw">Start Drawing</string>
+    <string name="drawing_boundaries_stop_draw">Stop Drawing</string>
 
     <string name="only_cases">Only Cases</string>
     <string name="show_all">Show All</string>
