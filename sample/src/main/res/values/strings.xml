@@ -97,6 +97,7 @@
     <string name="error_occurred_check_internet_connection">An error occurred! Check your internet connection</string>
     <string name="restart_drill_down">Restart Drill Down</string>
     <string name="retry">Retry</string>
+    <string name="an_error_occurred_click_feature_again">An error occurred! Click on the feature again!</string>
 
 
 </resources>
