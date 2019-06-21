@@ -4,6 +4,8 @@ import android.graphics.PointF;
 import android.support.annotation.NonNull;
 
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.maps.MapView;
@@ -26,10 +28,16 @@ import java.util.List;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
 import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 
+/**
+ * Manager use to draw polygons on Map.
+ * Encapsulate a FillManager, LineManager and CircleManager
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch on 19/06/2019
+ */
 public class DrawingManager {
 
     private List<KujakuCircle> circles;
-    private KujakuCircle currentCircle;
+    private KujakuCircle currentKujakuCircle;
 
     private FillManager fillManager;
     private LineManager lineManager;
@@ -37,6 +45,8 @@ public class DrawingManager {
 
     private OnDrawingCircleClickListener onDrawingCircleClickListener;
     private OnDrawingCircleLongClickListener onDrawingCircleLongClickListener;
+
+    private boolean drawingEnabled;
 
     public static KujakuCircleOptions circleOptions = new KujakuCircleOptions()
             .withCircleRadius(10.0f)
@@ -56,11 +66,16 @@ public class DrawingManager {
             .withMiddleCircle(false)
             .withDraggable(true);
 
-
+    /**
+     * Constructor
+     *
+     * @param mapView
+     * @param mapboxMap
+     * @param style
+     */
     public DrawingManager(@NonNull MapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         this.circles = new ArrayList<>();
-        currentCircle = null;
-        //firstCircle = null;
+        this.setCurrentKujakuCircle(null);
 
         fillManager = new FillManager(mapView, mapboxMap, style);
         lineManager = new LineManager(mapView, mapboxMap, style);
@@ -69,9 +84,7 @@ public class DrawingManager {
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
             public void onAnnotationClick(Circle circle) {
-                //setCurrentCircle(circle);
-
-                if (onDrawingCircleClickListener != null) {
+                if (drawingEnabled && onDrawingCircleClickListener != null) {
                     onDrawingCircleClickListener.onCircleClick(circle);
                 }
             }
@@ -80,9 +93,7 @@ public class DrawingManager {
         circleManager.addLongClickListener(new OnCircleLongClickListener() {
                 @Override
                 public void onAnnotationLongClick(Circle circle) {
-                    // setCurrentCircle(circle);
-
-                   if (onDrawingCircleLongClickListener != null) {
+                   if (drawingEnabled && onDrawingCircleLongClickListener != null) {
                        onDrawingCircleLongClickListener.onCircleLongClick(circle);
                    }
                 }
@@ -106,6 +117,7 @@ public class DrawingManager {
             }
         });
 
+        // TODO : Gerer le cas des KujakuLayers
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
@@ -113,7 +125,7 @@ public class DrawingManager {
                 List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
                 if (features.size() == 0) {
-                    if (onDrawingCircleClickListener != null && getCurrentKujakuCircle() == null) {
+                    if (drawingEnabled && onDrawingCircleClickListener != null && getCurrentKujakuCircle() == null) {
                         onDrawingCircleClickListener.onCircleNotClick(point);
                     }
                 }
@@ -122,6 +134,7 @@ public class DrawingManager {
             }
         });
 
+        // TODO : Gerer le cas des KujakuLayers
         mapboxMap.addOnMapLongClickListener(new MapboxMap.OnMapLongClickListener() {
             @Override
             public boolean onMapLongClick(@NonNull LatLng point) {
@@ -130,7 +143,7 @@ public class DrawingManager {
 
                 // Get the first feature within the list if one exist
                 if (features.size() == 0) {
-                    if (onDrawingCircleLongClickListener != null) {
+                    if (drawingEnabled && onDrawingCircleLongClickListener != null) {
                         onDrawingCircleLongClickListener.onCircleNotLongClick(point);
                     }
                 }
@@ -141,13 +154,87 @@ public class DrawingManager {
     }
 
     /**
+     * Drawing enabled/disabled
+     *
+     * @param drawing
+     */
+    private void setDrawing(boolean drawing) {
+        this.drawingEnabled = drawing;
+    }
+
+    /**
      * Set currentCircle when circle is clicked or longClicked
      *
      * @param circle
      */
     private void setCurrentCircle(Circle circle) {
-        currentCircle = getKujakuCircle(circle);
+        this.currentKujakuCircle = getKujakuCircle(circle);
     }
+
+    /**
+     * Set currentCircle when circle is clicked or longClicked
+     *
+     * @param circle
+     */
+    private void setCurrentKujakuCircle(KujakuCircle circle) {
+        this.currentKujakuCircle = circle;
+    }
+
+    /**
+     * Start Drawing. A list of point can be passed to init the drawing.
+     *
+     * @param points
+     */
+    public void startDrawing(List<Point> points) {
+        setDrawing(true);
+        setCurrentCircle(null);
+
+        if (points != null && points.size() > 0) {
+            for (Point p : points) {
+                this.create(DrawingManager.circleOptions.withLatLng(new LatLng(p.latitude(), p.longitude())), false);
+            }
+
+            this.refresh(true);
+        }
+    }
+
+    /**
+     * Stop drawing and return the drawn polygon
+     *
+     * @return
+     */
+    public Polygon stopDrawing() {
+        setDrawing(false);
+        setCurrentCircle(null);
+
+        // convert into polygon
+        List<Point> points = new ArrayList<>();
+        List<List<Point>> lists = new ArrayList<>();
+
+        // Return only real points, not middles
+        for (KujakuCircle c: this.circles) {
+            if (! c.isMiddleCircle()) {
+                points.add(c.getCircle().getGeometry());
+            }
+        }
+
+        lists.add(points);
+        // Delete annotations
+        this.deleteAll();
+        // Refresh
+        this.refresh(false);
+
+        return Polygon.fromLngLats(lists);
+    }
+
+    /**
+     * Is Drawing enabled ?
+     * @return
+     */
+    public boolean isDrawingEnabled() {
+        return this.drawingEnabled;
+    }
+
 
     /**
      * Retrieve the KujakuCircle corresponding to the Circle
@@ -247,6 +334,7 @@ public class DrawingManager {
         fillManager.deleteAll();
         fillManager.updateSource();
         lineManager.deleteAll();
+        lineManager.updateSource();
 
         if (this.getKujakuCircles().size() > 1) {
             List<LatLng> list = new ArrayList<>();
@@ -263,7 +351,8 @@ public class DrawingManager {
                     .withLatLngs(lists)
                     .withFillOpacity(Float.valueOf("0.5")));
 
-            if (this.getKujakuCircles().size() > 2) { // on ajoute le premier point en fin de liste pour tracer la ligne
+            // We add the first point to the end of the list too
+            if (this.getKujakuCircles().size() > 2) {
                 list.add(this.getKujakuCircles().get(0).getCircle().getLatLng());
             }
 
@@ -274,19 +363,37 @@ public class DrawingManager {
     }
 
     /***
-     * Create a new Circle and add it to the circle list
+     * Create a new Circle, add it to the circle list and refresh the polygon
      *
      * @param options
      * @return
      */
     public Circle create(@NonNull KujakuCircleOptions options) {
+       return this.create(options, true);
+    }
+
+    /**
+     * Create a new Circle and add it to the circle list
+     * Refresh the polygon depends of the refresh variable
+     *
+     * @param options
+     * @param refresh
+     * @return
+     */
+    private Circle create(@NonNull KujakuCircleOptions options, boolean refresh) {
         Circle circle = circleManager.create(options);
         KujakuCircle previousCircle = null;
+
         if (circles.size() > 0) {
             previousCircle = circles.get(circles.size() -1);
         }
+
         KujakuCircle kujakuCircle = new KujakuCircle(circle, previousCircle, options.getMiddleCircle());
         circles.add(kujakuCircle);
+
+        if (refresh) {
+            this.refresh(true);
+        }
 
         return circle;
     }
@@ -298,18 +405,22 @@ public class DrawingManager {
      */
     private void createFromList(@NonNull List<KujakuCircleOptions> options) {
         for (KujakuCircleOptions option: options) {
-            this.create(option);
+            this.create(option, false);
         }
         if (this.circles.size() >= 2) {
-            this.getKujakuCircles().get(0).setPreviousCircle(this.getKujakuCircles().get(this.getKujakuCircles().size() - 1));
+            this.getKujakuCircles().get(0).setPreviousKujakuCircle(this.getKujakuCircles().get(this.getKujakuCircles().size() - 1));
         }
+
+        this.refresh(false);
     }
 
     /**
      * Refresh the Polygon
      */
-    public void refresh() {
-        this.createMiddlePoints();
+    private void refresh(boolean createMiddlePoints) {
+        if (createMiddlePoints) {
+            this.createMiddlePoints();
+        }
         this.refreshPolygon();
     }
 
@@ -327,7 +438,7 @@ public class DrawingManager {
      * @param kujakuCircle
      */
     public void delete(KujakuCircle kujakuCircle) {
-        // Previous and next circle to delete id AreMiddle
+        // Previous and next circle to delete if AreMiddle
         if (kujakuCircle == null) {
             return ;
         }
@@ -349,9 +460,16 @@ public class DrawingManager {
         }
 
         this.setCurrentCircle(null);
-        this.refresh();
+        this.refresh(true);
     }
 
+    /**
+     * Set Circle draggable
+     * Remove middle circles after & before when a circle is draggable
+     *
+     * @param draggable
+     * @param circle
+     */
     public void setDraggable(boolean draggable, Circle circle) {
         circle.setDraggable(draggable);
         KujakuCircleOptions options;
@@ -373,7 +491,7 @@ public class DrawingManager {
 
             for (KujakuCircle c : circles) {
                 if (c.getCircle().getId() == circle.getId()) {
-                    this.currentCircle = c;
+                    this.setCurrentKujakuCircle(c);
                     c.setMiddleCircle(options.getMiddleCircle());
                     previousCircle = c.getPreviousKujakuCircle();
                     nextCircle = c.getNextKujakuCircle();
@@ -384,7 +502,7 @@ public class DrawingManager {
             if (previousCircle != null && previousCircle.isMiddleCircle()) {
                 circleManager.delete(previousCircle.getCircle());
                 if (previousCircle.getPreviousKujakuCircle() != null) {
-                    previousCircle.getPreviousKujakuCircle().setNextCircle(this.currentCircle);
+                    previousCircle.getPreviousKujakuCircle().setNextKujakuCircle(getCurrentKujakuCircle());
                 }
                 this.circles.remove(previousCircle);
             }
@@ -392,13 +510,14 @@ public class DrawingManager {
             if (nextCircle != null && nextCircle.isMiddleCircle()) {
                 circleManager.delete(nextCircle.getCircle());
                 if (nextCircle.getNextKujakuCircle() != null) {
-                    nextCircle.getNextKujakuCircle().setPreviousCircle(this.currentCircle);
+                    nextCircle.getNextKujakuCircle().setPreviousKujakuCircle(getCurrentKujakuCircle());
                 }
                 this.circles.remove(nextCircle);
             }
         }
 
         circleManager.update(circle);
+        this.refresh(!draggable);
     }
 
     /**
@@ -423,7 +542,7 @@ public class DrawingManager {
      * @return
      */
     private List<KujakuCircle> getKujakuCircles() {
-        return circles;
+        return this.circles;
     }
 
     /**
@@ -432,7 +551,7 @@ public class DrawingManager {
      * @return
      */
     public KujakuCircle getCurrentKujakuCircle() {
-        return this.currentCircle;
+        return this.currentKujakuCircle;
     }
 
     /**

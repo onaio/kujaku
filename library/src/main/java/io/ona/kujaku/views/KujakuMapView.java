@@ -77,6 +77,8 @@ import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.TrackingService;
@@ -100,7 +102,7 @@ import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  *
  */
-public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
+public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener, MapboxMap.OnMapLongClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
     public static final double LOCATION_FOCUS_ZOOM = 20d;
@@ -165,6 +167,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private OnFeatureClickListener onFeatureClickListener;
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
+
+    private OnKujakuLayerClickListener onKujakuLayerClickListener;
+    private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
 
     private boolean warmGps = true;
     private boolean hasAlreadyRequestedEnableLocation = false;
@@ -817,6 +822,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
         mapboxMap.removeOnMapClickListener(this);
         mapboxMap.addOnMapClickListener(this);
+
+        mapboxMap.removeOnMapLongClickListener(this);
+        mapboxMap.addOnMapLongClickListener(this);
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -926,6 +934,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.onFeatureClickListener = onFeatureClickListener;
         this.featureClickLayerIdFilters = layerIds;
         this.featureClickExpressionFilter = expressionFilter;
+    }
+
+    public void setOnKujakuLayerClickListener(@NonNull OnKujakuLayerClickListener onKujakuLayerClickListener) {
+        this.onKujakuLayerClickListener = onKujakuLayerClickListener;
+    }
+
+    public void setOnKujakuLayerLongClickListener(@NonNull OnKujakuLayerLongClickListener onKujakuLayerLongClickListener) {
+        this.onKujakuLayerLongClickListener = onKujakuLayerLongClickListener;
     }
 
     @Override
@@ -1188,8 +1204,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public boolean onMapClick(@NonNull LatLng point) {
+        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+
         if (onFeatureClickListener != null) {
-            PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
             List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
 
             if (features.size() > 0) {
@@ -1197,7 +1214,48 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
 
+        if (onKujakuLayerClickListener != null) {
+            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            if (layer != null) {
+                onKujakuLayerClickListener.onKujakuLayerClick(layer);
+            }
+        }
+
         return false;
+    }
+
+    @Override
+    public boolean onMapLongClick(@NonNull LatLng point) {
+        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+
+        if (onKujakuLayerLongClickListener != null) {
+            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            if (layer != null) {
+                onKujakuLayerLongClickListener.onKujakuLayerLongClick(layer);
+            }
+        }
+
+        return false;
+    }
+
+    private KujakuLayer getKujakuLayerSelected(PointF pixel) {
+        List<String> kujakuLayerListIds = new ArrayList<>();
+
+        for (KujakuLayer layer: kujakuLayers) {
+            for (String layerId : layer.getLayerIds()) {
+                kujakuLayerListIds.add(layerId);
+            }
+
+            String[] kujakuLayerIds = new String[kujakuLayerListIds.size()];
+            kujakuLayerIds = kujakuLayerListIds.toArray(kujakuLayerIds);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, null, kujakuLayerIds);
+
+            if (features.size() > 0) {
+               return layer;
+            }
+        }
+
+        return null;
     }
 
     public boolean isWarmGps() {

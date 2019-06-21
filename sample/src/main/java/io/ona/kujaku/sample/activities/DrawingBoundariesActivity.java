@@ -1,17 +1,29 @@
 package io.ona.kujaku.sample.activities;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+
+import java.util.List;
+
+import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.manager.DrawingManager;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
@@ -24,7 +36,9 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
     private DrawingManager drawingManager;
+
     private Button deleteBtn ;
+    private Button drawingBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +47,25 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView = findViewById(R.id.kmv_drawingBoundaries_mapView);
         kujakuMapView.onCreate(savedInstanceState);
 
-        this.deleteBtn = findViewById(R.id.btn_drawingBoundaries_Delete);
+        this.deleteBtn = findViewById(R.id.btn_drawingBoundaries_delete);
         this.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawingManager.delete(drawingManager.getCurrentKujakuCircle());
                 view.setEnabled(false);
+            }
+        });
+
+        this.drawingBtn = findViewById(R.id.btn_drawingBoundaries_drawing);
+        this.drawingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // start Drawing from scratch
+                if (! drawingManager.isDrawingEnabled()) {
+                    startDrawing(null);
+                } else {
+                    stopDrawing();
+                }
             }
         });
 
@@ -80,7 +107,6 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                                         String.format("Circle NOT clicked"),Toast.LENGTH_SHORT).show();
 
                                 drawingManager.create(DrawingManager.circleOptions.withLatLng(point));
-                                drawingManager.refresh();
                             }
                         });
 
@@ -93,7 +119,6 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                                 if (circle.isDraggable()) {
                                     deleteBtn.setEnabled(false);
                                     drawingManager.setDraggable(false, circle);
-                                    drawingManager.refresh();
 
                                 } else if (!circle.isDraggable() && drawingManager.getCurrentKujakuCircle() == null) {
                                     deleteBtn.setEnabled(!drawingManager.isMiddleCircle(circle));
@@ -107,11 +132,45 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                                         String.format("Circle NOT long clicked"),Toast.LENGTH_SHORT).show();
                             }
                         });
+
+                        kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
+                            @Override
+                            public void onKujakuLayerLongClick(KujakuLayer kujakuLayer) {
+                                if (!drawingManager.isDrawingEnabled()) {
+                                    Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
+                                    if (geometry instanceof Polygon) {
+                                        kujakuLayer.removeLayerOnMap(mapboxMap);
+                                        Polygon polygon = (Polygon) geometry;
+                                        List<Point> points = polygon.coordinates().get(0);
+                                        startDrawing(points);
+                                    }
+                                }
+                            }
+                        });
                     }
                 });
-
             }
         });
+    }
+
+    private void startDrawing(List<Point> points) {
+        drawingManager.startDrawing(points);
+        drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+    }
+
+    private void stopDrawing() {
+        Polygon polygon = drawingManager.stopDrawing();
+        drawingBtn.setText(R.string.drawing_boundaries_start_draw);
+        deleteBtn.setEnabled(false);
+
+        Feature feature = Feature.fromGeometry(polygon);
+        FeatureCollection collection = FeatureCollection.fromFeature(feature);
+        FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
+                .setBoundaryColor(Color.BLACK)
+                .setBoundaryWidth(3f)
+                .build();
+
+        kujakuMapView.addLayer(layer);
     }
 
     @Override
