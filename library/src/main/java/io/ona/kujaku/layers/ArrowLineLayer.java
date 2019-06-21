@@ -64,7 +64,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
  */
 
-public class ArrowLineLayer implements KujakuLayer {
+public class ArrowLineLayer extends KujakuLayer {
 
     private static final String TAG = ArrowLineLayer.class.getName();
     public static final String ARROW_HEAD_BEARING = "arrow-head-bearing";
@@ -89,9 +89,6 @@ public class ArrowLineLayer implements KujakuLayer {
     public static final int MAX_ARROW_ZOOM = 22;
     public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
     public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
-
-    private boolean visible = false;
-    private boolean isRemoved = false;
 
     private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {
         this.builder = builder;
@@ -265,12 +262,8 @@ public class ArrowLineLayer implements KujakuLayer {
         }
     }
 
-    @Override
-    public boolean isVisible() {
-        return visible;
-    }
 
-    @Override
+    @Override @NonNull
     public String[] getLayerIds() {
         return new String[] {ARROW_HEAD_LAYER_ID, LINE_LAYER_ID};
     }
@@ -295,17 +288,7 @@ public class ArrowLineLayer implements KujakuLayer {
         }
     }
 
-    @Override
-    public boolean isRemoved() {
-        return isRemoved;
-    }
-
-    @Override
-    public void setRemoved(boolean isRemoved) {
-        this.isRemoved = isRemoved;
-    }
-
-    @Override
+   @Override
     public void updateFeatures(@NonNull FeatureCollection featureCollection) {
         if (this.builder.featureConfig.featureCollection != null) {
             this.builder.featureConfig.featureCollection = featureCollection;
@@ -451,6 +434,11 @@ public class ArrowLineLayer implements KujakuLayer {
     private Point getCenter(@NonNull Geometry featureGeometry) {
         double[] bbox = TurfMeasurement.bbox(featureGeometry);
         return Point.fromLngLat((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
+    }
+
+    @Override
+    public FeatureCollection getFeatureCollection() {
+        return this.builder.featureConfig.getFeatureCollection();
     }
 
     public static class Builder {

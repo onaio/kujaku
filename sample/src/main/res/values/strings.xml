@@ -77,6 +77,8 @@
     <string name="change_features">Change Features</string>
     <string name="drawing_boundaries_activity">Drawing Boundaries</string>
     <string name="drawing_boundaries_delete">Delete Point</string>
+    <string name="drawing_boundaries_start_draw">Start Drawing</string>
+    <string name="drawing_boundaries_stop_draw">Stop Drawing</string>
 
 
 </resources>

@@ -53,20 +53,20 @@
                 app:layout_constraintStart_toStartOf="parent">
 
                 <Button
-                    android:id="@+id/btn_drawingBoundaries_Delete"
+                    android:id="@+id/btn_drawingBoundaries_drawing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:text="@string/drawing_boundaries_start_draw"/>
+
+                <Button
+                    android:id="@+id/btn_drawingBoundaries_delete"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:enabled="false"
                     android:text="@string/drawing_boundaries_delete"/>
-                <!--<Button-->
-                    <!--android:id="@+id/btn_passiveRecordObject_ForcePoint"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:enabled="false"-->
-                    <!--android:text="@string/take_location"/>-->
 
             </LinearLayout>
-
 
         </android.support.constraint.ConstraintLayout>
 

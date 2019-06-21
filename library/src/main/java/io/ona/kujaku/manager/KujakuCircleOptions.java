@@ -4,6 +4,12 @@ import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.plugins.annotation.CircleOptions;
 
+/**
+ * KujakuCircleOptions extends CircleOptions
+ * Add isMiddle Point functionality (Point between to real point)
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch on 19/06/2019
+ */
 public class KujakuCircleOptions extends CircleOptions {
 
     private boolean isMiddleCircle = false;
@@ -16,7 +22,7 @@ public class KujakuCircleOptions extends CircleOptions {
      * @param middle
      * @return this
      */
-    public KujakuCircleOptions withMiddleCircle(boolean middle) {
+    KujakuCircleOptions withMiddleCircle(boolean middle) {
         this.isMiddleCircle =  middle;
         return this;
     }
@@ -28,7 +34,7 @@ public class KujakuCircleOptions extends CircleOptions {
      * </p>
      * @return isMiddle value
      */
-    public boolean getMiddleCircle() {
+    boolean getMiddleCircle() {
         return isMiddleCircle;
     }
 
