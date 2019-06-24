@@ -36,6 +36,7 @@ import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -47,6 +48,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
@@ -67,6 +69,7 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.exceptions.DrawingManagerIsNullException;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
@@ -76,11 +79,15 @@ import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
+import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
+import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.manager.DrawingManager;
+import io.ona.kujaku.manager.KujakuCircle;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
@@ -191,6 +198,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;
     private TrackingServiceOptions trackingServiceOptions = null;
     private boolean trackingServiceInitialized = false;
+
+    /**
+     * Drawing Manager
+     */
+    private DrawingManager drawingManager = null ;
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -1585,5 +1597,65 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /************** End of Tracking Service ***************/
+
+    /************** Drawing Manager ***************/
+
+    public void createDrawingManager(@NonNull Style style) {
+        drawingManager = new DrawingManager(this, mapboxMap, style);
+    }
+
+    private DrawingManager getDrawingManager() {
+        if (this.drawingManager != null) {
+            return this.drawingManager;
+        }
+
+        throw new DrawingManagerIsNullException();
+    }
+
+    public void startDrawing(List<com.mapbox.geojson.Point> points) {
+        getDrawingManager().startDrawing(points);
+    }
+
+    public Polygon stopDrawing() {
+        return getDrawingManager().stopDrawing();
+    }
+
+    public Circle drawCircle(LatLng latLng) {
+        return getDrawingManager().create(DrawingManager.circleOptions.withLatLng(latLng));
+    }
+
+    public void setCircleDraggable(boolean draggable, Circle circle) {
+        getDrawingManager().setDraggable(draggable, circle);
+    }
+
+    public void unsetCurrentCircleDraggable() {
+        if(getDrawingManager().getCurrentKujakuCircle() != null) {
+            getDrawingManager().setDraggable(false, getDrawingManager().getCurrentKujakuCircle().getCircle());
+        }
+    }
+
+    public boolean isDrawingEnabled() {
+       return getDrawingManager().isDrawingEnabled();
+    }
+
+    public void deleteDrawingCurrentCircle() {
+        getDrawingManager().delete(getDrawingManager().getCurrentKujakuCircle());
+    }
+
+    public KujakuCircle getCurrentKujakuCircle() {
+        return getDrawingManager().getCurrentKujakuCircle();
+    }
+
+    public void addOnDrawingCircleClickListener(OnDrawingCircleClickListener listener) {
+        getDrawingManager().addOnDrawingCircleClickListener(listener);
+    }
+
+    public void addOnDrawingCircleLongClickListener(OnDrawingCircleLongClickListener listener) {
+        getDrawingManager().addOnDrawingCircleLongClickListener(listener);
+    }
+
+
+
+    /************** End of Drawing Manager ***************/
 }
 
