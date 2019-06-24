@@ -18,5 +18,5 @@ public interface OnDrawingCircleClickListener {
      * Called when no circle was clicked
      *
      */
-    void onCircleNotClick(@NonNull LatLng point);
+    void onCircleNotClick(@NonNull LatLng latLng);
 }
