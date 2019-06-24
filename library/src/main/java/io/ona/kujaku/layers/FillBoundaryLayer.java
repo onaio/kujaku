@@ -33,7 +33,7 @@ public class FillBoundaryLayer extends BoundaryLayer {
     private void createBoundaryFillLayer(@NonNull KujakuLayer.Builder builder) {
         boundaryFillLayer = new FillLayer(BOUNDARY_FILL_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)
                 .withProperties(
-                            PropertyFactory.backgroundColor(builder.boundaryColor),
+                        PropertyFactory.backgroundColor(builder.boundaryColor),
                         PropertyFactory.fillOpacity(0.5f)
                 );
     }
