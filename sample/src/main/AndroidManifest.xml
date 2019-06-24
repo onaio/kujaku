@@ -92,6 +92,10 @@
         <activity
             android:name=".activities.BaseLayerSwitcherActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.DrawingBoundariesActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            </activity>
     </application>
 
 </manifest>
