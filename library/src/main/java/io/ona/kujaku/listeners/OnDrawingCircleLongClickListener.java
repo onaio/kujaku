@@ -18,5 +18,5 @@ public interface OnDrawingCircleLongClickListener {
      * Called when no circle was clicked
      *
      */
-    void onCircleNotLongClick(@NonNull LatLng point);
+    void onCircleNotLongClick(@NonNull LatLng latLng);
 }
