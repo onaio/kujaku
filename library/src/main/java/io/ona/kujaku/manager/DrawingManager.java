@@ -49,13 +49,13 @@ public class DrawingManager {
     private boolean drawingEnabled;
 
     public static KujakuCircleOptions circleOptions = new KujakuCircleOptions()
-            .withCircleRadius(10.0f)
+            .withCircleRadius(15.0f)
             .withCircleColor("black")
             .withMiddleCircle(false)
             .withDraggable(false);
 
     public static KujakuCircleOptions circleMiddleOptions = new KujakuCircleOptions()
-            .withCircleRadius(5.0f)
+            .withCircleRadius(10.0f)
             .withCircleColor("black")
             .withMiddleCircle(true)
             .withDraggable(false);
@@ -84,7 +84,7 @@ public class DrawingManager {
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
             public void onAnnotationClick(Circle circle) {
-                if (drawingEnabled && onDrawingCircleClickListener != null) {
+                if (drawingEnabled) {
                     onDrawingCircleClickListener.onCircleClick(circle);
                 }
             }
@@ -93,7 +93,7 @@ public class DrawingManager {
         circleManager.addLongClickListener(new OnCircleLongClickListener() {
                 @Override
                 public void onAnnotationLongClick(Circle circle) {
-                   if (drawingEnabled && onDrawingCircleLongClickListener != null) {
+                   if (drawingEnabled) {
                        onDrawingCircleLongClickListener.onCircleLongClick(circle);
                    }
                 }
@@ -125,7 +125,7 @@ public class DrawingManager {
                 List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
                 if (features.size() == 0) {
-                    if (drawingEnabled && onDrawingCircleClickListener != null && getCurrentKujakuCircle() == null) {
+                    if (drawingEnabled && onDrawingCircleClickListener != null) {
                         onDrawingCircleClickListener.onCircleNotClick(point);
                     }
                 }
@@ -332,9 +332,7 @@ public class DrawingManager {
      */
     private void refreshPolygon() {
         fillManager.deleteAll();
-        fillManager.updateSource();
         lineManager.deleteAll();
-        lineManager.updateSource();
 
         if (this.getKujakuCircles().size() > 1) {
             List<LatLng> list = new ArrayList<>();
@@ -425,11 +423,13 @@ public class DrawingManager {
     }
 
     /**
-     * Delete all circles
+     * Delete all
      */
     private void deleteAll() {
         this.circles.clear();
         this.circleManager.deleteAll();
+        this.fillManager.deleteAll();
+        this.lineManager.deleteAll();
     }
 
     /**
@@ -517,7 +517,10 @@ public class DrawingManager {
         }
 
         circleManager.update(circle);
-        this.refresh(!draggable);
+
+        if (!draggable) {
+            this.refresh(true);
+        }
     }
 
     /**
