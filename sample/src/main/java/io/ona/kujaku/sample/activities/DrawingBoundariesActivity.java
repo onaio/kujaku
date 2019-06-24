@@ -25,7 +25,6 @@ import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.sample.R;
-import io.ona.kujaku.manager.DrawingManager;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
 import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 import io.ona.kujaku.views.KujakuMapView;
@@ -35,7 +34,6 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
     private static final String TAG = DrawingBoundariesActivity.class.getName();
 
     private KujakuMapView kujakuMapView;
-    private DrawingManager drawingManager;
 
     private Button deleteBtn ;
     private Button drawingBtn;
@@ -51,7 +49,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
         this.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                drawingManager.delete(drawingManager.getCurrentKujakuCircle());
+                kujakuMapView.deleteDrawingCurrentCircle();
                 view.setEnabled(false);
             }
         });
@@ -61,7 +59,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 // start Drawing from scratch
-                if (! drawingManager.isDrawingEnabled()) {
+                if (! kujakuMapView.isDrawingEnabled()) {
                     startDrawing(null);
                 } else {
                     stopDrawing();
@@ -76,7 +74,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                 mapboxMap.setStyle(Style.MAPBOX_STREETS,  new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
-                        drawingManager = new DrawingManager(kujakuMapView, mapboxMap, style);
+                        kujakuMapView.createDrawingManager(style);
 
                        /* try {
                             InputStreamReader streamReader = new InputStreamReader(getBaseContext().getResources().getAssets().open("annotations.json"));
@@ -94,36 +92,44 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                             throw new RuntimeException("Unable to parse annotations.json");
                         }*/
 
-                        drawingManager.addOnDrawingCircleClickListener(new OnDrawingCircleClickListener() {
+                        kujakuMapView.addOnDrawingCircleClickListener(new OnDrawingCircleClickListener() {
                             @Override
                             public void onCircleClick(Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         String.format("Circle clicked"),Toast.LENGTH_SHORT).show();
+
+                                kujakuMapView.unsetCurrentCircleDraggable();
+
+                                if (circle.isDraggable()) {
+                                    deleteBtn.setEnabled(false);
+                                    kujakuMapView.setCircleDraggable(false, circle);
+
+                                } else if (!circle.isDraggable()) {
+                                    deleteBtn.setEnabled(true);
+                                    kujakuMapView.setCircleDraggable(true, circle);
+                                }
+
                             }
 
                             @Override
-                            public void onCircleNotClick(@NonNull LatLng point) {
+                            public void onCircleNotClick(@NonNull LatLng latLng) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         String.format("Circle NOT clicked"),Toast.LENGTH_SHORT).show();
 
-                                drawingManager.create(DrawingManager.circleOptions.withLatLng(point));
+                                if (kujakuMapView.getCurrentKujakuCircle() != null) {
+                                    kujakuMapView.unsetCurrentCircleDraggable();
+                                    deleteBtn.setEnabled(false);
+                                } else {
+                                    kujakuMapView.drawCircle(latLng);
+                                }
                             }
                         });
 
-                        drawingManager.addOnDrawingCircleLongClickListener(new OnDrawingCircleLongClickListener() {
+                        kujakuMapView.addOnDrawingCircleLongClickListener(new OnDrawingCircleLongClickListener() {
                             @Override
                             public void onCircleLongClick(Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         String.format("Circle long clicked"),Toast.LENGTH_SHORT).show();
-
-                                if (circle.isDraggable()) {
-                                    deleteBtn.setEnabled(false);
-                                    drawingManager.setDraggable(false, circle);
-
-                                } else if (!circle.isDraggable() && drawingManager.getCurrentKujakuCircle() == null) {
-                                    deleteBtn.setEnabled(!drawingManager.isMiddleCircle(circle));
-                                    drawingManager.setDraggable(true, circle);
-                                }
                             }
 
                             @Override
@@ -136,7 +142,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
                             @Override
                             public void onKujakuLayerLongClick(KujakuLayer kujakuLayer) {
-                                if (!drawingManager.isDrawingEnabled()) {
+                                if (!kujakuMapView.isDrawingEnabled()) {
                                     Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
                                     if (geometry instanceof Polygon) {
                                         kujakuLayer.removeLayerOnMap(mapboxMap);
@@ -154,12 +160,12 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
     }
 
     private void startDrawing(List<Point> points) {
-        drawingManager.startDrawing(points);
+        kujakuMapView.startDrawing(points);
         drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
     }
 
     private void stopDrawing() {
-        Polygon polygon = drawingManager.stopDrawing();
+        Polygon polygon = kujakuMapView.stopDrawing();
         drawingBtn.setText(R.string.drawing_boundaries_start_draw);
         deleteBtn.setEnabled(false);
 
