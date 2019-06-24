@@ -86,6 +86,10 @@
         <activity
             android:name=".activities.FociBoundaryActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.DrawingBoundariesActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            </activity>
     </application>
 
 </manifest>

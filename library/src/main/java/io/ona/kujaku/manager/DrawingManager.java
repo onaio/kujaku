@@ -117,7 +117,6 @@ public class DrawingManager {
             }
         });
 
-        // TODO : Gerer le cas des KujakuLayers
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
@@ -134,7 +133,6 @@ public class DrawingManager {
             }
         });
 
-        // TODO : Gerer le cas des KujakuLayers
         mapboxMap.addOnMapLongClickListener(new MapboxMap.OnMapLongClickListener() {
             @Override
             public boolean onMapLongClick(@NonNull LatLng point) {
