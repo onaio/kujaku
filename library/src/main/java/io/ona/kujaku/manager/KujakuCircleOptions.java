@@ -22,7 +22,7 @@ public class KujakuCircleOptions extends CircleOptions {
      * @param middle
      * @return this
      */
-    KujakuCircleOptions withMiddleCircle(boolean middle) {
+    public KujakuCircleOptions withMiddleCircle(boolean middle) {
         this.isMiddleCircle =  middle;
         return this;
     }
@@ -34,7 +34,7 @@ public class KujakuCircleOptions extends CircleOptions {
      * </p>
      * @return isMiddle value
      */
-    boolean getMiddleCircle() {
+    public boolean getMiddleCircle() {
         return isMiddleCircle;
     }
 

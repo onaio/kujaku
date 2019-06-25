@@ -1,8 +1,6 @@
 package io.ona.kujaku.manager;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,14 +14,6 @@ import io.ona.kujaku.BaseTest;
  */
 @RunWith(RobolectricTestRunner.class)
 public class KujakuCircleOptionsTest extends BaseTest {
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void createInstanceOfDrawingManager() {

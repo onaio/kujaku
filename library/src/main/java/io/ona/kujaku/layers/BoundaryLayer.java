@@ -56,12 +56,12 @@ public class BoundaryLayer extends KujakuLayer {
 
     private static final String TAG = BoundaryLayer.class.getName();
 
-    KujakuLayer.Builder builder;
+    protected KujakuLayer.Builder builder;
 
-    String BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();
-    String BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();
-    String BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
-    String BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
+    protected String BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();
+    protected String BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();
+    protected String BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();
+    protected String BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();
 
     private GeoJsonSource boundarySource;
     private GeoJsonSource boundaryLabelsSource;
