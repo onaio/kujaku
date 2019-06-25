@@ -86,6 +86,10 @@
             android:title="@string/passive_record_object_activity"/>
 
         <item
+            android:id="@+id/nav_drawing_boundaries"
+            android:title="@string/drawing_boundaries_activity"/>
+
+        <item
             android:id="@+id/nav_base_layer_switcher_plugin"
             android:title="@string/base_layer_switcher_plugin"/>
 

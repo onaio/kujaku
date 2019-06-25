@@ -75,10 +75,17 @@
     <string name="start_recording">Start Recording</string>
     <string name="stop_recording">Stop Recording</string>
     <string name="take_location">Take Location</string>
+
+    <string name="draw_arrows">DRAW ARROWS</string>
+    <string name="disable_remove_arrows">DISABLE/REMOVE ARROWS</string>
+
+    <string name="drawing_boundaries_activity">Drawing Boundaries</string>
+    <string name="drawing_boundaries_delete">Delete Point</string>
+    <string name="drawing_boundaries_start_draw">Start Drawing</string>
+    <string name="drawing_boundaries_stop_draw">Stop Drawing</string>
     <string name="only_cases">Only Cases</string>
     <string name="show_all">Show All</string>
     <string name="_1_to_many_case_relationship_activity">1-to-Many Case Relationship Activity</string>
     <string name="base_layer_switcher_plugin">Base Layer Switcher Plugin</string>
-
 
 </resources>

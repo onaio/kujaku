@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
 import android.os.IBinder;
@@ -36,6 +37,8 @@ import com.karumi.dexter.Dexter;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -47,6 +50,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
@@ -67,18 +71,26 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.exceptions.DrawingManagerIsNullException;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
+import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
+import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
+import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.manager.DrawingManager;
+import io.ona.kujaku.manager.KujakuCircle;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
@@ -100,7 +112,7 @@ import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  *
  */
-public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener {
+public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener, MapboxMap.OnMapLongClickListener {
 
     private static final String TAG = KujakuMapView.class.getName();
     public static final double LOCATION_FOCUS_ZOOM = 20d;
@@ -166,6 +178,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
 
+    private OnKujakuLayerClickListener onKujakuLayerClickListener;
+    private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
+
     private boolean warmGps = true;
     private boolean hasAlreadyRequestedEnableLocation = false;
     private boolean isResumingFromRequestingEnableLocation = false;
@@ -187,9 +202,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private TrackingServiceOptions trackingServiceOptions = null;
     private boolean trackingServiceInitialized = false;
 
+    /**
+     * Drawing Manager
+     */
+    private DrawingManager drawingManager = null ;
+
     private int resourceId;
     private boolean disableMyLocationOnMapMove = false;
-
 
     public KujakuMapView(@NonNull Context context) {
         super(context);
@@ -817,6 +836,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
         mapboxMap.removeOnMapClickListener(this);
         mapboxMap.addOnMapClickListener(this);
+
+        mapboxMap.removeOnMapLongClickListener(this);
+        mapboxMap.addOnMapLongClickListener(this);
     }
 
     private void dropPointOnMap(@NonNull LatLng latLng) {
@@ -926,6 +948,24 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.onFeatureClickListener = onFeatureClickListener;
         this.featureClickLayerIdFilters = layerIds;
         this.featureClickExpressionFilter = expressionFilter;
+    }
+
+    /**
+     * Set listener when pressing a KujakuLayer
+     *
+     * @param onKujakuLayerClickListener
+     */
+    public void setOnKujakuLayerClickListener(@NonNull OnKujakuLayerClickListener onKujakuLayerClickListener) {
+        this.onKujakuLayerClickListener = onKujakuLayerClickListener;
+    }
+
+    /**
+     * Set listener when long pressing a KujakuLayer
+     *
+     * @param onKujakuLayerLongClickListener
+     */
+    public void setOnKujakuLayerLongClickListener(@NonNull OnKujakuLayerLongClickListener onKujakuLayerLongClickListener) {
+        this.onKujakuLayerLongClickListener = onKujakuLayerLongClickListener;
     }
 
     @Override
@@ -1188,8 +1228,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public boolean onMapClick(@NonNull LatLng point) {
+        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+
         if (onFeatureClickListener != null) {
-            PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
             List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
 
             if (features.size() > 0) {
@@ -1197,7 +1238,54 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         }
 
+        if (onKujakuLayerClickListener != null) {
+            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            if (layer != null) {
+                onKujakuLayerClickListener.onKujakuLayerClick(layer);
+            }
+        }
+
         return false;
+    }
+
+    @Override
+    public boolean onMapLongClick(@NonNull LatLng point) {
+        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+
+        if (onKujakuLayerLongClickListener != null) {
+            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            if (layer != null) {
+                onKujakuLayerLongClickListener.onKujakuLayerLongClick(layer);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * return the clicked KujakuLayer
+     *
+     * @param pixel
+     * @return
+     */
+    private KujakuLayer getKujakuLayerSelected(PointF pixel) {
+        List<String> kujakuLayerListIds = new ArrayList<>();
+
+        for (KujakuLayer layer: kujakuLayers) {
+            for (String layerId : layer.getLayerIds()) {
+                kujakuLayerListIds.add(layerId);
+            }
+
+            String[] kujakuLayerIds = new String[kujakuLayerListIds.size()];
+            kujakuLayerIds = kujakuLayerListIds.toArray(kujakuLayerIds);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, null, kujakuLayerIds);
+
+            if (features.size() > 0) {
+               return layer;
+            }
+        }
+
+        return null;
     }
 
     public boolean isWarmGps() {
@@ -1545,6 +1633,147 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /************** End of Tracking Service ***************/
+
+    /************** Drawing Manager ***************/
+
+    /**
+     * Creation of the instance of the Drawing Manager
+     * @param style
+     */
+    public void createDrawingManager(@NonNull Style style) {
+        drawingManager = new DrawingManager(this, mapboxMap, style);
+    }
+
+    /**
+     * Get instance of the drawing Manager
+     * @return
+     */
+    private DrawingManager getDrawingManager() {
+        if (this.drawingManager != null) {
+            return this.drawingManager;
+        }
+
+        throw new DrawingManagerIsNullException();
+    }
+
+    /**
+     * Start drawing on the map / or editing an already existing kujakuLayer
+     *
+     * @param kujakuLayer
+     * @return
+     */
+    public boolean startDrawing(KujakuLayer kujakuLayer) {
+       if (kujakuLayer == null) {
+           getDrawingManager().startDrawing(null);
+           return true;
+       }
+
+       Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
+       if (geometry instanceof Polygon) {
+           kujakuLayer.removeLayerOnMap(mapboxMap);
+           Polygon polygon = (Polygon) geometry;
+           List<com.mapbox.geojson.Point> points = polygon.coordinates().get(0);
+           getDrawingManager().startDrawing(points);
+           return true;
+       }
+
+        return false;
+    }
+
+    /**
+     * Stop drawing and create a new Kujaku layer
+     *
+     * @return
+     */
+    public boolean stopDrawing() {
+        Polygon polygon = getDrawingManager().stopDrawing();
+
+        com.mapbox.geojson.Feature feature = com.mapbox.geojson.Feature.fromGeometry(polygon);
+        FeatureCollection collection = FeatureCollection.fromFeature(feature);
+        FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
+                .setBoundaryColor(Color.BLACK)
+                .setBoundaryWidth(3f)
+                .build();
+
+        this.addLayer(layer);
+
+        return true;
+    }
+
+    /**
+     * Draw a new circle on the map
+     *
+     * @param latLng
+     * @return
+     */
+    public Circle drawCircle(LatLng latLng) {
+        return getDrawingManager().create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
+    }
+
+    /**
+     * Set a circle draggable
+     *
+     * @param draggable
+     * @param circle
+     */
+    public void setCircleDraggable(boolean draggable, Circle circle) {
+        getDrawingManager().setDraggable(draggable, circle);
+    }
+
+    /**
+     * Unset the draggable property to the current selected circle
+     */
+    public void unsetCurrentCircleDraggable() {
+        if(getDrawingManager().getCurrentKujakuCircle() != null) {
+            getDrawingManager().setDraggable(false, getDrawingManager().getCurrentKujakuCircle().getCircle());
+        }
+    }
+
+    /**
+     * True if drawing is enable / false otherwise
+     *
+     * @return
+     */
+    public boolean isDrawingEnabled() {
+       return getDrawingManager().isDrawingEnabled();
+    }
+
+    /**
+     * Delete the current selected circle
+     */
+    public void deleteDrawingCurrentCircle() {
+        getDrawingManager().delete(getDrawingManager().getCurrentKujakuCircle());
+    }
+
+    /**
+     * Get current selected KujakuCircle
+     *
+     * @return
+     */
+    public KujakuCircle getCurrentKujakuCircle() {
+        return getDrawingManager().getCurrentKujakuCircle();
+    }
+
+    /**
+     * OnClick Listener when drawing circles
+     *
+     * @param listener
+     */
+    public void addOnDrawingCircleClickListener(OnDrawingCircleClickListener listener) {
+        getDrawingManager().addOnDrawingCircleClickListener(listener);
+    }
+
+
+    /**
+     * OnLongClick Listener when drawing circles
+     *
+     * @param listener
+     */
+    public void addOnDrawingCircleLongClickListener(OnDrawingCircleLongClickListener listener) {
+        getDrawingManager().addOnDrawingCircleLongClickListener(listener);
+    }
+
+    /************** End of Drawing Manager ***************/
 
     @Override
     public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {

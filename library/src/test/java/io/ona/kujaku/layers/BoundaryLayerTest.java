@@ -56,7 +56,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
         BoundaryLayer boundaryLayer = builder.build();
 
         ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryLineLayer"
-                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
+                , ReflectionHelpers.ClassParameter.from(KujakuLayer.Builder.class, builder));
         LineLayer lineLayer = (LineLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLineLayer");
 
         ShadowLayer shadowLayer = (ShadowLayer) Shadow.extract(lineLayer);
@@ -84,7 +84,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
         BoundaryLayer boundaryLayer = builder.build();
 
         ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryLabelLayer"
-                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
+                , ReflectionHelpers.ClassParameter.from(KujakuLayer.Builder.class, builder));
 
         SymbolLayer symbolLayer = (SymbolLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLabelLayer");
 
@@ -118,7 +118,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
         BoundaryLayer boundaryLayer = builder.build();
 
         ReflectionHelpers.callInstanceMethod(BoundaryLayer.class, boundaryLayer, "createBoundaryLabelLayer"
-                , ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
+                , ReflectionHelpers.ClassParameter.from(KujakuLayer.Builder.class, builder));
 
         SymbolLayer symbolLayer = (SymbolLayer) getValueInPrivateField(BoundaryLayer.class, boundaryLayer, "boundaryLabelLayer");
 
@@ -242,7 +242,7 @@ public class BoundaryLayerTest extends BaseKujakuLayerTest {
 
         assertNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
 
-        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryFeatureSource", ReflectionHelpers.ClassParameter.from(BoundaryLayer.Builder.class, builder));
+        ReflectionHelpers.callInstanceMethod(boundaryLayer, "createBoundaryFeatureSource", ReflectionHelpers.ClassParameter.from(KujakuLayer.Builder.class, builder));
 
         assertNotNull(ReflectionHelpers.getField(boundaryLayer, "boundarySource"));
     }
