@@ -2,10 +2,19 @@
   "type": "FeatureCollection",
   "features": [
     {
+      "id": "08ef4be0-011a-4161-a4cc-dfb5e4c6604c",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:06:45",
-        "testStatus": "positive"
+        "testStatus": "positive",
+        "childCases": [
+          "08ef4be0-011a-4161-a4cc-dfb5e4c6604c",
+          "d52019ac-7834-4721-9577-f1537e51eb8a",
+          "e9b2a4cf-8fd4-4c70-9e83-0af940e5c69d",
+          "c5416b8d-6ad7-4ae8-89c8-c908ce5545ee",
+          "ef2e4c6c-64cd-4d45-b452-ce7c6edbb4eb",
+          "b6ea92cb-5945-4b11-a6dd-e86c0d93f0b5"
+        ]
       },
       "geometry": {
         "type": "Polygon",
@@ -36,6 +45,7 @@
       }
     },
     {
+      "id": "d52019ac-7834-4721-9577-f1537e51eb8a",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:11:45",
@@ -74,6 +84,7 @@
       }
     },
     {
+      "id": "e9b2a4cf-8fd4-4c70-9e83-0af940e5c69d",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:07:45",
@@ -88,6 +99,7 @@
       }
     },
     {
+      "id": "c5416b8d-6ad7-4ae8-89c8-c908ce5545ee",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:08:45",
@@ -102,6 +114,7 @@
       }
     },
     {
+      "id": "ef2e4c6c-64cd-4d45-b452-ce7c6edbb4eb",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:09:45",
@@ -116,6 +129,7 @@
       }
     },
     {
+      "id": "b6ea92cb-5945-4b11-a6dd-e86c0d93f0b5",
       "type": "Feature",
       "properties": {
         "dateTime": "2019-01-01 00:10:45",

@@ -4,7 +4,6 @@ import android.app.Application;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
 
 import io.fabric.sdk.android.Fabric;
 import io.ona.kujaku.KujakuLibrary;
@@ -33,8 +32,7 @@ public class MyApplication extends Application {
         application = this;
 
         // activate Crashlytics
-        CrashlyticsCore debugDisabledCrashLytics = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();
-        Fabric.with(this, new Crashlytics.Builder().core(debugDisabledCrashLytics).build());
+        Fabric.with(this, new Crashlytics());  // initialize fabric
 
         KujakuLibrary.setEnableMapDownloadResume(false);
         KujakuLibrary.init(this); // must initialize KujakuLibrary

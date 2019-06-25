@@ -212,6 +212,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
 
         kujakuMapView.onCreate(savedInstanceState);
 
+        kujakuMapView.setDisableMyLocationOnMapMove(true);
+
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {

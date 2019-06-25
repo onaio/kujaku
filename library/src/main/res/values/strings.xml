@@ -42,4 +42,5 @@
     <string name="tracking_service_name">Tracking service</string>
     <string name="tracking_service_channel_name">Kujaku Tracking service channel</string>
     <string name="tracking_service_channel_id">@string/tracking_service_channel_name</string>
+    <string name="no_base_layers_availabe">No base layers available</string>
 </resources>

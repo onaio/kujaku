@@ -70,6 +70,7 @@ public class KujakuMapViewTest extends BaseTest {
             @Override
             public void run() {
                 Mapbox.getInstance(context, "sample_token");
+                InstrumentationRegistry.getInstrumentation().getTargetContext().setTheme(R.style.AppTheme);
                 kujakuMapView = new KujakuMapTestView(context);
             }
         });

@@ -15,10 +15,14 @@ import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.MultiLineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -33,6 +37,7 @@ import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,6 +66,52 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 /**
+ * Enables one to show a 1-to-1 or 1-to-many relationship between features. It's limits enables it
+ * to show a many-to-many relationship by referencing the same child-case from multiple index-cases.
+ * <p>
+ * Sample code when creating a 1-to-1 relationship:
+ * <p>
+ * <p>
+ * <code>
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq("testStatus", "positive"));
+ * <p>
+ * ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
+ * , ArrowLineLayer.SortConfig.SortOrder.ASC
+ * , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+ * .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+ * <p>
+ * <p>
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId("sample-cases-symbol")
+ * .build();
+ * </code>
+ * <p>
+ * <p>
+ * Sample code when creating a 1-to-many relationship:
+ * <p>
+ * <p>
+ * <code>
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq("testStatus", "positive"));
+ * <p>
+ * ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig("childCases");
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, oneToManyConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId("sample-cases-symbol")
+ * .build();
+ * </code>
+ * <p>
+ * <p>
+ * For the 1-to-many relationship, you need to have a property on the index case feature that defines
+ * a string array of child cases. The string array is the id of each GeoJSON Feature that is a direct child
+ * case of this index case
+ * <p><p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
  */
 
@@ -92,7 +143,8 @@ public class ArrowLineLayer extends KujakuLayer {
 
     private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {
         this.builder = builder;
-        if (builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME
+        if (builder.sortConfig != null &&
+                builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME
                 && TextUtils.isEmpty(builder.sortConfig.getDateTimeFormat())) {
             throw new InvalidArrowLineConfigException("Date time format for sort configuration on a DateTime property has not been set");
         }
@@ -181,17 +233,28 @@ public class ArrowLineLayer extends KujakuLayer {
             @Override
             public Object[] call() throws Exception {
                 FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);
-                FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
-                LineString arrowLine = calculateLineString(sortedFeatureCollection);
-                FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+                FeatureCollection arrowHeadFeatures;
 
-                return new Object[]{arrowLine, arrowHeadFeatures};
+                if (builder.sortConfig != null) {
+                    FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
+                    LineString arrowLine = calculateLineString(sortedFeatureCollection);
+                    arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+
+                    return new Object[]{arrowLine, arrowHeadFeatures};
+                } else if (builder.oneToManyConfig != null) {
+                    MultiLineString arrowLine = calculateMultiLineString(filteredFeatureCollection, builder.oneToManyConfig);
+                    arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+
+                    return new Object[]{arrowLine, arrowHeadFeatures};
+                } else {
+                    throw new IllegalArgumentException("SortConfig & OneToManyConfig not available to draw the line layer");
+                }
             }
         });
         genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
             @Override
             public void onSuccess(Object[] objects) {
-                LineString arrowLine = (LineString) objects[0];
+                Geometry arrowLine = (Geometry) objects[0];
                 FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];
 
                 arrowHeadSource.setGeoJson(arrowHeadFeatures);
@@ -281,6 +344,8 @@ public class ArrowLineLayer extends KujakuLayer {
             style.removeSource(arrowHeadSource);
             style.removeSource(lineLayerSource);
 
+            visible = false;
+
             return true;
         } else {
             Log.e(TAG, "Could not remove the layers & source because the the style is null or not fully loaded");
@@ -303,17 +368,28 @@ public class ArrowLineLayer extends KujakuLayer {
                 @Override
                 public Object[] call() throws Exception {
                     FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);
-                    FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
-                    LineString arrowLine = calculateLineString(sortedFeatureCollection);
-                    FeatureCollection arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+                    FeatureCollection arrowHeadFeatures;
 
-                    return new Object[]{arrowLine, arrowHeadFeatures};
+                    if (builder.sortConfig != null) {
+                        FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);
+                        LineString arrowLine = calculateLineString(sortedFeatureCollection);
+                        arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+
+                        return new Object[]{arrowLine, arrowHeadFeatures};
+                    } else if (builder.oneToManyConfig != null) {
+                        MultiLineString arrowLine = calculateMultiLineString(filteredFeatureCollection, builder.oneToManyConfig);
+                        arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);
+
+                        return new Object[]{arrowLine, arrowHeadFeatures};
+                    } else {
+                        throw new IllegalArgumentException("SortConfig & OneToManyConfig not available to draw the line layer");
+                    }
                 }
             });
             genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {
                 @Override
                 public void onSuccess(Object[] objects) {
-                    LineString arrowLine = (LineString) objects[0];
+                    Geometry arrowLine = (Geometry) objects[0];
                     FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];
 
                     arrowHeadSource.setGeoJson(arrowHeadFeatures);
@@ -359,12 +435,15 @@ public class ArrowLineLayer extends KujakuLayer {
         return FeatureCollection.fromFeatures(featuresList);
     }
 
-    private FeatureCollection filterFeatures(@NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
+    private FeatureCollection filterFeatures(@NonNull FeatureConfig featureConfig, @Nullable SortConfig sortConfig) {
         if (featureConfig.getFeatureFilterBuilder() != null) {
-            return featureConfig.getFeatureFilterBuilder()
-                    .setSortProperty(sortConfig.getSortProperty())
-                    .build()
-                    .filter();
+            FeatureFilter.Builder featureFilterBuilder = featureConfig.getFeatureFilterBuilder();
+
+            if (sortConfig != null) {
+                featureFilterBuilder.setSortProperty(sortConfig.getSortProperty());
+            }
+
+            return featureFilterBuilder.build().filter();
         } else {
             return featureConfig.getFeatureCollection();
         }
@@ -385,6 +464,34 @@ public class ArrowLineLayer extends KujakuLayer {
         for (int i = 0; i < lineStringPoints.size() - 1; i++) {
             Point startPoint = lineStringPoints.get(i);
             Point endPoint = lineStringPoints.get(i + 1);
+
+            Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));
+            arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));
+
+            featureList.add(arrowHeadFeature);
+        }
+
+        return FeatureCollection.fromFeatures(featureList);
+    }
+
+
+    /**
+     * Generates a {@link FeatureCollection} which is a list of {@link Feature}s that represent the
+     * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
+     * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
+     *
+     * @param multiLineString the line string for which to generate arrow head features
+     * @return a {@link FeatureCollection} which represents the locations of the arrow heads and bearing property
+     */
+    private FeatureCollection generateArrowHeadFeatureCollection(@NonNull MultiLineString multiLineString) {
+        ArrayList<Feature> featureList = new ArrayList<>();
+
+        List<LineString> lineStrings = multiLineString.lineStrings();
+        for (int i = 0; i < lineStrings.size(); i++) {
+            LineString lineString = lineStrings.get(i);
+
+            Point startPoint = lineString.coordinates().get(0);
+            Point endPoint = lineString.coordinates().get(1);
 
             Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));
             arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));
@@ -424,6 +531,69 @@ public class ArrowLineLayer extends KujakuLayer {
     }
 
     /**
+     * Calculates the center points from the polygons, multi-polygons and point features and generates
+     * a {@link MultiLineString} which will be used on the {@link LineLayer}
+     *
+     * @param featureCollection including Polygons and Multi-Polygons to convert to {@link MultiLineString}
+     * @return a {@link MultiLineString} which can be used to draw a {@link LineLayer} on the map
+     */
+    private MultiLineString calculateMultiLineString(@NonNull FeatureCollection featureCollection, @NonNull OneToManyConfig oneToManyConfig) {
+        ArrayList<LineString> centerPoints = new ArrayList<>();
+
+        HashMap<String, Feature> featureMap = new HashMap<>();
+
+        List<Feature> featureList = featureCollection.features();
+
+        // Generate the center points and read the feature into the search data structure
+        if (featureList != null) {
+            for (Feature feature : featureList) {
+                Geometry featureGeometry = feature.geometry();
+                if (featureGeometry != null) {
+                    Point featurePoint = null;
+                    if (featureGeometry instanceof Point) {
+                        Point originalFeaturePoint = (Point) featureGeometry;
+
+                        // This prevents reference access problems
+                        featurePoint = Point.fromLngLat(originalFeaturePoint.longitude(), originalFeaturePoint.latitude());
+                    } else {
+                        featurePoint = getCenter(featureGeometry);
+                    }
+
+                    String featureId = feature.id() != null ? feature.id() : UUID.randomUUID().toString();
+                    JsonObject featureProperties = feature.properties();
+                    Feature pointFeature = Feature.fromGeometry(featurePoint, featureProperties, featureId);
+
+                    featureMap.put(featureId, pointFeature);
+                }
+            }
+        }
+
+        // Create the multi-lines between center points
+        for (Feature feature: featureMap.values()) {
+            JsonElement childCasesElement = feature.getProperty(oneToManyConfig.getChildrenDefinitionProperty());
+
+            if (feature.hasProperty(oneToManyConfig.getChildrenDefinitionProperty()) && childCasesElement instanceof JsonArray) {
+                JsonArray childCases = (JsonArray) feature.getProperty(oneToManyConfig.getChildrenDefinitionProperty());
+                for (JsonElement childCase : childCases) {
+                    if (childCase.isJsonPrimitive()) {
+                        Feature childFeature = featureMap.get(childCase.getAsString());
+
+                        if (childFeature != null) {
+                            ArrayList<Point> points = new ArrayList<>();
+                            points.add((Point) feature.geometry());
+                            points.add((Point) childFeature.geometry());
+
+                            centerPoints.add(LineString.fromLngLats(points));
+                        }
+                    }
+                }
+            }
+        }
+
+        return MultiLineString.fromLineStrings(centerPoints);
+    }
+
+    /**
      * Generates the center from the {@link Geometry} of a given {@link Feature} for {@link Geometry}
      * of types {@link com.mapbox.geojson.MultiPolygon}, {@link com.mapbox.geojson.Polygon} and
      * {@link com.mapbox.geojson.MultiPoint}
@@ -444,17 +614,27 @@ public class ArrowLineLayer extends KujakuLayer {
     public static class Builder {
 
         private FeatureConfig featureConfig;
+        @Nullable
         private SortConfig sortConfig;
+        @Nullable
+        private OneToManyConfig oneToManyConfig;
         private Context context;
         private String addBelowLayerId;
 
         @ColorInt
         private int arrowLineColor;
         private float arrowLineWidth = 3f;
-
         public Builder(@NonNull Context context, @NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {
             this.featureConfig = featureConfig;
             this.sortConfig = sortConfig;
+            this.context = context;
+
+            setArrowLineColor(R.color.mapbox_blue);
+        }
+
+        public Builder(@NonNull Context context, @NonNull FeatureConfig featureConfig, @NonNull  OneToManyConfig oneToManyConfig) {
+            this.featureConfig = featureConfig;
+            this.oneToManyConfig = oneToManyConfig;
             this.context = context;
 
             setArrowLineColor(R.color.mapbox_blue);
@@ -518,7 +698,7 @@ public class ArrowLineLayer extends KujakuLayer {
 
     /**
      * It supports adding the sorting configuration that is going to be used to link {@Link Feature}s
-     * for which we are drawing an arrow line.
+     * for which we are drawing an arrow line. It enables for a one-to-one relationship between {@link Feature}s
      */
     public static class SortConfig {
 
@@ -570,6 +750,24 @@ public class ArrowLineLayer extends KujakuLayer {
 
         public String getDateTimeFormat() {
             return dateTimeFormat;
+        }
+    }
+
+    /**
+     * It supports adding the one-to-many configuration that is going to be used to link {@Link Feature}s
+     * for which we are drawing an arrow line. It enables for a one-to-many relationship between {@link Feature}s. You
+     * define the property which contains the child-case IDs
+     */
+    public static class OneToManyConfig {
+
+        private String childrenDefinitionProperty;
+
+        public OneToManyConfig(@NonNull String childrenDefinitionProperty) {
+            this.childrenDefinitionProperty = childrenDefinitionProperty;
+        }
+
+        public String getChildrenDefinitionProperty() {
+            return childrenDefinitionProperty;
         }
     }
 }

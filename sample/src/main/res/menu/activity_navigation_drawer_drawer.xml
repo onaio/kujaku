@@ -70,8 +70,12 @@
             android:title="@string/configurable_circle_activity" />
 
         <item
-            android:id="@+id/nav_case_relationship_activity"
-            android:title="@string/case_relationship_activity"/>
+            android:id="@+id/nav_one_to_one_case_relationship_activity"
+            android:title="@string/one_to_one_case_relationship_activity"/>
+
+        <item
+            android:id="@+id/nav_one_to_many_case_relationship_activity"
+            android:title="@string/_1_to_many_case_relationship_activity"/>
 
         <item
             android:id="@+id/nav_foci_boundary"
@@ -84,6 +88,10 @@
         <item
             android:id="@+id/nav_drawing_boundaries"
             android:title="@string/drawing_boundaries_activity"/>
+
+        <item
+            android:id="@+id/nav_base_layer_switcher_plugin"
+            android:title="@string/base_layer_switcher_plugin"/>
 
     </group>
 
