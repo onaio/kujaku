@@ -309,10 +309,10 @@ public class DrawingManager {
      * @return
      */
     private KujakuCircleOptions createMiddleKujakuCircleOptions(Circle circle1, Circle circle2, KujakuCircleOptions options) {
-        double lonEast = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle1.getLatLng().getLongitude() : circle2.getLatLng().getLongitude();
-        double lonWest = circle1.getLatLng().getLongitude() > circle2.getLatLng().getLongitude() ? circle2.getLatLng().getLongitude() : circle1.getLatLng().getLongitude();
-        double latNorth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle1.getLatLng().getLatitude() : circle2.getLatLng().getLatitude() ;
-        double latSouth = circle1.getLatLng().getLatitude() > circle2.getLatLng().getLatitude() ? circle2.getLatLng().getLatitude() : circle1.getLatLng().getLatitude() ;
+        double lonEast = Math.max(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
+        double lonWest = Math.min(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
+        double latNorth = Math.max(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
+        double latSouth = Math.min(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
 
         LatLng latLng =
                 LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
