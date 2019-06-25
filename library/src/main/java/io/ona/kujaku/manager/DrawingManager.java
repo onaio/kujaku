@@ -48,24 +48,6 @@ public class DrawingManager {
 
     private boolean drawingEnabled;
 
-    public static KujakuCircleOptions circleOptions = new KujakuCircleOptions()
-            .withCircleRadius(15.0f)
-            .withCircleColor("black")
-            .withMiddleCircle(false)
-            .withDraggable(false);
-
-    public static KujakuCircleOptions circleMiddleOptions = new KujakuCircleOptions()
-            .withCircleRadius(10.0f)
-            .withCircleColor("black")
-            .withMiddleCircle(true)
-            .withDraggable(false);
-
-    public static KujakuCircleOptions circleDraggableOptions = new KujakuCircleOptions()
-            .withCircleRadius(20.0f)
-            .withCircleColor("red")
-            .withMiddleCircle(false)
-            .withDraggable(true);
-
     /**
      * Constructor
      *
@@ -151,6 +133,30 @@ public class DrawingManager {
         });
     }
 
+    public static KujakuCircleOptions getKujakuCircleOptions(){
+        return new KujakuCircleOptions()
+                .withCircleRadius(15.0f)
+                .withCircleColor("black")
+                .withMiddleCircle(false)
+                .withDraggable(false);
+    }
+
+    public static KujakuCircleOptions getKujakuCircleMiddleOptions() {
+        return new KujakuCircleOptions()
+                .withCircleRadius(10.0f)
+                .withCircleColor("black")
+                .withMiddleCircle(true)
+                .withDraggable(false);
+    }
+
+    public static KujakuCircleOptions getKujakuCircleDraggableOptions() {
+        return new KujakuCircleOptions()
+                .withCircleRadius(20.0f)
+                .withCircleColor("red")
+                .withMiddleCircle(false)
+                .withDraggable(true);
+    }
+
     /**
      * Drawing enabled/disabled
      *
@@ -189,7 +195,7 @@ public class DrawingManager {
 
         if (points != null && points.size() > 0) {
             for (Point p : points) {
-                this.create(DrawingManager.circleOptions.withLatLng(new LatLng(p.latitude(), p.longitude())), false);
+                this.create(getKujakuCircleOptions().withLatLng(new LatLng(p.latitude(), p.longitude())), false);
             }
 
             this.refresh(true);
@@ -271,16 +277,16 @@ public class DrawingManager {
                 if (!circle.isMiddleCircle()) {
                     if (circle1 == null) {
                         circle1 = circle.getCircle();
-                        newCirclesOptions.add(this.getKujakuCircles().get(i).getCircleOptions());
+                        newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle1.getLatLng()));
                     } else {
                         circle2 = circle.getCircle();
                     }
                 }
 
                 if (circle1 != null && circle2 != null) {
-                    KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, circleMiddleOptions) ;
+                    KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, getKujakuCircleMiddleOptions()) ;
                     newCirclesOptions.add(newKujakuCircleOptions);
-                    newCirclesOptions.add(this.getKujakuCircles().get(i).getCircleOptions());
+                    newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle2.getLatLng()));
 
                     circle1 = circle2;
                     circle2 = null;
@@ -290,7 +296,7 @@ public class DrawingManager {
             if (circle1 != null) {
                 circle2 = this.getKujakuCircles().get(0).getCircle();
 
-                KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, circleMiddleOptions) ;
+                KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, getKujakuCircleMiddleOptions()) ;
                 newCirclesOptions.add(newKujakuCircleOptions);
             }
 
@@ -316,11 +322,7 @@ public class DrawingManager {
         LatLng latLng =
                 LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
 
-        return new KujakuCircleOptions()
-                .withMiddleCircle(options.getMiddleCircle())
-                .withDraggable(options.getDraggable())
-                .withCircleRadius(options.getCircleRadius())
-                .withCircleColor(options.getCircleColor())
+        return options
                 .withLatLng(latLng);
     }
 
@@ -473,10 +475,10 @@ public class DrawingManager {
         KujakuCircleOptions options;
 
         if (draggable) {
-            options = circleDraggableOptions;
+            options = getKujakuCircleDraggableOptions();
             this.setCurrentCircle(circle);
         } else {
-            options = circleOptions;
+            options = getKujakuCircleOptions();
             this.setCurrentCircle(null);
         }
 

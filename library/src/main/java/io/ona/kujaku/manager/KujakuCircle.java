@@ -35,10 +35,20 @@ public class KujakuCircle {
         return this.circle;
     }
 
+    /**
+     * set this circle a middle one if middleCircle == true
+     *
+     * @param middleCircle
+     */
     void setMiddleCircle(boolean middleCircle) {
         this.isMiddleCircle = middleCircle ;
     }
 
+    /**
+     * Is this circle a middle one between 2 reals
+     *
+     * @return
+     */
     boolean isMiddleCircle() {
         return this.isMiddleCircle;
     }
@@ -59,45 +69,5 @@ public class KujakuCircle {
 
     KujakuCircle getNextKujakuCircle() {
         return this.nextKujakuCircle;
-    }
-
-    KujakuCircleOptions getCircleOptions() {
-        Float blur = null;
-        String color = null;
-        Float opacity = null;
-        Float radius = null;
-
-        try {
-            blur = this.getCircle().getCircleBlur();
-        } catch (Exception ex) {
-        }
-
-        try {
-            color = this.getCircle().getCircleColor();
-        } catch (Exception ex) {
-        }
-
-        try {
-            opacity = this.getCircle().getCircleOpacity();
-        } catch (Exception ex) {
-        }
-
-        try {
-            radius = this.getCircle().getCircleRadius();
-        } catch (Exception ex) {
-        }
-
-        return new KujakuCircleOptions()
-                .withMiddleCircle(this.isMiddleCircle)
-                .withCircleBlur(blur)
-                .withCircleColor(color)
-                .withCircleOpacity(opacity)
-                .withCircleRadius(radius)
-               /* .withCircleStrokeColor(this.getCircle().getCircleStrokeColor())
-                .withCircleStrokeOpacity(this.getCircle().getCircleStrokeOpacity())
-                .withCircleStrokeWidth(this.getCircle().getCircleStrokeWidth())*/
-                .withDraggable(this.getCircle().isDraggable())
-                .withGeometry(this.getCircle().getGeometry())
-                .withLatLng(this.getCircle().getLatLng());
     }
 }
