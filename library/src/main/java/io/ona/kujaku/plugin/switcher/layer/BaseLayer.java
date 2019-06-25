@@ -27,7 +27,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-16
  */
 
-public abstract class BaseLayer implements KujakuLayer {
+public abstract class BaseLayer extends KujakuLayer {
 
     private String backgroundLayerName = Constants.Style.BACKGROUND_LAYER_ID;
     private boolean visible;
@@ -177,4 +177,8 @@ public abstract class BaseLayer implements KujakuLayer {
         // No implementation of this on a BaseLayer
     }
 
+    @Override
+    public FeatureCollection getFeatureCollection() {
+        return null;
+    }
 }

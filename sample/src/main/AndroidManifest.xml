@@ -92,7 +92,7 @@
         <activity
             android:name=".activities.DrawingBoundariesActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-        <activity>
+        <activity
             android:name=".activities.BaseLayerSwitcherActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
