@@ -16,7 +16,7 @@ import io.ona.kujaku.BaseTest;
 public class KujakuCircleOptionsTest extends BaseTest {
 
     @Test
-    public void createInstanceOfDrawingManager() {
+    public void testKujakuCircleOptions() {
         KujakuCircleOptions options = DrawingManager.getKujakuCircleOptions();
         KujakuCircleOptions optionsMiddle = DrawingManager.getKujakuCircleMiddleOptions();
         KujakuCircleOptions optionsDraggable = DrawingManager.getKujakuCircleDraggableOptions();

@@ -12,13 +12,19 @@ import io.ona.kujaku.test.shadows.ShadowGeoJsonSource;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
 import io.ona.kujaku.test.shadows.ShadowSymbolLayer;
+import io.ona.kujaku.test.shadows.ShadowCircleLayer;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 22/02/2019
  */
-@Config(shadows = {ShadowGeoJsonSource.class, ShadowSymbolLayer.class, ShadowLineLayer.class, ShadowFillLayer.class, ShadowLayer.class})
+@Config(shadows = {ShadowGeoJsonSource.class,
+        ShadowSymbolLayer.class,
+        ShadowLineLayer.class,
+        ShadowFillLayer.class,
+        ShadowLayer.class,
+        ShadowCircleLayer.class})
 public abstract class BaseKujakuLayerTest extends BaseTest {
 
     protected void assertPointEquals(@NonNull Point expected, @NonNull Point actual) {
