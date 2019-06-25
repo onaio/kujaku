@@ -40,7 +40,7 @@ public class KujakuCircle {
      *
      * @param middleCircle
      */
-    void setMiddleCircle(boolean middleCircle) {
+    public void setMiddleCircle(boolean middleCircle) {
         this.isMiddleCircle = middleCircle ;
     }
 
@@ -49,25 +49,25 @@ public class KujakuCircle {
      *
      * @return
      */
-    boolean isMiddleCircle() {
+    public boolean isMiddleCircle() {
         return this.isMiddleCircle;
     }
 
-    void setNextKujakuCircle(KujakuCircle circle) {
+    public void setNextKujakuCircle(KujakuCircle circle) {
         this.nextKujakuCircle = circle;
         circle.previousKujakuCircle = this;
     }
 
-    void setPreviousKujakuCircle(KujakuCircle circle) {
+    public void setPreviousKujakuCircle(KujakuCircle circle) {
         this.previousKujakuCircle = circle;
         circle.nextKujakuCircle = this;
     }
 
-    KujakuCircle getPreviousKujakuCircle() {
+    public KujakuCircle getPreviousKujakuCircle() {
         return this.previousKujakuCircle;
     }
 
-    KujakuCircle getNextKujakuCircle() {
+    public KujakuCircle getNextKujakuCircle() {
         return this.nextKujakuCircle;
     }
 }

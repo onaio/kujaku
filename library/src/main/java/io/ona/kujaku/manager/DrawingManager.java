@@ -83,19 +83,18 @@ public class DrawingManager {
 
         circleManager.addDragListener(new OnCircleDragListener() {
             @Override
-            // Left empty on purpose
             public void onAnnotationDragStarted(Circle circle) {
+                // Left empty on purpose
             }
 
             @Override
-            // Left empty on purpose
             public void onAnnotationDrag(Circle circle) {
                 refreshPolygon();
             }
 
             @Override
-            // Left empty on purpose
             public void onAnnotationDragFinished(Circle circle) {
+                // Left empty on purpose
             }
         });
 
@@ -105,10 +104,8 @@ public class DrawingManager {
                 final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
                 List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
-                if (features.size() == 0) {
-                    if (drawingEnabled && onDrawingCircleClickListener != null) {
-                        onDrawingCircleClickListener.onCircleNotClick(point);
-                    }
+                if (features.size() == 0 && drawingEnabled && onDrawingCircleClickListener != null) {
+                    onDrawingCircleClickListener.onCircleNotClick(point);
                 }
 
                 return false;
@@ -122,10 +119,8 @@ public class DrawingManager {
                 List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
                 // Get the first feature within the list if one exist
-                if (features.size() == 0) {
-                    if (drawingEnabled && onDrawingCircleLongClickListener != null) {
-                        onDrawingCircleLongClickListener.onCircleNotLongClick(point);
-                    }
+                if (features.size() == 0 && drawingEnabled && onDrawingCircleLongClickListener != null) {
+                    onDrawingCircleLongClickListener.onCircleNotLongClick(point);
                 }
 
                 return false;

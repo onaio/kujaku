@@ -14,8 +14,8 @@ import com.mapbox.mapboxsdk.style.expressions.Expression;
  */
 public abstract class KujakuLayer {
 
-    boolean isRemoved = false;
-    boolean visible = false;
+    private boolean isRemoved = false;
+    protected boolean visible = false;
 
     /**
      * Adds the layer to a {@link MapboxMap}
@@ -78,16 +78,16 @@ public abstract class KujakuLayer {
      */
     public abstract static class Builder<T extends KujakuLayer, B extends Builder<T, B>> {
 
-        FeatureCollection featureCollection;
-        float boundaryWidth = 5;
+        protected FeatureCollection featureCollection;
+        protected float boundaryWidth = 5;
         @ColorInt
-        int boundaryColor = Color.WHITE;
-        float labelTextSize;
+        protected int boundaryColor = Color.WHITE;
+        protected float labelTextSize;
         @ColorInt
-        int labelColorInt = Color.BLACK;
-        String belowLayerId;
-        String labelProperty = "";
-        Expression labelTextSizeExpression;
+        protected int labelColorInt = Color.BLACK;
+        protected String belowLayerId;
+        protected String labelProperty = "";
+        protected Expression labelTextSizeExpression;
 
         public Builder(@NonNull FeatureCollection featureCollection) {
             this.featureCollection = featureCollection;
