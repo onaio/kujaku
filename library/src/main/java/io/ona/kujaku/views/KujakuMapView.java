@@ -187,6 +187,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private TrackingServiceOptions trackingServiceOptions = null;
     private boolean trackingServiceInitialized = false;
 
+    private int resourceId;
+    private boolean disableMyLocationOnMapMove = false;
+
+
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -233,7 +237,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
                         @Override
                         public void onSuccess() {
-                            focusOnUserLocation(true, locationBufferRadius);
+                            focusOnUserLocation(resourceId == 0 || resourceId == R.drawable.ic_cross_hair, locationBufferRadius);
                         }
                     });
             }
@@ -266,12 +270,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void showUpdatedUserLocation(Float radius) {
+        showUpdatedUserLocation(radius, 1f);
+    }
+
+    private void showUpdatedUserLocation(Float radius, Float distanceMoved) {
         if (updateUserLocationOnMap) {
             updateUserLocation(radius);
         }
 
-        if (updateCameraUserLocationOnMap) {
-            // Focus on the new location
+        if (updateCameraUserLocationOnMap && distanceMoved != 0) {
+            // Focus on the new location only if device moved
             centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));
         }
     }
@@ -281,7 +289,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                float distanceMoved = -1;
                 if (location != null) {
+                    if (latestLocation != null) {
+                        distanceMoved = latestLocation.distanceTo(location);
+                    }
                     latestLocation = location;
                     latestLocationCoordinates = new LatLng(location.getLatitude()
                             , location.getLongitude());
@@ -291,7 +303,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     onLocationChangedListener.onLocationChanged(location);
                 }
 
-                showUpdatedUserLocation(locationBufferRadius);
+                showUpdatedUserLocation(locationBufferRadius, distanceMoved);
             }
         });
 
@@ -436,7 +448,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;
         if (latestLocation != null) {
             latestLocation.setAccuracy(this.locationBufferRadius);
-            getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
+
+            if (getMapboxLocationComponentWrapper().getLocationComponent() != null) {
+                getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
+            }
         }
     }
 
@@ -764,8 +779,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
-                // We should assume the user no longer wants us to focus on their location
-                focusOnUserLocation(false);
+                if (!disableMyLocationOnMapMove) {
+                    // We should assume the user no longer wants us to focus on their location
+                    focusOnUserLocation(false);
+                }
             }
 
             @Override
@@ -943,6 +960,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void changeImageButtonResource(ImageButton imageButton, int resourceId) {
         imageButton.setImageResource(resourceId);
+        this.resourceId = resourceId;
     }
 
     private void checkPermissions() {
@@ -1527,5 +1545,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /************** End of Tracking Service ***************/
+
+    @Override
+    public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {
+        this.disableMyLocationOnMapMove = disableMyLocationOnMapMove;
+    }
 }
 

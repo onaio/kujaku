@@ -2,10 +2,13 @@ package io.ona.kujaku.layers;
 
 import android.content.Context;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.MultiLineString;
 import com.mapbox.geojson.MultiPolygon;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
@@ -28,6 +31,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.test.shadows.ShadowLayer;
@@ -38,6 +42,7 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -227,6 +232,83 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
 
         assertPointEquals(Point.fromLngLat(6.5d, 6.5d), point1);
         assertPointEquals(Point.fromLngLat(9.1d, 9.1d), point2);
+    }
+
+    @Test
+    public void calculateMultiLineStringWhenGivenFeatureCollectionWithFeatures() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+
+        ArrayList<Point> pointsListLower1 = new ArrayList<>();
+
+        pointsListLower1.add(Point.fromLngLat(5d, 8d));
+        pointsListLower1.add(Point.fromLngLat(8d, 8d));
+        pointsListLower1.add(Point.fromLngLat(8d, 5d));
+        pointsListLower1.add(Point.fromLngLat(5d, 5d));
+
+        ArrayList<List<Point>> pointsListUpper1 = new ArrayList<>();
+        pointsListUpper1.add(pointsListLower1);
+
+        String feature1Id = UUID.randomUUID().toString();
+        String feature2Id = UUID.randomUUID().toString();
+        String feature3Id = UUID.randomUUID().toString();
+        String feature4Id = UUID.randomUUID().toString();
+        String feature5Id = UUID.randomUUID().toString();
+
+        JsonArray jsonArrayIds = new JsonArray();
+        jsonArrayIds.add(feature2Id);
+        jsonArrayIds.add(feature3Id);
+
+        JsonObject feature1Properties = new JsonObject();
+        feature1Properties.add("childCases", jsonArrayIds);
+
+        JsonObject feature3Properties = new JsonObject();
+        JsonArray jsonArrayIdsFeature3 = new JsonArray();
+        jsonArrayIdsFeature3.add(feature5Id);
+        feature3Properties.add("childCases", jsonArrayIdsFeature3);
+
+        featuresList.add(Feature.fromGeometry(Polygon.fromLngLats(pointsListUpper1), feature1Properties, feature1Id));
+        featuresList.add(Feature.fromGeometry(Point.fromLngLat(9.1d, 9.1d), null, feature2Id));
+        featuresList.add(Feature.fromGeometry(Point.fromLngLat(11.1d, 9.1d), feature3Properties, feature3Id));
+        featuresList.add(Feature.fromGeometry(Point.fromLngLat(11.1d, 2.1d), null, feature4Id));
+        featuresList.add(Feature.fromGeometry(Point.fromLngLat(9.1d, 2.1d), null, feature5Id));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(featureCollection);
+        ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig("childCases");
+
+        ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, oneToManyConfig);
+        ArrowLineLayer arrowLineLayer = builder.build();
+
+        MultiLineString multiLineString = ReflectionHelpers.callInstanceMethod(arrowLineLayer
+                , "calculateMultiLineString"
+                , ReflectionHelpers.ClassParameter.from(FeatureCollection.class, featureCollection)
+                , ReflectionHelpers.ClassParameter.from(ArrowLineLayer.OneToManyConfig.class, oneToManyConfig)
+        );
+
+        assertEquals(3, multiLineString.coordinates().size());
+
+        boolean firstPointFound = false;
+        boolean secondPointFound = false;
+        boolean thirdPointFound = false;
+
+        for (List<Point> lineString: multiLineString.coordinates()) {
+            if (!firstPointFound && lineString.get(0).latitude() == 6.5d && lineString.get(0).longitude() == 6.5d) {
+                firstPointFound = true;
+            }
+
+            if (!secondPointFound && lineString.get(0).latitude() == 9.1d && lineString.get(0).longitude() == 11.1d) {
+                secondPointFound = true;
+            }
+
+            if (!thirdPointFound && lineString.get(1).latitude() == 2.1d && lineString.get(1).longitude() == 9.1d) {
+                thirdPointFound = true;
+            }
+        }
+
+        assertTrue(firstPointFound);
+        assertTrue(secondPointFound);
+        assertTrue(thirdPointFound);
     }
 
     @Test
@@ -866,5 +948,71 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
                         , "featureConfig")
                 , "featureFilterBuilder")).getFeatureCollection()
         );
+    }
+
+    @Test
+    public void createLineLayerSource() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        FeatureFilter.Builder builder = new FeatureFilter.Builder(featureCollection)
+                .whereEq("type", "building");
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(builder);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer arrowLineLayer = new ArrowLineLayer.Builder(context, featureConfig, sortConfig).build();
+
+        assertNull((GeoJsonSource) ReflectionHelpers.getField(arrowLineLayer, "lineLayerSource"));
+        ReflectionHelpers.callInstanceMethod(arrowLineLayer, "createLineLayerSource");
+        assertNotNull((GeoJsonSource) ReflectionHelpers.getField(arrowLineLayer, "lineLayerSource"));
+    }
+
+    @Test
+    public void createArrowHeadLayer() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        FeatureFilter.Builder builder = new FeatureFilter.Builder(featureCollection)
+                .whereEq("type", "building");
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(builder);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer arrowLineLayer = new ArrowLineLayer.Builder(context, featureConfig, sortConfig).build();
+
+        assertNull((SymbolLayer) ReflectionHelpers.getField(arrowLineLayer, "arrowHeadLayer"));
+        ReflectionHelpers.callInstanceMethod(arrowLineLayer, "createArrowHeadLayer");
+
+        SymbolLayer arrowHeadLayer = (SymbolLayer) ReflectionHelpers.getField(arrowLineLayer, "arrowHeadLayer");
+        assertNotNull(arrowHeadLayer);
+
+        ShadowLayer shadowLayer = (ShadowLayer) Shadow.extract(arrowHeadLayer);
+        HashMap<String, PropertyValue> propertyValueHashMap = shadowLayer.getPropertyValues();
+        assertEquals(7, propertyValueHashMap.size());
+
+        assertEquals(1f, propertyValueHashMap.get("icon-opacity").value);
+        assertTrue(propertyValueHashMap.get("icon-rotate").toString().contains("arrow-head-bearing"));
+        assertEquals("map", propertyValueHashMap.get("icon-rotation-alignment").value);
+        assertEquals(true, propertyValueHashMap.get("icon-allow-overlap").value);
+        assertEquals(true, propertyValueHashMap.get("icon-ignore-placement").value);
+    }
+
+    @Test
+    public void createArrowHeadSource() throws InvalidArrowLineConfigException {
+        ArrayList<Feature> featuresList = new ArrayList<>();
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(featuresList);
+
+        FeatureFilter.Builder builder = new FeatureFilter.Builder(featureCollection)
+                .whereEq("type", "building");
+
+        ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(builder);
+        ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("", ArrowLineLayer.SortConfig.SortOrder.DESC, ArrowLineLayer.SortConfig.PropertyType.NUMBER);
+
+        ArrowLineLayer arrowLineLayer = new ArrowLineLayer.Builder(context, featureConfig, sortConfig).build();
+
+        assertNull((GeoJsonSource) ReflectionHelpers.getField(arrowLineLayer, "arrowHeadSource"));
+        ReflectionHelpers.callInstanceMethod(arrowLineLayer, "createArrowHeadSource");
+        assertNotNull((GeoJsonSource) ReflectionHelpers.getField(arrowLineLayer, "arrowHeadSource"));
     }
 }

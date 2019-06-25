@@ -2,6 +2,7 @@ package io.ona.kujaku.helpers;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
@@ -31,6 +32,7 @@ public class MapboxLocationComponentWrapper {
         }
     }
 
+    @Nullable
     public LocationComponent getLocationComponent() {
        return locationComponent;
     }
