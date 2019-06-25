@@ -20,8 +20,6 @@ import java.util.UUID;
  */
 public class FillBoundaryLayer extends BoundaryLayer {
 
-    private static final String TAG = FillBoundaryLayer.class.getName();
-
     private String BOUNDARY_FILL_LAYER_ID = UUID.randomUUID().toString();
 
     private FillLayer boundaryFillLayer;
