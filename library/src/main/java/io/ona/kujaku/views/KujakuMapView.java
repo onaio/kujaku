@@ -1690,7 +1690,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @return
      */
     public Circle drawCircle(LatLng latLng) {
-        return getDrawingManager().create(DrawingManager.circleOptions.withLatLng(latLng));
+        return getDrawingManager().create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
     }
 
     /**
