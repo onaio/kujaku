@@ -23,8 +23,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
@@ -68,13 +66,6 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
-
-        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(Style.MAPBOX_STREETS);
-            }
-        });
     }
 
     private void initializeFromStyleSource() {

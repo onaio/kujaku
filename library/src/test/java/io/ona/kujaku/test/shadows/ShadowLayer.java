@@ -17,6 +17,8 @@ import java.util.HashMap;
 @Implements(Layer.class)
 public class ShadowLayer {
 
+    protected String shadowLayerId;
+
     private HashMap<String, PropertyValue> propertyValues = new HashMap<>();
 
     @Implementation
@@ -29,4 +31,12 @@ public class ShadowLayer {
     public HashMap<String, PropertyValue> getPropertyValues() {
         return propertyValues;
     }
+
+
+    @Implementation
+    @NonNull
+    public String getId() {
+        return shadowLayerId;
+    }
+
 }
