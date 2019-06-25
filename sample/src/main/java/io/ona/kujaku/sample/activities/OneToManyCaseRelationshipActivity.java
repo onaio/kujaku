@@ -23,13 +23,12 @@ import java.io.IOException;
 
 import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
 import io.ona.kujaku.layers.ArrowLineLayer;
-import io.ona.kujaku.layers.BoundaryLayer;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.utils.FeatureFilter;
-import io.ona.kujaku.utils.IOUtil;
 import io.ona.kujaku.views.KujakuMapView;
 
+import static com.mapbox.mapboxsdk.style.expressions.Expression.all;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
 import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
@@ -48,11 +47,11 @@ import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/02/2019
  */
 
-public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
+public class OneToManyCaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private KujakuMapView kujakuMapView;
 
-    private static final String TAG = CaseRelationshipActivity.class.getName();
+    private static final String TAG = OneToManyCaseRelationshipActivity.class.getName();
     private static final String CASES_SOURCE_ID = "sample-cases-source";
 
     private ArrowLineLayer arrowLineLayer;
@@ -60,16 +59,15 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     private Button drawArrowsBtn;
     private Button changeFeatureBtn;
+    private Button filterFeaturesBtn;
 
-    private FeatureCollection boundaryFeatureCollection1;
-    private FeatureCollection boundaryFeatureCollection2;
+    private FeatureCollection caseFeatureCollection;
 
     private LatLng focusPoint1;
-    private LatLng focusPoint2;
 
-    private BoundaryLayer boundaryLayer;
-
-    private boolean showingFeatureCollection1;
+    private Expression defaultCircleLayerExpression = eq(geometryType(), "Point");
+    private Expression defaultFillLayerExpression = neq(geometryType(), "Point");
+    private Expression testStatusPositiveExpression = eq(get("testStatus"), "positive");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,28 +79,25 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
         drawArrowsBtn = findViewById(R.id.btn_caseRelationshipAct_drawArrows);
         changeFeatureBtn = findViewById(R.id.btn_caseRelationshipAct_change);
+        changeFeatureBtn.setVisibility(View.GONE);
+        filterFeaturesBtn = findViewById(R.id.btn_caseRelationshipAct_filter);
 
         drawArrowsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleDrawingArrowsShowingRelationship();
-                changeFeatureBtn.setEnabled(true);
             }
         });
 
         try {
-            boundaryFeatureCollection1 = FeatureCollection.fromJson(
+            caseFeatureCollection = FeatureCollection.fromJson(
                     readInputStreamAsString(getAssets().open("case-relationship-features.geojson"))
-            );
-            boundaryFeatureCollection2 = FeatureCollection.fromJson(
-                    IOUtil.readInputStreamAsString(getAssets().open("alternative_arrow_line.geojson"))
             );
         } catch (IOException e) {
             Log.e(TAG, Log.getStackTraceString(e));
         }
 
         focusPoint1 = new LatLng(0.15380840901698828, 37.66387939453125);
-        focusPoint2 = new LatLng(-0.44219531715407406, 37.5457763671875);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -119,26 +114,16 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             }
         });
 
-        changeFeatureBtn.setOnClickListener(new View.OnClickListener() {
+        filterFeaturesBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (showingFeatureCollection1) {
-                    sampleCasesSource.setGeoJson(boundaryFeatureCollection2);
-                    arrowLineLayer.updateFeatures(boundaryFeatureCollection2);
-                    changeFocus(focusPoint2);
-                    showingFeatureCollection1 = false;
-                } else {
-                    sampleCasesSource.setGeoJson(boundaryFeatureCollection1);
-                    arrowLineLayer.updateFeatures(boundaryFeatureCollection1);
-                    changeFocus(focusPoint1);
-                    showingFeatureCollection1 = true;
-                }
+                toggleFeatureFilter();
             }
         });
     }
 
     private void addStructuresToMap(@NonNull Style style) {
-        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, boundaryFeatureCollection1);
+        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, caseFeatureCollection);
         style.addSource(sampleCasesSource);
 
         Expression colorExpression = match(get("testStatus")
@@ -147,11 +132,11 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
                 , stop(literal("negative"), Expression.color(getColorv16(R.color.negativeTasksColor))));
 
         FillLayer fillLayer = new FillLayer("sample-cases-fill", CASES_SOURCE_ID);
-        fillLayer.withFilter(neq(geometryType(), "Point"));
+        fillLayer.withFilter(defaultFillLayerExpression);
         fillLayer.withProperties(fillColor(colorExpression));
 
         CircleLayer circleLayer = new CircleLayer("sample-cases-symbol", CASES_SOURCE_ID);
-        circleLayer.withFilter(eq(geometryType(), "Point"));
+        circleLayer.withFilter(defaultCircleLayerExpression);
         circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));
 
         style.addLayer(circleLayer);
@@ -161,16 +146,11 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
     private void toggleDrawingArrowsShowingRelationship() {
         if (arrowLineLayer == null) {
             ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
-                    new FeatureFilter.Builder(boundaryFeatureCollection1)
+                    new FeatureFilter.Builder(caseFeatureCollection)
                             .whereEq("testStatus", "positive"));
-
-            ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig("dateTime"
-                    , ArrowLineLayer.SortConfig.SortOrder.ASC
-                    , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
-                    .setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
-
             try {
-                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+                ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig("childCases");
+                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, oneToManyConfig)
                         .setArrowLineColor(R.color.mapbox_blue)
                         .setArrowLineWidth(3)
                         .setAddBelowLayerId("sample-cases-symbol")
@@ -178,18 +158,51 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
             } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {
                 Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));
             }
-
-            showingFeatureCollection1 = true;
         }
 
         if (arrowLineLayer.isVisible()) {
             kujakuMapView.disableLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.draw_arrows);
+            drawArrowsBtn.setText(R.string.show_case_relationships);
         } else {
             kujakuMapView.addLayer(arrowLineLayer);
-            drawArrowsBtn.setText(R.string.disable_remove_arrows);
+            drawArrowsBtn.setText(R.string.hide_case_relationships);
         }
     }
+
+    private void toggleFeatureFilter() {
+        kujakuMapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+                mapboxMap.getStyle(new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        FillLayer fillLayer = style.getLayerAs("sample-cases-fill");
+                        CircleLayer circleLayer = style.getLayerAs("sample-cases-symbol");
+
+                        if (fillLayer != null && circleLayer != null) {
+                            Expression fillLayerExpression = fillLayer.getFilter();
+
+                            if (fillLayerExpression != null) {
+                                String filterExString = fillLayerExpression.toString();
+
+                                if (filterExString.contains("testStatus")) {
+                                    // Already filtered then reset
+                                    fillLayer.setFilter(defaultFillLayerExpression);
+                                    circleLayer.setFilter(defaultCircleLayerExpression);
+                                    filterFeaturesBtn.setText(R.string.only_cases);
+                                } else {
+                                    fillLayer.setFilter(all(defaultFillLayerExpression, testStatusPositiveExpression));
+                                    circleLayer.setFilter(all(defaultCircleLayerExpression, testStatusPositiveExpression));
+                                    filterFeaturesBtn.setText(R.string.show_all);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
 
     private void changeFocus(@NonNull LatLng point) {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
@@ -211,7 +224,7 @@ public class CaseRelationshipActivity extends BaseNavigationDrawerActivity {
 
     @Override
     protected int getSelectedNavigationItem() {
-        return R.id.nav_case_relationship_activity;
+        return R.id.nav_one_to_many_case_relationship_activity;
     }
 
     @Override

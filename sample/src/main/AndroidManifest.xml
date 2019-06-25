@@ -78,13 +78,19 @@
             android:name=".activities.ConfigurableLocationCircleActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".activities.CaseRelationshipActivity"
+            android:name=".activities.OneToOneCaseRelationshipActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.OneToManyCaseRelationshipActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.PassiveRecordObjectActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.FociBoundaryActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.BaseLayerSwitcherActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 

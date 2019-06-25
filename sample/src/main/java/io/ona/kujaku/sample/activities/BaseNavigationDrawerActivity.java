@@ -191,8 +191,13 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
-            case R.id.nav_case_relationship_activity:
-                startActivity(new Intent(this, CaseRelationshipActivity.class));
+            case R.id.nav_one_to_one_case_relationship_activity:
+                startActivity(new Intent(this, OneToOneCaseRelationshipActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_one_to_many_case_relationship_activity:
+                startActivity(new Intent(this, OneToManyCaseRelationshipActivity.class));
                 finish();
                 return true;
 
@@ -203,6 +208,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
 
             case R.id.nav_passive_record_object:
                 startActivity(new Intent(this, PassiveRecordObjectActivity.class));
+                finish();
+                return true;
+
+            case R.id.nav_base_layer_switcher_plugin:
+                startActivity(new Intent(this, BaseLayerSwitcherActivity.class));
                 finish();
                 return true;
 

@@ -20,6 +20,7 @@ import io.ona.kujaku.helpers.ActivityLauncherHelper;
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
+import timber.log.Timber;
 
 import static android.content.Context.ALARM_SERVICE;
 
@@ -51,6 +52,10 @@ public class KujakuLibrary {
         }
         library = new KujakuLibrary();
         AndroidThreeTen.init(context);
+
+        if (Timber.treeCount() < 1) {
+            Timber.plant(new Timber.DebugTree());
+        }
     }
 
     private static void resumeMapDownload(Context context) {

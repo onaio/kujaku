@@ -191,7 +191,7 @@ private static void developmentKujakuModulesImport(instance, configuration) {
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK
 private static void releaseTestKujakuImport(configuration) {
-    configuration.implementation 'io.ona.kujaku:library:0.7.2'
+    configuration.implementation 'io.ona.kujaku:library:0.7.4'
 }
 
 tasks.withType(Test) {
@@ -209,7 +209,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
-                      , 'android/**/*.*', "io/realm/*.*"]
+                      , 'android/**/*.*', "io/realm/*.*", "io/ona/kujaku/sample/activities/*.*"]
     def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
