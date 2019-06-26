@@ -1,6 +1,7 @@
 package io.ona.kujaku.manager;
 
 import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -121,5 +122,65 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
 
         Assert.assertEquals(manager.getKujakuCircles().get(0).getPreviousKujakuCircle(), manager.getKujakuCircles().get(7));
         Assert.assertEquals(manager.getKujakuCircles().get(1).getPreviousKujakuCircle(), manager.getKujakuCircles().get(0));
+    }
+
+    @Test
+    public void stopDrawing() {
+        List<Point> points = new ArrayList<>();
+        points.add(Point.fromLngLat(1,1));
+        points.add(Point.fromLngLat(2,2));
+        points.add(Point.fromLngLat(3,3));
+        points.add(Point.fromLngLat(4,4));
+
+        manager.startDrawing(points);
+
+        Assert.assertTrue(manager.isDrawingEnabled());
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+
+        Polygon polygon = manager.stopDrawing();
+
+        Assert.assertFalse(manager.isDrawingEnabled());
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+
+        Assert.assertNotNull(polygon);
+        Assert.assertEquals(polygon.coordinates().get(0).size(), points.size());
+    }
+
+    @Test
+    public void deletePoint() {
+        List<Point> points = new ArrayList<>();
+        points.add(Point.fromLngLat(1,1));
+        points.add(Point.fromLngLat(2,2));
+        points.add(Point.fromLngLat(3,3));
+        points.add(Point.fromLngLat(4,4));
+
+        manager.startDrawing(points);
+
+        Assert.assertEquals(8, manager.getKujakuCircles().size());
+
+        manager.delete(null); // Delete nothing
+        manager.delete(manager.getKujakuCircles().get(0));
+
+        Assert.assertEquals(6, manager.getKujakuCircles().size());
+    }
+
+    @Test
+    public void areMiddleCircles() {
+        List<Point> points = new ArrayList<>();
+        points.add(Point.fromLngLat(1,1));
+        points.add(Point.fromLngLat(2,2));
+        points.add(Point.fromLngLat(3,3));
+        points.add(Point.fromLngLat(4,4));
+
+        manager.startDrawing(points);
+
+        Assert.assertFalse(manager.getKujakuCircles().get(0).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(1).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(2).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(3).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(4).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(5).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(6).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
     }
 }
