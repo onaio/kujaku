@@ -75,6 +75,7 @@ import io.ona.kujaku.exceptions.DrawingManagerIsNullException;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
+import io.ona.kujaku.helpers.wmts.WmtsHelper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.layers.FillBoundaryLayer;
@@ -128,7 +129,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ImageView trackingServiceStatusButton;
 
     private ILocationClient locationClient;
-    private Toast currentlyShownToast;
 
     private LinearLayout addPointButtonsLayout;
 
@@ -192,9 +192,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
-    /**
-     * Tracking Service
-     */
+    /** Tracking Service **/
     private TrackingService trackingService = null;
     private boolean trackingServiceBound = false;
     private TrackingServiceListener trackingServiceListener = null ;
@@ -205,10 +203,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private int resourceId;
     private boolean disableMyLocationOnMapMove = false;
 
-
-    /**
-     * Drawing Manager
-     */
+    /** Drawing Manager **/
     private DrawingManager drawingManager = null ;
 
     public KujakuMapView(@NonNull Context context) {
@@ -359,7 +354,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions) {
-
         addPointBtn.setVisibility(VISIBLE);
         addPointBtn.setOnClickListener(new OnClickListener() {
             @Override
@@ -718,10 +712,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
         }
 
-        this.selectWmtsStyle(layerIdentified, styleIdentifier);
-        this.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
-        this.setZooms(layerIdentified, capabilities);
-        this.setTilesSize(layerIdentified, capabilities);
+        WmtsHelper.selectWmtsStyle(layerIdentified, styleIdentifier);
+        WmtsHelper.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
+        WmtsHelper.setZooms(layerIdentified, capabilities);
+        WmtsHelper.setTilesSize(layerIdentified, capabilities);
 
         this.wmtsLayers.add(layerIdentified);
 
@@ -729,71 +723,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             addWmtsLayers();
         }
     }
-
-    /**
-     * Verify if Style exists for the Layer
-     *
-     * @param layer
-     * @param styleIdentifier
-     * @throws Exception
-     */
-    private void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws WmtsCapabilitiesException {
-        if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
-            // Check if style is known
-            if (layer.getStyle(styleIdentifier) == null) {
-                throw new WmtsCapabilitiesException(String.format("Style with identifier %1$s is not available for Layer %2$s", styleIdentifier, layer.getIdentifier()));
-            } else {
-                layer.setSelectedStyleIdentifier(styleIdentifier);
-            }
-        }
-    }
-
-    /**
-     * Verify if TileMatrixSetlink exists exists for the Layer
-     *
-     * @param layer
-     * @param tileMatrixSetLinkIdentifier
-     * @throws Exception
-     */
-    private void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
-        if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
-            // Check if style is known
-            if (layer.getTileMatrixSetLink(tileMatrixSetLinkIdentifier) == null) {
-                throw new WmtsCapabilitiesException(String.format("tileMatrixSetLink with identifier %1$s is not available for Layer %2$s", tileMatrixSetLinkIdentifier, layer.getIdentifier()));
-            } else {
-                layer.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);
-            }
-        }
-    }
-
-    /**
-     * Set the Maximum and Minimum Zoom for this layer
-     *
-     * @param layer
-     * @param capabilities
-     */
-    private void setZooms(WmtsLayer layer, WmtsCapabilities capabilities){
-        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
-
-        int maxZoom = capabilities.getMaximumTileMatrixZoom(tileMatrixSetIdentifier);
-        int minZoom = capabilities.getMinimumTileMatrixZoom(tileMatrixSetIdentifier);
-
-        layer.setMaximumZoom(maxZoom);
-        layer.setMinimumZoom(minZoom);
-    }
-
-    /**
-     * Set the tiles Size for this layer
-     *
-     * @param layer
-     * @param capabilities
-     */
-    private void setTilesSize(WmtsLayer layer, WmtsCapabilities capabilities) {
-        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
-        int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);
-        layer.setTilesSize(tileSize);
-    }
-
 
     private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
@@ -860,16 +789,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     public boolean isCanAddPoint() {
         return canAddPoint;
-    }
-
-    private void showToast(String text, int length, boolean override) {
-        if (override && currentlyShownToast != null) {
-            // TODO: This needs to be fixed because the currently showing toast will not be cancelled if another non-overriding toast was called after it
-            currentlyShownToast.cancel();
-        }
-
-        currentlyShownToast = Toast.makeText(getContext(), text, length);
-        currentlyShownToast.show();
     }
 
     public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration, double newZoom) {
