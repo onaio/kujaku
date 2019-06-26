@@ -1,7 +1,6 @@
 package io.ona.kujaku.manager;
 
 import com.mapbox.geojson.Point;
-import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.plugins.annotation.CircleOptions;
 
 import org.junit.Assert;
