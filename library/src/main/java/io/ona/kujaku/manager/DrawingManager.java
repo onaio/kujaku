@@ -539,7 +539,7 @@ public class DrawingManager {
      *
      * @return
      */
-    private List<KujakuCircle> getKujakuCircles() {
+    public List<KujakuCircle> getKujakuCircles() {
         return this.circles;
     }
 
