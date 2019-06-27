@@ -32,8 +32,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
-import com.karumi.dexter.Dexter;
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Geometry;
@@ -71,6 +69,7 @@ import io.ona.kujaku.exceptions.DrawingManagerIsNullException;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
+import io.ona.kujaku.helpers.PermissionsHelper;
 import io.ona.kujaku.helpers.wmts.WmtsHelper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
@@ -95,7 +94,6 @@ import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
-import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
@@ -223,7 +221,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void init(@Nullable AttributeSet attributeSet) {
-        checkPermissions();
+        PermissionsHelper.checkPermissions(TAG, getContext());
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
 
@@ -794,9 +792,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds) {
-        this.onFeatureClickListener = onFeatureClickListener;
-        this.featureClickLayerIdFilters = layerIds;
-        this.featureClickExpressionFilter = null;
+        this.setOnFeatureClickListener(onFeatureClickListener, null, featureClickLayerIdFilters);
     }
 
     @Override
@@ -859,22 +855,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.resourceId = resourceId;
     }
 
-    private void checkPermissions() {
-        if (getContext() instanceof Activity) {
-            final Activity activity = (Activity) getContext();
-
-            MultiplePermissionsListener dialogMultiplePermissionListener = new KujakuMultiplePermissionListener(activity);
-
-            Dexter.withActivity(activity)
-                    .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .withListener(dialogMultiplePermissionListener)
-                    .check();
-
-        } else {
-            Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
-        }
-    }
-
     @Override
     public void addFeaturePoints(FeatureCollection featureCollection) {
         List<com.mapbox.geojson.Feature> features = this.featureCollection.features();
@@ -925,7 +905,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             Log.e(TAG, "GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.");
             return;
         }
-        initializeFeatureCollection();
+        featureCollection = FeatureCollection.fromFeatures(new ArrayList<>());
+
         if (isFetchSourceFromStyle) {
             this.isFetchSourceFromStyle = true;
             setPrimaryGeoJsonSourceId(sourceId);
@@ -943,10 +924,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
-    }
-
-    private void initializeFeatureCollection() {
-        featureCollection = FeatureCollection.fromFeatures(new ArrayList<>());
     }
 
     public CameraPosition getCameraPosition() {
@@ -1605,4 +1582,3 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /************** End of Drawing Manager ***************/
 }
-
