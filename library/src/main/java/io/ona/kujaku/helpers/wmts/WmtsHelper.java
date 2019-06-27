@@ -25,7 +25,7 @@ public class WmtsHelper {
      * @param styleIdentifier
      * @throws WmtsCapabilitiesException
      */
-    public static void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws WmtsCapabilitiesException {
+    private static void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws WmtsCapabilitiesException {
         if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getStyle(styleIdentifier) == null) {
@@ -43,7 +43,7 @@ public class WmtsHelper {
      * @param tileMatrixSetLinkIdentifier
      * @throws WmtsCapabilitiesException
      */
-    public static void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+    private static void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getTileMatrixSetLink(tileMatrixSetLinkIdentifier) == null) {
@@ -60,7 +60,7 @@ public class WmtsHelper {
      * @param layer
      * @param capabilities
      */
-    public static void setZooms(WmtsLayer layer, WmtsCapabilities capabilities){
+    private static void setZooms(WmtsLayer layer, WmtsCapabilities capabilities){
         String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
 
         int maxZoom = capabilities.getMaximumTileMatrixZoom(tileMatrixSetIdentifier);
@@ -76,7 +76,7 @@ public class WmtsHelper {
      * @param layer
      * @param capabilities
      */
-    public static void setTilesSize(WmtsLayer layer, WmtsCapabilities capabilities) {
+    private static void setTilesSize(WmtsLayer layer, WmtsCapabilities capabilities) {
         String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
         int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);
         layer.setTilesSize(tileSize);
@@ -105,5 +105,44 @@ public class WmtsHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Identify and return layer with specific style & specific tileMatrixSet to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     * @param tileMatrixSetLinkIdentifier
+     */
+    public static WmtsLayer identifyLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+        WmtsLayer layerIdentified;
+
+        if (capabilities == null) {
+            throw new WmtsCapabilitiesException ("capabilities object is null or empty");
+        }
+
+        if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
+            if (capabilities.getLayers().size() == 0) {
+                // No layer available
+                throw new WmtsCapabilitiesException("No layer available in the capacities object");
+            } else {
+                layerIdentified = capabilities.getLayers().get(0);
+            }
+        } else {
+            // Get the identified layer
+            layerIdentified = capabilities.getLayer(layerIdentifier);
+        }
+
+        if (layerIdentified == null) {
+            throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
+        }
+
+        WmtsHelper.selectWmtsStyle(layerIdentified, styleIdentifier);
+        WmtsHelper.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
+        WmtsHelper.setZooms(layerIdentified, capabilities);
+        WmtsHelper.setTilesSize(layerIdentified, capabilities);
+
+        return layerIdentified;
     }
 }
