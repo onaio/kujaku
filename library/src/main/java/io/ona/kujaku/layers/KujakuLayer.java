@@ -1,6 +1,7 @@
 package io.ona.kujaku.layers;
 
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,6 +9,9 @@ import android.support.annotation.Nullable;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 18/02/2019
@@ -69,6 +73,34 @@ public abstract class KujakuLayer {
      */
     public boolean isVisible() {
         return visible;
+    }
+
+    /**
+     * Return the clicked KujakuLayer
+     *
+     * @param pixel
+     * @param kujakuLayers
+     * @param mapboxMap
+     * @return
+     */
+    public static KujakuLayer getKujakuLayerSelected(PointF pixel, ArrayList<KujakuLayer> kujakuLayers, MapboxMap mapboxMap) {
+        List<String> kujakuLayerListIds = new ArrayList<>();
+
+        for (KujakuLayer layer: kujakuLayers) {
+            for (String layerId : layer.getLayerIds()) {
+                kujakuLayerListIds.add(layerId);
+            }
+
+            String[] kujakuLayerIds = new String[kujakuLayerListIds.size()];
+            kujakuLayerIds = kujakuLayerListIds.toArray(kujakuLayerIds);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, null, kujakuLayerIds);
+
+            if (features.size() > 0) {
+                return layer;
+            }
+        }
+
+        return null;
     }
 
     /**

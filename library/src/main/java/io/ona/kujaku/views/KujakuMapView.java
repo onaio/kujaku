@@ -423,9 +423,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
-            showMarkerLayout();
+            setViewVisibility(markerLayout, true);
         } else {
-            hideMarkerLayout();
+            setViewVisibility(markerLayout, false);
         }
     }
 
@@ -551,14 +551,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         return dropPoint(markerOptions);
     }
 
-    private void showMarkerLayout() {
-        markerLayout.setVisibility(VISIBLE);
-    }
-
-    private void hideMarkerLayout() {
-        markerLayout.setVisibility(GONE);
-    }
-
     private void getMapboxMap() {
         if (mapboxMap == null) {
             getMapAsync(new OnMapReadyCallback() {
@@ -661,34 +653,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param tileMatrixSetLinkIdentifier
      */
     public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
-        WmtsLayer layerIdentified;
-
-        if (capabilities == null) {
-            throw new WmtsCapabilitiesException ("capabilities object is null or empty");
-        }
-
-        if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
-            if (capabilities.getLayers().size() == 0) {
-                // No layer available
-                throw new WmtsCapabilitiesException("No layer available in the capacities object");
-            } else {
-                layerIdentified = capabilities.getLayers().get(0);
-            }
-        } else {
-            // Get the identified layer
-            layerIdentified = capabilities.getLayer(layerIdentifier);
-        }
-
-        if (layerIdentified == null) {
-            throw new WmtsCapabilitiesException(String.format("Layer with identifier %1$s is unknown", layerIdentifier));
-        }
-
-        WmtsHelper.selectWmtsStyle(layerIdentified, styleIdentifier);
-        WmtsHelper.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);
-        WmtsHelper.setZooms(layerIdentified, capabilities);
-        WmtsHelper.setTilesSize(layerIdentified, capabilities);
-
-        this.wmtsLayers.add(layerIdentified);
+        this.wmtsLayers.add(WmtsHelper.identifyLayer(capabilities, layerIdentifier, styleIdentifier, tileMatrixSetLinkIdentifier));
 
         if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
             WmtsHelper.addWmtsLayers(this.wmtsLayers, mapboxMap.getStyle());
@@ -1130,7 +1095,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         if (onKujakuLayerClickListener != null) {
-            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            KujakuLayer layer = KujakuLayer.getKujakuLayerSelected(pixel, kujakuLayers, mapboxMap);
             if (layer != null) {
                 onKujakuLayerClickListener.onKujakuLayerClick(layer);
             }
@@ -1144,38 +1109,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onKujakuLayerLongClickListener != null) {
-            KujakuLayer layer = getKujakuLayerSelected(pixel);
+            KujakuLayer layer = KujakuLayer.getKujakuLayerSelected(pixel, kujakuLayers, mapboxMap);
             if (layer != null) {
                 onKujakuLayerLongClickListener.onKujakuLayerLongClick(layer);
             }
         }
         return false;
-    }
-
-    /**
-     * return the clicked KujakuLayer
-     *
-     * @param pixel
-     * @return
-     */
-    private KujakuLayer getKujakuLayerSelected(PointF pixel) {
-        List<String> kujakuLayerListIds = new ArrayList<>();
-
-        for (KujakuLayer layer: kujakuLayers) {
-            for (String layerId : layer.getLayerIds()) {
-                kujakuLayerListIds.add(layerId);
-            }
-
-            String[] kujakuLayerIds = new String[kujakuLayerListIds.size()];
-            kujakuLayerIds = kujakuLayerListIds.toArray(kujakuLayerIds);
-            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, null, kujakuLayerIds);
-
-            if (features.size() > 0) {
-               return layer;
-            }
-        }
-
-        return null;
     }
 
     public boolean isWarmGps() {
