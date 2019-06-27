@@ -421,10 +421,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         if (this.canAddPoint) {
             // Show the layer with the marker in the middle
-            setViewVisibility(markerLayout, true);
+            showMarkerLayout();
         } else {
-            setViewVisibility(markerLayout, false);
+            hideMarkerLayout();
         }
+    }
+
+    private void showMarkerLayout() {
+        markerLayout.setVisibility(VISIBLE);
+    }
+
+    private void hideMarkerLayout() {
+        markerLayout.setVisibility(GONE);
     }
 
     public void setViewVisibility(View view, boolean isVisible) {
