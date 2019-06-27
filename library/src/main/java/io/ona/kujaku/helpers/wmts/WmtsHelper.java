@@ -1,5 +1,12 @@
 package io.ona.kujaku.helpers.wmts;
 
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.RasterLayer;
+import com.mapbox.mapboxsdk.style.sources.RasterSource;
+import com.mapbox.mapboxsdk.style.sources.TileSet;
+
+import java.util.Set;
+
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
@@ -73,5 +80,30 @@ public class WmtsHelper {
         String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
         int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);
         layer.setTilesSize(tileSize);
+    }
+
+    /**
+     * Add all Wmts Layers in wmtsLayers on the map
+     */
+    public static void addWmtsLayers(Set<WmtsLayer> wmtsLayers, Style style) {
+        // Add WmtsLayers
+        if (wmtsLayers != null) {
+            for (WmtsLayer layer : wmtsLayers) {
+                if (style.getSource(layer.getIdentifier()) == null) {
+
+                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
+                    tileSet.setMaxZoom(layer.getMaximumZoom());
+                    tileSet.setMinZoom(layer.getMinimumZoom());
+
+                    RasterSource webMapSource = new RasterSource(
+                            layer.getIdentifier(),
+                            tileSet, layer.getTilesSize());
+                    style.addSource(webMapSource);
+
+                    RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
+                    style.addLayer(webMapLayer);
+                }
+            }
+        }
     }
 }
