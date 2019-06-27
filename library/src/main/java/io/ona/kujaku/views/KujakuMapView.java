@@ -23,7 +23,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
@@ -53,10 +52,7 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
-import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.TileSet;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -602,7 +598,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         callBoundsChangedListeners();
         enableFeatureClickListenerEmitter(mapboxMap);
 
-        addWmtsLayers();
+        WmtsHelper.addWmtsLayers(wmtsLayers, mapboxMap.getStyle());
 
         mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
     }
@@ -619,31 +615,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (isFetchSourceFromStyle) {
             initializeSourceAndFeatureCollectionFromStyle(style);
             isFetchSourceFromStyle = false;
-        }
-    }
-
-    /**
-     * Add all Wmts Layers in wmtsLayers on the map
-     */
-    private void addWmtsLayers() {
-        // Add WmtsLayers
-        if (wmtsLayers != null) {
-            for (WmtsLayer layer : wmtsLayers) {
-                if (mapboxMap.getStyle().getSource(layer.getIdentifier()) == null) {
-
-                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
-                    tileSet.setMaxZoom(layer.getMaximumZoom());
-                    tileSet.setMinZoom(layer.getMinimumZoom());
-
-                    RasterSource webMapSource = new RasterSource(
-                            layer.getIdentifier(),
-                            tileSet, layer.getTilesSize());
-                    mapboxMap.getStyle().addSource(webMapSource);
-
-                    RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
-                    mapboxMap.getStyle().addLayer(webMapLayer);
-                }
-            }
         }
     }
 
@@ -720,7 +691,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.wmtsLayers.add(layerIdentified);
 
         if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
-            addWmtsLayers();
+            WmtsHelper.addWmtsLayers(this.wmtsLayers, mapboxMap.getStyle());
         }
     }
 
@@ -1178,7 +1149,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 onKujakuLayerLongClickListener.onKujakuLayerLongClick(layer);
             }
         }
-
         return false;
     }
 
@@ -1241,10 +1211,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public ILocationClient getLocationClient() {
         return locationClient;
-    }
-
-    public void setLocationBufferRadius(float locationBufferRadius) {
-        this.locationBufferRadius = locationBufferRadius;
     }
 
     @Override
