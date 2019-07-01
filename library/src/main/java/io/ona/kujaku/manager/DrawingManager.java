@@ -205,7 +205,7 @@ public class DrawingManager {
         if (geometry instanceof Polygon) {
             kujakuLayer.removeLayerOnMap(mapboxMap);
             Polygon polygon = (Polygon) geometry;
-            List<com.mapbox.geojson.Point> points = polygon.coordinates().get(0);
+            List<Point> points = polygon.coordinates().get(0);
             this.startDrawingPoints(points);
             return true;
         }
@@ -240,7 +240,7 @@ public class DrawingManager {
     public boolean stopDrawingAndDisplayLayer() {
         Polygon polygon = this.stopDrawing();
 
-        com.mapbox.geojson.Feature feature = com.mapbox.geojson.Feature.fromGeometry(polygon);
+        Feature feature = Feature.fromGeometry(polygon);
         FeatureCollection collection = FeatureCollection.fromFeature(feature);
         FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
                 .setBoundaryColor(Color.BLACK)
