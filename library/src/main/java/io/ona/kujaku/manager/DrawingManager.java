@@ -1,14 +1,17 @@
 package io.ona.kujaku.manager;
 
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
-import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
@@ -25,8 +28,11 @@ import com.mapbox.mapboxsdk.style.expressions.Expression;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
 import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
+import io.ona.kujaku.views.KujakuMapView;
 
 /**
  * Manager use to draw polygons on Map.
@@ -36,6 +42,8 @@ import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
  */
 public class DrawingManager {
 
+    private KujakuMapView kujakuMapView;
+    private MapboxMap mapboxMap;
     private List<KujakuCircle> circles;
     private KujakuCircle currentKujakuCircle;
 
@@ -55,7 +63,10 @@ public class DrawingManager {
      * @param mapboxMap
      * @param style
      */
-    public DrawingManager(@NonNull MapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+        this.kujakuMapView = mapView;
+        this.mapboxMap = mapboxMap;
+
         this.circles = new ArrayList<>();
         this.setCurrentKujakuCircle(null);
 
@@ -180,11 +191,35 @@ public class DrawingManager {
     }
 
     /**
+     * Start Drawing. A KujakuLayer can be passed to init the drawing.
+     * @param kujakuLayer
+     * @return
+     */
+    public boolean startDrawingKujakuLayer(@Nullable KujakuLayer kujakuLayer) {
+        if (kujakuLayer == null) {
+            this.startDrawingPoints(new ArrayList<>());
+            return true;
+        }
+
+        Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
+        if (geometry instanceof Polygon) {
+            kujakuLayer.removeLayerOnMap(mapboxMap);
+            Polygon polygon = (Polygon) geometry;
+            List<com.mapbox.geojson.Point> points = polygon.coordinates().get(0);
+            this.startDrawingPoints(points);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Start Drawing. A list of point can be passed to init the drawing.
+     * Start drawing on the map / or editing an already existing kujakuLayer
      *
      * @param points
      */
-    public void startDrawing(List<Point> points) {
+    public void startDrawingPoints(List<Point> points) {
         setDrawing(true);
         setCurrentCircle(null);
 
@@ -195,6 +230,26 @@ public class DrawingManager {
 
             this.refresh(true);
         }
+    }
+
+    /**
+     * Stop drawing and create a new Kujaku layer
+     *
+     * @return
+     */
+    public boolean stopDrawingAndDisplayLayer() {
+        Polygon polygon = this.stopDrawing();
+
+        com.mapbox.geojson.Feature feature = com.mapbox.geojson.Feature.fromGeometry(polygon);
+        FeatureCollection collection = FeatureCollection.fromFeature(feature);
+        FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
+                .setBoundaryColor(Color.BLACK)
+                .setBoundaryWidth(3f)
+                .build();
+
+        kujakuMapView.addLayer(layer);
+
+        return true;
     }
 
     /**
@@ -355,6 +410,16 @@ public class DrawingManager {
         }
     }
 
+    /**
+     * Draw circle with kujakuCircleOptions
+     *
+     * @param latLng
+     * @return
+     */
+    public Circle drawCircle(LatLng latLng) {
+        return this.create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
+    }
+
     /***
      * Create a new Circle, add it to the circle list and refresh the polygon
      *
@@ -459,6 +524,12 @@ public class DrawingManager {
     }
 
     /**
+     * Delete the current selected circle
+     */
+    public void deleteDrawingCurrentCircle() {
+        this.delete(this.getCurrentKujakuCircle());
+    }
+    /**
      * Set Circle draggable
      * Remove middle circles after & before when a circle is draggable
      *
@@ -515,6 +586,15 @@ public class DrawingManager {
 
         if (!draggable) {
             this.refresh(true);
+        }
+    }
+
+    /**
+     * Unset the draggable property to the current selected circle
+     */
+    public void unsetCurrentCircleDraggable() {
+        if(this.getCurrentKujakuCircle() != null) {
+            this.setDraggable(false, this.getCurrentKujakuCircle().getCircle());
         }
     }
 

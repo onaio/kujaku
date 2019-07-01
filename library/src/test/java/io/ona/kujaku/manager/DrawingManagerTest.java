@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.layers.BaseKujakuLayerTest;
+import io.ona.kujaku.views.KujakuMapView;
 
 /**
  * Created by Emmanuel Otin - eo@novel-t.ch 24/06/19.
@@ -28,7 +29,7 @@ import io.ona.kujaku.layers.BaseKujakuLayerTest;
 public class DrawingManagerTest extends BaseKujakuLayerTest {
 
     private MapboxMap mapboxMap = Mockito.mock(MapboxMap.class);
-    private MapView mapView = Mockito.mock(MapView.class);
+    private KujakuMapView mapView = Mockito.mock(KujakuMapView.class);
     private Style style = Mockito.mock(Style.class);
 
     private DrawingManager manager;
@@ -50,7 +51,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void startDrawingWithoutPoints() {
-        manager.startDrawing(null);
+        manager.startDrawingPoints(null);
 
         Assert.assertTrue(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());
@@ -65,7 +66,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(3,3));
         points.add(Point.fromLngLat(4,4));
 
-        manager.startDrawing(points);
+        manager.startDrawingPoints(points);
 
         Assert.assertTrue(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());
@@ -75,7 +76,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void drawPoints() {
-        manager.startDrawing(null);
+        manager.startDrawingPoints(null);
 
         manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(1,1)));
         manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(2,2)));
@@ -87,7 +88,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void setPointDraggable() {
-        manager.startDrawing(null);
+        manager.startDrawingPoints(null);
 
         manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(1,1)));
         manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(2,2)));
@@ -113,7 +114,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(3,3));
         points.add(Point.fromLngLat(4,4));
 
-        manager.startDrawing(points);
+        manager.startDrawingPoints(points);
 
         Assert.assertEquals(8, manager.getKujakuCircles().size());
         Assert.assertEquals(manager.getKujakuCircles().get(0).getNextKujakuCircle(), manager.getKujakuCircles().get(1));
@@ -132,7 +133,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(3,3));
         points.add(Point.fromLngLat(4,4));
 
-        manager.startDrawing(points);
+        manager.startDrawingPoints(points);
 
         Assert.assertTrue(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());
@@ -154,7 +155,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(3,3));
         points.add(Point.fromLngLat(4,4));
 
-        manager.startDrawing(points);
+        manager.startDrawingPoints(points);
 
         Assert.assertEquals(8, manager.getKujakuCircles().size());
 
@@ -172,7 +173,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(3,3));
         points.add(Point.fromLngLat(4,4));
 
-        manager.startDrawing(points);
+        manager.startDrawingPoints(points);
 
         Assert.assertFalse(manager.getKujakuCircles().get(0).isMiddleCircle());
         Assert.assertTrue(manager.getKujakuCircles().get(1).isMiddleCircle());
