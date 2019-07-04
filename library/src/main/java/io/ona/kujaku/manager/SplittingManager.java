@@ -102,6 +102,10 @@ public class SplittingManager {
         });
     }
 
+    public void setSplittingManagerOptions(@NonNull SplittingManagerOptions options) {
+        this.options = options;
+    }
+
     /**
      * Start Splitting. A KujakuLayer has to be passed to init the drawing.
      * @param kujakuLayer
@@ -128,14 +132,14 @@ public class SplittingManager {
                 this.polygonToSplit.add(this.polygonToSplit.get(0));
                 this.splittingEnabled = true;
 
-                kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuLineLayerColorSelected()));
+                kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuFillLayerColorSelected()));
             }
         }
     }
 
     public void stopSplitting() {
         if (this.kujakuLayer != null) {
-            this.kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuLineLayerColor()));
+            this.kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuFillLayerColor()));
             this.kujakuLayer = null;
         }
         this.deleteAll();
@@ -199,8 +203,7 @@ public class SplittingManager {
 
             this.splittingLine = lineManager.create(new LineOptions()
                     .withLatLngs(list)
-                    .withLineColor("red")
-                    .withLineOpacity(Float.valueOf("0.5")));
+                    .withLineColor(options.getLineColor()));
         }
     }
 
@@ -299,7 +302,7 @@ public class SplittingManager {
             Feature feature = Feature.fromGeometry(polygon);
             FeatureCollection collection = FeatureCollection.fromFeature(feature);
             FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
-                    .setBoundaryColor(Color.BLACK)
+                    .setBoundaryColor(Color.parseColor(options.getKujakuFillLayerColor()))
                     .setBoundaryWidth(3f)
                     .build();
 
