@@ -586,7 +586,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         callBoundsChangedListeners();
         enableFeatureClickListenerEmitter(mapboxMap);
 
-        WmtsHelper.addWmtsLayers(wmtsLayers, mapboxMap.getStyle());
+        WmtsHelper.addWmtsLayers(wmtsLayers, style);
 
         mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
     }
@@ -615,7 +615,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      * @param capabilities
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
        this.addWmtsLayer(capabilities, null, null, null);
     }
 
@@ -625,7 +626,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param layerIdentifier
      * @param capabilities
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws WmtsCapabilitiesException {
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier) throws WmtsCapabilitiesException {
         this.addWmtsLayer(capabilities, layerIdentifier, null, null);
     }
 
@@ -636,7 +638,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param layerIdentifier
      * @param styleIdentifier
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws WmtsCapabilitiesException {
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier) throws WmtsCapabilitiesException {
         this.addWmtsLayer(capabilities, layerIdentifier, styleIdentifier, null);
     }
 
@@ -648,7 +651,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param styleIdentifier
      * @param tileMatrixSetLinkIdentifier
      */
-    public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         this.wmtsLayers.add(WmtsHelper.identifyLayer(capabilities, layerIdentifier, styleIdentifier, tileMatrixSetLinkIdentifier));
 
         if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {

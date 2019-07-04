@@ -21,6 +21,7 @@ import java.util.List;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.layers.ArrowLineLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
@@ -29,6 +30,7 @@ import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
 
 public interface IKujakuMapView extends IKujakuMapViewLowLevel {
 
@@ -326,4 +328,38 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param disableMyLocationOnMapMove boolean to disable disabling my location button on map move
      */
     void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove);
+
+    /**
+     * Add first available layer to the wmtsLayer list
+     *
+     * @param capabilities
+     */
+    void addWmtsLayer(WmtsCapabilities capabilities) throws WmtsCapabilitiesException;
+
+    /**
+     * Add identified layer to the wmtsLayer list
+     *
+     * @param layerIdentifier
+     * @param capabilities
+     */
+    void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier) throws WmtsCapabilitiesException;
+
+    /**
+     * Add identified layer with specific style to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     */
+    void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier) throws WmtsCapabilitiesException;
+
+    /**
+     * Add identified layer with specific style & specific tileMatrixSet to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     * @param tileMatrixSetLinkIdentifier
+     */
+    void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException ;
 }
