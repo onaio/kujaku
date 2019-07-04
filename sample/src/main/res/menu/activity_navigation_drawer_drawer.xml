@@ -93,6 +93,10 @@
             android:id="@+id/nav_drawing_boundaries"
             android:title="@string/drawing_boundaries_activity"/>
 
+        <item
+            android:id="@+id/nav_splitting_polygon"
+            android:title="@string/splitting_polygon_activity"/>
+
     </group>
 
 </menu>

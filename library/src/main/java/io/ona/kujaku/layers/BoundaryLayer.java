@@ -18,6 +18,7 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.turf.TurfMeasurement;
@@ -28,6 +29,8 @@ import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
@@ -96,8 +99,9 @@ public class BoundaryLayer extends KujakuLayer {
                 .withProperties(
                         PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
                         PropertyFactory.lineWidth(builder.boundaryWidth),
-                        PropertyFactory.lineColor(builder.boundaryColor)
+                        lineColor(builder.boundaryColor)
                 );
+
     }
 
     private void createBoundaryLabelSource() {
@@ -106,6 +110,15 @@ public class BoundaryLayer extends KujakuLayer {
 
     private void createBoundaryFeatureSource(@NonNull KujakuLayer.Builder builder) {
         boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.getFeatureCollection());
+    }
+
+    @Override
+    public void  updateLineLayerProperties(@NonNull PropertyValue<?>... properties) {
+        if (boundaryLineLayer != null) {
+            boundaryLineLayer.setProperties(
+                    properties
+            );
+        }
     }
 
     @Override
