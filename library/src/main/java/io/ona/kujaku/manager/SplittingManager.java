@@ -25,6 +25,8 @@ import java.util.List;
 import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnSplittingClickListener;
+import io.ona.kujaku.manager.options.SplittingManagerDefaultOptions;
+import io.ona.kujaku.manager.options.SplittingManagerOptions;
 import io.ona.kujaku.views.KujakuMapView;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
@@ -54,6 +56,8 @@ public class SplittingManager {
 
     private boolean splittingEnabled;
 
+    private SplittingManagerOptions options;
+
     /**
      * Constructor
      *
@@ -67,6 +71,8 @@ public class SplittingManager {
 
         lineManager = AnnotationRepositoryManager.getLineManagerInstance(mapView, mapboxMap, style);
         circleManager = AnnotationRepositoryManager.getCircleManagerInstance(mapView, mapboxMap, style);
+
+        options = new SplittingManagerDefaultOptions();
 
         circleManager.addDragListener(new OnCircleDragListener() {
             @Override
@@ -96,13 +102,6 @@ public class SplittingManager {
         });
     }
 
-    public static KujakuCircleOptions getKujakuCircleOptions() {
-        return new KujakuCircleOptions()
-                .withCircleRadius(10.0f)
-                .withCircleColor("red")
-                .withDraggable(true);
-    }
-
     /**
      * Start Splitting. A KujakuLayer has to be passed to init the drawing.
      * @param kujakuLayer
@@ -116,6 +115,9 @@ public class SplittingManager {
         return this.splittingEnabled;
     }
 
+    /**
+     * Start Splitting mode
+     */
     private void startSplitting() {
         if (this.kujakuLayer != null) {
             Geometry geometry = this.kujakuLayer.getFeatureCollection().features().get(0).geometry();
@@ -126,14 +128,14 @@ public class SplittingManager {
                 this.polygonToSplit.add(this.polygonToSplit.get(0));
                 this.splittingEnabled = true;
 
-                kujakuLayer.updateLineLayerProperties(lineColor("red"));
+                kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuLineLayerColorSelected()));
             }
         }
     }
 
     public void stopSplitting() {
         if (this.kujakuLayer != null) {
-            this.kujakuLayer.updateLineLayerProperties(lineColor("black"));
+            this.kujakuLayer.updateLineLayerProperties(lineColor(options.getKujakuLineLayerColor()));
             this.kujakuLayer = null;
         }
         this.deleteAll();
@@ -146,7 +148,7 @@ public class SplittingManager {
      * @return
      */
     public Circle drawCircle(LatLng latLng) {
-        return this.create(SplittingManager.getKujakuCircleOptions().withLatLng(latLng));
+        return this.create(options.getKujakuCircleOptions().withLatLng(latLng));
     }
 
 
@@ -175,6 +177,11 @@ public class SplittingManager {
         return circle;
     }
 
+    /**
+     * Return true if the 2 circles have been drawn
+     *
+     * @return
+     */
     private boolean checkSplitPoints() {
         return this.circleStart != null && this.circleEnd != null ;
     }
@@ -251,8 +258,7 @@ public class SplittingManager {
         }
 
         polygons.add(initialPolygon);
-
-        display(polygons);
+        this.displayPolygons(polygons);
         this.kujakuLayer.removeLayerOnMap(mapboxMap);
         this.deleteAll();
     }
@@ -279,7 +285,12 @@ public class SplittingManager {
         }
     }
 
-    private void display(List<List<Point>> polygons) {
+    /**
+     * Display Polygons on the map
+     *
+     * @param polygons
+     */
+    private void displayPolygons(List<List<Point>> polygons) {
         for (List<Point> list : polygons) {
             List<List<Point>> lists = new ArrayList<>();
             lists.add(list);

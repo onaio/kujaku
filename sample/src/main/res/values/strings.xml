@@ -90,6 +90,7 @@
 
     <string name="splitting_polygon_activity">Splitting Polygon</string>
     <string name="splitting_polygon_split">Split</string>
+    <string name="splitting_polygon_cancel">Cancel</string>
 
 
 </resources>
