@@ -71,7 +71,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
 
                         drawingManager.addOnDrawingCircleClickListener(new OnDrawingCircleClickListener() {
                             @Override
-                            public void onCircleClick(Circle circle) {
+                            public void onCircleClick(@NonNull Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         String.format("Circle clicked"),Toast.LENGTH_SHORT).show();
 
@@ -103,7 +103,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
 
                         drawingManager.addOnDrawingCircleLongClickListener(new OnDrawingCircleLongClickListener() {
                             @Override
-                            public void onCircleLongClick(Circle circle) {
+                            public void onCircleLongClick(@NonNull Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         String.format("Circle long clicked"),Toast.LENGTH_SHORT).show();
                             }
@@ -117,7 +117,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
 
                         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
                             @Override
-                            public void onKujakuLayerLongClick(KujakuLayer kujakuLayer) {
+                            public void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer) {
                                 if (!drawingManager.isDrawingEnabled()) {
                                     startDrawing(kujakuLayer);
                                 }

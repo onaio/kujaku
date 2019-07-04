@@ -1,5 +1,7 @@
 package io.ona.kujaku.listeners;
 
+import android.support.annotation.NonNull;
+
 import io.ona.kujaku.layers.KujakuLayer;
 
 /**
@@ -13,5 +15,5 @@ public interface OnKujakuLayerLongClickListener {
      * *
      * @param kujakuLayer
      */
-    void onKujakuLayerLongClick(KujakuLayer kujakuLayer);
+    void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer);
 }

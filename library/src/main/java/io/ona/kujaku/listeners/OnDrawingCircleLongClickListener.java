@@ -12,7 +12,7 @@ public interface OnDrawingCircleLongClickListener {
      *
      * @param circle the circle clicked.
      */
-    void onCircleLongClick(Circle circle);
+    void onCircleLongClick(@NonNull Circle circle);
 
     /**
      * Called when no circle was clicked
