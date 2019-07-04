@@ -10,10 +10,6 @@ public class SplittingManagerDefaultOptions extends SplittingManagerOptions {
         this.lineColor = "red";
 
         this.kujakuFillLayerColorSelected = "red";
-        this.kujakuLineLayerColorSelected = "red";
-
         this.kujakuFillLayerColor = "black";
-        this.kujakuLineLayerColor = "black";
-
     }
 }

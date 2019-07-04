@@ -8,8 +8,6 @@ public abstract class SplittingManagerOptions {
     protected String lineColor ;
     protected Float circleRadius ;
 
-    protected String kujakuLineLayerColor ;
-    protected String kujakuLineLayerColorSelected ;
     protected String kujakuFillLayerColor ;
     protected String kujakuFillLayerColorSelected ;
 
@@ -29,22 +27,14 @@ public abstract class SplittingManagerOptions {
         return kujakuFillLayerColor;
     }
 
-    public String getKujakuLineLayerColor() {
-        return kujakuLineLayerColor;
-    }
-
     public String getKujakuFillLayerColorSelected() {
         return kujakuFillLayerColorSelected;
     }
 
-    public String getKujakuLineLayerColorSelected() {
-        return kujakuLineLayerColorSelected;
-    }
-
     public KujakuCircleOptions getKujakuCircleOptions() {
         return new KujakuCircleOptions()
-                .withCircleRadius(circleRadius)
-                .withCircleColor(circleColor)
+                .withCircleRadius(getCircleRadius())
+                .withCircleColor(getCircleColor())
                 .withDraggable(true);
     }
 }
