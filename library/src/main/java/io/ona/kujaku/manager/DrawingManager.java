@@ -70,9 +70,9 @@ public class DrawingManager {
         this.circles = new ArrayList<>();
         this.setCurrentKujakuCircle(null);
 
-        fillManager = new FillManager(mapView, mapboxMap, style);
-        lineManager = new LineManager(mapView, mapboxMap, style);
-        circleManager = new CircleManager(mapView, mapboxMap, style);
+        fillManager = AnnotationRepositoryManager.getFillManagerInstance(mapView, mapboxMap, style);
+        lineManager = AnnotationRepositoryManager.getLineManagerInstance(mapView, mapboxMap, style);
+        circleManager = AnnotationRepositoryManager.getCircleManagerInstance(mapView, mapboxMap, style);
 
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override

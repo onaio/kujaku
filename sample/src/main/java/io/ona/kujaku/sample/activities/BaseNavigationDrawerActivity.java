@@ -221,6 +221,11 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
                 finish();
                 return true;
 
+            case R.id.nav_splitting_polygon:
+                startActivity(new Intent(this, SplittingPolygonActivity.class));
+                finish();
+                return true;
+
             default:
                 break;
         }

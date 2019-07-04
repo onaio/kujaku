@@ -88,5 +88,8 @@
     <string name="_1_to_many_case_relationship_activity">1-to-Many Case Relationship Activity</string>
     <string name="base_layer_switcher_plugin">Base Layer Switcher Plugin</string>
 
+    <string name="splitting_polygon_activity">Splitting Polygon</string>
+    <string name="splitting_polygon_split">Split</string>
+
 
 </resources>
