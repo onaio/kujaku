@@ -177,7 +177,7 @@ public class DrawingManager {
      *
      * @param circle
      */
-    private void setCurrentCircle(Circle circle) {
+    private void setCurrentCircle(@Nullable Circle circle) {
         this.currentKujakuCircle = getKujakuCircle(circle);
     }
 
@@ -186,7 +186,7 @@ public class DrawingManager {
      *
      * @param circle
      */
-    private void setCurrentKujakuCircle(KujakuCircle circle) {
+    private void setCurrentKujakuCircle(@Nullable KujakuCircle circle) {
         this.currentKujakuCircle = circle;
     }
 
@@ -219,7 +219,7 @@ public class DrawingManager {
      *
      * @param points
      */
-    public void startDrawingPoints(List<Point> points) {
+    public void startDrawingPoints(@Nullable List<Point> points) {
         setDrawing(true);
         setCurrentCircle(null);
 
@@ -296,7 +296,7 @@ public class DrawingManager {
      * @param circle
      * @return
      */
-    private KujakuCircle getKujakuCircle(Circle circle) {
+    private KujakuCircle getKujakuCircle(@Nullable Circle circle) {
         if (circle == null) {
             return null;
         }
@@ -363,7 +363,7 @@ public class DrawingManager {
      * @param options
      * @return
      */
-    private KujakuCircleOptions createMiddleKujakuCircleOptions(Circle circle1, Circle circle2, KujakuCircleOptions options) {
+    private KujakuCircleOptions createMiddleKujakuCircleOptions(@NonNull Circle circle1, @NonNull Circle circle2, @NonNull KujakuCircleOptions options) {
         double lonEast = Math.max(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
         double lonWest = Math.min(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
         double latNorth = Math.max(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
@@ -416,7 +416,7 @@ public class DrawingManager {
      * @param latLng
      * @return
      */
-    public Circle drawCircle(LatLng latLng) {
+    public Circle drawCircle(@NonNull LatLng latLng) {
         return this.create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
     }
 
@@ -497,7 +497,7 @@ public class DrawingManager {
      *
      * @param kujakuCircle
      */
-    public void delete(KujakuCircle kujakuCircle) {
+    public void delete(@Nullable KujakuCircle kujakuCircle) {
         // Previous and next circle to delete if AreMiddle
         if (kujakuCircle == null) {
             return ;
@@ -536,7 +536,7 @@ public class DrawingManager {
      * @param draggable
      * @param circle
      */
-    public void setDraggable(boolean draggable, Circle circle) {
+    public void setDraggable(boolean draggable, @NonNull Circle circle) {
         circle.setDraggable(draggable);
         KujakuCircleOptions options;
 

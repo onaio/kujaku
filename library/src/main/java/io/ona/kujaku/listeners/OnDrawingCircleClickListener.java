@@ -12,7 +12,7 @@ public interface OnDrawingCircleClickListener {
      *
      * @param circle the circle clicked.
      */
-    void onCircleClick(Circle circle);
+    void onCircleClick(@NonNull Circle circle);
 
     /**
      * Called when no circle was clicked
