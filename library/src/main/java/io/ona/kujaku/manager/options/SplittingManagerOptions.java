@@ -2,6 +2,11 @@ package io.ona.kujaku.manager.options;
 
 import io.ona.kujaku.manager.KujakuCircleOptions;
 
+/**
+ * Options for the SplittingManager class
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch on 05/07/2019
+ */
 public abstract class SplittingManagerOptions {
 
     protected String circleColor ;

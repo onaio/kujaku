@@ -25,6 +25,7 @@ import java.util.List;
 import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnSplittingClickListener;
+import io.ona.kujaku.listeners.OnSplittingLongClickListener;
 import io.ona.kujaku.manager.options.SplittingManagerDefaultOptions;
 import io.ona.kujaku.manager.options.SplittingManagerOptions;
 import io.ona.kujaku.views.KujakuMapView;
@@ -52,7 +53,7 @@ public class SplittingManager {
     private CircleManager circleManager;
 
     private OnSplittingClickListener onSplittingClickListener;
-    //private OnDrawingCircleLongClickListener onDrawingCircleLongClickListener;
+    private OnSplittingLongClickListener onSplittingLongClickListener;
 
     private boolean splittingEnabled;
 
@@ -95,6 +96,16 @@ public class SplittingManager {
             public boolean onMapClick(@NonNull LatLng point) {
                 if (splittingEnabled && onSplittingClickListener != null) {
                     onSplittingClickListener.onSplittingClick(point);
+                }
+
+                return false;
+            }
+        });
+        mapboxMap.addOnMapLongClickListener(new MapboxMap.OnMapLongClickListener() {
+            @Override
+            public boolean onMapLongClick(@NonNull LatLng point) {
+                if (splittingEnabled && onSplittingLongClickListener != null) {
+                    onSplittingLongClickListener.onSplittingLongClick(point);
                 }
 
                 return false;
@@ -358,7 +369,7 @@ public class SplittingManager {
     }
 
     /**
-     * Set a listener for OnDrawingCircleClickListener
+     * Set a listener for OnSplittingClickListener
      *
      * @param listener
      */
@@ -366,14 +377,14 @@ public class SplittingManager {
         this.onSplittingClickListener = listener;
     }
 
-//    /**
-//     * Set a listener for the OnDrawingCircleLongClickListener
-//     *
-//     * @param listener
-//     */
-//    public void addOnDrawingCircleLongClickListener(OnDrawingCircleLongClickListener listener) {
-//        this.onDrawingCircleLongClickListener = listener;
-//    }
+    /**
+     * Set a listener for the OnSplittingLongClickListener
+     *
+     * @param listener
+     */
+    public void addOnSplittingLongClickListener(OnSplittingLongClickListener listener) {
+        this.onSplittingLongClickListener = listener;
+    }
 
     private static LineIntersectsResult lineIntersects(Point start, Point end, Point splitStart, Point splitEnd) {
         return lineIntersects(start.longitude(),
