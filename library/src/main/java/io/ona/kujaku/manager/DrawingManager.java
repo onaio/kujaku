@@ -79,7 +79,7 @@ public class DrawingManager {
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
             public void onAnnotationClick(Circle circle) {
-                if (drawingEnabled) {
+                if (drawingEnabled && onDrawingCircleClickListener != null) {
                     onDrawingCircleClickListener.onCircleClick(circle);
                 }
             }
@@ -88,7 +88,7 @@ public class DrawingManager {
         circleManager.addLongClickListener(new OnCircleLongClickListener() {
                 @Override
                 public void onAnnotationLongClick(Circle circle) {
-                   if (drawingEnabled) {
+                   if (drawingEnabled && onDrawingCircleLongClickListener != null) {
                        onDrawingCircleLongClickListener.onCircleLongClick(circle);
                    }
                 }
@@ -205,15 +205,17 @@ public class DrawingManager {
             return true;
         }
 
-        Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
-        if (geometry instanceof Polygon) {
-            // hide layer
-            kujakuLayer.disableLayerOnMap(mapboxMap);
+        if (kujakuLayer.getFeatureCollection().features() != null && kujakuLayer.getFeatureCollection().features().size() >= 1) {
+            Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
+            if (geometry instanceof Polygon) {
+                // hide layer
+                kujakuLayer.disableLayerOnMap(mapboxMap);
 
-            Polygon polygon = (Polygon) geometry;
-            List<Point> points = polygon.coordinates().get(0);
-            this.startDrawingPoints(points);
-            return true;
+                Polygon polygon = (Polygon) geometry;
+                List<Point> points = polygon.coordinates().get(0);
+                this.startDrawingPoints(points);
+                return true;
+            }
         }
 
         return false;
