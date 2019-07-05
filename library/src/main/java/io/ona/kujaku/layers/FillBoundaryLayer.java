@@ -6,6 +6,7 @@ import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 
 import java.util.ArrayList;
@@ -56,6 +57,14 @@ public class FillBoundaryLayer extends BoundaryLayer {
         }
 
         createBoundaryFillLayer(builder);
+    }
+
+    @Override
+    protected ArrayList<Layer> getLayers(@NonNull MapboxMap mapboxMap) {
+        ArrayList<Layer> layers = super.getLayers(mapboxMap);
+        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_FILL_LAYER_ID));
+
+        return layers;
     }
 
     @Override

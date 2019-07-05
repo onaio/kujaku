@@ -56,6 +56,8 @@ public class DrawingManager {
 
     private boolean drawingEnabled;
 
+    private KujakuLayer currentLayer;
+
     /**
      * Constructor
      *
@@ -196,6 +198,8 @@ public class DrawingManager {
      * @return
      */
     public boolean startDrawingKujakuLayer(@Nullable KujakuLayer kujakuLayer) {
+        this.currentLayer = kujakuLayer;
+
         if (kujakuLayer == null) {
             this.startDrawingPoints(new ArrayList<>());
             return true;
@@ -203,7 +207,9 @@ public class DrawingManager {
 
         Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
         if (geometry instanceof Polygon) {
-            kujakuLayer.removeLayerOnMap(mapboxMap);
+            // hide layer
+            kujakuLayer.disableLayerOnMap(mapboxMap);
+
             Polygon polygon = (Polygon) geometry;
             List<Point> points = polygon.coordinates().get(0);
             this.startDrawingPoints(points);
@@ -242,12 +248,20 @@ public class DrawingManager {
 
         Feature feature = Feature.fromGeometry(polygon);
         FeatureCollection collection = FeatureCollection.fromFeature(feature);
-        FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
-                .setBoundaryColor(Color.BLACK)
-                .setBoundaryWidth(3f)
-                .build();
 
-        kujakuMapView.addLayer(layer);
+        if (this.currentLayer != null) { // Update layer
+            this.currentLayer.updateFeatures(collection);
+            this.currentLayer.enableLayerOnMap(mapboxMap);
+
+        } else {                        // Create layer
+            FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
+                    .setBoundaryColor(Color.BLACK)
+                    .setBoundaryWidth(3f)
+                    .build();
+
+            kujakuMapView.addLayer(layer);
+        }
+        this.currentLayer = null;
 
         return true;
     }
