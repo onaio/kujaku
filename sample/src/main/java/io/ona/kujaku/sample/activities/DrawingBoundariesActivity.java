@@ -2,6 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -52,10 +53,14 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 // start Drawing from scratch
-                if (! drawingManager.isDrawingEnabled()) {
-                    startDrawing(null);
+                if (drawingManager != null) {
+                    if (!drawingManager.isDrawingEnabled()) {
+                        startDrawing(null);
+                    } else {
+                        stopDrawing();
+                    }
                 } else {
-                    stopDrawing();
+                    Log.e(TAG, "Drawing manager instance is null");
                 }
             }
         });
@@ -73,7 +78,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                             @Override
                             public void onCircleClick(@NonNull Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
-                                        String.format("Circle clicked"),Toast.LENGTH_SHORT).show();
+                                        getString(R.string.drawing_boundaries_circle_clicked), Toast.LENGTH_SHORT).show();
 
                                 drawingManager.unsetCurrentCircleDraggable();
 
@@ -90,7 +95,7 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                             @Override
                             public void onCircleNotClick(@NonNull LatLng latLng) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
-                                        String.format("Circle NOT clicked"),Toast.LENGTH_SHORT).show();
+                                        getString(R.string.drawing_boundaries_circle_not_clicked), Toast.LENGTH_SHORT).show();
 
                                 if (drawingManager.getCurrentKujakuCircle() != null) {
                                     drawingManager.unsetCurrentCircleDraggable();
@@ -105,13 +110,13 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                             @Override
                             public void onCircleLongClick(@NonNull Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
-                                        String.format("Circle long clicked"),Toast.LENGTH_SHORT).show();
+                                        getString(R.string.drawing_boundaries_circle_long_clicked), Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
                             public void onCircleNotLongClick(@NonNull LatLng point) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
-                                        String.format("Circle NOT long clicked"),Toast.LENGTH_SHORT).show();
+                                        getString(R.string.drawing_boundaries_circle_not_long_clicked), Toast.LENGTH_SHORT).show();
                             }
                         });
 
