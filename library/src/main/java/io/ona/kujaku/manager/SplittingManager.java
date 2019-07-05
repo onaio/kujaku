@@ -113,6 +113,11 @@ public class SplittingManager {
         });
     }
 
+    /**
+     * Set a SplittingManager Options
+     *
+     * @param options
+     */
     public void setSplittingManagerOptions(@NonNull SplittingManagerOptions options) {
         this.options = options;
     }
@@ -220,10 +225,12 @@ public class SplittingManager {
 
     /**
      * Function splitting the polygon into list of Polygons
+     *
+     * @return List<List<Point>>
      */
-    public void split() {
+    public List<List<Point>> split() {
         if (!checkSplitPoints()) {
-            return ;
+            return null;
         }
 
         Point pointA = null;
@@ -275,6 +282,8 @@ public class SplittingManager {
         this.displayPolygons(polygons);
         this.kujakuLayer.removeLayerOnMap(mapboxMap);
         this.deleteAll();
+
+        return polygons;
     }
 
     /**
