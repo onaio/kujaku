@@ -14,6 +14,7 @@ import com.mapbox.mapboxsdk.maps.Style;
 
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 
+import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.manager.DrawingManager;
@@ -135,8 +136,10 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
     }
 
     private void startDrawing(KujakuLayer kujakuLayer) {
-        if (drawingManager.startDrawingKujakuLayer(kujakuLayer)) {
-            drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+        if (kujakuLayer instanceof FillBoundaryLayer) {
+            if (drawingManager.startDrawingKujakuLayer((FillBoundaryLayer)kujakuLayer)) {
+                drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+            }
         }
     }
 
