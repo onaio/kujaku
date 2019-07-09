@@ -223,7 +223,6 @@ public class DrawingManager {
 
     /**
      * Start Drawing. A list of point can be passed to init the drawing.
-     * Start drawing on the map / or editing an already existing kujakuLayer
      *
      * @param points
      */
@@ -241,7 +240,7 @@ public class DrawingManager {
     }
 
     /**
-     * Stop drawing and create a new Kujaku layer
+     * Stop drawing and create a new FillBoundary layer or update the existing one
      *
      * @return
      */
@@ -372,7 +371,7 @@ public class DrawingManager {
     }
 
     /**
-     * Create new KujakuCircleOptions between circle1 and circle2 lat long. Copy options from parameter options
+     * Create new KujakuCircleOptions between circle1 and circle2 lat long.
      *
      * @param circle1
      * @param circle2
@@ -640,7 +639,7 @@ public class DrawingManager {
     }
 
     /**
-     * Return the current selected Kujaku Circle
+     * Return the current selected KujakuCircle
      *
      * @return
      */
