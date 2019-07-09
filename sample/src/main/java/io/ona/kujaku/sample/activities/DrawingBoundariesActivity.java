@@ -2,6 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -135,8 +136,8 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
         });
     }
 
-    private void startDrawing(KujakuLayer kujakuLayer) {
-        if (kujakuLayer instanceof FillBoundaryLayer) {
+    private void startDrawing (@Nullable KujakuLayer kujakuLayer) {
+        if (kujakuLayer == null || kujakuLayer instanceof FillBoundaryLayer) {
             if (drawingManager.startDrawing((FillBoundaryLayer)kujakuLayer)) {
                 drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
             }
