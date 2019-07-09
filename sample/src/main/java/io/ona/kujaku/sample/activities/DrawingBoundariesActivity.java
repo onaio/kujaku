@@ -137,17 +137,16 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
 
     private void startDrawing(KujakuLayer kujakuLayer) {
         if (kujakuLayer instanceof FillBoundaryLayer) {
-            if (drawingManager.startDrawingKujakuLayer((FillBoundaryLayer)kujakuLayer)) {
+            if (drawingManager.startDrawing((FillBoundaryLayer)kujakuLayer)) {
                 drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
             }
         }
     }
 
     private void stopDrawing() {
-        if (drawingManager.stopDrawingAndDisplayLayer()) {
-            drawingBtn.setText(R.string.drawing_boundaries_start_draw);
-            deleteBtn.setEnabled(false);
-        }
+        drawingManager.stopDrawingAndDisplayLayer();
+        drawingBtn.setText(R.string.drawing_boundaries_start_draw);
+        deleteBtn.setEnabled(false);
     }
 
     @Override
