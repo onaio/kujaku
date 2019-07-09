@@ -55,7 +55,7 @@ public class DrawingManager {
 
     private boolean drawingEnabled;
 
-    private FillBoundaryLayer currentLayer;
+    private FillBoundaryLayer currentFillBoundaryLayer;
 
     /**
      * Constructor
@@ -183,21 +183,22 @@ public class DrawingManager {
     }
 
     /**
-     * Set currentCircle when circle is clicked or longClicked
+     * Set currentCircle when kujakuCircle is clicked or longClicked
      *
-     * @param circle
+     * @param kujakuCircle
      */
-    private void setCurrentKujakuCircle(@Nullable KujakuCircle circle) {
-        this.currentKujakuCircle = circle;
+    private void setCurrentKujakuCircle(@Nullable KujakuCircle kujakuCircle) {
+        this.currentKujakuCircle = kujakuCircle;
     }
 
     /**
-     * Start Drawing. A KujakuLayer can be passed to init the drawing.
+     * Start Drawing. A FillBoundaryLayer can be passed to init the drawing.
+     *
      * @param fillBoundaryLayer
      * @return
      */
-    public boolean startDrawingKujakuLayer(@Nullable FillBoundaryLayer fillBoundaryLayer) {
-        this.currentLayer = fillBoundaryLayer;
+    public boolean startDrawing(@Nullable FillBoundaryLayer fillBoundaryLayer) {
+        this.currentFillBoundaryLayer = fillBoundaryLayer;
 
         if (fillBoundaryLayer == null) {
             this.startDrawingPoints(new ArrayList<>());
@@ -244,15 +245,15 @@ public class DrawingManager {
      *
      * @return
      */
-    public boolean stopDrawingAndDisplayLayer() {
+    public Polygon stopDrawingAndDisplayLayer() {
         Polygon polygon = this.stopDrawing();
 
         Feature feature = Feature.fromGeometry(polygon);
         FeatureCollection collection = FeatureCollection.fromFeature(feature);
 
-        if (this.currentLayer != null) { // Update layer
-            this.currentLayer.updateFeatures(collection);
-            this.currentLayer.enableLayerOnMap(mapboxMap);
+        if (this.currentFillBoundaryLayer != null) { // Update layer
+            this.currentFillBoundaryLayer.updateFeatures(collection);
+            this.currentFillBoundaryLayer.enableLayerOnMap(mapboxMap);
 
         } else {                        // Create layer
             FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
@@ -262,9 +263,9 @@ public class DrawingManager {
 
             kujakuMapView.addLayer(layer);
         }
-        this.currentLayer = null;
+        this.currentFillBoundaryLayer = null;
 
-        return true;
+        return polygon;
     }
 
     /**
@@ -272,7 +273,7 @@ public class DrawingManager {
      *
      * @return
      */
-    public Polygon stopDrawing() {
+    private Polygon stopDrawing() {
         setDrawing(false);
         setCurrentCircle(null);
 
