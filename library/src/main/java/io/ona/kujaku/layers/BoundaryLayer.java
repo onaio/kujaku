@@ -29,7 +29,6 @@ import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
@@ -99,7 +98,7 @@ public class BoundaryLayer extends KujakuLayer {
                 .withProperties(
                         PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
                         PropertyFactory.lineWidth(builder.boundaryWidth),
-                        lineColor(builder.boundaryColor)
+                        PropertyFactory.lineColor(builder.boundaryColor)
                 );
 
     }
