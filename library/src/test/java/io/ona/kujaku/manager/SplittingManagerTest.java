@@ -52,7 +52,7 @@ public class SplittingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void startSplittingManager() {
-        manager.startSplittingKujakuLayer(getFillBoundaryLayer());
+        manager.startSplitting(getFillBoundaryLayer());
 
         Assert.assertTrue(manager.isSplittingEnabled());
         Assert.assertFalse(manager.isSplittingReady());
@@ -60,7 +60,7 @@ public class SplittingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void createSplittingLineSplittingManager() {
-        manager.startSplittingKujakuLayer(getFillBoundaryLayer());
+        manager.startSplitting(getFillBoundaryLayer());
         manager.drawCircle(new LatLng(19,-9));
         Assert.assertFalse(manager.isSplittingReady());
 

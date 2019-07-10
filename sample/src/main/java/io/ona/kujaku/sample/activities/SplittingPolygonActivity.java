@@ -2,6 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -12,6 +13,7 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 
+import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
@@ -96,7 +98,7 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
 
                         drawingManager.addOnDrawingCircleClickListener(new OnDrawingCircleClickListener() {
                             @Override
-                            public void onCircleClick(Circle circle) {
+                            public void onCircleClick(@NonNull Circle circle) {
                                 drawingManager.unsetCurrentCircleDraggable();
 
                                 if (circle.isDraggable()) {
@@ -122,7 +124,7 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
 
                         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
                             @Override
-                            public void onKujakuLayerLongClick(KujakuLayer kujakuLayer) {
+                            public void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer) {
                                 if (!drawingManager.isDrawingEnabled()) {
                                     startDrawing(kujakuLayer);
                                 }
@@ -131,7 +133,7 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
 
                         kujakuMapView.setOnKujakuLayerClickListener(new OnKujakuLayerClickListener() {
                             @Override
-                            public void onKujakuLayerClick(KujakuLayer kujakuLayer) {
+                            public void onKujakuLayerClick(@NonNull KujakuLayer kujakuLayer) {
                                 if (!drawingManager.isDrawingEnabled() && !splittingManager.isSplittingEnabled()) {
                                     startSplitting(kujakuLayer);
                                 }
@@ -152,25 +154,26 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
     }
 
     private void startSplitting(KujakuLayer kujakuLayer) {
-        if (splittingManager.startSplittingKujakuLayer(kujakuLayer)) {
-            Toast.makeText(SplittingPolygonActivity.this, "You can start splitting", Toast.LENGTH_SHORT).show();
+        if (kujakuLayer instanceof FillBoundaryLayer && splittingManager.startSplitting((FillBoundaryLayer)kujakuLayer)) {
+            Toast.makeText(SplittingPolygonActivity.this, R.string.splitting_polygon_start, Toast.LENGTH_SHORT).show();
             cancelBtn.setEnabled(true);
         }
     }
 
-    private void startDrawing(KujakuLayer kujakuLayer) {
+    private void startDrawing (@Nullable KujakuLayer kujakuLayer) {
         splittingManager.stopSplitting();
 
-        if (drawingManager.startDrawingKujakuLayer(kujakuLayer)) {
-            drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+        if (kujakuLayer == null || kujakuLayer instanceof FillBoundaryLayer) {
+            if (drawingManager.startDrawing((FillBoundaryLayer)kujakuLayer)) {
+                drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+            }
         }
     }
 
     private void stopDrawing() {
-        if (drawingManager.stopDrawingAndDisplayLayer()) {
-            drawingBtn.setText(R.string.drawing_boundaries_start_draw);
-            deleteBtn.setEnabled(false);
-        }
+        drawingManager.stopDrawingAndDisplayLayer();
+        drawingBtn.setText(R.string.drawing_boundaries_start_draw);
+        deleteBtn.setEnabled(false);
     }
 
     @Override
