@@ -233,13 +233,22 @@ public class BoundaryLayer extends KujakuLayer {
         return Point.fromLngLat(centerLatLng.getLongitude(), centerLatLng.getLatitude());
     }
 
-    @Override
-    public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+    /**
+     * Return a list of Layers
+     * @param mapboxMap
+     * @return
+     */
+    protected ArrayList<Layer> getLayers(@NonNull MapboxMap mapboxMap) {
         ArrayList<Layer> layers = new ArrayList<Layer>();
         layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LINE_LAYER_ID));
         layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LABEL_LAYER_ID));
 
-        for (Layer layer: layers) {
+        return layers;
+    }
+
+    @Override
+    public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+        for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
                 layer.setProperties(visibility(VISIBLE));
                 visible = true;
@@ -249,11 +258,7 @@ public class BoundaryLayer extends KujakuLayer {
 
     @Override
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
-        ArrayList<Layer> layers = new ArrayList<Layer>();
-        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LINE_LAYER_ID));
-        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LABEL_LAYER_ID));
-
-        for (Layer layer: layers) {
+        for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
                 layer.setProperties(visibility(NONE));
                 visible = false;

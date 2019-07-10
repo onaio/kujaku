@@ -1,5 +1,8 @@
 package io.ona.kujaku.helpers.wmts;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
@@ -25,7 +28,7 @@ public class WmtsHelper {
      * @param styleIdentifier
      * @throws WmtsCapabilitiesException
      */
-    private static void selectWmtsStyle (WmtsLayer layer, String styleIdentifier) throws WmtsCapabilitiesException {
+    private static void selectWmtsStyle (@NonNull WmtsLayer layer, @Nullable String styleIdentifier) throws WmtsCapabilitiesException {
         if (styleIdentifier != null && !styleIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getStyle(styleIdentifier) == null) {
@@ -43,7 +46,7 @@ public class WmtsHelper {
      * @param tileMatrixSetLinkIdentifier
      * @throws WmtsCapabilitiesException
      */
-    private static void selectWmtsTileMatrix (WmtsLayer layer, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+    private static void selectWmtsTileMatrix (@NonNull WmtsLayer layer, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         if (tileMatrixSetLinkIdentifier != null && !tileMatrixSetLinkIdentifier.isEmpty()) {
             // Check if style is known
             if (layer.getTileMatrixSetLink(tileMatrixSetLinkIdentifier) == null) {
@@ -60,7 +63,7 @@ public class WmtsHelper {
      * @param layer
      * @param capabilities
      */
-    private static void setZooms(WmtsLayer layer, WmtsCapabilities capabilities){
+    private static void setZooms(@NonNull WmtsLayer layer, @NonNull  WmtsCapabilities capabilities){
         String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
 
         int maxZoom = capabilities.getMaximumTileMatrixZoom(tileMatrixSetIdentifier);
@@ -76,7 +79,7 @@ public class WmtsHelper {
      * @param layer
      * @param capabilities
      */
-    private static void setTilesSize(WmtsLayer layer, WmtsCapabilities capabilities) {
+    private static void setTilesSize(@NonNull WmtsLayer layer, @NonNull WmtsCapabilities capabilities) {
         String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();
         int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);
         layer.setTilesSize(tileSize);
@@ -85,7 +88,7 @@ public class WmtsHelper {
     /**
      * Add all Wmts Layers in wmtsLayers on the map
      */
-    public static void addWmtsLayers(Set<WmtsLayer> wmtsLayers, Style style) {
+    public static void addWmtsLayers(@Nullable Set<WmtsLayer> wmtsLayers,@NonNull Style style) {
         // Add WmtsLayers
         if (wmtsLayers != null) {
             for (WmtsLayer layer : wmtsLayers) {
@@ -115,7 +118,8 @@ public class WmtsHelper {
      * @param styleIdentifier
      * @param tileMatrixSetLinkIdentifier
      */
-    public static WmtsLayer identifyLayer(WmtsCapabilities capabilities, String layerIdentifier, String styleIdentifier, String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+    public static WmtsLayer identifyLayer(@Nullable WmtsCapabilities capabilities, @Nullable String layerIdentifier
+            , @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         WmtsLayer layerIdentified;
 
         if (capabilities == null) {
@@ -123,7 +127,7 @@ public class WmtsHelper {
         }
 
         if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible
-            if (capabilities.getLayers().size() == 0) {
+            if (capabilities.getLayers() == null || capabilities.getLayers().size() == 0) {
                 // No layer available
                 throw new WmtsCapabilitiesException("No layer available in the capacities object");
             } else {

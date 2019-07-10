@@ -1,5 +1,7 @@
 package io.ona.kujaku.manager;
 
+import android.support.annotation.NonNull;
+
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 
 /**
@@ -16,7 +18,7 @@ public class KujakuCircle {
     private KujakuCircle previousKujakuCircle;
     private KujakuCircle nextKujakuCircle;
 
-    KujakuCircle(Circle circle, KujakuCircle previousKujakuCircle, boolean isMiddleCircle) {
+    KujakuCircle(@NonNull Circle circle, KujakuCircle previousKujakuCircle, boolean isMiddleCircle) {
        this.circle = circle;
        this.previousKujakuCircle = previousKujakuCircle;
        this.isMiddleCircle = isMiddleCircle;
@@ -53,12 +55,12 @@ public class KujakuCircle {
         return this.isMiddleCircle;
     }
 
-    public void setNextKujakuCircle(KujakuCircle circle) {
+    public void setNextKujakuCircle(@NonNull KujakuCircle circle) {
         this.nextKujakuCircle = circle;
         circle.previousKujakuCircle = this;
     }
 
-    public void setPreviousKujakuCircle(KujakuCircle circle) {
+    public void setPreviousKujakuCircle(@NonNull KujakuCircle circle) {
         this.previousKujakuCircle = circle;
         circle.nextKujakuCircle = this;
     }

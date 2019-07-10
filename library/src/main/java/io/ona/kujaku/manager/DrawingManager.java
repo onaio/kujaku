@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.layers.FillBoundaryLayer;
-import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
 import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 import io.ona.kujaku.views.KujakuMapView;
@@ -56,6 +55,8 @@ public class DrawingManager {
 
     private boolean drawingEnabled;
 
+    private FillBoundaryLayer currentFillBoundaryLayer;
+
     /**
      * Constructor
      *
@@ -77,7 +78,7 @@ public class DrawingManager {
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
             public void onAnnotationClick(Circle circle) {
-                if (drawingEnabled) {
+                if (drawingEnabled && onDrawingCircleClickListener != null) {
                     onDrawingCircleClickListener.onCircleClick(circle);
                 }
             }
@@ -86,7 +87,7 @@ public class DrawingManager {
         circleManager.addLongClickListener(new OnCircleLongClickListener() {
                 @Override
                 public void onAnnotationLongClick(Circle circle) {
-                   if (drawingEnabled) {
+                   if (drawingEnabled && onDrawingCircleLongClickListener != null) {
                        onDrawingCircleLongClickListener.onCircleLongClick(circle);
                    }
                 }
@@ -177,37 +178,44 @@ public class DrawingManager {
      *
      * @param circle
      */
-    private void setCurrentCircle(Circle circle) {
+    private void setCurrentCircle(@Nullable Circle circle) {
         this.currentKujakuCircle = getKujakuCircle(circle);
     }
 
     /**
-     * Set currentCircle when circle is clicked or longClicked
+     * Set currentCircle when kujakuCircle is clicked or longClicked
      *
-     * @param circle
+     * @param kujakuCircle
      */
-    private void setCurrentKujakuCircle(KujakuCircle circle) {
-        this.currentKujakuCircle = circle;
+    private void setCurrentKujakuCircle(@Nullable KujakuCircle kujakuCircle) {
+        this.currentKujakuCircle = kujakuCircle;
     }
 
     /**
-     * Start Drawing. A KujakuLayer can be passed to init the drawing.
-     * @param kujakuLayer
+     * Start Drawing. A FillBoundaryLayer can be passed to init the drawing.
+     *
+     * @param fillBoundaryLayer
      * @return
      */
-    public boolean startDrawingKujakuLayer(@Nullable KujakuLayer kujakuLayer) {
-        if (kujakuLayer == null) {
+    public boolean startDrawing(@Nullable FillBoundaryLayer fillBoundaryLayer) {
+        this.currentFillBoundaryLayer = fillBoundaryLayer;
+
+        if (fillBoundaryLayer == null) {
             this.startDrawingPoints(new ArrayList<>());
             return true;
         }
 
-        Geometry geometry = kujakuLayer.getFeatureCollection().features().get(0).geometry();
-        if (geometry instanceof Polygon) {
-            kujakuLayer.removeLayerOnMap(mapboxMap);
-            Polygon polygon = (Polygon) geometry;
-            List<Point> points = polygon.coordinates().get(0);
-            this.startDrawingPoints(points);
-            return true;
+        if (fillBoundaryLayer.getFeatureCollection().features() != null && fillBoundaryLayer.getFeatureCollection().features().size() >= 1) {
+            Geometry geometry = fillBoundaryLayer.getFeatureCollection().features().get(0).geometry();
+            if (geometry instanceof Polygon) {
+                // hide layer
+                fillBoundaryLayer.disableLayerOnMap(mapboxMap);
+
+                Polygon polygon = (Polygon) geometry;
+                List<Point> points = polygon.coordinates().get(0);
+                this.startDrawingPoints(points);
+                return true;
+            }
         }
 
         return false;
@@ -215,11 +223,10 @@ public class DrawingManager {
 
     /**
      * Start Drawing. A list of point can be passed to init the drawing.
-     * Start drawing on the map / or editing an already existing kujakuLayer
      *
      * @param points
      */
-    public void startDrawingPoints(List<Point> points) {
+    public void startDrawingPoints(@Nullable List<Point> points) {
         setDrawing(true);
         setCurrentCircle(null);
 
@@ -233,23 +240,31 @@ public class DrawingManager {
     }
 
     /**
-     * Stop drawing and create a new Kujaku layer
+     * Stop drawing and create a new FillBoundary layer or update the existing one
      *
      * @return
      */
-    public boolean stopDrawingAndDisplayLayer() {
+    public Polygon stopDrawingAndDisplayLayer() {
         Polygon polygon = this.stopDrawing();
 
         Feature feature = Feature.fromGeometry(polygon);
         FeatureCollection collection = FeatureCollection.fromFeature(feature);
-        FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
-                .setBoundaryColor(Color.BLACK)
-                .setBoundaryWidth(3f)
-                .build();
 
-        kujakuMapView.addLayer(layer);
+        if (this.currentFillBoundaryLayer != null) { // Update layer
+            this.currentFillBoundaryLayer.updateFeatures(collection);
+            this.currentFillBoundaryLayer.enableLayerOnMap(mapboxMap);
 
-        return true;
+        } else {                        // Create layer
+            FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)
+                    .setBoundaryColor(Color.BLACK)
+                    .setBoundaryWidth(3f)
+                    .build();
+
+            kujakuMapView.addLayer(layer);
+        }
+        this.currentFillBoundaryLayer = null;
+
+        return polygon;
     }
 
     /**
@@ -257,7 +272,7 @@ public class DrawingManager {
      *
      * @return
      */
-    public Polygon stopDrawing() {
+    private Polygon stopDrawing() {
         setDrawing(false);
         setCurrentCircle(null);
 
@@ -296,7 +311,7 @@ public class DrawingManager {
      * @param circle
      * @return
      */
-    private KujakuCircle getKujakuCircle(Circle circle) {
+    private KujakuCircle getKujakuCircle(@Nullable Circle circle) {
         if (circle == null) {
             return null;
         }
@@ -356,14 +371,14 @@ public class DrawingManager {
     }
 
     /**
-     * Create new KujakuCircleOptions between circle1 and circle2 lat long. Copy options from parameter options
+     * Create new KujakuCircleOptions between circle1 and circle2 lat long.
      *
      * @param circle1
      * @param circle2
      * @param options
      * @return
      */
-    private KujakuCircleOptions createMiddleKujakuCircleOptions(Circle circle1, Circle circle2, KujakuCircleOptions options) {
+    private KujakuCircleOptions createMiddleKujakuCircleOptions(@NonNull Circle circle1, @NonNull Circle circle2, @NonNull KujakuCircleOptions options) {
         double lonEast = Math.max(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
         double lonWest = Math.min(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
         double latNorth = Math.max(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
@@ -416,7 +431,7 @@ public class DrawingManager {
      * @param latLng
      * @return
      */
-    public Circle drawCircle(LatLng latLng) {
+    public Circle drawCircle(@NonNull LatLng latLng) {
         return this.create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
     }
 
@@ -497,7 +512,7 @@ public class DrawingManager {
      *
      * @param kujakuCircle
      */
-    public void delete(KujakuCircle kujakuCircle) {
+    public void delete(@Nullable KujakuCircle kujakuCircle) {
         // Previous and next circle to delete if AreMiddle
         if (kujakuCircle == null) {
             return ;
@@ -536,7 +551,7 @@ public class DrawingManager {
      * @param draggable
      * @param circle
      */
-    public void setDraggable(boolean draggable, Circle circle) {
+    public void setDraggable(boolean draggable, @NonNull Circle circle) {
         circle.setDraggable(draggable);
         KujakuCircleOptions options;
 
@@ -624,7 +639,7 @@ public class DrawingManager {
     }
 
     /**
-     * Return the current selected Kujaku Circle
+     * Return the current selected KujakuCircle
      *
      * @return
      */

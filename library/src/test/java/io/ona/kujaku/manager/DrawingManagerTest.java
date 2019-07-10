@@ -137,7 +137,7 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         Assert.assertTrue(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());
 
-        Polygon polygon = manager.stopDrawing();
+        Polygon polygon = manager.stopDrawingAndDisplayLayer();
 
         Assert.assertFalse(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());

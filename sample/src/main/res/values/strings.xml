@@ -82,6 +82,10 @@
     <string name="drawing_boundaries_delete">Delete Point</string>
     <string name="drawing_boundaries_start_draw">Start Drawing</string>
     <string name="drawing_boundaries_stop_draw">Stop Drawing</string>
+    <string name="drawing_boundaries_circle_clicked">Circle clicked</string>
+    <string name="drawing_boundaries_circle_not_clicked">Circle not clicked</string>
+    <string name="drawing_boundaries_circle_long_clicked">Circle long clicked</string>
+    <string name="drawing_boundaries_circle_not_long_clicked">Circle not long clicked</string>
 
     <string name="only_cases">Only Cases</string>
     <string name="show_all">Show All</string>
