@@ -29,8 +29,6 @@ import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.listeners.OnFinishedListener;
@@ -249,7 +247,7 @@ public class BoundaryLayer extends KujakuLayer {
     public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
-                layer.setProperties(visibility(VISIBLE));
+                layer.setProperties(PropertyFactory.visibility(VISIBLE));
                 visible = true;
             }
         }
@@ -259,7 +257,7 @@ public class BoundaryLayer extends KujakuLayer {
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
-                layer.setProperties(visibility(NONE));
+                layer.setProperties(PropertyFactory.visibility(NONE));
                 visible = false;
             }
         }
