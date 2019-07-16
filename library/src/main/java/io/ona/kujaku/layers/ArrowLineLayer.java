@@ -30,7 +30,6 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
@@ -407,14 +406,6 @@ public class ArrowLineLayer extends KujakuLayer {
         }
     }
 
-    @Override
-    public void  updateLineLayerProperties(@NonNull PropertyValue<?>... properties) {
-        if (lineLayer != null) {
-            lineLayer.setProperties(
-                    properties
-            );
-        }
-    }
     private Bitmap getBitmapFromDrawable(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable) drawable).getBitmap();

@@ -109,7 +109,6 @@ public class BoundaryLayer extends KujakuLayer {
         boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.getFeatureCollection());
     }
 
-    @Override
     public void  updateLineLayerProperties(@NonNull PropertyValue<?>... properties) {
         if (boundaryLineLayer != null) {
             boundaryLineLayer.setProperties(

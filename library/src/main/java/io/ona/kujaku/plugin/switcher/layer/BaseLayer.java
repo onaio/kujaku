@@ -179,11 +179,6 @@ public abstract class BaseLayer extends KujakuLayer {
     }
 
     @Override
-    public void updateLineLayerProperties(@NonNull PropertyValue<?>... properties) {
-        // No implementation of this on a BaseLayer
-    }
-
-    @Override
     public FeatureCollection getFeatureCollection() {
         return null;
     }

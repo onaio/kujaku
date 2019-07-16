@@ -48,7 +48,7 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
         this.splitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (splittingManager.isSplittingReady()) {
+                if (splittingManager != null && splittingManager.isSplittingReady()) {
                     splittingManager.split();
                     view.setEnabled(false);
                 }
@@ -59,8 +59,10 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
         this.cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                splittingManager.stopSplitting();
-                splitBtn.setEnabled(false);
+                if (splittingManager != null) {
+                    splittingManager.stopSplitting();
+                    splitBtn.setEnabled(false);
+                }
             }
         });
 
@@ -68,8 +70,10 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
         this.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                drawingManager.deleteDrawingCurrentCircle();
-                view.setEnabled(false);
+                if (drawingManager != null) {
+                    drawingManager.deleteDrawingCurrentCircle();
+                    view.setEnabled(false);
+                }
             }
         });
 
@@ -78,10 +82,12 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View view) {
                 // start Drawing from scratch
-                if (! drawingManager.isDrawingEnabled()) {
-                    startDrawing(null);
-                } else {
-                    stopDrawing();
+                if (drawingManager != null && splittingManager != null) {
+                    if (!drawingManager.isDrawingEnabled()) {
+                        startDrawing(null);
+                    } else {
+                        stopDrawing();
+                    }
                 }
             }
         });

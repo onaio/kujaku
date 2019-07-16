@@ -57,8 +57,6 @@ public abstract class KujakuLayer {
 
     public abstract void updateFeatures(@NonNull FeatureCollection featureCollection);
 
-    public abstract void updateLineLayerProperties(@NonNull PropertyValue<?>... properties);
-
     public abstract FeatureCollection getFeatureCollection() ;
 
     public boolean isRemoved() {
