@@ -762,6 +762,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         // Unbind TrackingService if bound
         this.unBindTrackingService(getApplicationContext());
+        AnnotationRepositoryManager.onStop();
     }
 
     @Override
@@ -995,13 +996,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         this.resumeTrackingService(getApplicationContext());
-    }
-
-    @Override
-    public void onDestroy() {
-        AnnotationRepositoryManager.onDestroy();
-
-        super.onDestroy();
     }
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {

@@ -52,7 +52,6 @@ public class SplittingManager {
     private CircleManager circleManager;
 
     private OnSplittingClickListener onSplittingClickListener;
-    private OnSplittingLongClickListener onSplittingLongClickListener;
 
     private boolean splittingEnabled;
 
@@ -93,18 +92,12 @@ public class SplittingManager {
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
-                if (splittingEnabled && onSplittingClickListener != null) {
-                    onSplittingClickListener.onSplittingClick(point);
-                }
+                if (splittingEnabled) {
+                    drawCircle(point);
 
-                return false;
-            }
-        });
-        mapboxMap.addOnMapLongClickListener(new MapboxMap.OnMapLongClickListener() {
-            @Override
-            public boolean onMapLongClick(@NonNull LatLng point) {
-                if (splittingEnabled && onSplittingLongClickListener != null) {
-                    onSplittingLongClickListener.onSplittingLongClick(point);
+                    if (onSplittingClickListener != null) {
+                        onSplittingClickListener.onSplittingClick(point);
+                    }
                 }
 
                 return false;
@@ -383,15 +376,6 @@ public class SplittingManager {
      */
     public void addOnSplittingClickListener(OnSplittingClickListener listener) {
         this.onSplittingClickListener = listener;
-    }
-
-    /**
-     * Set a listener for the OnSplittingLongClickListener
-     *
-     * @param listener
-     */
-    public void addOnSplittingLongClickListener(OnSplittingLongClickListener listener) {
-        this.onSplittingLongClickListener = listener;
     }
 
     private static LineIntersectsResult lineIntersects(Point start, Point end, Point splitStart, Point splitEnd) {

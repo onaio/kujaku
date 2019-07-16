@@ -40,7 +40,7 @@ public class AnnotationRepositoryManager {
         return circleManager;
     }
 
-    public static void onDestroy() {
+    public static void onStop() {
         AnnotationRepositoryManager.fillManager = null;
         AnnotationRepositoryManager.lineManager = null;
         AnnotationRepositoryManager.circleManager = null;

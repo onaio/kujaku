@@ -149,7 +149,6 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
                         splittingManager.addOnSplittingClickListener(new OnSplittingClickListener() {
                             @Override
                             public void onSplittingClick(@NonNull LatLng latLng) {
-                                splittingManager.drawCircle(latLng);
                                 splitBtn.setEnabled(splittingManager.isSplittingReady());
                             }
                         });
