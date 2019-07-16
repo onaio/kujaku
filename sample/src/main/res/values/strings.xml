@@ -91,6 +91,13 @@
     <string name="show_all">Show All</string>
     <string name="_1_to_many_case_relationship_activity">1-to-Many Case Relationship Activity</string>
     <string name="base_layer_switcher_plugin">Base Layer Switcher Plugin</string>
+    <string name="cgr_browser">CGR Browser</string>
+    <string name="cgr_instructions">Click on a highlighted region to see it\'s sub-regions</string>
+    <string name="downloading_hierarchy_locations">Downloading hierarchy locations...</string>
+    <string name="error_occurred_check_internet_connection">An error occurred! Check your internet connection</string>
+    <string name="restart_drill_down">Restart Drill Down</string>
+    <string name="retry">Retry</string>
+    <string name="an_error_occurred_click_feature_again">An error occurred! Click on the feature again!</string>
 
     <string name="splitting_polygon_activity">Splitting Polygon</string>
     <string name="splitting_polygon_split">Split</string>

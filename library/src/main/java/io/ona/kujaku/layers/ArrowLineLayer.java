@@ -610,7 +610,7 @@ public class ArrowLineLayer extends KujakuLayer {
      * @param featureGeometry
      * @return
      */
-    private Point getCenter(@NonNull Geometry featureGeometry) {
+    public static Point getCenter(@NonNull Geometry featureGeometry) {
         double[] bbox = TurfMeasurement.bbox(featureGeometry);
         return Point.fromLngLat((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
     }

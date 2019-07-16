@@ -97,6 +97,10 @@
             android:id="@+id/nav_splitting_polygon"
             android:title="@string/splitting_polygon_activity"/>
 
+       <item
+            android:id="@+id/nav_cgr_integration"
+            android:title="@string/cgr_browser"/>
+
     </group>
 
 </menu>
