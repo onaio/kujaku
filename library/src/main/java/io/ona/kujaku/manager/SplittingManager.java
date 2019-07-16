@@ -24,7 +24,6 @@ import java.util.List;
 
 import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.listeners.OnSplittingClickListener;
-import io.ona.kujaku.listeners.OnSplittingLongClickListener;
 import io.ona.kujaku.manager.options.SplittingManagerDefaultOptions;
 import io.ona.kujaku.manager.options.SplittingManagerOptions;
 import io.ona.kujaku.views.KujakuMapView;
