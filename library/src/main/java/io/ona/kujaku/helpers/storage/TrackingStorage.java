@@ -1,12 +1,13 @@
 package io.ona.kujaku.helpers.storage;
 
-import android.location.Location;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.ona.kujaku.location.KujakuLocation;
 
 /**
  * Created by Emmanuel OTIN - eo@novel-t.ch on 12/03/2019.
@@ -24,10 +25,10 @@ public class TrackingStorage extends BaseStorage {
     /**
      * Write serialized StoreLocation in a file
      *
-     * @param location
+     * @param kujakuLocation
      * @param index
      */
-    public void writeLocation(Location location, int index) {
+    public void writeLocation(KujakuLocation kujakuLocation, int index) {
         String folderName = BASE_DIRECTORY + File.separator + CURRENT_DIRECTORY;
         String fileName = FILE_NAME + "_" + index + FILE_EXTENSION;
 
@@ -35,15 +36,15 @@ public class TrackingStorage extends BaseStorage {
             createFile(folderName, fileName);
         }
 
-        if (location != null) {
-            gsonWriteObject(folderName, fileName, new StoreLocation(location));
+        if (kujakuLocation != null) {
+            gsonWriteObject(folderName, fileName, new StoreLocation(kujakuLocation));
         }
     }
 
     /**
-     * Init TrackingService Store Location
+     * Init TrackingService Store KujakuLocation
      */
-    public void initLocationStorage() {
+    public void initKujakuLocationStorage() {
         // If directory previous exists, delete it
         String previousFolderName = BASE_DIRECTORY + File.separator + PREVIOUS_DIRECTORY;
         if (directoryExists(previousFolderName)) {
@@ -55,33 +56,33 @@ public class TrackingStorage extends BaseStorage {
     }
 
     /**
-     * Get Current list of Locations
+     * Get Current list of KujakuLocations
      *
      * @return
      */
-    public List<Location> getCurrentRecordedLocations() {
+    public List<KujakuLocation> getCurrentRecordedKujakuLocations() {
         String folderName = BASE_DIRECTORY + File.separator + CURRENT_DIRECTORY ;
-        return getRecordedLocations(folderName);
+        return getRecordedKujakuLocations(folderName);
     }
 
     /**
-     * Get Preivous list of Locations
+     * Get Previous list of KujakuLocations
      *
      * @return
      */
-    public List<Location> getPreviousRecordedLocations() {
+    public List<KujakuLocation> getPreviousRecordedKujakuLocations() {
         String folderName = BASE_DIRECTORY + File.separator + PREVIOUS_DIRECTORY ;
-        return getRecordedLocations(folderName);
+        return getRecordedKujakuLocations(folderName);
     }
 
     /**
-     * Get List of Locations in a specific folder
+     * Get List of KujakuLocations in a specific folder
      *
      * @param folderName
      * @return
      */
-    private List<Location> getRecordedLocations(String folderName) {
-        List<Location> result = new ArrayList<>();
+    private List<KujakuLocation> getRecordedKujakuLocations(String folderName) {
+        List<KujakuLocation> result = new ArrayList<>();
 
         if (directoryExists(folderName)) {
             File directory = new File(Environment.getExternalStorageDirectory(), folderName);
@@ -91,7 +92,7 @@ public class TrackingStorage extends BaseStorage {
                     for (int i = 0; i < files.length; i++) {
                         StoreLocation storeLoc = gsonReadObject(folderName, files[i].getName(), StoreLocation.class);
                         if (storeLoc != null) {
-                            result.add(StoreLocation.locationFromStoreLocation(storeLoc));
+                            result.add(StoreLocation.kujakuLocationFromStoreLocation(storeLoc));
                         }
                     }
                 }

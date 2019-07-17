@@ -18,7 +18,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
     protected long distanceFromDeparture;
     protected long minAccuracy;
 
-    TrackingServiceOptions() {
+    public TrackingServiceOptions() {
         this.minTime = 0;
         this.tag = 0;
     }
@@ -85,6 +85,15 @@ abstract public class TrackingServiceOptions implements Parcelable {
      */
     public long getTag() {
         return tag;
+    }
+
+    /**
+     * Set Tag to locations
+     *
+     * @param tag
+     */
+    public void setTag(long tag) {
+        this.tag = tag;
     }
 
     @Override

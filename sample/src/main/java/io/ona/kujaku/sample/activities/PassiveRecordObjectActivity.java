@@ -1,6 +1,5 @@
 package io.ona.kujaku.sample.activities;
 
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -8,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -19,6 +19,7 @@ import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
@@ -67,7 +68,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                 } else {
 
                     // Get the Tracks recorded
-                    List<Location> tracks = kujakuMapView.stopTrackingService(getApplicationContext());
+                    List<KujakuLocation> tracks = kujakuMapView.stopTrackingService(getApplicationContext());
 
                     //List<Location> othersTracks = new TrackingStorage().getCurrentRecordedKujakuLocations();
                     //displayTracksRecorded(othersTracks);
@@ -81,7 +82,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         this.forceLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kujakuMapView.trackingServiceTakeLocation();
+                kujakuMapView.trackingServiceTakeLocation(45000);
             }
         });
 
@@ -111,9 +112,9 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
         }
     }
 
-    private void displayTracksRecorded(List<Location> locations) {
+    private void displayTracksRecorded(List<KujakuLocation> locations) {
         List<Point> points = new ArrayList<>();
-        for (Location location: locations) {
+        for (KujakuLocation location: locations) {
             points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
         }
         kujakuMapView.updateDroppedPoints(points);
@@ -129,17 +130,17 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     public void onServiceConnected(TrackingService service) {
         Toast.makeText(getApplicationContext(), "Service connected", Toast.LENGTH_SHORT).show();
 
-        displayTracksRecorded(kujakuMapView.getTrackingServiceRecordedLocations());
+        displayTracksRecorded(kujakuMapView.getTrackingServiceRecordedKujakuLocations());
         InitRecordingButton();
     }
 
     @Override
-    public void onFirstLocationReceived(Location location) {
+    public void onFirstLocationReceived(KujakuLocation location) {
         Toast.makeText(getApplicationContext(), "First Location received", Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void onNewLocationReceived(Location location) {
+    public void onNewLocationReceived(KujakuLocation location) {
         Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
         List<Point> points = new ArrayList<>();
         points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
@@ -147,7 +148,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     }
 
     @Override
-    public void onCloseToDepartureLocation(Location location) {
+    public void onCloseToDepartureLocation(KujakuLocation location) {
         Toast.makeText(getApplicationContext(), "Location recorded is closed to the departure location", Toast.LENGTH_LONG).show();
     }
 

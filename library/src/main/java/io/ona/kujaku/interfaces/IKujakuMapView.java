@@ -5,7 +5,6 @@ package io.ona.kujaku.interfaces;
  */
 
 import android.content.Context;
-import android.location.Location;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +27,7 @@ import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
@@ -270,8 +270,8 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     /**
      * Init the TrackingService
      * You need to register a {@link TrackingServiceListener} to receive notifications as
-     *  - {@link TrackingServiceListener#onFirstLocationReceived(Location)}
-     *  - {@link TrackingServiceListener#onNewLocationReceived(Location)}
+     *  - {@link TrackingServiceListener#onFirstLocationReceived(KujakuLocation)}
+     *  - {@link TrackingServiceListener#onNewLocationReceived(KujakuLocation)}
      *  - etc.
      *
      *  You can pass a Tracking Service UI Configuration {@link TrackingServiceUIConfiguration} and options {@link TrackingServiceOptions}
@@ -300,7 +300,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param context
      * @return
      */
-    List<Location> stopTrackingService(@NonNull Context context);
+    List<KujakuLocation> stopTrackingService(@NonNull Context context);
 
     /**
      *  This method can bind to an existing instance of the TrackingService already running
@@ -321,7 +321,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      *
      * @return
      */
-    List<Location> getTrackingServiceRecordedLocations();
+    List<KujakuLocation> getTrackingServiceRecordedKujakuLocations();
 
     /**
      * This method enables/disables the disabling of my location button on moving or zooming map

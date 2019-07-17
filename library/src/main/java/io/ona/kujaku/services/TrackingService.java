@@ -130,7 +130,7 @@ public class TrackingService extends Service {
         firstKujakuLocationReceived = null ;
 
         // Storage
-        storage.initLocationStorage();
+        storage.initKujakuLocationStorage();
     }
 
     /**
@@ -820,11 +820,26 @@ public class TrackingService extends Service {
     }
 
     /**
-     * Record pending Location
+     * Set Tag for next points
+     *
+     * @param tag
      */
-    public void takeLocation () {
+    public void setTag(long tag) {
+        this.trackingServiceOptions.setTag(tag);
+    }
+
+    /**
+     *  Record pending Location
+     *
+     * @param tag
+     */
+    public void takeLocation (long tag) {
         if (pendingRecordingKujakuLocation != null) {
-            KujakuLocation pendingLocation = pendingRecordingKujakuLocation;
+            KujakuLocation pendingLocation = new KujakuLocation(pendingRecordingKujakuLocation, pendingRecordingKujakuLocation.getTag());
+
+            if (tag != -1) {
+                pendingRecordingKujakuLocation.setTag(tag);
+            }
             recordPendingLocation();
             pendingRecordingKujakuLocation = pendingLocation;
         }
@@ -948,7 +963,7 @@ public class TrackingService extends Service {
      */
     public static List<KujakuLocation> getCurrentRecordedKujakuLocations() {
         TrackingStorage storage = new TrackingStorage();
-        return storage.getCurrentRecordedLocations();
+        return storage.getCurrentRecordedKujakuLocations();
     }
 
     /**
@@ -958,6 +973,6 @@ public class TrackingService extends Service {
      */
     public static List<KujakuLocation> getPreviousRecordedKujakuLocations() {
         TrackingStorage storage = new TrackingStorage();
-        return storage.getPreviousRecordedLocations();
+        return storage.getPreviousRecordedKujakuLocations();
     }
 }

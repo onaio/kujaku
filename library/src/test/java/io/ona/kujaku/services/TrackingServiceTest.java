@@ -29,8 +29,10 @@ import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.R;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
 
 import static android.location.LocationManager.GPS_PROVIDER;
@@ -236,20 +238,21 @@ public class TrackingServiceTest {
 
         controller.get().registerTrackingServiceListener(new TrackingServiceListener() {
             @Override
-            public void onFirstLocationReceived(Location location) {
+            public void onFirstLocationReceived(KujakuLocation location) {
                 assertEquals(location.getLatitude(), locationDeparture.getLatitude(),0);
                 assertEquals(location.getLongitude(), locationDeparture.getLongitude(),0);
+                assertEquals(location.getTag(), 0,0);
                 latch1.countDown();
             }
 
             @Override
-            public void onNewLocationReceived(Location location) {
+            public void onNewLocationReceived(KujakuLocation location) {
                 assertNotNull(location);
                 latch2.countDown();
             }
 
             @Override
-            public void onCloseToDepartureLocation(Location location) {
+            public void onCloseToDepartureLocation(KujakuLocation location) {
                 assertNotNull(location);
             }
 
@@ -290,7 +293,7 @@ public class TrackingServiceTest {
         locationDeparture.setTime(System.currentTimeMillis()); // register location_3 and location departure
         shadowLocationManager.simulateLocation(locationDeparture);
 
-        List<Location> list = controller.get().getRecordedKujakuLocations();
+        List<KujakuLocation> list = controller.get().getRecordedKujakuLocations();
         assertEquals(list.size(), 4);
 
         assertEquals(list.get(0).getLatitude(), location_1.getLatitude(),0);
@@ -308,6 +311,89 @@ public class TrackingServiceTest {
         assertEquals(list.size(), TrackingService.getCurrentRecordedKujakuLocations().size());
         controller.startCommand(0,0);
         assertEquals(list.size(), TrackingService.getPreviousRecordedKujakuLocations().size());
+
+        controller.destroy();
+    }
+
+    @Test
+    public void testServiceWithTags() throws InterruptedException {
+        long startTag = 1000;
+        long nextTag = 2000;
+        long takeLocationTag = 9999;
+
+        TrackingServiceOptions options = new TrackingServiceOptions() {
+            @Override
+            public long getMinDistance() {
+                return 5;
+            }
+
+            @Override
+            public long getToleranceIntervalDistance() {
+                return 1;
+            }
+
+            @Override
+            public long getDistanceFromDeparture() {
+                return 10;
+            }
+
+            @Override
+            public long getMinAccuracy() {
+                return 50;
+            }
+
+            @Override
+            public long getMinTime() {
+                return 0;
+            }
+
+            @Override
+            public long getGpsMinDistance() {
+                return 0;
+            }
+        };
+        options.setTag(startTag);
+
+        controller = Robolectric.buildService(TrackingService.class,
+                TrackingService.getIntent(context, MapActivity.class, options));
+
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+
+        controller.create().startCommand(0,0);
+
+        Thread.sleep(2000); // TaskService thread waiting for running
+
+        locationDeparture.setTime(System.currentTimeMillis());
+        shadowLocationManager.simulateLocation(locationDeparture);
+
+        Thread.sleep(1000);
+        location_1.setTime(System.currentTimeMillis());
+        shadowLocationManager.simulateLocation(location_1);
+
+        Thread.sleep(1000);
+        location_2.setTime(System.currentTimeMillis());     // register location_1
+        shadowLocationManager.simulateLocation(location_2);
+
+        controller.get().takeLocation(takeLocationTag);     // force register location
+        controller.get().setTag(nextTag);
+
+        location_3.setTime(System.currentTimeMillis());     // register location_2
+        shadowLocationManager.simulateLocation(location_3);
+        Thread.sleep(1000);
+
+        locationDeparture.setTime(System.currentTimeMillis()); // register location_3 and location departure
+        shadowLocationManager.simulateLocation(locationDeparture);
+
+        List<KujakuLocation> list = controller.get().getRecordedKujakuLocations();
+        assertEquals(list.size(), 5);
+
+        assertEquals(list.get(0).getTag(), startTag,0);
+        assertEquals(list.get(1).getTag(), takeLocationTag,0);
+        assertEquals(list.get(2).getTag(), startTag,0);
+        assertEquals(list.get(3).getTag(), nextTag,0);
+        assertEquals(list.get(4).getTag(), nextTag,0);
 
         controller.destroy();
     }

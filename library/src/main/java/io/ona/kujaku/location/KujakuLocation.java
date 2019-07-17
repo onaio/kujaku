@@ -12,6 +12,10 @@ public class KujakuLocation extends Location {
 
     private long tag;
 
+    public KujakuLocation(String provider) {
+        super(provider);
+    }
+
     public KujakuLocation(@NonNull Location location, long tag) {
         super(location);
         this.tag = tag;
@@ -24,5 +28,14 @@ public class KujakuLocation extends Location {
      */
     public long getTag() {
         return tag;
+    }
+
+    /**
+     * Set tag
+     *
+     * @param tag
+     */
+    public void setTag(long tag) {
+        this.tag = tag;
     }
 }
