@@ -164,10 +164,9 @@ public class TrackingService extends Service {
         // possible that the service is killed by OS.
         startServiceForeground();
 
-        Log.d(TAG, "Min distance gps setting: " + Float.toString(trackingServiceOptions.getMinDistance()));
-        Log.d(TAG,
-                "Tolerance interval distance setting: "
-                        + Long.toString(trackingServiceOptions.getToleranceIntervalDistance()));
+        Log.d(TAG, "Min distance gps setting: " + trackingServiceOptions.getMinDistance());
+        Log.d(TAG,"Tolerance interval distance setting: " + trackingServiceOptions.getToleranceIntervalDistance());
+        Log.d(TAG,"Tag for location: " + trackingServiceOptions.getTag());
 
         switch (TrackingService.serviceStatus) {
             case TrackingServiceStatus.RUNNING:
