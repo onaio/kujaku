@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import io.ona.kujaku.R;
 import io.ona.kujaku.helpers.storage.TrackingStorage;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
 
@@ -67,14 +68,14 @@ public class TrackingService extends Service {
     private volatile Handler gpsHandler;
     private Handler uiHandler;
 
-    private volatile Location lastRecordedLocation;
-    private volatile Location pendingRecordingLocation;
-    private volatile Location lastBestLocation;
+    private volatile KujakuLocation lastRecordedKujakuLocation;
+    private volatile KujakuLocation pendingRecordingKujakuLocation;
+    private volatile KujakuLocation lastBestKujakuLocation;
 
     // Store the recorded locations
-    private List<Location> recordedLocations;
+    private List<KujakuLocation> recordedKujakuLocations;
 
-    private volatile Location firstLocationReceived = null ;
+    private volatile KujakuLocation firstKujakuLocationReceived = null ;
 
     // Tracks Options parameters
     private TrackingServiceOptions trackingServiceOptions;
@@ -115,7 +116,7 @@ public class TrackingService extends Service {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         storage = new TrackingStorage();
 
-        recordedLocations = new ArrayList<>();
+        recordedKujakuLocations = new ArrayList<>();
     }
 
     /**
@@ -123,10 +124,10 @@ public class TrackingService extends Service {
      */
     private void initialize() {
         // Variables
-        lastRecordedLocation = null;
-        lastBestLocation = null;
-        pendingRecordingLocation = null;
-        firstLocationReceived = null ;
+        lastRecordedKujakuLocation = null;
+        lastBestKujakuLocation = null;
+        pendingRecordingKujakuLocation = null;
+        firstKujakuLocationReceived = null ;
 
         // Storage
         storage.initLocationStorage();
@@ -354,104 +355,100 @@ public class TrackingService extends Service {
     }
 
     /**
-     * Process a new location
+     * Process a new kujakuLocation
      *
-     * @param location
+     * @param kujakuLocation
      */
-    private synchronized void processLocation(Location location) {
+    private synchronized void processLocation(KujakuLocation kujakuLocation) {
         double distanceBetweenLocations;
 
-        if (lastRecordedLocation == null) {
-            Log.d(TAG, "First location since service started or GPS was lost");
+        if (lastRecordedKujakuLocation == null) {
+            Log.d(TAG, "First kujakuLocation since service started or GPS was lost");
 
             // Create pending
-            overwritePendingLocation(location);
+            overwritePendingLocation(kujakuLocation);
 
-            // Create a fake last recorded location to have a fix
+            // Create a fake last recorded kujakuLocation to have a fix
             // reference point to compare new tracks to.
             // We cannot compare new tracks always to the pending
             // one using toleranceInterval as the
-            // pending location can be updated for ever theoretically
+            // pending kujakuLocation can be updated for ever theoretically
             // if the accuracy keeps being better
-            lastRecordedLocation = location;
+            lastRecordedKujakuLocation = kujakuLocation;
 
             return;
         }
 
-        // lastRecordedLocation is not null
-        distanceBetweenLocations = location.distanceTo(lastRecordedLocation);
+        // lastRecordedKujakuLocation is not null
+        distanceBetweenLocations = kujakuLocation.distanceTo(lastRecordedKujakuLocation);
 
-        Log.d(TAG,
-                "Distance to last recorded location (m) = "
-                        + Double.toString(distanceBetweenLocations));
+        Log.d(TAG,"Distance to last recorded kujakuLocation (m) = " + distanceBetweenLocations);
 
         if ((distanceBetweenLocations < (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {
-            Log.d(TAG, "New location too close from last recorded location.");
+            Log.d(TAG, "New kujakuLocation too close from last recorded kujakuLocation.");
             return;
         }
 
         if (distanceBetweenLocations < (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {
-            Log.d(TAG,
-                    "New location within distance tolerance from last recorded location.");
+            Log.d(TAG,"New kujakuLocation within distance tolerance from last recorded kujakuLocation.");
 
-            // Check if there is a pending location
-            if (pendingRecordingLocation == null) {
-                Log.d(TAG,
-                        "No pending location.");
-                overwritePendingLocation(location);
+            // Check if there is a pending kujakuLocation
+            if (pendingRecordingKujakuLocation == null) {
+                Log.d(TAG,"No pending kujakuLocation.");
+                overwritePendingLocation(kujakuLocation);
                 return;
             } else {
-                if (selectLocation(location, pendingRecordingLocation)) {
-                    overwritePendingLocation(location);
-                    Log.d(TAG, "New location is better than pending location.");
+                if (selectLocation(kujakuLocation, pendingRecordingKujakuLocation)) {
+                    overwritePendingLocation(kujakuLocation);
+                    Log.d(TAG, "New kujakuLocation is better than pending kujakuLocation.");
 
                     return;
 
                 } else {
                     Log.d(TAG,
-                            "New location has worse accuracy than pending one.");
+                            "New kujakuLocation has worse accuracy than pending one.");
                     return;
 
-                } // end test on better location
+                } // end test on better kujakuLocation
 
             } // end test if pending
 
         } else {
-            Log.d(TAG, "New location out of distance tolerance.");
-            if (pendingRecordingLocation == null) {
-                // As this location is out of tolerance, the next one will also be.
+            Log.d(TAG, "New kujakuLocation out of distance tolerance.");
+            if (pendingRecordingKujakuLocation == null) {
+                // As this kujakuLocation is out of tolerance, the next one will also be.
                 // So we record it now. We cannot wait for better accuracy.
-                overwritePendingLocation(location);
+                overwritePendingLocation(kujakuLocation);
                 recordPendingLocation();
                 return;
 
             } else {
-                // Record pending which becomes the last location
+                // Record pending which becomes the last kujakuLocation
                 recordPendingLocation();
-                // Recursive call as we have a new lastRecordedLocation
-                processLocation(location);
+                // Recursive call as we have a new lastRecordedKujakuLocation
+                processLocation(kujakuLocation);
                 return;
             }
 
-        } // End test new location within time tolerance
+        } // End test new kujakuLocation within time tolerance
     }
 
     /**
      * Compare two track accuracy. Return true if new better than old
      *
-     * @param newLocation
-     * @param oldLocation
+     * @param newKujakuLocation
+     * @param oldKujakuLocation
      * @return
      */
-    private boolean selectLocation(Location newLocation, Location oldLocation) {
-        double newDist = newLocation.distanceTo(lastRecordedLocation);
-        double oldDist = oldLocation.distanceTo(lastRecordedLocation);
+    private boolean selectLocation(KujakuLocation newKujakuLocation, KujakuLocation oldKujakuLocation) {
+        double newDist = newKujakuLocation.distanceTo(lastRecordedKujakuLocation);
+        double oldDist = oldKujakuLocation.distanceTo(lastRecordedKujakuLocation);
 
         // Old track real, new track real => keep best accuracy
-        if (newLocation.getAccuracy() < oldLocation.getAccuracy()) {
+        if (newKujakuLocation.getAccuracy() < oldKujakuLocation.getAccuracy()) {
             return true;
         } else {
-            if (newLocation.getAccuracy() == oldLocation.getAccuracy()) {
+            if (newKujakuLocation.getAccuracy() == oldKujakuLocation.getAccuracy()) {
                 // Check if closer to targeted distance
                 return newDist < oldDist;
             } else {
@@ -461,20 +458,20 @@ public class TrackingService extends Service {
     }
 
     /**
-     * Overwrite pending with a new location
+     * Overwrite pending with a new kujakuLocation
      *
-     * @param location
+     * @param kujakuLocation
      */
-    private void overwritePendingLocation(Location location) {
-        Log.d(TAG, "Overwrite pending location.");
+    private void overwritePendingLocation(KujakuLocation kujakuLocation) {
+        Log.d(TAG, "Overwrite pending kujakuLocation.");
 
-        pendingRecordingLocation = location;
+        pendingRecordingKujakuLocation = kujakuLocation;
 
-        // Remember the last real Location. pendingRecordingLocation can be null but
-        // lastBestLocation cannot be.
-        // Each pending location will be recorded at some point and become the new
+        // Remember the last real Location. pendingRecordingKujakuLocation can be null but
+        // lastBestKujakuLocation cannot be.
+        // Each pending kujakuLocation will be recorded at some point and become the new
         // reference to compare to
-        lastBestLocation = location;
+        lastBestKujakuLocation = kujakuLocation;
     }
 
     /**
@@ -482,22 +479,22 @@ public class TrackingService extends Service {
      *
      */
     private synchronized void recordPendingLocation() {
-        if (pendingRecordingLocation != null) {
+        if (pendingRecordingKujakuLocation != null) {
             Log.d(TAG, "Record pending location.");
 
             // We store the location in our list
-            recordedLocations.add(pendingRecordingLocation);
+            recordedKujakuLocations.add(pendingRecordingKujakuLocation);
 
-            informNewTrackReceivedListener(pendingRecordingLocation);
-            informCloseToDepartureLocationListener(pendingRecordingLocation);
+            informNewTrackReceivedListener(pendingRecordingKujakuLocation);
+            informCloseToDepartureLocationListener(pendingRecordingKujakuLocation);
 
-            storage.writeLocation(pendingRecordingLocation, recordedLocations.size());
+            storage.writeLocation(pendingRecordingKujakuLocation, recordedKujakuLocations.size());
         } else {
             Log.d(TAG, "Service is not recording.");
         }
 
-        lastRecordedLocation = pendingRecordingLocation;
-        pendingRecordingLocation = null;
+        lastRecordedKujakuLocation = pendingRecordingKujakuLocation;
+        pendingRecordingKujakuLocation = null;
     }
 
     /**
@@ -550,34 +547,35 @@ public class TrackingService extends Service {
                 return;
             }
 
+            KujakuLocation kujakuLocation = new KujakuLocation(location, trackingServiceOptions.getTag());
+
             // First Location received
-            informFirstLocationReceivedListener(location);
+            informFirstLocationReceivedListener(kujakuLocation);
 
             // Ignore if the accuracy is too bad:
-            if (location.getAccuracy() > trackingServiceOptions.getMinAccuracy()) {
+            if (kujakuLocation.getAccuracy() > trackingServiceOptions.getMinAccuracy()) {
                 Log.d(TAG, "Track ignored because of accuracy.");
                 return;
             }
 
-            if (lastBestLocation == null) {
-                lastBestLocation = location;
+            if (lastBestKujakuLocation == null) {
+                lastBestKujakuLocation = kujakuLocation;
             } else {
-                if (location.getAccuracy() <= lastBestLocation.getAccuracy()) {
+                if (kujakuLocation.getAccuracy() <= lastBestKujakuLocation.getAccuracy()) {
                     // Remember this location is better than the previous one.
-                    // lastBestLocation is rebased in overwritePendingLocation but an
+                    // lastBestKujakuLocation is rebased in overwritePendingLocation but an
                     // ignored location can have better accuracy
                     // even if not recorded
 
                     Log.d(TAG,
                             "New location is used as latest best accuracy location.");
-                    lastBestLocation = location;
+                    lastBestKujakuLocation = kujakuLocation;
                 }
             }
 
             // process location received from GPS
-            processLocation(location);
+            processLocation(kujakuLocation);
         }
-
     };
 
     /**
@@ -615,7 +613,7 @@ public class TrackingService extends Service {
 
             Log.d(TAG, "Exiting looper.");
 
-            if (pendingRecordingLocation != null) {
+            if (pendingRecordingKujakuLocation != null) {
 
                 Log.d(TAG, "Record last pending location.");
                 recordPendingLocation();
@@ -725,19 +723,19 @@ public class TrackingService extends Service {
     }
 
     /**
-     * Inform listener that first location is received
+     * Inform listener that first kujakuLocation is received
      *
-     * @param location
+     * @param kujakuLocation
      */
-    private void informFirstLocationReceivedListener(Location location) {
-        if (this.trackingServiceListener != null && this.firstLocationReceived == null) {
+    private void informFirstLocationReceivedListener(KujakuLocation kujakuLocation) {
+        if (this.trackingServiceListener != null && this.firstKujakuLocationReceived == null) {
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    trackingServiceListener.onFirstLocationReceived(location);
+                    trackingServiceListener.onFirstLocationReceived(kujakuLocation);
                 }
             });
-            this.firstLocationReceived = location ;
+            this.firstKujakuLocationReceived = kujakuLocation ;
         }
         this.setServiceStatus(TrackingServiceStatus.WAITING_FIRST_RECORD);
     }
@@ -745,14 +743,14 @@ public class TrackingService extends Service {
     /**
      * Inform listener that a new track is registered
      *
-     * @param location
+     * @param kujakuLocation
      */
-    private void informNewTrackReceivedListener(Location location) {
-        if (this.trackingServiceListener != null && location != null) {
+    private void informNewTrackReceivedListener(KujakuLocation kujakuLocation) {
+        if (this.trackingServiceListener != null && kujakuLocation != null) {
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    trackingServiceListener.onNewLocationReceived(location);
+                    trackingServiceListener.onNewLocationReceived(kujakuLocation);
                 }
             });
         }
@@ -760,23 +758,23 @@ public class TrackingService extends Service {
     }
 
     /**
-     * Inform listener that location registered is close to the departure location
+     * Inform listener that kujakuLocation registered is close to the departure kujakuLocation
      *
-     * @param location
+     * @param kujakuLocation
      */
-    private void informCloseToDepartureLocationListener(Location location) {
-        if (this.trackingServiceListener != null && location != null) {
+    private void informCloseToDepartureLocationListener(KujakuLocation kujakuLocation) {
+        if (this.trackingServiceListener != null && kujakuLocation != null) {
             if (this.getNumberOfLocationsRecorded() == 1) {
                 return;
             }
 
             Location departure = this.getFirstLocationRecorded();
 
-            if (departure != null && departure.distanceTo(location) <= trackingServiceOptions.getDistanceFromDeparture()) {
+            if (departure != null && departure.distanceTo(kujakuLocation) <= trackingServiceOptions.getDistanceFromDeparture()) {
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        trackingServiceListener.onCloseToDepartureLocation(location);
+                        trackingServiceListener.onCloseToDepartureLocation(kujakuLocation);
                     }
                 });
             }
@@ -785,11 +783,12 @@ public class TrackingService extends Service {
 
     /**
      * Get First Location recorded
+     *
      * @return
      */
     private Location getFirstLocationRecorded() {
-        if (this.recordedLocations != null && this.recordedLocations.size() > 0) {
-            return this.recordedLocations.get(0);
+        if (this.recordedKujakuLocations != null && this.recordedKujakuLocations.size() > 0) {
+            return this.recordedKujakuLocations.get(0);
         }
 
         return null;
@@ -801,8 +800,8 @@ public class TrackingService extends Service {
      * @return
      */
     private int getNumberOfLocationsRecorded() {
-        if (this.recordedLocations != null) {
-            return this.recordedLocations.size();
+        if (this.recordedKujakuLocations != null) {
+            return this.recordedKujakuLocations.size();
         }
 
         return 0;
@@ -816,18 +815,18 @@ public class TrackingService extends Service {
      *
      * @return
      */
-    public List<Location> getRecordedLocations() {
-        return this.recordedLocations;
+    public List<KujakuLocation> getRecordedKujakuLocations() {
+        return this.recordedKujakuLocations;
     }
 
     /**
      * Record pending Location
      */
     public void takeLocation () {
-        if (pendingRecordingLocation != null) {
-            Location pendingLocation = pendingRecordingLocation;
+        if (pendingRecordingKujakuLocation != null) {
+            KujakuLocation pendingLocation = pendingRecordingKujakuLocation;
             recordPendingLocation();
-            pendingRecordingLocation = pendingLocation;
+            pendingRecordingKujakuLocation = pendingLocation;
         }
     }
 
@@ -947,7 +946,7 @@ public class TrackingService extends Service {
      *
      * @return
      */
-    public static List<Location> getCurrentRecordedLocations() {
+    public static List<KujakuLocation> getCurrentRecordedKujakuLocations() {
         TrackingStorage storage = new TrackingStorage();
         return storage.getCurrentRecordedLocations();
     }
@@ -957,7 +956,7 @@ public class TrackingService extends Service {
      *
      * @return
      */
-    public static List<Location> getPreviousRecordedLocations() {
+    public static List<KujakuLocation> getPreviousRecordedKujakuLocations() {
         TrackingStorage storage = new TrackingStorage();
         return storage.getPreviousRecordedLocations();
     }

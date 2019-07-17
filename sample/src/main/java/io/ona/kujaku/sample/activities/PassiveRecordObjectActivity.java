@@ -69,7 +69,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                     // Get the Tracks recorded
                     List<Location> tracks = kujakuMapView.stopTrackingService(getApplicationContext());
 
-                    //List<Location> othersTracks = new TrackingStorage().getCurrentRecordedLocations();
+                    //List<Location> othersTracks = new TrackingStorage().getCurrentRecordedKujakuLocations();
                     //displayTracksRecorded(othersTracks);
 
                     ((Button)v).setText(getString(R.string.start_recording));

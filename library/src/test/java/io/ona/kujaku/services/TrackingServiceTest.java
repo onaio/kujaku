@@ -99,7 +99,7 @@ public class TrackingServiceTest {
 
         assertEquals(TrackingService.TrackingServiceStatus.STOPPED, TrackingService.getTrackingServiceStatus());
         assertFalse(TrackingService.isRunning());
-        assertNull(null, controller.get().getRecordedLocations());
+        assertNull(null, controller.get().getRecordedKujakuLocations());
 
         controller.destroy();
     }
@@ -290,7 +290,7 @@ public class TrackingServiceTest {
         locationDeparture.setTime(System.currentTimeMillis()); // register location_3 and location departure
         shadowLocationManager.simulateLocation(locationDeparture);
 
-        List<Location> list = controller.get().getRecordedLocations();
+        List<Location> list = controller.get().getRecordedKujakuLocations();
         assertEquals(list.size(), 4);
 
         assertEquals(list.get(0).getLatitude(), location_1.getLatitude(),0);
@@ -305,9 +305,9 @@ public class TrackingServiceTest {
         assertEquals(list.get(3).getLatitude(), locationDeparture.getLatitude(),0);
         assertEquals(list.get(3).getLongitude(), locationDeparture.getLongitude(),0);
 
-        assertEquals(list.size(), TrackingService.getCurrentRecordedLocations().size());
+        assertEquals(list.size(), TrackingService.getCurrentRecordedKujakuLocations().size());
         controller.startCommand(0,0);
-        assertEquals(list.size(), TrackingService.getPreviousRecordedLocations().size());
+        assertEquals(list.size(), TrackingService.getPreviousRecordedKujakuLocations().size());
 
         controller.destroy();
     }

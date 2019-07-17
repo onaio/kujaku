@@ -1314,7 +1314,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     public List<Location> stopTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
-            List<Location> locations = trackingService.getRecordedLocations();
+            List<Location> locations = trackingService.getRecordedKujakuLocations();
             trackingService.unregisterTrackingServiceListener();
             TrackingService.stopAndUnbindService(context, connection);
             trackingServiceBound = false;
@@ -1363,7 +1363,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     public List<Location> getTrackingServiceRecordedLocations() {
         if (trackingServiceBound && trackingService != null) {
-            return trackingService.getRecordedLocations();
+            return trackingService.getRecordedKujakuLocations();
         }
 
         return new ArrayList<Location>();

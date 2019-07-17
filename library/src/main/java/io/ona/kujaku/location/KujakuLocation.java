@@ -12,7 +12,7 @@ public class KujakuLocation extends Location {
 
     private long tag;
 
-    public KujakuLocation(@NonNull Location location, int tag) {
+    public KujakuLocation(@NonNull Location location, long tag) {
         super(location);
         this.tag = tag;
     }
