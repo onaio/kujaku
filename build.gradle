@@ -40,7 +40,7 @@ ext {
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
     jacocoVersion = "0.7.9"
-    mapboxSdkVersion = "7.2.0"
+    mapboxSdkVersion = "7.3.0"
     mapboxAnnotationPluginVersion = "0.6.0"
 }
 
