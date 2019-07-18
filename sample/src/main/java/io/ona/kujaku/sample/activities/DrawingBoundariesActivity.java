@@ -42,8 +42,10 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
         this.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                drawingManager.deleteDrawingCurrentCircle();
-                view.setEnabled(false);
+                if (drawingManager != null) {
+                    drawingManager.deleteDrawingCurrentCircle();
+                    view.setEnabled(false);
+                }
             }
         });
 
