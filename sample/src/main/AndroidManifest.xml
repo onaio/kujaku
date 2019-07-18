@@ -99,6 +99,10 @@
             android:name=".activities.DrawingBoundariesActivity"
             android:theme="@style/AppTheme.NoActionBar">
             </activity>
+        <activity
+            android:name=".activities.SplittingPolygonActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
