@@ -2,7 +2,6 @@ package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,13 +14,11 @@ import com.mapbox.mapboxsdk.maps.Style;
 
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 
-import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.manager.DrawingManager;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
-import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
 import io.ona.kujaku.views.KujakuMapView;
 
 public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
@@ -57,13 +54,18 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                 // start Drawing from scratch
                 if (drawingManager != null) {
                     if (!drawingManager.isDrawingEnabled()) {
-                        startDrawing(null);
+                        if (drawingManager.startDrawing(null)) {
+                            drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
+                        }
                     } else {
-                        stopDrawing();
+                        drawingManager.stopDrawingAndDisplayLayer();
+                        drawingBtn.setText(R.string.drawing_boundaries_start_draw);
                     }
                 } else {
                     Log.e(TAG, "Drawing manager instance is null");
                 }
+
+                deleteBtn.setEnabled(false);
             }
         });
 
@@ -81,52 +83,22 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                             public void onCircleClick(@NonNull Circle circle) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         getString(R.string.drawing_boundaries_circle_clicked), Toast.LENGTH_SHORT).show();
-
-                                drawingManager.unsetCurrentCircleDraggable();
-
-                                if (circle.isDraggable()) {
-                                    deleteBtn.setEnabled(false);
-                                    drawingManager.setDraggable(false, circle);
-
-                                } else if (!circle.isDraggable()) {
-                                    deleteBtn.setEnabled(true);
-                                    drawingManager.setDraggable(true, circle);
-                                }
+                                    deleteBtn.setEnabled(drawingManager.getCurrentKujakuCircle() != null);
                             }
 
                             @Override
                             public void onCircleNotClick(@NonNull LatLng latLng) {
                                 Toast.makeText(DrawingBoundariesActivity.this,
                                         getString(R.string.drawing_boundaries_circle_not_clicked), Toast.LENGTH_SHORT).show();
-
-                                if (drawingManager.getCurrentKujakuCircle() != null) {
-                                    drawingManager.unsetCurrentCircleDraggable();
-                                    deleteBtn.setEnabled(false);
-                                } else {
-                                    drawingManager.drawCircle(latLng);
-                                }
+                                deleteBtn.setEnabled(false);
                             }
                         });
 
-                        drawingManager.addOnDrawingCircleLongClickListener(new OnDrawingCircleLongClickListener() {
-                            @Override
-                            public void onCircleLongClick(@NonNull Circle circle) {
-                                Toast.makeText(DrawingBoundariesActivity.this,
-                                        getString(R.string.drawing_boundaries_circle_long_clicked), Toast.LENGTH_SHORT).show();
-                            }
-
-                            @Override
-                            public void onCircleNotLongClick(@NonNull LatLng point) {
-                                Toast.makeText(DrawingBoundariesActivity.this,
-                                        getString(R.string.drawing_boundaries_circle_not_long_clicked), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
+                        drawingManager.addOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
                             @Override
                             public void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer) {
-                                if (!drawingManager.isDrawingEnabled()) {
-                                    startDrawing(kujakuLayer);
+                                if (drawingManager.isDrawingEnabled()) {
+                                    drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
                                 }
                             }
                         });
@@ -134,20 +106,6 @@ public class DrawingBoundariesActivity extends BaseNavigationDrawerActivity {
                 });
             }
         });
-    }
-
-    private void startDrawing (@Nullable KujakuLayer kujakuLayer) {
-        if (kujakuLayer == null || kujakuLayer instanceof FillBoundaryLayer) {
-            if (drawingManager.startDrawing((FillBoundaryLayer)kujakuLayer)) {
-                drawingBtn.setText(R.string.drawing_boundaries_stop_draw);
-            }
-        }
-    }
-
-    private void stopDrawing() {
-        drawingManager.stopDrawingAndDisplayLayer();
-        drawingBtn.setText(R.string.drawing_boundaries_start_draw);
-        deleteBtn.setEnabled(false);
     }
 
     @Override

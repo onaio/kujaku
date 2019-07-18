@@ -22,15 +22,15 @@ import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
 import com.mapbox.mapboxsdk.plugins.annotation.LineOptions;
 import com.mapbox.mapboxsdk.plugins.annotation.OnCircleClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.OnCircleDragListener;
-import com.mapbox.mapboxsdk.plugins.annotation.OnCircleLongClickListener;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
-import io.ona.kujaku.listeners.OnDrawingCircleLongClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.views.KujakuMapView;
 
 /**
@@ -51,7 +51,7 @@ public class DrawingManager {
     private CircleManager circleManager;
 
     private OnDrawingCircleClickListener onDrawingCircleClickListener;
-    private OnDrawingCircleLongClickListener onDrawingCircleLongClickListener;
+    private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
 
     private boolean drawingEnabled;
 
@@ -78,20 +78,16 @@ public class DrawingManager {
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
             public void onAnnotationClick(Circle circle) {
-                if (drawingEnabled && onDrawingCircleClickListener != null) {
-                    onDrawingCircleClickListener.onCircleClick(circle);
+                if (drawingEnabled) {
+                    unsetCurrentCircleDraggable();
+                    setDraggable(!circle.isDraggable(), circle);
+
+                    if (onDrawingCircleClickListener != null) {
+                        onDrawingCircleClickListener.onCircleClick(circle);
+                    }
                 }
             }
         });
-
-        circleManager.addLongClickListener(new OnCircleLongClickListener() {
-                @Override
-                public void onAnnotationLongClick(Circle circle) {
-                   if (drawingEnabled && onDrawingCircleLongClickListener != null) {
-                       onDrawingCircleLongClickListener.onCircleLongClick(circle);
-                   }
-                }
-            });
 
         circleManager.addDragListener(new OnCircleDragListener() {
             @Override
@@ -116,26 +112,32 @@ public class DrawingManager {
                 final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
                 List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
-                if (features.size() == 0 && drawingEnabled && onDrawingCircleClickListener != null) {
-                    onDrawingCircleClickListener.onCircleNotClick(point);
+                if (features.size() == 0 && drawingEnabled) {
+                    if (getCurrentKujakuCircle() != null) {
+                        unsetCurrentCircleDraggable();
+                    } else {
+                        drawCircle(point);
+                    }
+
+                    if (onDrawingCircleClickListener != null) {
+                        onDrawingCircleClickListener.onCircleNotClick(point);
+                    }
                 }
 
                 return false;
             }
         });
 
-        mapboxMap.addOnMapLongClickListener(new MapboxMap.OnMapLongClickListener() {
+        kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
             @Override
-            public boolean onMapLongClick(@NonNull LatLng point) {
-                final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
+            public void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer) {
+                if (!isDrawingEnabled() && kujakuLayer instanceof FillBoundaryLayer) {
+                    startDrawing((FillBoundaryLayer)kujakuLayer);
 
-                // Get the first feature within the list if one exist
-                if (features.size() == 0 && drawingEnabled && onDrawingCircleLongClickListener != null) {
-                    onDrawingCircleLongClickListener.onCircleNotLongClick(point);
+                    if (onKujakuLayerLongClickListener != null) {
+                        onKujakuLayerLongClickListener.onKujakuLayerLongClick(kujakuLayer);
+                    }
                 }
-
-                return false;
             }
         });
     }
@@ -657,11 +659,11 @@ public class DrawingManager {
     }
 
     /**
-     * Set a listener for the OnDrawingCircleLongClickListener
+     * Set a listener for the OnKujakuLayerLongClickListener
      *
      * @param listener
      */
-    public void addOnDrawingCircleLongClickListener(OnDrawingCircleLongClickListener listener) {
-        this.onDrawingCircleLongClickListener = listener;
+    public void addOnKujakuLayerLongClickListener(OnKujakuLayerLongClickListener listener) {
+        this.onKujakuLayerLongClickListener = listener;
     }
 }
