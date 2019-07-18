@@ -77,6 +77,7 @@ import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.manager.AnnotationRepositoryManager;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
@@ -761,6 +762,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         // Unbind TrackingService if bound
         this.unBindTrackingService(getApplicationContext());
+        AnnotationRepositoryManager.onStop();
     }
 
     @Override
