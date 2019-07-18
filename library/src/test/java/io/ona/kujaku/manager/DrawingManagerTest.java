@@ -1,5 +1,7 @@
 package io.ona.kujaku.manager;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.layers.BaseKujakuLayerTest;
+import io.ona.kujaku.layers.FillBoundaryLayer;
 import io.ona.kujaku.views.KujakuMapView;
 
 /**
@@ -71,6 +74,25 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         Assert.assertNull(manager.getCurrentKujakuCircle());
         // Middle Circles created between each point
         Assert.assertEquals(8, manager.getKujakuCircles().size());
+    }
+
+    @Test
+    public void startDrawingWithExistingLayer() {
+        manager.startDrawing(getFillBoundaryLayer());
+
+        Assert.assertTrue(manager.isDrawingEnabled());
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+        // Middle Circles created between each point
+        Assert.assertEquals(8, manager.getKujakuCircles().size());
+
+        Assert.assertFalse(manager.getKujakuCircles().get(0).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(1).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(2).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(3).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(4).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(5).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(6).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
     }
 
     @Test
@@ -182,5 +204,23 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         Assert.assertTrue(manager.getKujakuCircles().get(5).isMiddleCircle());
         Assert.assertFalse(manager.getKujakuCircles().get(6).isMiddleCircle());
         Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
+    }
+
+    private FillBoundaryLayer getFillBoundaryLayer() {
+        List<Feature> features = new ArrayList<Feature>();
+        List<List<Point>> lists = new ArrayList<>();
+        List<Point> points = new ArrayList<>();
+
+        points.add(Point.fromLngLat(-11,15));
+        points.add(Point.fromLngLat(-5,15));
+        points.add(Point.fromLngLat(-5,11));
+        points.add(Point.fromLngLat(-11,11));
+        lists.add(points);
+
+        features.add(Feature.fromGeometry(Polygon.fromLngLats(lists)));
+
+        FeatureCollection featureCollection = FeatureCollection.fromFeatures(features);
+        FillBoundaryLayer.Builder builder = new FillBoundaryLayer.Builder(featureCollection);
+        return builder.build();
     }
 }
