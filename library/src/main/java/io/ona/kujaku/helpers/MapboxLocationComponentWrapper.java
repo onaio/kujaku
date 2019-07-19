@@ -20,6 +20,13 @@ public class MapboxLocationComponentWrapper {
 
     private OnLocationComponentInitializedCallback onLocationComponentInitializedCallback;
 
+    /**
+     * Init Location Component Wrapper
+     *
+     * @param mapboxMap {@link MapboxMap}
+     * @param context
+     * @param locationRenderMode {@link RenderMode}
+     */
     @SuppressWarnings( {"MissingPermission"})
     public void init(@NonNull MapboxMap mapboxMap, @NonNull Context context, int locationRenderMode) {
         locationComponent = mapboxMap.getLocationComponent();
