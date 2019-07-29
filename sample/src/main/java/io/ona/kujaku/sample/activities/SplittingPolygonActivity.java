@@ -92,6 +92,8 @@ public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {
                         drawingManager.stopDrawingAndDisplayLayer();
                         drawingBtn.setText(R.string.drawing_boundaries_start_draw);
                     }
+
+                    cancelBtn.setEnabled(false);
                 } else {
                     Log.e(TAG, "Drawing manager instance is null");
                 }
