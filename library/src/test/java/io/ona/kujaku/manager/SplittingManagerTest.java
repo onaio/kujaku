@@ -21,6 +21,7 @@ import java.util.List;
 
 import io.ona.kujaku.layers.BaseKujakuLayerTest;
 import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.manager.options.SplittingManagerOptions;
 import io.ona.kujaku.views.KujakuMapView;
 
 /**
@@ -56,6 +57,54 @@ public class SplittingManagerTest extends BaseKujakuLayerTest {
 
         Assert.assertTrue(manager.isSplittingEnabled());
         Assert.assertFalse(manager.isSplittingReady());
+
+        manager.stopSplitting();
+    }
+
+    @Test
+    public void testSplittingManagerOptions() {
+        SplittingManagerOptions options = new SplittingManagerOptions() {
+            @Override
+            public String getCircleColor() {
+                return "green";
+            }
+
+            @Override
+            public String getLineColor() {
+                return "blue";
+            }
+
+            @Override
+            public Float getCircleRadius() {
+                return 5f;
+            }
+
+            @Override
+            public String getKujakuFillLayerColor() {
+                return "black";
+            }
+
+            @Override
+            public String getKujakuFillLayerColorSelected() {
+                return "yellow";
+            }
+
+            @Override
+            public KujakuCircleOptions getKujakuCircleOptions() {
+                return new KujakuCircleOptions()
+                        .withCircleRadius(getCircleRadius())
+                        .withCircleColor(getCircleColor())
+                        .withDraggable(true);
+            }
+        };
+
+        manager.setSplittingManagerOptions(options);
+
+        Assert.assertEquals(options.getCircleColor(), "green");
+        Assert.assertEquals(options.getLineColor(), "blue");
+        Assert.assertEquals(options.getCircleRadius(), 5f, 0);
+        Assert.assertEquals(options.getKujakuFillLayerColor(), "black");
+        Assert.assertEquals(options.getKujakuFillLayerColorSelected(), "yellow");
     }
 
     @Test
@@ -72,6 +121,8 @@ public class SplittingManagerTest extends BaseKujakuLayerTest {
         Assert.assertEquals(polygons.size(), 2);
         Assert.assertEquals(polygons.get(0).size(), 4);
         Assert.assertEquals(polygons.get(1).size(), 4);
+
+        manager.stopSplitting();
     }
 
     private FillBoundaryLayer getFillBoundaryLayer() {
