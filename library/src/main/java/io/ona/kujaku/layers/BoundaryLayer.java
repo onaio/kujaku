@@ -18,6 +18,7 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.turf.TurfMeasurement;
@@ -28,7 +29,6 @@ import java.util.UUID;
 
 import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
 import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.listeners.OnFinishedListener;
@@ -98,6 +98,7 @@ public class BoundaryLayer extends KujakuLayer {
                         PropertyFactory.lineWidth(builder.boundaryWidth),
                         PropertyFactory.lineColor(builder.boundaryColor)
                 );
+
     }
 
     private void createBoundaryLabelSource() {
@@ -106,6 +107,14 @@ public class BoundaryLayer extends KujakuLayer {
 
     private void createBoundaryFeatureSource(@NonNull KujakuLayer.Builder builder) {
         boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.getFeatureCollection());
+    }
+
+    public void  updateLineLayerProperties(@NonNull PropertyValue<?>... properties) {
+        if (boundaryLineLayer != null) {
+            boundaryLineLayer.setProperties(
+                    properties
+            );
+        }
     }
 
     @Override
@@ -237,7 +246,7 @@ public class BoundaryLayer extends KujakuLayer {
     public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
-                layer.setProperties(visibility(VISIBLE));
+                layer.setProperties(PropertyFactory.visibility(VISIBLE));
                 visible = true;
             }
         }
@@ -247,7 +256,7 @@ public class BoundaryLayer extends KujakuLayer {
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         for (Layer layer: getLayers(mapboxMap)) {
             if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
-                layer.setProperties(visibility(NONE));
+                layer.setProperties(PropertyFactory.visibility(NONE));
                 visible = false;
             }
         }

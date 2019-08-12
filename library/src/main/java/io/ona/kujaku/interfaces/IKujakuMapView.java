@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
 
 import org.json.JSONException;
@@ -92,9 +93,30 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
      *
      * @param focusOnMyLocation Whether to focus on the user's current location or not
+     * @param renderMode Render Mode for the user's current location {@link RenderMode}
+     */
+    void focusOnUserLocation(boolean focusOnMyLocation, int renderMode);
+
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
      * @param radius Radius of the outer circle that marks the user's current location
      */
     void focusOnUserLocation(boolean focusOnMyLocation, @Nullable Float radius);
+
+    /**
+     * Enables/disables location on the map to show the user location on the map without the user
+     * intervention. If the MY LOCATION BUTTON is visible, it will turn blue as long as this mode is on.
+     * This can be turned off by the user if s/he touches the map to scroll it to a specific location.
+     *
+     * @param focusOnMyLocation Whether to focus on the user's current location or not
+     * @param radius Radius of the outer circle that marks the user's current location
+     * @param renderMode Render Mode for the user's current location {@link RenderMode}
+     */
+    void focusOnUserLocation(boolean focusOnMyLocation, @Nullable Float radius, int renderMode);
 
 
     /**
