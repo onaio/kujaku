@@ -44,7 +44,7 @@ import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
 /**
  * Tracking Service used in Foreground to avoid any memory cleaning from Android
  * /!\ The application need to be set on Mode "No Battery optimization" in any case
- *
+ * <p>
  * Created by Emmanuel Otin - eo@novel-t.ch 03/07/19.
  */
 public class TrackingService extends Service {
@@ -75,7 +75,7 @@ public class TrackingService extends Service {
     // Store the recorded locations
     private List<KujakuLocation> recordedKujakuLocations;
 
-    private volatile KujakuLocation firstKujakuLocationReceived = null ;
+    private volatile KujakuLocation firstKujakuLocationReceived = null;
 
     // Tracks Options parameters
     private TrackingServiceOptions trackingServiceOptions;
@@ -127,7 +127,7 @@ public class TrackingService extends Service {
         lastRecordedKujakuLocation = null;
         lastBestKujakuLocation = null;
         pendingRecordingKujakuLocation = null;
-        firstKujakuLocationReceived = null ;
+        firstKujakuLocationReceived = null;
 
         // Storage
         storage.initKujakuLocationStorage();
@@ -166,8 +166,8 @@ public class TrackingService extends Service {
         startServiceForeground();
 
         Log.d(TAG, "Min distance gps setting: " + trackingServiceOptions.getMinDistance());
-        Log.d(TAG,"Tolerance interval distance setting: " + trackingServiceOptions.getToleranceIntervalDistance());
-        Log.d(TAG,"Tag for location: " + trackingServiceOptions.getTag());
+        Log.d(TAG, "Tolerance interval distance setting: " + trackingServiceOptions.getToleranceIntervalDistance());
+        Log.d(TAG, "Tag for location: " + trackingServiceOptions.getTag());
 
         switch (TrackingService.serviceStatus) {
             case TrackingServiceStatus.RUNNING:
@@ -282,8 +282,6 @@ public class TrackingService extends Service {
     }
 
     /**
-     *
-     *
      * @param intent
      */
     private void createNotificationPendingIntent(Intent intent) {
@@ -317,7 +315,7 @@ public class TrackingService extends Service {
     private Class<?> getActivityClassFromCanonicalName(Intent intent) {
         Bundle extras = intent.getExtras();
         if (extras == null) {
-            return null ;
+            return null;
         }
 
         String classname = extras.getString(ACTIVITY_EXTRA_NAME);
@@ -382,7 +380,7 @@ public class TrackingService extends Service {
         // lastRecordedKujakuLocation is not null
         distanceBetweenLocations = kujakuLocation.distanceTo(lastRecordedKujakuLocation);
 
-        Log.d(TAG,"Distance to last recorded kujakuLocation (m) = " + distanceBetweenLocations);
+        Log.d(TAG, "Distance to last recorded kujakuLocation (m) = " + distanceBetweenLocations);
 
         if ((distanceBetweenLocations < (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {
             Log.d(TAG, "New kujakuLocation too close from last recorded kujakuLocation.");
@@ -390,11 +388,11 @@ public class TrackingService extends Service {
         }
 
         if (distanceBetweenLocations < (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {
-            Log.d(TAG,"New kujakuLocation within distance tolerance from last recorded kujakuLocation.");
+            Log.d(TAG, "New kujakuLocation within distance tolerance from last recorded kujakuLocation.");
 
             // Check if there is a pending kujakuLocation
             if (pendingRecordingKujakuLocation == null) {
-                Log.d(TAG,"No pending kujakuLocation.");
+                Log.d(TAG, "No pending kujakuLocation.");
                 overwritePendingLocation(kujakuLocation);
                 return;
             } else {
@@ -476,7 +474,6 @@ public class TrackingService extends Service {
 
     /**
      * Register Location
-     *
      */
     private synchronized void recordPendingLocation() {
         if (pendingRecordingKujakuLocation != null) {
@@ -666,7 +663,7 @@ public class TrackingService extends Service {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
                 .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-                .setContentTitle(String.format("%1$s %2$s", getString(R.string.app_name), getString(R.string.tracking_service_name)) )
+                .setContentTitle(String.format("%1$s %2$s", getString(R.string.app_name), getString(R.string.tracking_service_name)))
                 .setOngoing(true)
                 .setWhen(System.currentTimeMillis());
 
@@ -716,7 +713,6 @@ public class TrackingService extends Service {
 
     /**
      * Unregister listener
-     *
      */
     public void unregisterTrackingServiceListener() {
         this.trackingServiceListener = null;
@@ -735,7 +731,7 @@ public class TrackingService extends Service {
                     trackingServiceListener.onFirstLocationReceived(kujakuLocation);
                 }
             });
-            this.firstKujakuLocationReceived = kujakuLocation ;
+            this.firstKujakuLocationReceived = kujakuLocation;
         }
         this.setServiceStatus(TrackingServiceStatus.WAITING_FIRST_RECORD);
     }
@@ -829,11 +825,11 @@ public class TrackingService extends Service {
     }
 
     /**
-     *  Record pending Location
+     * Record pending Location
      *
      * @param tag
      */
-    public void takeLocation (long tag) {
+    public void takeLocation(long tag) {
         if (pendingRecordingKujakuLocation != null) {
             KujakuLocation pendingLocation = new KujakuLocation(pendingRecordingKujakuLocation, pendingRecordingKujakuLocation.getTag());
 
@@ -931,7 +927,7 @@ public class TrackingService extends Service {
     public static void unBindService(Context context, ServiceConnection connection) {
         try {
             context.unbindService(connection);
-        } catch (IllegalArgumentException ex){
+        } catch (IllegalArgumentException ex) {
             Log.e(TAG, "UnBindService failed", ex);
         }
     }
