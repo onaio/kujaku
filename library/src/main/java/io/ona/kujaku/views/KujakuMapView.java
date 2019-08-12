@@ -39,6 +39,7 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.VisibleRegion;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
@@ -68,7 +69,7 @@ import io.ona.kujaku.helpers.PermissionsHelper;
 import io.ona.kujaku.helpers.wmts.WmtsHelper;
 import io.ona.kujaku.interfaces.IKujakuMapView;
 import io.ona.kujaku.interfaces.ILocationClient;
-import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.layers.KujakuLayer;f
 import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
@@ -131,6 +132,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean updateUserLocationOnMap = false;
     private boolean updateCameraUserLocationOnMap = false;
+    private int locationRenderMode = RenderMode.NORMAL;
 
     private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
 
@@ -589,7 +591,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         WmtsHelper.addWmtsLayers(wmtsLayers, style);
 
-        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext());
+        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext(), locationRenderMode);
     }
 
     private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
@@ -762,6 +764,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         // Unbind TrackingService if bound
         this.unBindTrackingService(getApplicationContext());
+        AnnotationRepositoryManager.onStop();
     }
 
     @Override
@@ -825,11 +828,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation) {
-        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS);
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderMode.NORMAL);
+    }
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, int renderMode) {
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, renderMode);
     }
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
+        focusOnUserLocation(focusOnMyLocation, radius, RenderMode.NORMAL);
+    }
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, Float radius, int renderMode) {
         if (focusOnMyLocation) {
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);
 
@@ -844,6 +857,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             updateCameraUserLocationOnMap = false;
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
+
+        locationRenderMode = renderMode;
     }
 
     @Override

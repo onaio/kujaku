@@ -20,13 +20,20 @@ public class MapboxLocationComponentWrapper {
 
     private OnLocationComponentInitializedCallback onLocationComponentInitializedCallback;
 
+    /**
+     * Init Location Component Wrapper
+     *
+     * @param mapboxMap {@link MapboxMap}
+     * @param context
+     * @param locationRenderMode {@link RenderMode}
+     */
     @SuppressWarnings( {"MissingPermission"})
-    public void init(@NonNull MapboxMap mapboxMap, @NonNull Context context) {
+    public void init(@NonNull MapboxMap mapboxMap, @NonNull Context context, int locationRenderMode) {
         locationComponent = mapboxMap.getLocationComponent();
         locationComponent.activateLocationComponent(context, mapboxMap.getStyle(), false);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.NONE);
-        locationComponent.setRenderMode(RenderMode.NORMAL);
+        locationComponent.setRenderMode(locationRenderMode);
         if (onLocationComponentInitializedCallback != null) {
             onLocationComponentInitializedCallback.onLocationComponentInitialized();
         }
