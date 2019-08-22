@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
 import io.ona.kujaku.listeners.OnSplittingClickListener;
 import io.ona.kujaku.manager.options.SplittingManagerDefaultOptions;
 import io.ona.kujaku.manager.options.SplittingManagerOptions;
@@ -51,6 +53,7 @@ public class SplittingManager {
     private CircleManager circleManager;
 
     private OnSplittingClickListener onSplittingClickListener;
+    private OnKujakuLayerClickListener onKujakuLayerClickListener;
 
     private boolean splittingEnabled;
 
@@ -88,6 +91,7 @@ public class SplittingManager {
                 // Left empty on purpose
             }
         });
+
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
@@ -100,6 +104,20 @@ public class SplittingManager {
                 }
 
                 return false;
+            }
+        });
+
+        kujakuMapView.setOnKujakuLayerClickListener(new OnKujakuLayerClickListener() {
+            @Override
+            public void onKujakuLayerClick(@NonNull KujakuLayer kujakuLayer) {
+                if (!isSplittingEnabled() && kujakuLayer instanceof FillBoundaryLayer) {
+
+                    startSplitting((FillBoundaryLayer)kujakuLayer);
+
+                    if (onKujakuLayerClickListener != null) {
+                        onKujakuLayerClickListener.onKujakuLayerClick(kujakuLayer);
+                    }
+                }
             }
         });
     }
@@ -375,6 +393,15 @@ public class SplittingManager {
      */
     public void addOnSplittingClickListener(OnSplittingClickListener listener) {
         this.onSplittingClickListener = listener;
+    }
+
+    /**
+     * Set listener when pressing a KujakuLayer
+     *
+     * @param listener
+     */
+    public void addOnKujakuLayerClickListener(OnKujakuLayerClickListener listener) {
+        this.onKujakuLayerClickListener = listener;
     }
 
     private static LineIntersectsResult lineIntersects(Point start, Point end, Point splitStart, Point splitEnd) {
