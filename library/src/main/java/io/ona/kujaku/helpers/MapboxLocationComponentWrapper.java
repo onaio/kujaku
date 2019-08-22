@@ -1,6 +1,7 @@
 package io.ona.kujaku.helpers;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -33,7 +34,15 @@ public class MapboxLocationComponentWrapper {
         locationComponent.activateLocationComponent(context, mapboxMap.getStyle(), false);
         locationComponent.setLocationComponentEnabled(true);
         locationComponent.setCameraMode(CameraMode.NONE);
-        locationComponent.setRenderMode(locationRenderMode);
+
+        PackageManager pm = context.getPackageManager();
+        if (pm != null && !pm.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS)) {
+            // This device does not have a compass, turn off the compass feature
+            locationComponent.setRenderMode(RenderMode.NORMAL);
+        } else {
+            locationComponent.setRenderMode(locationRenderMode);
+        }
+
         if (onLocationComponentInitializedCallback != null) {
             onLocationComponentInitializedCallback.onLocationComponentInitialized();
         }
