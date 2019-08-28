@@ -1393,7 +1393,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      */
     public void trackingServiceTakeLocation() {
-       this.trackingServiceTakeLocation(-1);
+       this.trackingServiceTakeLocation(TrackingService.NO_FORCED_TAG);
     }
 
     /**

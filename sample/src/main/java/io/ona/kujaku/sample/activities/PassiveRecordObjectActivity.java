@@ -64,7 +64,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
                     }
 
                     ((Button)v).setText(getString(R.string.stop_recording));
-                    forceLocationBtn.setEnabled(true);
+
                 } else {
 
                     // Get the Tracks recorded
@@ -136,6 +136,7 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
 
     @Override
     public void onFirstLocationReceived(KujakuLocation location) {
+        forceLocationBtn.setEnabled(true);
         Toast.makeText(getApplicationContext(), "First Location received", Toast.LENGTH_LONG).show();
     }
 

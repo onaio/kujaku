@@ -80,7 +80,7 @@ public class TrackingService extends Service {
     // Tracks Options parameters
     private TrackingServiceOptions trackingServiceOptions;
 
-    // Use for notification
+    // Used for notification
     private PendingIntent notificationPendingIntent;
 
     // Binder given to clients
@@ -104,6 +104,9 @@ public class TrackingService extends Service {
         final public static int WAITING_FIRST_RECORD = 3;
         final public static int RUNNING = 4;
     }
+
+    // Take a location without forcing the tag
+    public static int NO_FORCED_TAG = -1;
 
 
     @Override
@@ -830,14 +833,15 @@ public class TrackingService extends Service {
      * @param tag
      */
     public void takeLocation(long tag) {
-        if (pendingRecordingKujakuLocation != null) {
-            KujakuLocation pendingLocation = new KujakuLocation(pendingRecordingKujakuLocation, pendingRecordingKujakuLocation.getTag());
+        if (pendingRecordingKujakuLocation == null && lastBestKujakuLocation != null) {
+            pendingRecordingKujakuLocation = new KujakuLocation(lastBestKujakuLocation, lastBestKujakuLocation.getTag());
+        }
 
-            if (tag != -1) {
+        if (pendingRecordingKujakuLocation != null) {
+            if (tag != NO_FORCED_TAG) {
                 pendingRecordingKujakuLocation.setTag(tag);
             }
             recordPendingLocation();
-            pendingRecordingKujakuLocation = pendingLocation;
         }
     }
 
