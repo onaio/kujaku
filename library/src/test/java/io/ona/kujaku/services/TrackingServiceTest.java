@@ -383,17 +383,19 @@ public class TrackingServiceTest {
         shadowLocationManager.simulateLocation(location_3);
         Thread.sleep(1000);
 
-        locationDeparture.setTime(System.currentTimeMillis()); // register location_3 and location departure
+        locationDeparture.setTime(System.currentTimeMillis()); // register location_3
         shadowLocationManager.simulateLocation(locationDeparture);
 
+        controller.get().takeLocation(takeLocationTag); // force register location
+
         List<KujakuLocation> list = controller.get().getRecordedKujakuLocations();
-        assertEquals(list.size(), 5);
+        assertEquals(5, list.size());
 
         assertEquals(list.get(0).getTag(), startTag,0);
         assertEquals(list.get(1).getTag(), takeLocationTag,0);
-        assertEquals(list.get(2).getTag(), startTag,0);
+        assertEquals(list.get(2).getTag(), nextTag,0);
         assertEquals(list.get(3).getTag(), nextTag,0);
-        assertEquals(list.get(4).getTag(), nextTag,0);
+        assertEquals(list.get(4).getTag(), takeLocationTag,0);
 
         controller.destroy();
     }
