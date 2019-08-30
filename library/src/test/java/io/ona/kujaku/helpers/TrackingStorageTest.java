@@ -1,6 +1,5 @@
 package io.ona.kujaku.helpers;
 
-import android.location.Location;
 import android.os.Environment;
 
 import org.junit.Assert;
@@ -11,6 +10,7 @@ import org.robolectric.annotation.Config;
 
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.helpers.storage.TrackingStorage;
+import io.ona.kujaku.location.KujakuLocation;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 
@@ -81,16 +81,34 @@ public class TrackingStorageTest {
     @Test
     public void initLocationStorageTest() {
         TrackingStorage storage = new TrackingStorage();
-        storage.initLocationStorage();
+        storage.initKujakuLocationStorage();
 
-        Location location = new Location(GPS_PROVIDER);
-        location.setLatitude(1.1);
-        location.setLongitude(1.2);
-        storage.writeLocation(location, 1);
+        KujakuLocation kujakuLocation = new KujakuLocation(GPS_PROVIDER);
+        kujakuLocation.setLatitude(1.1);
+        kujakuLocation.setLongitude(1.2);
+        storage.writeLocation(kujakuLocation, 1);
 
-        Assert.assertEquals(storage.getCurrentRecordedLocations().size(),1);
-        storage.initLocationStorage();
-        Assert.assertEquals(storage.getPreviousRecordedLocations().size(),1);
-        Assert.assertEquals(storage.getCurrentRecordedLocations().size(),0);
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().size(),1);
+        storage.initKujakuLocationStorage();
+        Assert.assertEquals(storage.getPreviousRecordedKujakuLocations().size(),1);
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().size(),0);
+    }
+
+    @Test
+    public void kujakuLocationAttributesTest() {
+        TrackingStorage storage = new TrackingStorage();
+        storage.initKujakuLocationStorage();
+
+        KujakuLocation kujakuLocation = new KujakuLocation(GPS_PROVIDER);
+        kujakuLocation.setLatitude(1.1);
+        kujakuLocation.setLongitude(1.2);
+        kujakuLocation.setTag(1005);
+        storage.writeLocation(kujakuLocation, 1);
+
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().size(),1);
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().get(0).getLatitude(),1.1,0);
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().get(0).getLongitude(),1.2,0);
+        Assert.assertEquals(storage.getCurrentRecordedKujakuLocations().get(0).getTag(),1005,0);
+
     }
 }

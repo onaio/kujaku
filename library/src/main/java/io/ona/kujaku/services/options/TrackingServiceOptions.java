@@ -11,14 +11,16 @@ import android.os.Parcelable;
 abstract public class TrackingServiceOptions implements Parcelable {
     private long minTime;
 
+    protected long tag;
     protected long minDistance;
     protected long gpsMinDistance;
     protected long toleranceIntervalDistance;
     protected long distanceFromDeparture;
     protected long minAccuracy;
 
-    TrackingServiceOptions() {
+    public TrackingServiceOptions() {
         this.minTime = 0;
+        this.tag = 0;
     }
 
     /**
@@ -76,6 +78,24 @@ abstract public class TrackingServiceOptions implements Parcelable {
         return gpsMinDistance;
     }
 
+    /**
+     * Get the tag assigned to GPS points
+     *
+     * @return
+     */
+    public long getTag() {
+        return tag;
+    }
+
+    /**
+     * Set Tag to locations
+     *
+     * @param tag
+     */
+    public void setTag(long tag) {
+        this.tag = tag;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -95,6 +115,7 @@ abstract public class TrackingServiceOptions implements Parcelable {
         dest.writeLong(toleranceIntervalDistance);
         dest.writeLong(distanceFromDeparture);
         dest.writeLong(minAccuracy);
+        dest.writeLong(tag);
     }
 
     /**
@@ -109,5 +130,6 @@ abstract public class TrackingServiceOptions implements Parcelable {
         this.toleranceIntervalDistance = in.readLong();
         this.distanceFromDeparture = in.readLong();
         this.minAccuracy = in.readLong();
+        this.tag = in.readLong();
     }
 }

@@ -1,6 +1,6 @@
 package io.ona.kujaku.helpers.storage;
 
-import android.location.Location;
+import io.ona.kujaku.location.KujakuLocation;
 
 /**
  * Class StoreLocation used to store location with Gson
@@ -15,16 +15,18 @@ class StoreLocation {
     private long time;
     private float bearing;
     private float speed;
+    private long tag;
 
-    StoreLocation(Location location) {
-        this.provider = location.getProvider();
-        this.latitude = location.getLatitude();
-        this.longitude = location.getLongitude();
-        this.accuracy = location.getAccuracy();
-        this.altitude = location.getAltitude();
-        this.time = location.getTime();
-        this.bearing = location.getBearing();
-        this.speed = location.getSpeed();
+    StoreLocation(KujakuLocation kujakuLocation) {
+        this.provider = kujakuLocation.getProvider();
+        this.latitude = kujakuLocation.getLatitude();
+        this.longitude = kujakuLocation.getLongitude();
+        this.accuracy = kujakuLocation.getAccuracy();
+        this.altitude = kujakuLocation.getAltitude();
+        this.time = kujakuLocation.getTime();
+        this.bearing = kujakuLocation.getBearing();
+        this.speed = kujakuLocation.getSpeed();
+        this.tag = kujakuLocation.getTag();
     }
 
     /**
@@ -33,16 +35,17 @@ class StoreLocation {
      * @param storeLocation
      * @return Location
      */
-    protected static Location locationFromStoreLocation(StoreLocation storeLocation) {
-        Location location = new Location(storeLocation.provider);
-        location.setLatitude(storeLocation.latitude);
-        location.setLongitude(storeLocation.longitude);
-        location.setAccuracy(storeLocation.accuracy);
-        location.setAltitude(storeLocation.altitude);
-        location.setTime(storeLocation.time);
-        location.setBearing(storeLocation.bearing);
-        location.setSpeed(storeLocation.speed);
+    protected static KujakuLocation kujakuLocationFromStoreLocation(StoreLocation storeLocation) {
+        KujakuLocation kujakuLocation = new KujakuLocation(storeLocation.provider);
+        kujakuLocation.setLatitude(storeLocation.latitude);
+        kujakuLocation.setLongitude(storeLocation.longitude);
+        kujakuLocation.setAccuracy(storeLocation.accuracy);
+        kujakuLocation.setAltitude(storeLocation.altitude);
+        kujakuLocation.setTime(storeLocation.time);
+        kujakuLocation.setBearing(storeLocation.bearing);
+        kujakuLocation.setSpeed(storeLocation.speed);
+        kujakuLocation.setTag(storeLocation.tag);
 
-        return location;
+        return kujakuLocation;
     }
 }

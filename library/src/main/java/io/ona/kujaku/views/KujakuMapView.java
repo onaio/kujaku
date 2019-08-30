@@ -78,6 +78,7 @@ import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.manager.AnnotationRepositoryManager;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
@@ -1328,9 +1329,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * @param context
      * @return
      */
-    public List<Location> stopTrackingService(@NonNull Context context) {
+    public List<KujakuLocation> stopTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
-            List<Location> locations = trackingService.getRecordedLocations();
+            List<KujakuLocation> locations = trackingService.getRecordedKujakuLocations();
             trackingService.unregisterTrackingServiceListener();
             TrackingService.stopAndUnbindService(context, connection);
             trackingServiceBound = false;
@@ -1361,15 +1362,38 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /**
+     * Set Tag
+     *
+     * @param tag
+     * @return {@code true} if tag is set, {@code false} otherwise
+     */
+    public boolean setTag(long tag) {
+        if (trackingServiceBound && trackingService != null) {
+            trackingService.setTag(tag);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Take a location
+     *
+     */
+    public void trackingServiceTakeLocation(long tag) {
+        if (trackingServiceBound && trackingService != null) {
+            trackingService.takeLocation(tag);
+        } else {
+            Log.e(TAG, "Tracking Service instance is null");
+        }
+    }
+
+    /**
      * Take a location
      *
      */
     public void trackingServiceTakeLocation() {
-        if (trackingServiceBound && trackingService != null) {
-            trackingService.takeLocation();
-        } else {
-            Log.e(TAG, "Tracking Service instance is null");
-        }
+       this.trackingServiceTakeLocation(TrackingService.NO_FORCED_TAG);
     }
 
     /**
@@ -1377,12 +1401,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      *
      * @return
      */
-    public List<Location> getTrackingServiceRecordedLocations() {
+    public List<KujakuLocation> getTrackingServiceRecordedKujakuLocations() {
         if (trackingServiceBound && trackingService != null) {
-            return trackingService.getRecordedLocations();
+            return trackingService.getRecordedKujakuLocations();
         }
 
-        return new ArrayList<Location>();
+        return new ArrayList<KujakuLocation>();
     }
     /**
      * Connection to bind to the TrackingService instance

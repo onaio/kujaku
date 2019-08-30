@@ -1,7 +1,6 @@
 package io.ona.kujaku.listeners;
 
-import android.location.Location;
-
+import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.TrackingService;
 
 /**
@@ -17,21 +16,21 @@ public interface TrackingServiceListener {
      *
      * @param location
      */
-    void onFirstLocationReceived(Location location);
+    void onFirstLocationReceived(KujakuLocation location);
 
     /**
      * When a location is registered
      *
      * @param location
      */
-    void onNewLocationReceived(Location location);
+    void onNewLocationReceived(KujakuLocation location);
 
     /**
      * When the location recorder is close to the departure location
      *
      * @param location
      */
-    void onCloseToDepartureLocation(Location location);
+    void onCloseToDepartureLocation(KujakuLocation location);
 
     /**
      * When the connection is done with the service
