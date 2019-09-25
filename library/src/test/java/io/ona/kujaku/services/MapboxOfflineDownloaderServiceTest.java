@@ -49,6 +49,7 @@ import io.ona.kujaku.data.realm.RealmDatabase;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
 import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
+import io.ona.kujaku.test.shadows.ShadowLibraryLoader;
 import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
 import io.ona.kujaku.test.shadows.ShadowMapBoxDeleteTask;
 import io.ona.kujaku.test.shadows.ShadowMapBoxDownloadTask;
@@ -62,6 +63,7 @@ import io.ona.kujaku.utils.NumberFormatter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -77,7 +79,8 @@ import static org.junit.Assert.fail;
                 ShadowConnectivityReceiver.class,
                 ShadowRealm.class,
                 ShadowOfflineManager.class,
-                ShadowRealmDatabase.class
+                ShadowRealmDatabase.class,
+                ShadowLibraryLoader.class
 })
 public class MapboxOfflineDownloaderServiceTest {
 
@@ -614,7 +617,7 @@ public class MapboxOfflineDownloaderServiceTest {
                                                     long completedTileSize, long requiredResourceCount,
                                                     boolean requiredResourceCountIsPrecise, boolean isDownloadComplete) {
 
-        OfflineRegionStatus offlineRegionStatus = Mockito.mock(OfflineRegionStatus.class);
+        OfflineRegionStatus offlineRegionStatus = mock(OfflineRegionStatus.class);
 
         // Mock OfflineRegion.setMetadata
         Mockito.when(offlineRegionStatus.getDownloadState())
@@ -645,7 +648,7 @@ public class MapboxOfflineDownloaderServiceTest {
     }
 
     private OfflineRegion createMockOfflineRegion(byte[] metadata, OfflineRegionDefinition offlineRegionDefinition, int downloadState ) {
-        final OfflineRegion offlineRegion = Mockito.mock(OfflineRegion.class);
+        final OfflineRegion offlineRegion = mock(OfflineRegion.class);
 
         // Mock OfflineRegion.setMetadata
         Mockito.when(offlineRegion.getDefinition())
