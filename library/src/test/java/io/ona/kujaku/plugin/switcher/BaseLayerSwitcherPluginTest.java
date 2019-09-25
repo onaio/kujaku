@@ -1,10 +1,13 @@
 package io.ona.kujaku.plugin.switcher;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.support.design.widget.FloatingActionButton;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.utils.ThreadUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -50,6 +54,9 @@ public class BaseLayerSwitcherPluginTest extends BaseTest {
         Style style = Mockito.mock(Style.class);
 
         baseLayerSwitcherPlugin = Mockito.spy(new BaseLayerSwitcherPlugin(kujakuMapView, style));
+        Context context = RuntimeEnvironment.application;
+        context.getApplicationInfo().flags = ApplicationInfo.FLAG_DEBUGGABLE;
+        ThreadUtils.init(context);
     }
 
     @Test
