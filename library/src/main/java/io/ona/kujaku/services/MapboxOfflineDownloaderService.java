@@ -146,6 +146,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
     private boolean shownForegroundNotification = false;
 
+    private long tileDownloadLimit=6000;
+
     public MapboxOfflineDownloaderService() {
         super();
     }
@@ -371,6 +373,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             queueDownloadProgressUpdate(currentMapDownloadName, 0.0);
                             showProgressNotification(currentMapDownloadName, 0.0);
                             MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)
+                                    .withTileDownloadLimit(tileDownloadLimit)
                                     .resumeMapDownload(offlineRegion, MapboxOfflineDownloaderService.this);
                         } else {
                             // IGNORE IT AND SEND A BROADCAST HERE
@@ -389,6 +392,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                             try {
                                 startDownloadProgressUpdater();
                                 MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)
+                                        .withTileDownloadLimit(tileDownloadLimit)
                                         .downloadMap(new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask()), MapboxOfflineDownloaderService.this);
 
                                 //Set the progress notification
