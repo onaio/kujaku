@@ -41,10 +41,10 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * - Getting the map status {@link com.mapbox.mapboxsdk.offline.OfflineRegionStatus}
  * <p>
  * <p>
- *
+ * <p>
  * CAUTION: Make sure you call {@link ConnectivityReceiver#deactivate()} when done in the lifecycle aware component
  * you are in so that that this does not cause a memory leak
- *
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.
  */
 public class MapBoxOfflineResourcesDownloader {
@@ -130,9 +130,9 @@ public class MapBoxOfflineResourcesDownloader {
      * @param name                  Unique name of the map
      * @param styleUrl              The Style URL on MapBox
      * @param topLeftBound          The top-left coordinate of the map
-     * @param topRightBound          The top-right coordinate of the map
+     * @param topRightBound         The top-right coordinate of the map
      * @param bottomRightBound      The bottom-right coordinate of the map
-     * @param bottomLeftBound      The bottom-left coordinate of the map
+     * @param bottomLeftBound       The bottom-left coordinate of the map
      * @param minZoom               The min-zoom of the map i.e among 0-22
      * @param maxZoom               The max-zoom of the map i.e. among 0-22. This should be greater than the {@code minZoom}
      * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
@@ -141,8 +141,8 @@ public class MapBoxOfflineResourcesDownloader {
      *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
      *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
      */
-    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng  topLeftBound
-            , @NonNull final LatLng  topRightBound, @NonNull final LatLng bottomRightBound
+    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng topLeftBound
+            , @NonNull final LatLng topRightBound, @NonNull final LatLng bottomRightBound
             , @NonNull final LatLng bottomLeftBound, final double minZoom
             , final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
             throws OfflineMapDownloadException {
@@ -650,5 +650,16 @@ public class MapBoxOfflineResourcesDownloader {
 
     public int getConnectivityReceiverActivationCounter() {
         return connectivityReceiverActivationCounter;
+    }
+
+    /**
+     * Sets the maximum number of Mapbox-hosted tiles that may be downloaded and stored on the current device. By default, the limit is set to 6,000.
+     * @param tileDownloadLimit maximum number of Mapbox-hosted tiles that may be downloaded
+     */
+    public MapBoxOfflineResourcesDownloader withTileDownloadLimit(long tileDownloadLimit) {
+        if(offlineManager!=null) {
+            offlineManager.setOfflineMapboxTileCountLimit(tileDownloadLimit);
+        }
+        return this;
     }
 }
