@@ -296,6 +296,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                     , bottomRightBound
                     , bottomLeftBound
                     , zoomRange
+                    ,BuildConfig.MAPBOX_DOWNLOAD_TILE_LIMIT
             );
         } else {
             Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);
@@ -309,6 +310,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);
             mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
+            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT, BuildConfig.MAPBOX_DOWNLOAD_TILE_LIMIT);
 
             startService(mapDownloadIntent);
         }
