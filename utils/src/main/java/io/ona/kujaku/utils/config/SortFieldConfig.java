@@ -1,8 +1,7 @@
 package io.ona.kujaku.utils.config;
 
 import android.support.annotation.NonNull;
-
-import com.mapbox.core.utils.TextUtils;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
