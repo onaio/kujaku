@@ -37,6 +37,32 @@ public abstract class OfflineServiceHelper {
                                           @NonNull LatLng topLeftBound, @NonNull LatLng topRightBound,
                                           @NonNull LatLng bottomRightBound, @NonNull LatLng bottomLeftBound,
                                           @NonNull ZoomRange zoomRange) {
+        requestOfflineMapDownload(context, mapName, mapboxStyleUrl, mapBoxAccessToken, topLeftBound, topRightBound, bottomRightBound, bottomLeftBound, zoomRange,6000l);
+    }
+
+
+    /**
+     * Requests an offline map download for you from the {@link MapboxOfflineDownloaderService}.
+     * You should register a {@link android.content.BroadcastReceiver} with {@link android.content.IntentFilter} action
+     * {@link io.ona.kujaku.utils.Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}.
+     * See {@link MapboxOfflineDownloaderService} for more on the available updates
+     *
+     * @param context
+     * @param mapName
+     * @param mapboxStyleUrl
+     * @param mapBoxAccessToken
+     * @param topLeftBound
+     * @param topRightBound
+     * @param bottomRightBound
+     * @param bottomLeftBound
+     * @param zoomRange
+     * @param tileDownloadLimit the tile download limit
+     */
+    public static void requestOfflineMapDownload(@NonNull Context context, @NonNull String mapName,
+                                                 @NonNull String mapboxStyleUrl, @NonNull String mapBoxAccessToken,
+                                                 @NonNull LatLng topLeftBound, @NonNull LatLng topRightBound,
+                                                 @NonNull LatLng bottomRightBound, @NonNull LatLng bottomLeftBound,
+                                                 @NonNull ZoomRange zoomRange, @NonNull Long tileDownloadLimit) {
         Intent intent = new Intent(context, MapboxOfflineDownloaderService.class);
         intent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);
         intent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, mapboxStyleUrl);
@@ -48,6 +74,7 @@ public abstract class OfflineServiceHelper {
         intent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);
         intent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, zoomRange.getMinZoom());
         intent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, zoomRange.getMaxZoom());
+        intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT,tileDownloadLimit);
 
         context.startService(intent);
     }
