@@ -81,9 +81,9 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
  * </p>
  * <p>
  * <p>
- *This services uses notification ids from 80 to 2080. The application should therefore use notification ids from 2081
- *
- *
+ * This services uses notification ids from 80 to 2080. The application should therefore use notification ids from 2081
+ * <p>
+ * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
  */
 public class MapboxOfflineDownloaderService extends Service implements OfflineRegionObserver, OnDownloadMapListener {
@@ -146,7 +146,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
     private boolean shownForegroundNotification = false;
 
-    private long tileDownloadLimit=6000;
+    private long tileDownloadLimit;
 
     public MapboxOfflineDownloaderService() {
         super();
@@ -159,6 +159,9 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
 
         super.onStartCommand(intent, flags, startId);
         onStartCommandCalled = true;
+        if (intent != null) {
+            tileDownloadLimit = intent.getLongExtra(Constants.PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT, 6000);
+        }
         persistOfflineMapTask(intent);
         performNextTask();
         return START_NOT_STICKY;
@@ -410,7 +413,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
                                 message = getString(R.string.map_could_not_be_downloaded);
                             } else if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(taskType)) {
                                 message = getString(R.string.map_could_not_be_deleted);
-                            } else  {
+                            } else {
                                 message = getString(R.string.map_download_could_not_be_stopped);
                             }
 
@@ -551,7 +554,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         }
     }
 
-    private void showProgressNotification(@NonNull String mapName,  double percentageProgress) {
+    private void showProgressNotification(@NonNull String mapName, double percentageProgress) {
         showProgressNotification(mapName, percentageProgress, true);
     }
 

@@ -25,6 +25,7 @@ public abstract class Constants {
     public static final String PARCELABLE_POINTS_LIST = "points_list";
     public static final String ENABLE_DROP_POINT_BUTTON = "enable_drop_point_btn";
     public static final String NEW_FEATURE_POINTS_JSON = "new_feature_points_json";
+    public static final String PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT = "offline_download_tile_limit";
 
 
     public static final int MAP_ACTIVITY_REQUEST_CODE = 0;
