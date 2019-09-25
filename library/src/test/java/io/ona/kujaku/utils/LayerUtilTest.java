@@ -1,10 +1,12 @@
 package io.ona.kujaku.utils;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 
 import com.mapbox.mapboxsdk.style.layers.BackgroundLayer;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
+import com.mapbox.mapboxsdk.utils.ThreadUtils;
 
 import junit.framework.Assert;
 
@@ -37,6 +39,8 @@ public class LayerUtilTest extends BaseTest {
     public void setUp() {
         context = RuntimeEnvironment.application;
         layerUtil = new LayerUtil();
+        context.getApplicationInfo().flags = ApplicationInfo.FLAG_DEBUGGABLE;
+        ThreadUtils.init(context);
     }
 
     @Test
