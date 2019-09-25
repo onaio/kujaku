@@ -1148,6 +1148,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         return locationClient;
     }
 
+    public void setLocationBufferRadius(float locationBufferRadius) {
+        this.locationBufferRadius = locationBufferRadius;
+    }
+
     @Override
     public void getLocationClient(@Nullable LocationClientStartedCallback locationClientStartedCallback) {
         if (getLocationClient() != null) {
