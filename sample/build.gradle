@@ -134,6 +134,7 @@ android {
             buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
             buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
             buildConfigField "String", "CGR_URL", properties["cgr.url"]
+            buildConfigField "long", "MAPBOX_DOWNLOAD_TILE_LIMIT", "6001"
         }
 
         debug {
@@ -142,6 +143,7 @@ android {
             buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
             buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
             buildConfigField "String", "CGR_URL", properties["cgr.url"]
+            buildConfigField "long", "MAPBOX_DOWNLOAD_TILE_LIMIT", "6001"
         }
     }
 
