@@ -657,7 +657,7 @@ public class MapBoxOfflineResourcesDownloader {
      * @param tileDownloadLimit maximum number of Mapbox-hosted tiles that may be downloaded
      */
     public MapBoxOfflineResourcesDownloader withTileDownloadLimit(long tileDownloadLimit) {
-        if(offlineManager!=null) {
+        if (offlineManager != null) {
             offlineManager.setOfflineMapboxTileCountLimit(tileDownloadLimit);
         }
         return this;
