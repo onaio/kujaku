@@ -21,7 +21,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.7.9'
+version '0.8.0'
 project.version = this.version
 
 task sourceJar(type: Jar) {
@@ -171,9 +171,9 @@ dependencies { configuration ->
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${mapboxAnnotationPluginVersion}"
 
     // Comment the line below when creating releases - The line is for development of the library & utils
-    implementation (project(":utils")) {
+    //implementation (project(":utils")) {
     // Uncomment the line below when creating releases
-    //implementation('io.ona.kujaku:utils:0.7.1') {
+    implementation('io.ona.kujaku:utils:0.8.0') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
