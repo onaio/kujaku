@@ -79,13 +79,14 @@ import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.location.KujakuLocation;
+import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.manager.AnnotationRepositoryManager;
+import io.ona.kujaku.mbtiles.MBTilesHelper;
 import io.ona.kujaku.services.TrackingService;
 import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
 import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
-import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import io.ona.kujaku.utils.LogUtil;
@@ -96,9 +97,7 @@ import io.ona.kujaku.wmts.model.WmtsLayer;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
- *
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
- *
  */
 public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener, MapboxMap.OnMapLongClickListener {
 
@@ -180,10 +179,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private ArrayList<KujakuLayer> kujakuLayers = new ArrayList<>();
     private ArrayList<LocationClientStartedCallback> locationClientCallbacks = new ArrayList<>();
 
-    /** Tracking Service **/
+    /**
+     * Tracking Service
+     **/
     private TrackingService trackingService = null;
     private boolean trackingServiceBound = false;
-    private TrackingServiceListener trackingServiceListener = null ;
+    private TrackingServiceListener trackingServiceListener = null;
     private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;
     private TrackingServiceOptions trackingServiceOptions = null;
     private boolean trackingServiceInitialized = false;
@@ -191,9 +192,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private int resourceId;
     private boolean disableMyLocationOnMapMove = false;
 
-    /** Drawing Manager **/
-   // private DrawingManager drawingManager = null ;
+    /**
+     * MBtiles
+     **/
+    private List<String> offlineFiles;
 
+    private MBTilesHelper mbTilesHelper;
+
+    /**
+     * Drawing Manager
+     **/
+    // private DrawingManager drawingManager = null ;
     public KujakuMapView(@NonNull Context context) {
         super(context);
         init(null);
@@ -227,6 +236,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         addPointBtn = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);
         currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);
         trackingServiceStatusButton = findViewById(R.id.iv_mapview_tracking_service_status);
+        mbTilesHelper = new MBTilesHelper();
 
         getMapboxMap();
         cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
@@ -234,15 +244,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         currentLocationBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                    // Enable asking for enabling the location by resetting this flag in case it was true
-                    hasAlreadyRequestedEnableLocation = false;
-                    updateCameraUserLocationOnMap = true;
-                    setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
-                        @Override
-                        public void onSuccess() {
-                            focusOnUserLocation(resourceId == 0 || resourceId == R.drawable.ic_cross_hair, locationBufferRadius);
-                        }
-                    });
+                // Enable asking for enabling the location by resetting this flag in case it was true
+                hasAlreadyRequestedEnableLocation = false;
+                updateCameraUserLocationOnMap = true;
+                setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {
+                    @Override
+                    public void onSuccess() {
+                        focusOnUserLocation(resourceId == 0 || resourceId == R.drawable.ic_cross_hair, locationBufferRadius);
+                    }
+                });
             }
         });
 
@@ -310,7 +320,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             }
         });
 
-        for (LocationClientStartedCallback locationClientStartedCallback: locationClientCallbacks) {
+        for (LocationClientStartedCallback locationClientStartedCallback : locationClientCallbacks) {
             locationClientStartedCallback.onStarted(locationClient);
         }
 
@@ -466,7 +476,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public @Nullable JSONObject dropPoint() {
+    public @Nullable
+    JSONObject dropPoint() {
         return dropPoint((MarkerOptions) null);
     }
 
@@ -481,7 +492,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public @Nullable JSONObject dropPoint(@Nullable LatLng latLng) {
+    public @Nullable
+    JSONObject dropPoint(@Nullable LatLng latLng) {
         return dropPoint(
                 new MarkerOptions()
                         .setPosition(latLng)
@@ -564,6 +576,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
                             afterStyleLoadedOperations(style);
+                            mbTilesHelper.initializeMbTileslayers(style, offlineFiles);
                         }
                     });
                 }
@@ -621,7 +634,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     @Override
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
-       this.addWmtsLayer(capabilities, null, null, null);
+        this.addWmtsLayer(capabilities, null, null, null);
     }
 
     /**
@@ -774,7 +787,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     public void setVisibility(View view, boolean isVisible) {
-       view.setVisibility(isVisible ? VISIBLE : GONE);
+        view.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
     public Set<io.ona.kujaku.domain.Point> getDroppedPoints() {
@@ -1239,7 +1252,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
         String[] layerIds = kujakuLayer.getLayerIds();
         if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
-            for (String layerId: layerIds) {
+            for (String layerId : layerIds) {
                 if (mapboxMap.getStyle().getLayer(layerId) == null) {
                     return false;
                 }
@@ -1299,9 +1312,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     public boolean resumeTrackingService(Context context) {
         // TrackingService reconnection if connection was lost
-        if (! trackingServiceBound && TrackingService.isRunning() && trackingServiceInitialized) {
+        if (!trackingServiceBound && TrackingService.isRunning() && trackingServiceInitialized) {
             initTrackingServiceIcon();
-            return TrackingService.bindService(context, TrackingService.getIntent(context, null,null), connection);
+            return TrackingService.bindService(context, TrackingService.getIntent(context, null, null), connection);
         } else {
             return false;
         }
@@ -1315,7 +1328,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     public void startTrackingService(@NonNull Context context,
                                      @NonNull Class<?> cls) throws TrackingServiceNotInitializedException {
-        if (! this.trackingServiceInitialized) {
+        if (!this.trackingServiceInitialized) {
             throw new TrackingServiceNotInitializedException();
         }
 
@@ -1339,10 +1352,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingService.unregisterTrackingServiceListener();
             TrackingService.stopAndUnbindService(context, connection);
             trackingServiceBound = false;
-            trackingService = null ;
+            trackingService = null;
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
             return locations;
-        }  else {
+        } else {
             Log.d(TAG, "Tracking Service instance is null or not Tracking Service is not bounded");
         }
 
@@ -1359,7 +1372,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingService.unregisterTrackingServiceListener();
             TrackingService.unBindService(context, connection);
             trackingServiceBound = false;
-            trackingService = null ;
+            trackingService = null;
         } else {
             Log.d(TAG, "Tracking Service instance is null");
         }
@@ -1382,7 +1395,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Take a location
-     *
      */
     public void trackingServiceTakeLocation(long tag) {
         if (trackingServiceBound && trackingService != null) {
@@ -1394,10 +1406,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Take a location
-     *
      */
     public void trackingServiceTakeLocation() {
-       this.trackingServiceTakeLocation(TrackingService.NO_FORCED_TAG);
+        this.trackingServiceTakeLocation(TrackingService.NO_FORCED_TAG);
     }
 
     /**
@@ -1412,6 +1423,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         return new ArrayList<KujakuLocation>();
     }
+
     /**
      * Connection to bind to the TrackingService instance
      */
@@ -1427,7 +1439,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getRecordingDrawable());
 
-            ((Activity)getContext()).runOnUiThread(new Runnable() {
+            ((Activity) getContext()).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     trackingServiceListener.onServiceConnected(trackingService);
@@ -1444,7 +1456,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingService = null;
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
 
-            ((Activity)getContext()).runOnUiThread(new Runnable() {
+            ((Activity) getContext()).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     trackingServiceListener.onServiceDisconnected();
@@ -1485,5 +1497,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {
         this.disableMyLocationOnMapMove = disableMyLocationOnMapMove;
+    }
+
+    /**
+     * M MBtiles support
+     **/
+    public void setOfflineFiles(List<String> offlineFiles) {
+        this.offlineFiles = offlineFiles;
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mbTilesHelper != null) {
+            mbTilesHelper.onDestroy();
+        }
+        super.onDestroy();
     }
 }
