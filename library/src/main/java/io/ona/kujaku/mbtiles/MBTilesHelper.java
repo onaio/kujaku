@@ -38,9 +38,10 @@ public class MBTilesHelper {
             initializeMbTilesServer();
         }
 
-        for (String name : offlineFiles) {
-            File file = new File(name);
-            if (name.endsWith(".mbtiles")) {
+        for (String fileName : offlineFiles) {
+            File file = new File(fileName);
+            if (fileName.endsWith(".mbtiles")) {
+                String name = file.getName();
                 String id = name.substring(0, name.length() - ".mbtiles".length());
                 addMbtiles(style, id, file);
             }
@@ -67,6 +68,9 @@ public class MBTilesHelper {
 
     @SuppressWarnings("TimberExceptionLogging")
     private void addMbtiles(Style style, String id, File file) {
+        //TODO remove
+        if (style.getSource(id) != null)
+            return;
         MbtilesFile mbtiles;
         try {
             mbtiles = new MbtilesFile(file);

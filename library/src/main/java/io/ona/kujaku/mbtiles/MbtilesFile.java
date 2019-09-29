@@ -41,6 +41,11 @@ public class MbtilesFile implements Closeable, TileHttpServer.TileSource {
         // The "format" code indicates whether the binary tiles are raster image
         // files (JPEG, PNG) or protobuf-encoded vector geometry (PBF, MVT).
         format = getMetadata("format").toLowerCase(Locale.US);
+
+        //TODO remove
+        if(format.isEmpty())
+            format="png";
+
         if (format.equals("pbf") || format.equals("mvt")) {
             contentType = "application/protobuf";
             contentEncoding = "gzip";

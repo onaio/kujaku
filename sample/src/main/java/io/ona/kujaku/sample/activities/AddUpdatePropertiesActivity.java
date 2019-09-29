@@ -75,11 +75,11 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
         // set camera position
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(-14.1706623, 32.5987837))
-                .zoom(16)
+                .target(new LatLng(-14.1666,   32.4794))
+                .zoom(15)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
-        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Lu_Akros.mbtiles";
+        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
         kujakuMapView.setOfflineFiles(Collections.singletonList(path));
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
