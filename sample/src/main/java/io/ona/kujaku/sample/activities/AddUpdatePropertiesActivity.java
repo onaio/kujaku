@@ -1,6 +1,7 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.ona.kujaku.sample.BuildConfig;
@@ -77,6 +79,8 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
+        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Lu_Akros.mbtiles";
+        kujakuMapView.setOfflineFiles(Collections.singletonList(path));
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {

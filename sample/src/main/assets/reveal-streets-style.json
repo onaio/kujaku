@@ -12311,6 +12311,13 @@
       }
     },
     {
+      "id": "mbtiles-lusaka",
+      "type": "raster",
+      "source": "http://localhost:8000/Lu_Akros/{z}/{x}/{y}",
+      "layout": {},
+      "paint": {}
+    },
+    {
       "id": "reveal-data-polygons",
       "type": "fill",
       "layout": {},

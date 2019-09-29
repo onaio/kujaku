@@ -32,9 +32,9 @@ public class MBTilesHelper {
     protected TileHttpServer tileServer;
 
     public void initializeMbTileslayers(@NonNull Style style, List<String> offlineFiles) {
-        if (offlineFiles != null && !offlineFiles.isEmpty()) {
+        if (offlineFiles == null || offlineFiles.isEmpty()) {
             return;
-        } else if (tileServer != null && !tileServer.isStarted()) {
+        } else if (tileServer == null || !tileServer.isStarted()) {
             initializeMbTilesServer();
         }
 

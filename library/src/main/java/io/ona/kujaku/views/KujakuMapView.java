@@ -1500,7 +1500,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     /**
-     * M MBtiles support
+     * MBtiles support
      **/
     public void setOfflineFiles(List<String> offlineFiles) {
         this.offlineFiles = offlineFiles;
