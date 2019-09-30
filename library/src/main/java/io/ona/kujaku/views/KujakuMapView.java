@@ -195,8 +195,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     /**
      * MBtiles
      **/
-    private List<String> offlineFiles;
-
     private MBTilesHelper mbTilesHelper;
 
     /**
@@ -576,7 +574,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
                             afterStyleLoadedOperations(style);
-                            mbTilesHelper.initializeMbTileslayers(style, offlineFiles);
                         }
                     });
                 }
@@ -1502,8 +1499,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     /**
      * MBtiles support
      **/
-    public void setOfflineFiles(List<String> offlineFiles) {
-        this.offlineFiles = offlineFiles;
+
+    public MBTilesHelper getMbTilesHelper() {
+        return mbTilesHelper;
     }
 
     @Override

@@ -66,16 +66,13 @@ public class MBTilesHelper {
         }
     }
 
-    @SuppressWarnings("TimberExceptionLogging")
+
     private void addMbtiles(Style style, String id, File file) {
-        //TODO remove
-        if (style.getSource(id) != null)
-            return;
         MbtilesFile mbtiles;
         try {
             mbtiles = new MbtilesFile(file);
         } catch (MbtilesFile.UnsupportedFormatException e) {
-            Timber.w(e.getMessage());
+            Timber.w(e, "The mbtiles format is not known ");
             return;
         }
 

@@ -75,7 +75,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
         // set camera position
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(-14.1666,   32.4794))
+                .target(new LatLng(-14.1666, 32.4794))
                 .zoom(15)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
@@ -84,7 +84,12 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"));
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Collections.singletonList(path));
+                    }
+                });
             }
         });
     }
