@@ -42,7 +42,7 @@ public class MbtilesFile implements Closeable, TileHttpServer.TileSource {
         // files (JPEG, PNG) or protobuf-encoded vector geometry (PBF, MVT).
         format = getMetadata("format").toLowerCase(Locale.US);
 
-        //TODO remove
+        //Added this as a default some mbtiles lacks format in the metadata
         if(format.isEmpty())
             format="png";
 
