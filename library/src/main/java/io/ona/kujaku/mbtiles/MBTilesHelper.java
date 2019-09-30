@@ -17,6 +17,7 @@ import com.mapbox.mapboxsdk.style.sources.VectorSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,42 +38,36 @@ public class MBTilesHelper {
 
     protected TileHttpServer tileServer;
 
-    public void initializeMbTileslayers(@NonNull Style style, List<String> offlineFiles) {
+    private void init(List<File> offlineFiles) {
         if (offlineFiles == null || offlineFiles.isEmpty()) {
             return;
         } else if (tileServer == null || !tileServer.isStarted()) {
             initializeMbTilesServer();
         }
+    }
 
-        for (String fileName : offlineFiles) {
-            File file = new File(fileName);
-            if (fileName.endsWith(".mbtiles")) {
-                String name = file.getName();
+    public void initializeMbTileslayers(@NonNull Style style, List<File> offlineFiles) {
+        init(offlineFiles);
+        for (File file : offlineFiles) {
+            String name = file.getName();
+            if (name.endsWith(".mbtiles")) {
                 String id = name.substring(0, name.length() - ".mbtiles".length());
                 addMbtiles(style, id, file);
             }
         }
     }
 
-    public Pair<Set<Source>, Set<Layer>> initializeMbTileslayers(List<String> offlineFiles) {
-        if (offlineFiles == null || offlineFiles.isEmpty()) {
-            return null;
-        } else if (tileServer == null || !tileServer.isStarted()) {
-            initializeMbTilesServer();
-        }
-
+    public Pair<Set<Source>, Set<Layer>> initializeMbTileslayers(File offlineFile) {
+        init(Collections.singletonList(offlineFile));
         Set<Source> sources = new HashSet<>();
         Set<Layer> layers = new HashSet<>();
-        for (String fileName : offlineFiles) {
-            File file = new File(fileName);
-            if (fileName.endsWith(".mbtiles")) {
-                String name = file.getName();
-                String id = name.substring(0, name.length() - ".mbtiles".length());
-                Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, file);
-                if (sourceAndLayers != null) {
-                    sources.add(sourceAndLayers.first);
-                    layers.addAll(sourceAndLayers.second);
-                }
+        String name = offlineFile.getName();
+        if (name.endsWith(".mbtiles")) {
+            String id = name.substring(0, name.length() - ".mbtiles".length());
+            Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, offlineFile);
+            if (sourceAndLayers != null) {
+                sources.add(sourceAndLayers.first);
+                layers.addAll(sourceAndLayers.second);
             }
         }
         return new Pair<>(sources, layers);

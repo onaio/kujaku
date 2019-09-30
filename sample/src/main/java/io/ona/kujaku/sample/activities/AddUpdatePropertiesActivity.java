@@ -22,6 +22,7 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +80,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(15)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
-        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
+        File path = new File(Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles");
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {

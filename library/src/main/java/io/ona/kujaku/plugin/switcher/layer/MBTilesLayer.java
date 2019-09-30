@@ -2,11 +2,13 @@ package io.ona.kujaku.plugin.switcher.layer;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.sources.Source;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,35 +31,40 @@ public class MBTilesLayer extends BaseLayer {
     private String[] sourceIds = new String[]{};
     private String[] layerIds = new String[]{};
 
-    public MBTilesLayer(Context context, List<String> offlineFiles, MBTilesHelper mbTilesHelper) {
+    private String name;
+
+    public MBTilesLayer(Context context, File offlineFile, MBTilesHelper mbTilesHelper) {
         this.context = context;
         this.mbTilesHelper = mbTilesHelper;
-        createLayersAndSources(offlineFiles);
+        createLayersAndSources(offlineFile);
     }
 
 
-    private void createLayersAndSources(List<String> offlineFiles) {
-        Pair<Set<Source>, Set<Layer>> sourcesAndLayers = mbTilesHelper.initializeMbTileslayers(offlineFiles);
-        sources = new ArrayList<>(sourcesAndLayers.first);
-        layers = new LinkedHashSet<>(sourcesAndLayers.second);
-        List<String> sourceIdList = new ArrayList<>();
-        for (Source source : sources) {
-            sourceIdList.add(source.getId());
-        }
-        this.sourceIds = sourceIdList.toArray(this.sourceIds);
+    private void createLayersAndSources(File offlineFile) {
+        Pair<Set<Source>, Set<Layer>> sourcesAndLayers = mbTilesHelper.initializeMbTileslayers(offlineFile);
+        if (sourcesAndLayers != null) {
+            name = offlineFile.getName().substring(0, offlineFile.getName().length() - ".mbtiles".length());
+            sources = new ArrayList<>(sourcesAndLayers.first);
+            layers = new LinkedHashSet<>(sourcesAndLayers.second);
+            List<String> sourceIdList = new ArrayList<>();
+            for (Source source : sources) {
+                sourceIdList.add(source.getId());
+            }
+            this.sourceIds = sourceIdList.toArray(this.sourceIds);
 
-        List<String> layerIdList = new ArrayList<>();
-        for (Layer layer : layers) {
-            layerIdList.add(layer.getId());
+            List<String> layerIdList = new ArrayList<>();
+            for (Layer layer : layers) {
+                layerIdList.add(layer.getId());
+            }
+            this.layerIds = layerIdList.toArray(this.layerIds);
         }
-        this.layerIds = layerIdList.toArray(this.layerIds);
 
     }
 
     @NonNull
     @Override
     public String getDisplayName() {
-        return context.getString(R.string.mbtiles_layer);
+        return TextUtils.isEmpty(name) ? context.getString(R.string.mbtiles_layer) : name;
     }
 
     @NonNull

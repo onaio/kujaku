@@ -12,7 +12,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
-import java.util.Collections;
+import java.io.File;
 
 import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
 import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
@@ -54,7 +54,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                         StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(BaseLayerSwitcherActivity.this);
                         String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
 
-                        MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, Collections.singletonList(path), kujakuMapView.getMbTilesHelper());
+                        MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, new File(path), kujakuMapView.getMbTilesHelper());
 
                         baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true);
                         baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
