@@ -36,6 +36,8 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterOpacity;
  */
 public class MBTilesHelper {
 
+    public static final String MB_TILES_EXT = ".mbtiles";
+
     protected TileHttpServer tileServer;
 
     private void init(List<File> offlineFiles) {
@@ -50,8 +52,8 @@ public class MBTilesHelper {
         init(offlineFiles);
         for (File file : offlineFiles) {
             String name = file.getName();
-            if (name.endsWith(".mbtiles")) {
-                String id = name.substring(0, name.length() - ".mbtiles".length());
+            if (name.endsWith(MB_TILES_EXT)) {
+                String id = name.substring(0, name.length() - MB_TILES_EXT.length());
                 addMbtiles(style, id, file);
             }
         }
@@ -62,8 +64,8 @@ public class MBTilesHelper {
         Set<Source> sources = new HashSet<>();
         Set<Layer> layers = new HashSet<>();
         String name = offlineFile.getName();
-        if (name.endsWith(".mbtiles")) {
-            String id = name.substring(0, name.length() - ".mbtiles".length());
+        if (name.endsWith(MB_TILES_EXT)) {
+            String id = name.substring(0, name.length() - MB_TILES_EXT.length());
             Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, offlineFile);
             if (sourceAndLayers != null) {
                 sources.add(sourceAndLayers.first);

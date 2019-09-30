@@ -17,6 +17,8 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.mbtiles.MBTilesHelper;
 
+import static io.ona.kujaku.mbtiles.MBTilesHelper.MB_TILES_EXT;
+
 /**
  * Created by samuelgithengi on 9/30/19.
  */
@@ -43,7 +45,7 @@ public class MBTilesLayer extends BaseLayer {
     private void createLayersAndSources(File offlineFile) {
         Pair<Set<Source>, Set<Layer>> sourcesAndLayers = mbTilesHelper.initializeMbTileslayers(offlineFile);
         if (sourcesAndLayers != null) {
-            name = offlineFile.getName().substring(0, offlineFile.getName().length() - ".mbtiles".length());
+            name = offlineFile.getName().substring(0, offlineFile.getName().length() - MB_TILES_EXT.length());
             sources = new ArrayList<>(sourcesAndLayers.first);
             layers = new LinkedHashSet<>(sourcesAndLayers.second);
             List<String> sourceIdList = new ArrayList<>();
