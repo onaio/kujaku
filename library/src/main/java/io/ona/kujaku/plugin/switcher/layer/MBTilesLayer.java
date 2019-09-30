@@ -88,7 +88,7 @@ public class MBTilesLayer extends BaseLayer {
     @NonNull
     @Override
     public String getId() {
-        return "mbtiles-base-layer";
+        return "mbtiles-" + name;
     }
 
     @NonNull
