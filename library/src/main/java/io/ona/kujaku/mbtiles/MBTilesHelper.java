@@ -2,18 +2,24 @@ package io.ona.kujaku.mbtiles;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.util.Pair;
 
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.mapboxsdk.style.layers.LineLayer;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
 import com.mapbox.mapboxsdk.style.sources.RasterSource;
+import com.mapbox.mapboxsdk.style.sources.Source;
 import com.mapbox.mapboxsdk.style.sources.TileSet;
 import com.mapbox.mapboxsdk.style.sources.VectorSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import timber.log.Timber;
 
@@ -48,6 +54,30 @@ public class MBTilesHelper {
         }
     }
 
+    public Pair<Set<Source>, Set<Layer>> initializeMbTileslayers(List<String> offlineFiles) {
+        if (offlineFiles == null || offlineFiles.isEmpty()) {
+            return null;
+        } else if (tileServer == null || !tileServer.isStarted()) {
+            initializeMbTilesServer();
+        }
+
+        Set<Source> sources = new HashSet<>();
+        Set<Layer> layers = new HashSet<>();
+        for (String fileName : offlineFiles) {
+            File file = new File(fileName);
+            if (fileName.endsWith(".mbtiles")) {
+                String name = file.getName();
+                String id = name.substring(0, name.length() - ".mbtiles".length());
+                Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, file);
+                if (sourceAndLayers != null) {
+                    sources.add(sourceAndLayers.first);
+                    layers.addAll(sourceAndLayers.second);
+                }
+            }
+        }
+        return new Pair<>(sources, layers);
+    }
+
     private void initializeMbTilesServer() {
         // Mapbox SDK only knows how to fetch tiles via HTTP.  If we want it to
         // display tiles from a local file, we have to serve them locally over HTTP.
@@ -66,30 +96,40 @@ public class MBTilesHelper {
         }
     }
 
-
     private void addMbtiles(Style style, String id, File file) {
+        Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, file);
+        if (sourceAndLayers != null) {
+            style.addSource(sourceAndLayers.first);
+            for (Layer layer : sourceAndLayers.second)
+                style.addLayer(layer);
+        }
+    }
+
+    private Pair<Source, List<Layer>> addMbtiles(String id, File file) {
         MbtilesFile mbtiles;
+        List<Layer> mapLayers = new ArrayList<>();
+        Source source = null;
         try {
             mbtiles = new MbtilesFile(file);
         } catch (MbtilesFile.UnsupportedFormatException e) {
             Timber.w(e, "The mbtiles format is not known ");
-            return;
+            return null;
         }
 
         TileSet tileSet = createTileSet(mbtiles, tileServer.getUrlTemplate(id));
         tileServer.addSource(id, mbtiles);
 
         if (mbtiles.getType() == MbtilesFile.Type.VECTOR) {
-            style.addSource(new VectorSource(id, tileSet));
+            source = new VectorSource(id, tileSet);
             List<MbtilesFile.VectorLayer> layers = mbtiles.getVectorLayers();
             for (MbtilesFile.VectorLayer layer : layers) {
                 // Pick a colour that's a function of the filename and layer name.
                 int hue = (((id + "." + layer.name).hashCode()) & 0x7fffffff) % 360;
-                style.addLayer(new FillLayer(id + "/" + layer.name + ".fill", id).withProperties(
+                mapLayers.add(new FillLayer(id + "/" + layer.name + ".fill", id).withProperties(
                         fillColor(Color.HSVToColor(new float[]{hue, 0.3f, 1})),
                         fillOpacity(0.1f)
                 ).withSourceLayer(layer.name));
-                style.addLayer(new LineLayer(id + "/" + layer.name + ".line", id).withProperties(
+                mapLayers.add(new LineLayer(id + "/" + layer.name + ".line", id).withProperties(
                         lineColor(Color.HSVToColor(new float[]{hue, 0.7f, 1})),
                         lineWidth(1f),
                         lineOpacity(0.7f)
@@ -97,12 +137,13 @@ public class MBTilesHelper {
             }
         }
         if (mbtiles.getType() == MbtilesFile.Type.RASTER) {
-            style.addSource(new RasterSource(id, tileSet));
-            style.addLayer(new RasterLayer(id + ".raster", id).withProperties(
+            source = new RasterSource(id, tileSet);
+            mapLayers.add(new RasterLayer(id + ".raster", id).withProperties(
                     rasterOpacity(0.5f)
             ));
         }
         Timber.i("Added %s as a %s layer at /%s", file, mbtiles.getType(), id);
+        return new Pair<>(source, mapLayers);
     }
 
     private TileSet createTileSet(MbtilesFile mbtiles, String urlTemplate) {

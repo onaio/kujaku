@@ -1,15 +1,21 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
+import java.util.Collections;
+
 import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
+import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
 import io.ona.kujaku.plugin.switcher.layer.SatelliteBaseLayer;
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer;
 import io.ona.kujaku.sample.BuildConfig;
@@ -46,11 +52,22 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                         BaseLayerSwitcherPlugin baseLayerSwitcherPlugin = new BaseLayerSwitcherPlugin(kujakuMapView, style);
                         SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
                         StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(BaseLayerSwitcherActivity.this);
+                        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
+
+                        MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, Collections.singletonList(path), kujakuMapView.getMbTilesHelper());
 
                         baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true);
                         baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
+                        baseLayerSwitcherPlugin.addBaseLayer(mbTilesLayer, false);
 
                         baseLayerSwitcherPlugin.show();
+
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(-14.1666, 32.4794))
+                                .zoom(15)
+                                .build();
+
+                        mapboxMap.setCameraPosition(cameraPosition);
                     }
                 });
             }

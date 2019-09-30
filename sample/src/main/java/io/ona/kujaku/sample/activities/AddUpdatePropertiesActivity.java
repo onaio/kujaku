@@ -80,7 +80,6 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
         String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
-        kujakuMapView.setOfflineFiles(Collections.singletonList(path));
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
