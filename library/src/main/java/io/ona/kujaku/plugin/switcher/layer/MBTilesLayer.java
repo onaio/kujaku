@@ -2,7 +2,6 @@ package io.ona.kujaku.plugin.switcher.layer;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Pair;
 
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -14,10 +13,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import io.ona.kujaku.R;
 import io.ona.kujaku.mbtiles.MBTilesHelper;
 
-import static io.ona.kujaku.mbtiles.MBTilesHelper.MB_TILES_EXT;
+import static io.ona.kujaku.mbtiles.MBTilesHelper.MB_TILES_EXTENSION;
 
 /**
  * Created by samuelgithengi on 9/30/19.
@@ -45,7 +43,7 @@ public class MBTilesLayer extends BaseLayer {
     private void createLayersAndSources(File offlineFile) {
         Pair<Set<Source>, Set<Layer>> sourcesAndLayers = mbTilesHelper.initializeMbTileslayers(offlineFile);
         if (sourcesAndLayers != null) {
-            name = offlineFile.getName().substring(0, offlineFile.getName().length() - MB_TILES_EXT.length());
+            name = offlineFile.getName().substring(0, offlineFile.getName().length() - MB_TILES_EXTENSION.length());
             sources = new ArrayList<>(sourcesAndLayers.first);
             layers = new LinkedHashSet<>(sourcesAndLayers.second);
             List<String> sourceIdList = new ArrayList<>();

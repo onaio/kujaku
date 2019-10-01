@@ -1,7 +1,10 @@
 package io.ona.kujaku.mbtiles;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Pair;
 
 import com.mapbox.mapboxsdk.maps.Style;
@@ -22,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
+import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
 import timber.log.Timber;
 
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
@@ -36,7 +41,9 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterOpacity;
  */
 public class MBTilesHelper {
 
-    public static final String MB_TILES_EXT = ".mbtiles";
+    public static final String MB_TILES_EXTENSION = ".mbtiles";
+
+    public static final String MB_TILES_DIRECTORY = "/mbtiles";
 
     protected TileHttpServer tileServer;
 
@@ -52,8 +59,8 @@ public class MBTilesHelper {
         init(offlineFiles);
         for (File file : offlineFiles) {
             String name = file.getName();
-            if (name.endsWith(MB_TILES_EXT)) {
-                String id = name.substring(0, name.length() - MB_TILES_EXT.length());
+            if (name.endsWith(MB_TILES_EXTENSION)) {
+                String id = name.substring(0, name.length() - MB_TILES_EXTENSION.length());
                 addMbtiles(style, id, file);
             }
         }
@@ -64,8 +71,8 @@ public class MBTilesHelper {
         Set<Source> sources = new HashSet<>();
         Set<Layer> layers = new HashSet<>();
         String name = offlineFile.getName();
-        if (name.endsWith(MB_TILES_EXT)) {
-            String id = name.substring(0, name.length() - MB_TILES_EXT.length());
+        if (name.endsWith(MB_TILES_EXTENSION)) {
+            String id = name.substring(0, name.length() - MB_TILES_EXTENSION.length());
             Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, offlineFile);
             if (sourceAndLayers != null) {
                 sources.add(sourceAndLayers.first);
@@ -74,6 +81,19 @@ public class MBTilesHelper {
             return new Pair<>(sources, layers);
         }
         return null;
+    }
+
+    public void setMBTileLayers(Context context, BaseLayerSwitcherPlugin baseLayerSwitcherPlugin) {
+        File mbtilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MB_TILES_DIRECTORY);
+        if (mbtilesDir.exists() && mbtilesDir.exists()) {
+            for (File mbTile : mbtilesDir.listFiles()) {
+                MBTilesLayer mbTilesLayer = new MBTilesLayer(context, mbTile, this);
+                if (!TextUtils.isEmpty(mbTilesLayer.getDisplayName())) {
+                    baseLayerSwitcherPlugin.addBaseLayer(mbTilesLayer, false);
+                }
+            }
+        }
+
     }
 
     private void initializeMbTilesServer() {
