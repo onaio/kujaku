@@ -66,7 +66,7 @@ public class MBTilesLayer extends BaseLayer {
     @NonNull
     @Override
     public String getDisplayName() {
-        return TextUtils.isEmpty(name) ? context.getString(R.string.mbtiles_layer) : name;
+        return  name;
     }
 
     @NonNull
