@@ -85,7 +85,7 @@ public class MBTilesHelper {
 
     public void setMBTileLayers(Context context, BaseLayerSwitcherPlugin baseLayerSwitcherPlugin) {
         File mbtilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MB_TILES_DIRECTORY);
-        if (mbtilesDir.exists() && mbtilesDir.exists()) {
+        if (mbtilesDir.exists() && mbtilesDir.exists() && mbtilesDir.listFiles() != null) {
             for (File mbTile : mbtilesDir.listFiles()) {
                 MBTilesLayer mbTilesLayer = new MBTilesLayer(context, mbTile, this);
                 if (!TextUtils.isEmpty(mbTilesLayer.getDisplayName())) {
