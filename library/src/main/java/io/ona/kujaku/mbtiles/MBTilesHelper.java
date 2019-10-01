@@ -71,8 +71,9 @@ public class MBTilesHelper {
                 sources.add(sourceAndLayers.first);
                 layers.addAll(sourceAndLayers.second);
             }
+            return new Pair<>(sources, layers);
         }
-        return new Pair<>(sources, layers);
+        return null;
     }
 
     private void initializeMbTilesServer() {

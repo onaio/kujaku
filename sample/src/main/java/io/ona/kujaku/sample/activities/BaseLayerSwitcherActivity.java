@@ -38,7 +38,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView = findViewById(R.id.kmv_baseLayerSwitcher_mapView);
         kujakuMapView.onCreate(savedInstanceState);
-        kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
+       // kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -52,13 +52,19 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                         BaseLayerSwitcherPlugin baseLayerSwitcherPlugin = new BaseLayerSwitcherPlugin(kujakuMapView, style);
                         SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
                         StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(BaseLayerSwitcherActivity.this);
-                        String path = Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles";
+                        String[] paths = { Environment.getExternalStorageDirectory().getPath() + "/Download/katete_2019_mt6.mbtiles",
+                                Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles",
+                                Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east_1.mbtiles",
+                               };
 
-                        MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, new File(path), kujakuMapView.getMbTilesHelper());
 
                         baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true);
                         baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
-                        baseLayerSwitcherPlugin.addBaseLayer(mbTilesLayer, false);
+
+                        for (String path : paths) {
+                            MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, new File(path), kujakuMapView.getMbTilesHelper());
+                            baseLayerSwitcherPlugin.addBaseLayer(mbTilesLayer, false);
+                        }
 
                         baseLayerSwitcherPlugin.show();
 
