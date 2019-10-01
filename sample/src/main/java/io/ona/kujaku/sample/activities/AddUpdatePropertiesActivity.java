@@ -24,9 +24,10 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
+import io.ona.kujaku.mbtiles.MBTilesHelper;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
@@ -80,14 +81,15 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(15)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
-        File path = new File(Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles");
+        File mbfilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
                 mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
-                        kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Collections.singletonList(path));
+                        if (mbfilesDir.exists() && mbfilesDir.isDirectory())
+                            kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Arrays.asList(mbfilesDir.listFiles()));
                     }
                 });
             }

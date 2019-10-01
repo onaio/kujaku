@@ -1,21 +1,16 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 
-import java.io.File;
-
 import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
-import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
 import io.ona.kujaku.plugin.switcher.layer.SatelliteBaseLayer;
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer;
 import io.ona.kujaku.sample.BuildConfig;
@@ -38,7 +33,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView = findViewById(R.id.kmv_baseLayerSwitcher_mapView);
         kujakuMapView.onCreate(savedInstanceState);
-       // kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
+        // kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -52,19 +47,11 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                         BaseLayerSwitcherPlugin baseLayerSwitcherPlugin = new BaseLayerSwitcherPlugin(kujakuMapView, style);
                         SatelliteBaseLayer satelliteBaseLayer = new SatelliteBaseLayer();
                         StreetsBaseLayer streetsBaseLayer = new StreetsBaseLayer(BaseLayerSwitcherActivity.this);
-                        String[] paths = { Environment.getExternalStorageDirectory().getPath() + "/Download/katete_2019_mt6.mbtiles",
-                                Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east.mbtiles",
-                                Environment.getExternalStorageDirectory().getPath() + "/Download/Chadiza_east_1.mbtiles",
-                               };
-
 
                         baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true);
                         baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
 
-                        for (String path : paths) {
-                            MBTilesLayer mbTilesLayer = new MBTilesLayer(BaseLayerSwitcherActivity.this, new File(path), kujakuMapView.getMbTilesHelper());
-                            baseLayerSwitcherPlugin.addBaseLayer(mbTilesLayer, false);
-                        }
+                        kujakuMapView.getMbTilesHelper().setMBTileLayers(BaseLayerSwitcherActivity.this, baseLayerSwitcherPlugin);
 
                         baseLayerSwitcherPlugin.show();
 
