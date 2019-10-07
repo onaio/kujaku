@@ -55,12 +55,6 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
 
                         baseLayerSwitcherPlugin.show();
 
-                        CameraPosition cameraPosition = new CameraPosition.Builder()
-                                .target(new LatLng(-14.1666, 32.4794))
-                                .zoom(15)
-                                .build();
-
-                        mapboxMap.setCameraPosition(cameraPosition);
                     }
                 });
             }

@@ -77,19 +77,19 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
         kujakuMapView.initializePrimaryGeoJsonSource("reveal-data-set", true, geoJson);
         // set camera position
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(-14.1666, 32.4794))
-                .zoom(15)
+                .target(new LatLng(-14.1706623, 32.5987837))
+                .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
-        File mbfilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);
+        File mbFilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
                 mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
-                        if (mbfilesDir.exists() && mbfilesDir.isDirectory())
-                            kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Arrays.asList(mbfilesDir.listFiles()));
+                        if (mbFilesDir.exists() && mbFilesDir.isDirectory() && mbFilesDir.listFiles() != null)
+                            kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Arrays.asList(mbFilesDir.listFiles()));
                     }
                 });
             }
