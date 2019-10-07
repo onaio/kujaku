@@ -130,7 +130,9 @@ public class MbtilesFile implements Closeable, TileHttpServer.TileSource {
             for (int i = 0; i < jsonLayers.length(); i++) {
                 layers.add(new VectorLayer(jsonLayers.getJSONObject(i)));
             }
-        } catch (JSONException e) { /* ignore */ }
+        } catch (JSONException e) {
+            Timber.e(e);
+        }
         return layers;
     }
 

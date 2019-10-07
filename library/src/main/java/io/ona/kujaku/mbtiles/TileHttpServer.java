@@ -80,13 +80,17 @@ public class TileHttpServer {
     public void destroy() {
         try {
             socket.close();
-        } catch (IOException e) { /* ignore */ }
+        } catch (IOException e) {
+            Timber.w(e);
+        }
         server.interrupt();
         for (TileSource source : sources.values()) {
             if (source instanceof Closeable) {
                 try {
                     ((Closeable) source).close();
-                } catch (IOException e) { /* ignore */ }
+                } catch (IOException e) {
+                    Timber.e(e);
+                }
             }
         }
     }
