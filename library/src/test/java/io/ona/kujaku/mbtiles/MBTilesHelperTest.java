@@ -20,6 +20,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.io.File;
 import java.util.Collections;
@@ -28,11 +29,13 @@ import java.util.Set;
 
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
+import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
 import io.ona.kujaku.test.shadows.ShadowFillLayer;
 import io.ona.kujaku.test.shadows.ShadowLayer;
 import io.ona.kujaku.test.shadows.ShadowLineLayer;
 import io.ona.kujaku.test.shadows.ShadowRasterLayer;
 import io.ona.kujaku.test.shadows.ShadowRasterSource;
+import io.ona.kujaku.test.shadows.ShadowSource;
 import io.ona.kujaku.test.shadows.ShadowVectorSource;
 
 import static org.junit.Assert.assertEquals;
@@ -40,12 +43,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
  * Created by samuelgithengi on 10/7/19.
  */
-@Config(shadows = {ShadowFillLayer.class, ShadowVectorSource.class, ShadowRasterSource.class, ShadowLayer.class, ShadowLineLayer.class, ShadowRasterLayer.class})
+@Config(shadows = {ShadowFillLayer.class, ShadowSource.class, ShadowVectorSource.class, ShadowRasterSource.class, ShadowLayer.class, ShadowLineLayer.class, ShadowRasterLayer.class})
 public class MBTilesHelperTest extends BaseTest {
 
 
@@ -111,4 +116,11 @@ public class MBTilesHelperTest extends BaseTest {
         assertFalse(mbTilesHelper.tileServer.isStarted());
     }
 
+
+    @Test
+    public void testSetMBTileLayers() {
+        ReflectionHelpers.setField(mbTilesHelper, "mbtilesDir", new File("src/test/resources/"));
+        mbTilesHelper.setMBTileLayers(context, switcherPlugin);
+        verify(switcherPlugin, times(2)).addBaseLayer(any(MBTilesLayer.class), eq(false));
+    }
 }

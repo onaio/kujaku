@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
  */
 
 @Implements(RasterSource.class)
-public class ShadowRasterSource {
+public class ShadowRasterSource extends ShadowSource {
 
     @Implementation
     protected void initialize(String layerId, Object options) {

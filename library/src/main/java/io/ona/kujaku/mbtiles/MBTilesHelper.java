@@ -47,6 +47,8 @@ public class MBTilesHelper {
 
     protected TileHttpServer tileServer;
 
+    private File mbtilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MB_TILES_DIRECTORY);
+
     private void init(List<File> offlineFiles) {
         if (offlineFiles == null || offlineFiles.isEmpty()) {
             return;
@@ -84,7 +86,6 @@ public class MBTilesHelper {
     }
 
     public void setMBTileLayers(Context context, BaseLayerSwitcherPlugin baseLayerSwitcherPlugin) {
-        File mbtilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MB_TILES_DIRECTORY);
         if (mbtilesDir.exists() && mbtilesDir.exists() && mbtilesDir.listFiles() != null) {
             for (File mbTile : mbtilesDir.listFiles()) {
                 MBTilesLayer mbTilesLayer = new MBTilesLayer(context, mbTile, this);
