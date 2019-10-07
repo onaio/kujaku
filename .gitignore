@@ -11,3 +11,4 @@
 **/secrets.xml
 
 **/jacoco.exec
+**/*-journal
