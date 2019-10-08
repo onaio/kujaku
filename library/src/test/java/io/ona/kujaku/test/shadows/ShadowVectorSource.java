@@ -10,7 +10,7 @@ import org.robolectric.annotation.Implements;
  */
 
 @Implements(VectorSource.class)
-public class ShadowVectorSource {
+public class ShadowVectorSource extends ShadowSource {
 
     @Implementation
     protected void initialize(String layerId, Object options) {

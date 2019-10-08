@@ -1,6 +1,7 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -21,9 +22,12 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import io.ona.kujaku.mbtiles.MBTilesHelper;
 import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
@@ -77,10 +81,17 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .zoom(16)
                 .build();
         kujakuMapView.setCameraPosition(cameraPosition);
+        File mbFilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"));
+                mapboxMap.setStyle(new Style.Builder().fromUrl("asset://reveal-streets-style.json"), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+                        if (mbFilesDir.exists() && mbFilesDir.isDirectory() && mbFilesDir.listFiles() != null)
+                            kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Arrays.asList(mbFilesDir.listFiles()));
+                    }
+                });
             }
         });
     }

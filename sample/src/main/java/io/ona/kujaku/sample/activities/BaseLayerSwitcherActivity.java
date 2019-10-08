@@ -4,7 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -32,7 +33,7 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
 
         kujakuMapView = findViewById(R.id.kmv_baseLayerSwitcher_mapView);
         kujakuMapView.onCreate(savedInstanceState);
-        kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
+        // kujakuMapView.focusOnUserLocation(true, RenderMode.COMPASS);
 
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -50,7 +51,10 @@ public class BaseLayerSwitcherActivity extends BaseNavigationDrawerActivity {
                         baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true);
                         baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false);
 
+                        kujakuMapView.getMbTilesHelper().setMBTileLayers(BaseLayerSwitcherActivity.this, baseLayerSwitcherPlugin);
+
                         baseLayerSwitcherPlugin.show();
+
                     }
                 });
             }
