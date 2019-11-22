@@ -65,6 +65,7 @@ import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.enums.LocationClient;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
@@ -197,6 +198,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private int resourceId;
     private boolean disableMyLocationOnMapMove = false;
 
+    private boolean useGoogleLocationClientInsteadOfAndroidGpsClient = true;
+
     /**
      * MBtiles
      **/
@@ -281,6 +284,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             warmGps = (boolean) attributes.get(warmGPSKey);
         }
 
+        String locationClientKey = getContext().getString(R.string.locationClient);
+        if (attributes.containsKey(locationClientKey)) {
+            LocationClient locationClientEnum = (LocationClient) attributes.get(locationClientKey);
+            useGoogleLocationClientInsteadOfAndroidGpsClient = locationClientEnum.equals(LocationClient.android_gps_client);
+        }
+
         featureMap = new HashMap<>();
         mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();
     }
@@ -301,7 +310,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        locationClient = new AndroidGpsLocationClient(getContext());
+        locationClient = useGoogleLocationClientInsteadOfAndroidGpsClient ? new GoogleLocationClient(getContext()) : new AndroidGpsLocationClient(getContext());
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
