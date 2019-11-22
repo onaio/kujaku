@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
@@ -32,8 +33,14 @@ public class KujakuLibrary {
     private static boolean enableMapDownloadResume;
 
     private static KujakuLibrary library;
+    private Toast currentToast;
+    private Context context;
 
     private KujakuLibrary() {}
+
+    private KujakuLibrary(@NonNull Context context) {
+        this.context = context;
+    }
 
     public static KujakuLibrary getInstance() {
         if (library == null) {
@@ -51,7 +58,7 @@ public class KujakuLibrary {
             resumeMapDownload(context);
         }
 
-        library = new KujakuLibrary();
+        library = new KujakuLibrary(context);
         AndroidThreeTen.init(context);
 
         if (Timber.treeCount() < 1) {
@@ -84,5 +91,14 @@ public class KujakuLibrary {
     public void launchMapActivity(@NonNull Activity hostActivity, @NonNull String mapboxAccessToken
             , @Nullable List<Point> points, boolean enableDropPoint) {
         ActivityLauncherHelper.launchMapActivity(hostActivity, mapboxAccessToken, points, enableDropPoint);
+    }
+
+    public void showToast(@NonNull String text) {
+        if (currentToast != null) {
+            currentToast.cancel();
+        }
+
+        currentToast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+        currentToast.show();
     }
 }
