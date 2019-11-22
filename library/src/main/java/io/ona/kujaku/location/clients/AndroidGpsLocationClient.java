@@ -129,11 +129,12 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
                 Location location = locationManager.getLastKnownLocation(getProvider());
                 if (lastLocation == null || (location != null && isBetterLocation(location, lastLocation))) {
                     lastLocation = location;
-
-                    if (location != null) {
-                        KujakuLibrary.getInstance()
-                                .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)", location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
-                    }
+                    KujakuLibrary.getInstance()
+                            .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)", location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
+                    locationListener.onLocationChanged(lastLocation);
+                } else {
+                    // Enable snackbar in the activity
+                    Toast.makeText(context, R.string.retrieving_gps_location_couple_of_minutes, Toast.LENGTH_SHORT).show();
                 }
 
                 locationManager.requestLocationUpdates(
