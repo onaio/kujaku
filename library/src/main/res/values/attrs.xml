@@ -3,5 +3,9 @@
     <declare-styleable name="KujakuMapView">
         <attr name="current_location_btn_visibility" format="boolean" />
         <attr name="mapbox_warmGps" format="boolean"/>
+        <attr name="locationClient" format="enum">
+            <enum name="google_location_client" value="google_location_client"/>
+            <enum name="android_gps_client" value="android_gps_client"/>
+        </attr>
     </declare-styleable>
 </resources>
