@@ -10,7 +10,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
@@ -26,6 +25,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import io.ona.kujaku.R;
 import io.ona.kujaku.utils.LocationSettingsHelper;
+import timber.log.Timber;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
@@ -40,8 +40,6 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
 
-    private static final String TAG = GoogleLocationClient.class.getName();
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
     private Object gpsStatusCallback;
 
     public GoogleLocationClient(@NonNull Context context) {
@@ -106,13 +104,13 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                 // This method protects itself from multiple calls
                 registerForGpsStoppedEvent();
             } catch (SecurityException e) {
-                Log.e(TAG, Log.getStackTraceString(e));
+                Timber.e(e);
                 Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)
                         .show();
             }
         } else {
             setLocationListener(null);
-            Log.e(TAG, "The provider (" + getProvider() + ") is not enabled");
+            Timber.e(new Exception(), "The provider (" + getProvider() + ") is not enabled");
         }
     }
 
@@ -143,7 +141,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                 }
             }
         } catch (SecurityException ex) {
-            Log.e(TAG, Log.getStackTraceString(ex));
+            Timber.e(ex);
         }
     }
 
@@ -158,7 +156,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
                 gpsStatusCallback = null;
             } catch (SecurityException ex) {
-                Log.e(TAG, Log.getStackTraceString(ex));
+                Timber.e(ex);
             }
         }
     }
@@ -190,6 +188,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         return getLocationListener() != null;
     }
 
+    @NonNull
     @Override
     public String getProvider() {
         // TODO: This requires a bit more research and testing
@@ -206,65 +205,6 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     public void close() {
         stopLocationUpdates();
         super.close();
-    }
-
-    /**
-     * Determines whether one Location reading is better than the current Location fix
-     *
-     * @param location            The new Location that you want to evaluate
-     * @param currentBestLocation The current Location fix, to which you want to compare the new one
-     */
-    private boolean isBetterLocation(Location location, Location currentBestLocation) {
-        if (currentBestLocation == null) {
-            // A new location is always better than no location
-            return true;
-        }
-
-        // Check whether the new location fix is newer or older
-        long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
-        boolean isNewer = timeDelta > 0;
-
-        // If it's been more than two minutes since the current location, use the new location
-        // because the user has likely moved
-        if (isSignificantlyNewer) {
-            return true;
-            // If the new location is more than two minutes older, it must be worse
-        } else if (isSignificantlyOlder) {
-            return false;
-        }
-
-        // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = accuracyDelta > 0;
-        boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
-
-        // Check if the old and new location are from the same provider
-        boolean isFromSameProvider = isSameProvider(location.getProvider(),
-                currentBestLocation.getProvider());
-
-        // Determine location quality using a combination of timeliness and accuracy
-        if (isMoreAccurate) {
-            return true;
-        } else if (isNewer && !isLessAccurate) {
-            return true;
-        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks whether two providers are the same
-     */
-    private boolean isSameProvider(String provider1, String provider2) {
-        if (provider1 == null) {
-            return provider2 == null;
-        }
-        return provider1.equals(provider2);
     }
 
     @VisibleForTesting

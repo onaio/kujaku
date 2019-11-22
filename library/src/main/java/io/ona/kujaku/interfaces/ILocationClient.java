@@ -31,6 +31,7 @@ public interface ILocationClient {
 
     boolean isMonitoringLocation();
 
+    @NonNull
     String getProvider();
 
     boolean isProviderEnabled();
