@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.Point;
@@ -56,9 +57,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
@@ -302,6 +305,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                if (location != null) {
+                    KujakuLibrary.getInstance()
+                    .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)"
+                            , location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
+                }
+
                 float distanceMoved = -1;
                 if (location != null) {
                     if (latestLocation != null) {
