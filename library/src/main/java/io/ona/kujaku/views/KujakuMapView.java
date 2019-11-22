@@ -79,6 +79,7 @@ import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.location.KujakuLocation;
+import io.ona.kujaku.location.clients.AndroidGpsLocationClient;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.manager.AnnotationRepositoryManager;
 import io.ona.kujaku.mbtiles.MBTilesHelper;
@@ -93,6 +94,7 @@ import io.ona.kujaku.utils.LogUtil;
 import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
+import timber.log.Timber;
 
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
@@ -260,7 +262,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 markerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 int height = markerLayout.getMeasuredHeight();
-                markerLayout.setY(markerLayout.getY() - (height / 2));
+                markerLayout.setY(markerLayout.getY() - (height / 2f));
             }
         });
 
@@ -296,7 +298,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        locationClient = new GoogleLocationClient(getContext());
+        locationClient = new AndroidGpsLocationClient(getContext());
         locationClient.requestLocationUpdates(new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -565,7 +567,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (mapboxMap == null) {
             getMapAsync(new OnMapReadyCallback() {
                 @Override
-                public void onMapReady(MapboxMap mapboxMap) {
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
                     KujakuMapView.this.mapboxMap = mapboxMap;
                     mapboxMap.getUiSettings().setCompassEnabled(false);
 
@@ -931,7 +933,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     public void initializePrimaryGeoJsonSource(String sourceId, boolean isFetchSourceFromStyle, String geoJsonSource) {
         if (sourceId == null || (isFetchSourceFromStyle && geoJsonSource == null)) {
-            Log.e(TAG, "GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.");
+            Timber.e(new Exception("GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null."));
             return;
         }
         featureCollection = FeatureCollection.fromFeatures(new ArrayList<>());
@@ -951,7 +953,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Timber.e(e);
         }
     }
 
@@ -1029,7 +1031,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback<LocationSettingsResult>() {
                 @Override
-                public void onResult(LocationSettingsResult result) {
+                public void onResult(@NonNull LocationSettingsResult result) {
                     final Status status = result.getStatus();
 
                     // The rejection dialog message is supposed to be configurable only when the setWarmGps is called
@@ -1040,7 +1042,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
                     switch (status.getStatusCode()) {
                         case LocationSettingsStatusCodes.SUCCESS:
-                            Log.i(TAG, "All location settings are satisfied.");
+                            Timber.i("All location settings are satisfied.");
 
                             // You can continue warming the GPS
                             if (shouldStartNow) {
@@ -1051,7 +1053,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             }
                             break;
                         case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                            Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings");
+                            Timber.i("Location settings are not satisfied. Show the user a dialog to upgrade location settings");
 
                             // This enables us to back-off(in onResume) in case the user has already denied the request
                             // to turn on location settings
@@ -1064,7 +1066,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                                     // in onActivityResult().
                                     status.startResolutionForResult(activity, Constants.RequestCode.LOCATION_SETTINGS);
                                 } catch (IntentSender.SendIntentException e) {
-                                    Log.i(TAG, "PendingIntent unable to execute request.");
+                                    Timber.i("PendingIntent unable to execute request.");
                                 }
                             } else {
                                 // The user had already requested for permissions, so we should not request again
@@ -1074,11 +1076,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            Log.e(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog cannot be created.");
+                            Timber.e(new Exception("Location settings are inadequate, and cannot be fixed here. Dialog cannot be created."));
                             break;
 
                         default:
-                            Log.e(TAG, "Unknown status code returned after checking location settings");
+                            Timber.e(new Exception("Unknown status code returned after checking location settings"));
                             break;
                     }
                 }
@@ -1180,7 +1182,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             kujakuLayers.add(kujakuLayer);
             getMapAsync(new OnMapReadyCallback() {
                 @Override
-                public void onMapReady(MapboxMap mapboxMap) {
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
@@ -1194,7 +1196,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         } else {
             getMapAsync(new OnMapReadyCallback() {
                 @Override
-                public void onMapReady(MapboxMap mapboxMap) {
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
@@ -1213,7 +1215,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (kujakuLayers.contains(kujakuLayer)) {
             getMapAsync(new OnMapReadyCallback() {
                 @Override
-                public void onMapReady(MapboxMap mapboxMap) {
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
                     mapboxMap.getStyle(new Style.OnStyleLoaded() {
                         @Override
                         public void onStyleLoaded(@NonNull Style style) {
@@ -1227,19 +1229,23 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
+        //TODO: Update this to work for cases where the AndroidGpsLocationClient is in use and not the GoogleLocationClient
+        ILocationClient locationClient = getLocationClient();
         if (updateInterval > -1 && fastestUpdateInterval > -1 && (accuracyLevel == LocationRequest.PRIORITY_HIGH_ACCURACY
                 || accuracyLevel == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
                 || accuracyLevel == LocationRequest.PRIORITY_LOW_POWER
                 || accuracyLevel == LocationRequest.PRIORITY_NO_POWER)
-                && getLocationClient() != null) {
+                && locationClient != null) {
             LocationRequest locationRequest = new LocationRequest();
             locationRequest.setInterval(updateInterval);
             locationRequest.setFastestInterval(fastestUpdateInterval);
             locationRequest.setPriority(accuracyLevel);
 
-            ((GoogleLocationClient) getLocationClient())
-                    .requestLocationUpdates(getLocationClient().getLocationListener(), locationRequest);
-            return true;
+            if (locationClient.getLocationListener() != null) {
+                ((GoogleLocationClient) locationClient)
+                        .requestLocationUpdates(locationClient.getLocationListener(), locationRequest);
+                return true;
+            }
         }
 
         return false;
@@ -1353,7 +1359,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
             return locations;
         } else {
-            Log.d(TAG, "Tracking Service instance is null or not Tracking Service is not bounded");
+            Timber.d("Tracking Service instance is null or not Tracking Service is not bounded");
         }
 
         return null;
@@ -1371,7 +1377,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingServiceBound = false;
             trackingService = null;
         } else {
-            Log.d(TAG, "Tracking Service instance is null");
+            Timber.d("Tracking Service instance is null");
         }
     }
 
@@ -1397,7 +1403,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (trackingServiceBound && trackingService != null) {
             trackingService.takeLocation(tag);
         } else {
-            Log.e(TAG, "Tracking Service instance is null");
+            Timber.e(new Exception(), "Tracking Service instance is null");
         }
     }
 
