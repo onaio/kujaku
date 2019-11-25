@@ -1,8 +1,8 @@
 package io.ona.kujaku.views;
 
+import android.location.LocationListener;
 import android.util.AttributeSet;
 
-import android.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.Layer;

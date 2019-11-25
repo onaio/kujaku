@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config;
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.utils.exceptions.MalformedDataException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/12/2017.
