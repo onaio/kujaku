@@ -286,8 +286,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         String locationClientKey = getContext().getString(R.string.locationClient);
         if (attributes.containsKey(locationClientKey)) {
-            LocationClient locationClientEnum = (LocationClient) attributes.get(locationClientKey);
-            useGoogleLocationClientInsteadOfAndroidGpsClient = locationClientEnum.equals(LocationClient.android_gps_client);
+            useGoogleLocationClientInsteadOfAndroidGpsClient = ((int) attributes.get(locationClientKey)) == 0;
         }
 
         featureMap = new HashMap<>();
@@ -354,6 +353,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                 boolean isWarmGps = typedArray.getBoolean(R.styleable.KujakuMapView_mapbox_warmGps, true);
                 attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);
                 attributes.put(getContext().getString(R.string.mapbox_warmGps), isWarmGps);
+                attributes.put(getContext().getString(R.string.locationClient), typedArray.getInt(R.styleable.KujakuMapView_locationClient, 0));
             } catch (Exception e) {
                 LogUtil.e(TAG, e);
             } finally {
