@@ -1,8 +1,8 @@
 package io.ona.kujaku.views;
 
-import android.location.LocationListener;
 import android.util.AttributeSet;
 
+import android.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.Layer;
@@ -11,7 +11,6 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
@@ -23,6 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.ArrayList;
 
 import io.ona.kujaku.BaseTest;
+import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.test.shadows.ShadowKujakuMapView;
@@ -122,6 +122,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         GoogleLocationClient googleLocationClient = Mockito.mock(GoogleLocationClient.class);
 
+        Mockito.doReturn(Mockito.mock(LocationListener.class)).when(googleLocationClient).getLocationListener();
         Mockito.doReturn(googleLocationClient)
                 .when(spiedKujakuMapView)
                 .getLocationClient();
@@ -141,16 +142,15 @@ public class KujakuMapViewTest extends BaseTest {
         KujakuMapView spiedKujakuMapView = Mockito.spy(kujakuMapView);
         GoogleLocationClient googleLocationClient = Mockito.mock(GoogleLocationClient.class);
 
-        Mockito.doReturn(googleLocationClient)
-                .when(spiedKujakuMapView)
-                .getLocationClient();
+        LocationListener mockLocationListener = Mockito.mock(LocationListener.class);
+        Mockito.doReturn(mockLocationListener).when(googleLocationClient).getLocationListener();
+        Mockito.doReturn(googleLocationClient).when(spiedKujakuMapView).getLocationClient();
 
         spiedKujakuMapView.changeLocationUpdates(5000
                 , 2000
                 , LocationRequest.PRIORITY_HIGH_ACCURACY);
-
         Mockito.verify(googleLocationClient, Mockito.times(1))
-                .requestLocationUpdates(ArgumentMatchers.isNull(), Mockito.any(LocationRequest.class));
+                .requestLocationUpdates(Mockito.eq(mockLocationListener), Mockito.any(LocationRequest.class));
     }
 
     @Test
@@ -159,11 +159,7 @@ public class KujakuMapViewTest extends BaseTest {
         KujakuMapView spiedKujakuMapView = Mockito.spy(kujakuMapView);
 
         GoogleLocationClient googleLocationClient = Mockito.mock(GoogleLocationClient.class);
-
-        Mockito.doReturn(googleLocationClient)
-                .when(spiedKujakuMapView)
-                .getLocationClient();
-
+        Mockito.doReturn(googleLocationClient).when(spiedKujakuMapView).getLocationClient();
         spiedKujakuMapView.getLocationClient(locationClientStartedCallback);
 
         Mockito.verify(locationClientStartedCallback, Mockito.times(1))
@@ -187,7 +183,7 @@ public class KujakuMapViewTest extends BaseTest {
         ReflectionHelpers.callInstanceMethod(kujakuMapView, "warmUpLocationServices");
 
         Mockito.verify(locationClientStartedCallback, Mockito.times(1))
-                .onStarted(Mockito.any(GoogleLocationClient.class));
+                .onStarted(Mockito.any(ILocationClient.class));
         assertEquals(0, callbacks.size());
     }
 }

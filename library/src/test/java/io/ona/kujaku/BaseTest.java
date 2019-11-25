@@ -1,5 +1,7 @@
 package io.ona.kujaku;
 
+import android.location.Location;
+
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
 
@@ -47,6 +49,27 @@ public abstract class BaseTest {
         }
 
         return feature;
+    }
+
+    protected Location generateLocation(float horizontalAccuracy, long time) {
+        Location location = generateRandomLocation();
+        location.setAccuracy(horizontalAccuracy);
+        location.setTime(time);
+
+        return location;
+    }
+
+    protected Location generateRandomLocation() {
+        double minLat = -30d;
+        double maxLat = 60d;
+        double minLon = -30d;
+        double maxLon = 60d;
+
+        Location location = new Location("test_provider");
+        location.setLatitude((Math.random() * (maxLat - minLat)) + minLat);
+        location.setLongitude((Math.random() * (maxLon - minLon)) + minLon);
+
+        return location;
     }
 
     protected Point getRandomPoint() {
