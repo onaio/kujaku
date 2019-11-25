@@ -6,7 +6,6 @@ import com.mapbox.mapboxsdk.plugins.annotation.CircleOptions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.RobolectricTestRunner;
 
 import io.ona.kujaku.BaseTest;

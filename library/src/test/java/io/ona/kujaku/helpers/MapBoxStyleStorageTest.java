@@ -7,10 +7,12 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
-
 import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.

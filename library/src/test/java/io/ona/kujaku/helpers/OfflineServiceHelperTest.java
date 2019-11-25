@@ -21,7 +21,7 @@ import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.utils.Constants;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 21/03/2019

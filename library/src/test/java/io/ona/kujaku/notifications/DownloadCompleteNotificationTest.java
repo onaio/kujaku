@@ -13,7 +13,9 @@ import org.robolectric.shadows.ShadowNotificationManager;
 
 import io.ona.kujaku.R;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
