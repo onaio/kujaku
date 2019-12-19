@@ -31,6 +31,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
+import com.mapbox.android.core.location.LocationEngine;
+import com.mapbox.android.core.location.LocationEngineProvider;
+import com.mapbox.android.core.location.LocationEngineRequest;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
@@ -94,6 +97,7 @@ import io.ona.kujaku.utils.Permissions;
 import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
 
+import static android.os.Looper.getMainLooper;
 import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
@@ -196,6 +200,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * MBtiles
      **/
     private MBTilesHelper mbTilesHelper;
+    private LocationEngine locationEngine;
+    private BaseLocationListener callback;
 
     /**
      * Drawing Manager
@@ -296,8 +302,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     private void warmUpLocationServices() {
-        locationClient = new GoogleLocationClient(getContext());
-        locationClient.requestLocationUpdates(new BaseLocationListener() {
+
+        locationEngine = LocationEngineProvider.getBestLocationEngine(getContext());
+        LocationEngineRequest request = new LocationEngineRequest.Builder(1000)
+                .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+                .setMaxWaitTime(5000).build();
+
+
+        callback = new BaseLocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 float distanceMoved = -1;
@@ -316,11 +328,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
                 showUpdatedUserLocation(locationBufferRadius, distanceMoved);
             }
-        });
+        };
 
-        for (LocationClientStartedCallback locationClientStartedCallback : locationClientCallbacks) {
+        locationEngine.requestLocationUpdates(request, callback, getMainLooper());
+        locationEngine.getLastLocation(callback);
+        //locationClient = new GoogleLocationClient(getContext());
+
+
+        // locationClient.requestLocationUpdates(callback);
+
+        /*for (LocationClientStartedCallback locationClientStartedCallback : locationClientCallbacks) {
             locationClientStartedCallback.onStarted(locationClient);
-        }
+        }*/
 
         locationClientCallbacks.clear();
     }
@@ -1508,6 +1527,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public void onDestroy() {
         if (mbTilesHelper != null) {
             mbTilesHelper.onDestroy();
+        }
+        // Prevent leaks
+        if (locationEngine != null && callback != null) {
+            locationEngine.removeLocationUpdates(callback);
         }
         super.onDestroy();
     }
