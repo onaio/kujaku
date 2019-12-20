@@ -127,7 +127,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
         if (isProviderEnabled()) {
             try {
                 Location location = locationManager.getLastKnownLocation(getProvider());
-                if (lastLocation == null || (location != null && isBetterLocation(location, lastLocation))) {
+                if (location != null && (lastLocation == null || (location != null && isBetterLocation(location, lastLocation)))) {
                     lastLocation = location;
                     KujakuLibrary.getInstance()
                             .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)", location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
