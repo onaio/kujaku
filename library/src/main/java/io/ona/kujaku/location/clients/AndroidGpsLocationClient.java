@@ -16,9 +16,6 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
-import java.util.Locale;
-
-import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.R;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import timber.log.Timber;
@@ -129,8 +126,6 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
                 Location location = locationManager.getLastKnownLocation(getProvider());
                 if (location != null && (lastLocation == null || (location != null && isBetterLocation(location, lastLocation)))) {
                     lastLocation = location;
-                    KujakuLibrary.getInstance()
-                            .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)", location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
                     locationListener.onLocationChanged(lastLocation);
                 } else {
                     // Enable snackbar in the activity
