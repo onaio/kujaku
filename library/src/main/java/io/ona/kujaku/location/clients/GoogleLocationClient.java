@@ -23,9 +23,6 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.util.Locale;
-
-import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.R;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import timber.log.Timber;
@@ -96,12 +93,6 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                         .addOnSuccessListener((Activity) context, new OnSuccessListener<Location>() {
                             @Override
                             public void onSuccess(Location location) {
-                                if (location != null) {
-                                    KujakuLibrary.getInstance()
-                                            .showToast(String.format(Locale.ENGLISH, "A new location received : \nProvider: %s\nAccuracy: %f\nPoint (%f, %f)"
-                                                    , location.getProvider(), location.getAccuracy(), location.getLatitude(), location.getLongitude()));
-                                }
-
                                 if (lastLocation == null || (location != null && isBetterLocation(location, lastLocation))) {
                                     lastLocation = location;
                                 }
