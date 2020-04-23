@@ -396,7 +396,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         int counter = 0;
         if (sortFields.length > 0) {
             SortFieldConfig sortField = sortFields[0];
-            if (sortField.getType() == SortFieldConfig.FieldType.DATE) {
+            if (SortFieldConfig.isValidType(sortField.getType().toString())) {
                 Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));
                 ArrayList<InfoWindowObject> infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() - 1, sortField.getDataField(), sortField.getType());
 
