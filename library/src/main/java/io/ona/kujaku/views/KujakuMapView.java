@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -271,18 +272,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         Map<String, Object> attributes = extractStyleValues(attributeSet);
         String locationBtnVisibilityKey = getContext().getString(R.string.current_location_btn_visibility);
         if (attributes.containsKey(locationBtnVisibilityKey)) {
-            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(locationBtnVisibilityKey);
+            boolean isCurrentLocationBtnVisible = (boolean)attributes.get(locationBtnVisibilityKey);
             setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);
         }
 
         String warmGPSKey = getContext().getString(R.string.mapbox_warmGps);
         if (attributes.containsKey(warmGPSKey)) {
-            warmGps = (boolean) attributes.get(warmGPSKey);
+            warmGps = (boolean)attributes.get(warmGPSKey);
         }
 
         String locationClientKey = getContext().getString(R.string.locationClient);
         if (attributes.containsKey(locationClientKey)) {
-            useGoogleLocationClientInsteadOfAndroidGpsClient = ((int) attributes.get(locationClientKey)) == 0;
+            useGoogleLocationClientInsteadOfAndroidGpsClient = ((int)attributes.get(locationClientKey)) == 0;
         }
 
         featureMap = new HashMap<>();
@@ -486,7 +487,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public @Nullable
     JSONObject dropPoint() {
-        return dropPoint((MarkerOptions) null);
+        return dropPoint((MarkerOptions)null);
     }
 
 
@@ -636,8 +637,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Add first available layer to the wmtsLayer list
-     *
-     * @param capabilities
      */
     @Override
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
@@ -646,9 +645,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Add identified layer to the wmtsLayer list
-     *
-     * @param layerIdentifier
-     * @param capabilities
      */
     @Override
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier) throws WmtsCapabilitiesException {
@@ -657,10 +653,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Add identified layer with specific style to the wmtsLayer list
-     *
-     * @param capabilities
-     * @param layerIdentifier
-     * @param styleIdentifier
      */
     @Override
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier) throws WmtsCapabilitiesException {
@@ -669,11 +661,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Add identified layer with specific style & specific tileMatrixSet to the wmtsLayer list
-     *
-     * @param capabilities
-     * @param layerIdentifier
-     * @param styleIdentifier
-     * @param tileMatrixSetLinkIdentifier
      */
     @Override
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
@@ -831,8 +818,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Set listener when pressing a KujakuLayer
-     *
-     * @param onKujakuLayerClickListener
      */
     public void setOnKujakuLayerClickListener(@NonNull OnKujakuLayerClickListener onKujakuLayerClickListener) {
         this.onKujakuLayerClickListener = onKujakuLayerClickListener;
@@ -840,8 +825,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Set listener when long pressing a KujakuLayer
-     *
-     * @param onKujakuLayerLongClickListener
      */
     public void setOnKujakuLayerLongClickListener(@NonNull OnKujakuLayerLongClickListener onKujakuLayerLongClickListener) {
         this.onKujakuLayerLongClickListener = onKujakuLayerLongClickListener;
@@ -908,7 +891,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             mapboxMap.getStyle(new Style.OnStyleLoaded() {
                 @Override
                 public void onStyleLoaded(@NonNull Style style) {
-                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
+                    ((GeoJsonSource)style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
                 }
             });
         }
@@ -935,7 +918,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            ((GeoJsonSource)mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
         }
     }
 
@@ -1022,7 +1005,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         // Explain the consequence of rejecting enabling location
         if (isResumingFromRequestingEnableLocation) {
             isResumingFromRequestingEnableLocation = false;
-            Activity activity = (Activity) getContext();
+            Activity activity = (Activity)getContext();
             Dialogs.showDialogIfLocationDisabled(activity, locationEnableRejectionDialogTitle, locationEnableRejectionDialogMessage);
 
             // The dialog message is supposed to be configurable only when the setWarmGps is called
@@ -1035,7 +1018,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
         if (getContext() instanceof Activity) {
-            Activity activity = (Activity) getContext();
+            Activity activity = (Activity)getContext();
 
             LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback<LocationSettingsResult>() {
                 @Override
@@ -1249,11 +1232,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             locationRequest.setFastestInterval(fastestUpdateInterval);
             locationRequest.setPriority(accuracyLevel);
 
-            if (locationClient.getLocationListener() != null) {
-                ((GoogleLocationClient) locationClient)
-                        .requestLocationUpdates(locationClient.getLocationListener(), locationRequest);
-                return true;
+
+            for (LocationListener locationListener : locationClient.getLocationListeners()) {
+                ((GoogleLocationClient)locationClient)
+                        .requestLocationUpdates(locationListener, locationRequest);
             }
+            return locationClient.getLocationListeners().size() > 0;
         }
 
         return false;
@@ -1271,7 +1255,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
             return true;
         }
-
         return false;
     }
 
@@ -1300,10 +1283,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Init TrackingService
-     *
-     * @param trackingServiceListener
-     * @param uiConfiguration
-     * @param options
      */
     public void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
                                     TrackingServiceUIConfiguration uiConfiguration,
@@ -1317,9 +1296,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Rebind to a running TrackingService instance
-     *
-     * @param context
-     * @return
      */
     public boolean resumeTrackingService(Context context) {
         // TrackingService reconnection if connection was lost
@@ -1333,9 +1309,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Start TrackingService
-     *
-     * @param context
-     * @param cls
      */
     public void startTrackingService(@NonNull Context context,
                                      @NonNull Class<?> cls) throws TrackingServiceNotInitializedException {
@@ -1353,9 +1326,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Stop TrackingService
-     *
-     * @param context
-     * @return
      */
     public List<KujakuLocation> stopTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
@@ -1375,8 +1345,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Unbind from TrackingService instance
-     *
-     * @param context
      */
     private void unBindTrackingService(@NonNull Context context) {
         if (trackingServiceBound && trackingService != null) {
@@ -1392,7 +1360,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     /**
      * Set Tag
      *
-     * @param tag
      * @return {@code true} if tag is set, {@code false} otherwise
      */
     public boolean setTag(long tag) {
@@ -1424,8 +1391,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     /**
      * Get the recorded locations
-     *
-     * @return
      */
     public List<KujakuLocation> getTrackingServiceRecordedKujakuLocations() {
         if (trackingServiceBound && trackingService != null) {
@@ -1443,14 +1408,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to TrackingService, cast the IBinder and get TrackingService instance
-            TrackingService.LocalBinder binder = (TrackingService.LocalBinder) service;
+            TrackingService.LocalBinder binder = (TrackingService.LocalBinder)service;
             trackingService = binder.getService();
             trackingService.registerTrackingServiceListener(trackingServiceListener);
             trackingServiceBound = true;
 
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getRecordingDrawable());
 
-            ((Activity) getContext()).runOnUiThread(new Runnable() {
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     trackingServiceListener.onServiceConnected(trackingService);
@@ -1467,7 +1432,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             trackingService = null;
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());
 
-            ((Activity) getContext()).runOnUiThread(new Runnable() {
+            ((Activity)getContext()).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     trackingServiceListener.onServiceDisconnected();
@@ -1481,21 +1446,21 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      */
     private void initTrackingServiceIcon() {
         if (this.trackingServiceInitialized && this.trackingServiceUIConfiguration != null) {
-            LayoutParams layoutParams = new LayoutParams((int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
-                    , (int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
+            LayoutParams layoutParams = new LayoutParams((int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())
+                    , (int)getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));
             layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();
 
-            layoutParams.setMargins((int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
-                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
-                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
-                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
+            layoutParams.setMargins((int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),
+                    (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),
+                    (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),
+                    (int)(getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));
 
             trackingServiceStatusButton.setLayoutParams(layoutParams);
 
-            trackingServiceStatusButton.setPadding((int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
-                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
+            trackingServiceStatusButton.setPadding((int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()),
+                    (int)getResources().getDimension(trackingServiceUIConfiguration.getPadding()));
 
             trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());
             trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());

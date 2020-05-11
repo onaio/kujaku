@@ -5,6 +5,8 @@ import android.location.LocationListener;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
+
 import io.ona.kujaku.listeners.LocationClientListener;
 
 /**
@@ -19,9 +21,11 @@ public interface ILocationClient {
 
     @Nullable LocationClientListener getListener();
 
-    void setLocationListener(@NonNull LocationListener locationListener);
+    void addLocationListener(@NonNull LocationListener locationListener);
 
-    @Nullable LocationListener getLocationListener();
+    boolean removeLocationListener(@NonNull LocationListener locationListener);
+
+    ArrayList<LocationListener> getLocationListeners();
 
     @Nullable Location getLastLocation();
 

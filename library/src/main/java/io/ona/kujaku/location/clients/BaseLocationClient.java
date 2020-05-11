@@ -4,7 +4,10 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import java.util.ArrayList;
 
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.LocationClientListener;
@@ -16,7 +19,7 @@ import io.ona.kujaku.listeners.LocationClientListener;
 public abstract class BaseLocationClient implements ILocationClient {
 
     private LocationClientListener locationClientListener;
-    private LocationListener locationListener;
+    private ArrayList<LocationListener> locationListeners = new ArrayList<>();
     protected LocationManager locationManager;
     protected Context context;
 
@@ -34,14 +37,20 @@ public abstract class BaseLocationClient implements ILocationClient {
     }
 
     @Override
-    public void setLocationListener(@Nullable LocationListener locationListener) {
-        this.locationListener = locationListener;
+    public void addLocationListener(@NonNull LocationListener locationListener) {
+        if(!locationListeners.contains(locationListener)) {
+            locationListeners.add(locationListener);
+        }
     }
 
-    @Nullable
     @Override
-    public LocationListener getLocationListener() {
-        return locationListener;
+    public boolean removeLocationListener(@NonNull LocationListener locationListener) {
+        return getLocationListeners().remove(locationListener);
+    }
+
+    @Override
+    public ArrayList<LocationListener> getLocationListeners() {
+        return locationListeners;
     }
 
     @Override
@@ -102,6 +111,11 @@ public abstract class BaseLocationClient implements ILocationClient {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean isMonitoringLocation() {
+        return getLocationListeners().size() > 0;
     }
 
     /**

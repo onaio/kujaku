@@ -126,11 +126,6 @@ public class BaseLocationClientTest extends BaseTest {
             // Do nothing
         }
 
-        @Override
-        public boolean isMonitoringLocation() {
-            return getLocationListener() != null;
-        }
-
         @NonNull
         @Override
         public String getProvider() {
