@@ -107,7 +107,7 @@ public class DrawingManager {
             }
         });
 
-        if(drawOnClick) {
+        if (drawOnClick) {
             mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
                 @Override
                 public boolean onMapClick(@NonNull LatLng point) {
@@ -626,7 +626,7 @@ public class DrawingManager {
      * Unset the draggable property to the current selected circle
      */
     public void unsetCurrentCircleDraggable() {
-        if(this.getCurrentKujakuCircle() != null) {
+        if (this.getCurrentKujakuCircle() != null) {
             this.setDraggable(false, this.getCurrentKujakuCircle().getCircle());
         }
     }
