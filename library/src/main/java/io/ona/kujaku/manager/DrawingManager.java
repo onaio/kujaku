@@ -63,8 +63,9 @@ public class DrawingManager {
      * @param mapView
      * @param mapboxMap
      * @param style
+     * @param drawOnClick Whether to draw Circle on clicking Map
      */
-    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style, boolean drawOnClick) {
         this.kujakuMapView = mapView;
         this.mapboxMap = mapboxMap;
 
@@ -106,27 +107,29 @@ public class DrawingManager {
             }
         });
 
-        mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
-            @Override
-            public boolean onMapClick(@NonNull LatLng point) {
-                final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
+        if(drawOnClick) {
+            mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
+                @Override
+                public boolean onMapClick(@NonNull LatLng point) {
+                    final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+                    List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression)null, CircleManager.ID_GEOJSON_LAYER);
 
-                if (features.size() == 0 && drawingEnabled) {
-                    if (getCurrentKujakuCircle() != null) {
-                        unsetCurrentCircleDraggable();
-                    } else {
-                        drawCircle(point);
+                    if (features.size() == 0 && drawingEnabled) {
+                        if (getCurrentKujakuCircle() != null) {
+                            unsetCurrentCircleDraggable();
+                        } else {
+                            drawCircle(point);
+                        }
+
+                        if (onDrawingCircleClickListener != null) {
+                            onDrawingCircleClickListener.onCircleNotClick(point);
+                        }
                     }
 
-                    if (onDrawingCircleClickListener != null) {
-                        onDrawingCircleClickListener.onCircleNotClick(point);
-                    }
+                    return false;
                 }
-
-                return false;
-            }
-        });
+            });
+        }
 
         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
             @Override
@@ -140,6 +143,10 @@ public class DrawingManager {
                 }
             }
         });
+    }
+
+    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+        this(mapView,mapboxMap,style,true);
     }
 
     public static KujakuCircleOptions getKujakuCircleOptions(){
@@ -278,6 +285,20 @@ public class DrawingManager {
         setDrawing(false);
         setCurrentCircle(null);
 
+        Polygon polygon = getCurrentPolygon();
+
+        // Delete annotations
+        this.deleteAll();
+        // Refresh
+        this.refresh(false);
+
+        return polygon;
+    }
+
+    /**
+     * @return Returns the up to date drawn polygon at any point in time
+     */
+    public Polygon getCurrentPolygon(){
         // convert into polygon
         List<Point> points = new ArrayList<>();
         List<List<Point>> lists = new ArrayList<>();
@@ -290,11 +311,6 @@ public class DrawingManager {
         }
 
         lists.add(points);
-        // Delete annotations
-        this.deleteAll();
-        // Refresh
-        this.refresh(false);
-
         return Polygon.fromLngLats(lists);
     }
 
