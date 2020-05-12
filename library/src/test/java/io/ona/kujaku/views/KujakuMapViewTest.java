@@ -48,7 +48,7 @@ public class KujakuMapViewTest extends BaseTest {
 
     @Before
     public void setUp() {
-        kujakuMapView = new KujakuMapView(RuntimeEnvironment.application, (AttributeSet)null);
+        kujakuMapView = new KujakuMapView(RuntimeEnvironment.application, (AttributeSet) null);
     }
 
     @Test

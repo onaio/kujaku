@@ -44,7 +44,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     public GoogleLocationClient(@NonNull Context context) {
         this.context = context;
-        locationManager = (LocationManager)context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
         googleLocationCallback = new GoogleLocationCallback();
     }
@@ -90,7 +90,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         if (isProviderEnabled()) {
             try {
                 fusedLocationClient.getLastLocation()
-                        .addOnSuccessListener((Activity)context, new OnSuccessListener<Location>() {
+                        .addOnSuccessListener((Activity) context, new OnSuccessListener<Location>() {
                             @Override
                             public void onSuccess(Location location) {
                                 if (lastLocation == null || (location != null && isBetterLocation(location, lastLocation))) {
@@ -126,7 +126,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                             resetLastLocationIfLocationServiceIsOff();
                         }
                     };
-                    locationManager.registerGnssStatusCallback((GnssStatus.Callback)gpsStatusCallback);
+                    locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
                 } else {
                     gpsStatusCallback = new GpsStatus.Listener() {
                         @Override
@@ -137,7 +137,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                             }
                         }
                     };
-                    locationManager.addGpsStatusListener((GpsStatus.Listener)gpsStatusCallback);
+                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
                 }
             }
         } catch (SecurityException ex) {
@@ -149,9 +149,9 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         if (gpsStatusCallback != null) {
             try {
                 if (Build.VERSION.SDK_INT > 23) {
-                    locationManager.unregisterGnssStatusCallback((GnssStatus.Callback)gpsStatusCallback);
+                    locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);
                 } else {
-                    locationManager.removeGpsStatusListener((GpsStatus.Listener)gpsStatusCallback);
+                    locationManager.removeGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);
                 }
 
                 gpsStatusCallback = null;
@@ -163,7 +163,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     private void resetLastLocationIfLocationServiceIsOff() {
         if (context instanceof Activity) {
-            LocationSettingsHelper.checkLocationEnabled((Activity)context, new ResultCallback<LocationSettingsResult>() {
+            LocationSettingsHelper.checkLocationEnabled((Activity) context, new ResultCallback<LocationSettingsResult>() {
                 @Override
                 public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
                     int statusCode = locationSettingsResult.getStatus().getStatusCode();
