@@ -65,7 +65,7 @@ public class DrawingManager {
      * @param style
      * @param drawOnClick Whether to draw Circle on clicking Map
      */
-    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style, boolean drawOnClick) {
+    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         this.kujakuMapView = mapView;
         this.mapboxMap = mapboxMap;
 
@@ -107,29 +107,26 @@ public class DrawingManager {
             }
         });
 
-        if (drawOnClick) {
-            mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
-                @Override
-                public boolean onMapClick(@NonNull LatLng point) {
-                    final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                    List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression)null, CircleManager.ID_GEOJSON_LAYER);
+        mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
+            @Override
+            public boolean onMapClick(@NonNull LatLng point) {
+                final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression)null, CircleManager.ID_GEOJSON_LAYER);
 
-                    if (features.size() == 0 && drawingEnabled) {
-                        if (getCurrentKujakuCircle() != null) {
-                            unsetCurrentCircleDraggable();
-                        } else {
-                            drawCircle(point);
-                        }
-
-                        if (onDrawingCircleClickListener != null) {
-                            onDrawingCircleClickListener.onCircleNotClick(point);
-                        }
+                if (features.size() == 0 && drawingEnabled) {
+                    if (getCurrentKujakuCircle() != null) {
+                        unsetCurrentCircleDraggable();
+                    } else {
+                        drawCircle(point);
                     }
-
-                    return false;
+                     if (onDrawingCircleClickListener != null) {
+                         onDrawingCircleClickListener.onCircleNotClick(point);
+                     }
                 }
-            });
-        }
+
+                return false;
+            }
+        });
 
         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
             @Override
@@ -143,10 +140,6 @@ public class DrawingManager {
                 }
             }
         });
-    }
-
-    public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
-        this(mapView,mapboxMap,style,true);
     }
 
     public static KujakuCircleOptions getKujakuCircleOptions(){
