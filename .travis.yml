@@ -67,6 +67,9 @@ script:
   # This is supposed to run the normal project build
   # jacocoTestReport is supposed to run both local and instrumented tests on all the modules
   # Gradle issue running composite tasks in order https://github.com/gradle/gradle/issues/3300
+  # Cache and make gradle run paralle
+  - echo "org.gradle.caching=true
+    org.gradle.parallel=true" >> gradle.properties
   - travis_wait ./gradlew clean --stacktrace
   - travis_wait ./gradlew build --stacktrace
   - travis_wait ./gradlew jacocoTestReport --stacktrace
