@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.config.KujakuConfigTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.019">
+  <properties/>
+  <testcase name="testValidKujakuConfig" classname="io.ona.kujaku.utils.config.KujakuConfigTest" time="0.006"/>
+  <testcase name="testInvalidKujakuConfigException" classname="io.ona.kujaku.utils.config.KujakuConfigTest" time="0.005"/>
+  <testcase name="testInvalidKujakuConfig" classname="io.ona.kujaku.utils.config.KujakuConfigTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

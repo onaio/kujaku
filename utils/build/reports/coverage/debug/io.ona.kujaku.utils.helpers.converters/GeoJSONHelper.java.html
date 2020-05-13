@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GeoJSONHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils.helpers.converters</a> &gt; <span class="el_source">GeoJSONHelper.java</span></div><h1>GeoJSONHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils.helpers.converters;
+
+import android.util.Log;
+
+import com.cocoahero.android.geojson.Feature;
+import com.cocoahero.android.geojson.FeatureCollection;
+import com.cocoahero.android.geojson.GeoJSON;
+import com.cocoahero.android.geojson.MultiPoint;
+import com.cocoahero.android.geojson.Point;
+import com.cocoahero.android.geojson.Position;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+/**
+ * GeoJSON factory that converts {@link GeoJSONFeature} into a MapBox's GeoJSON data-source or a
+ * GeoJSON feature-collection.
+ *
+ * See:
+ *  https://www.mapbox.com/mapbox-gl-js/style-spec/#sources-geojson
+ *  https://geojson.org/geojson-spec.html
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 06/11/2017.
+ */
+
+public class GeoJSONHelper {
+<span class="nc" id="L29">    private static final String TAG = GeoJSONHelper.class.getSimpleName();</span>
+    public static final String MAPBOX_GEOJSON_DATASOURCE_TYPE = &quot;geojson&quot;;
+    public static final JSONObject DEFAULT_FEATURE_COLLECTION;
+    static {
+<span class="nc" id="L33">        DEFAULT_FEATURE_COLLECTION = new JSONObject();</span>
+        try {
+<span class="nc" id="L35">            DEFAULT_FEATURE_COLLECTION.put(&quot;type&quot;, GeoJSON.TYPE_FEATURE_COLLECTION);</span>
+<span class="nc" id="L36">            DEFAULT_FEATURE_COLLECTION.put(&quot;features&quot;, new JSONArray());</span>
+<span class="nc" id="L37">        } catch (JSONException e) {</span>
+<span class="nc" id="L38">            Log.d(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L39">        }</span>
+<span class="nc" id="L40">    }</span>
+    private FeatureCollection featureCollection;
+
+    /**
+     * Currently only supports point point &amp;&amp; multipoint features
+     *
+     * @param geoJSONFeatures
+     */
+<span class="nc" id="L48">    public GeoJSONHelper(GeoJSONFeature... geoJSONFeatures) {</span>
+        //Create a new feature collection
+<span class="nc" id="L50">        featureCollection = new FeatureCollection();</span>
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (geoJSONFeatures == null) {</span>
+<span class="nc" id="L53">            return;</span>
+        }
+
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        for(GeoJSONFeature geoJSONFeature : geoJSONFeatures) {</span>
+            try {
+<span class="nc" id="L58">                featureCollection.addFeature(getFeature(geoJSONFeature));</span>
+<span class="nc" id="L59">            } catch (JSONException e) {</span>
+<span class="nc" id="L60">                Log.d(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L61">            }</span>
+        }
+<span class="nc" id="L63">    }</span>
+
+<span class="nc" id="L65">    public GeoJSONHelper(FeatureCollection featureCollection) {</span>
+<span class="nc" id="L66">        this.featureCollection = featureCollection;</span>
+<span class="nc" id="L67">    }</span>
+
+    private JSONObject getFeatureCollectionJson() throws JSONException {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (featureCollection != null) {</span>
+<span class="nc" id="L71">            return featureCollection.toJSON();</span>
+        }
+
+<span class="nc" id="L74">        return DEFAULT_FEATURE_COLLECTION;</span>
+    }
+
+    /**
+     * Returns a string representation of the feature collection
+     *
+     * @return  String representation of the feature collection or an empty feature collection if
+     *          {@link GeoJSONHelper#featureCollection} is {@code NULL}
+     * @throws JSONException If unable to create the feature collection JSONObject
+     */
+    public String getJsonFeatureCollection() throws JSONException {
+<span class="nc" id="L85">        return getFeatureCollectionJson().toString();</span>
+    }
+
+    /**
+     * Returns the feature collection wrapped in a MapBox's GeoJSON data source object.
+     *
+     * @return String representation of the feature collection wrapped in MapBox's GeoJSON data
+     *         source or an empty string if {@link GeoJSONHelper#featureCollection} is {@code null}
+     */
+    public String getGeoJsonData() throws JSONException {
+<span class="nc" id="L95">        JSONObject geoJson = new JSONObject();</span>
+<span class="nc" id="L96">        geoJson.put(&quot;type&quot;, MAPBOX_GEOJSON_DATASOURCE_TYPE);</span>
+<span class="nc" id="L97">        geoJson.put(&quot;data&quot;, getFeatureCollectionJson());</span>
+
+<span class="nc" id="L99">        return geoJson.toString();</span>
+    }
+
+    private Feature getFeature(GeoJSONFeature geoJSONFeature) throws JSONException {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (geoJSONFeature == null) {</span>
+<span class="nc" id="L104">            return null;</span>
+        }
+
+        Feature finalFeature;
+<span class="nc" id="L108">        GeoJSONFeature.Type featureType = geoJSONFeature.getFeatureType();</span>
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (featureType == GeoJSONFeature.Type.POINT) {</span>
+<span class="nc" id="L111">            LatLng latLng = geoJSONFeature.getFeaturePoints().get(0);</span>
+<span class="nc" id="L112">            Point point = new Point(latLng.getLatitude(), latLng.getLongitude(), latLng.getAltitude());</span>
+<span class="nc" id="L113">            finalFeature = new Feature(point);</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        } else if (featureType == GeoJSONFeature.Type.MULTI_POINT) {</span>
+<span class="nc" id="L116">            MultiPoint multiPoint = new MultiPoint();</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            for (LatLng latLng: geoJSONFeature.getFeaturePoints()) {</span>
+<span class="nc" id="L119">                multiPoint.addPosition(new Position(latLng.getLatitude(), latLng.getLongitude(), latLng.getAltitude()));</span>
+<span class="nc" id="L120">            }</span>
+<span class="nc" id="L121">            finalFeature = new Feature(multiPoint);</span>
+<span class="nc" id="L122">        } else {</span>
+<span class="nc" id="L123">            finalFeature = new Feature();</span>
+        }
+
+        // Add the id
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (geoJSONFeature.hasId()) {</span>
+<span class="nc" id="L128">            finalFeature.setIdentifier(geoJSONFeature.getId());</span>
+        }
+
+        //Add properties
+<span class="nc" id="L132">        JSONObject jsonProperties = new JSONObject();</span>
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        for (GeoJSONFeature.Property property: geoJSONFeature.getFeatureProperties()) {</span>
+<span class="nc" id="L135">            jsonProperties.put(property.getName(), property.getValue());</span>
+<span class="nc" id="L136">        }</span>
+
+<span class="nc" id="L138">        finalFeature.setProperties(jsonProperties);</span>
+
+<span class="nc" id="L140">        return finalFeature;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

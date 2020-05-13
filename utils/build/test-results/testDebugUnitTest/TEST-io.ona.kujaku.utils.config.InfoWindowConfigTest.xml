@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.config.InfoWindowConfigTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.017">
+  <properties/>
+  <testcase name="toJsonObject" classname="io.ona.kujaku.utils.config.InfoWindowConfigTest" time="0.006"/>
+  <testcase name="testSetVisibleProperty" classname="io.ona.kujaku.utils.config.InfoWindowConfigTest" time="0.003"/>
+  <testcase name="testConstructor" classname="io.ona.kujaku.utils.config.InfoWindowConfigTest" time="0.004"/>
+  <testcase name="isValid" classname="io.ona.kujaku.utils.config.InfoWindowConfigTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

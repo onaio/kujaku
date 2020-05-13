@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MbtilesFile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.mbtiles</a> &gt; <span class="el_source">MbtilesFile.java</span></div><h1>MbtilesFile.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.mbtiles;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.support.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import timber.log.Timber;
+
+/**
+ * This class provides access to the metadata and tiles in a .mbtiles file.
+ * An .mbtiles file is a SQLite database file containing specific tables and
+ * columns, including tiles that may contain raster images or vector geometry.
+ * See https://github.com/mapbox/mbtiles-spec for the detailed specification.
+ */
+public class MbtilesFile implements Closeable, TileHttpServer.TileSource {
+<span class="pc" id="L28">    public enum Type { RASTER, VECTOR }</span>
+
+    protected File file;
+    protected SQLiteDatabase db;
+    protected String format;
+    protected Type type;
+<span class="fc" id="L34">    protected String contentType = &quot;application/octet-stream&quot;;</span>
+<span class="fc" id="L35">    protected String contentEncoding = &quot;identity&quot;;</span>
+
+<span class="fc" id="L37">    public MbtilesFile(File file) throws SQLiteException, UnsupportedFormatException {</span>
+<span class="fc" id="L38">        this.file = file;</span>
+<span class="fc" id="L39">        db = SQLiteDatabase.openOrCreateDatabase(file, null);</span>
+
+        // The &quot;format&quot; code indicates whether the binary tiles are raster image
+        // files (JPEG, PNG) or protobuf-encoded vector geometry (PBF, MVT).
+<span class="fc" id="L43">        format = getMetadata(&quot;format&quot;).toLowerCase(Locale.US);</span>
+
+        //Added this as a default some mbtiles lacks format in the metadata
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if(format.isEmpty())</span>
+<span class="fc" id="L47">            format=&quot;png&quot;;</span>
+
+<span class="pc bpc" id="L49" title="1 of 4 branches missed.">        if (format.equals(&quot;pbf&quot;) || format.equals(&quot;mvt&quot;)) {</span>
+<span class="fc" id="L50">            contentType = &quot;application/protobuf&quot;;</span>
+<span class="fc" id="L51">            contentEncoding = &quot;gzip&quot;;</span>
+<span class="fc" id="L52">            type = Type.VECTOR;</span>
+<span class="pc bpc" id="L53" title="2 of 4 branches missed.">        } else if (format.equals(&quot;jpg&quot;) || format.equals(&quot;jpeg&quot;)) {</span>
+<span class="nc" id="L54">            contentType = &quot;image/jpeg&quot;;</span>
+<span class="nc" id="L55">            type = Type.RASTER;</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        } else if (format.equals(&quot;png&quot;)) {</span>
+<span class="fc" id="L57">            contentType = &quot;image/png&quot;;</span>
+<span class="fc" id="L58">            type = Type.RASTER;</span>
+        } else {
+<span class="nc" id="L60">            db.close();</span>
+<span class="nc" id="L61">            throw new UnsupportedFormatException(file, format);</span>
+        }
+<span class="fc" id="L63">    }</span>
+
+    public Type getType() {
+<span class="fc" id="L66">        return type;</span>
+    }
+
+    public void close() {
+<span class="fc" id="L70">        db.close();</span>
+<span class="fc" id="L71">    }</span>
+
+    /** Queries the &quot;metadata&quot; table, which has just &quot;name&quot; and &quot;value&quot; columns. */
+    public @NonNull String getMetadata(String key) {
+<span class="pc" id="L75">        try (Cursor results = db.query(&quot;metadata&quot;, new String[] {&quot;value&quot;},</span>
+                &quot;name = ?&quot;, new String[] {key}, null, null, null, null)) {
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            return results.moveToFirst() ? results.getString(0) : &quot;&quot;;</span>
+<span class="pc bpc" id="L78" title="6 of 8 branches missed.">        }</span>
+    }
+
+    /** Puts together the HTTP response for a given tile. */
+    public TileHttpServer.Response getTile(int zoom, int x, int y) {
+        // TMS coordinates are used in .mbtiles files, so Y needs to be flipped.
+<span class="nc" id="L84">        byte[] data = getTileBlob(zoom, x, (1 &lt;&lt; zoom) - 1 - y);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        return data == null ? null :</span>
+                new TileHttpServer.Response(data, contentType, contentEncoding);
+    }
+
+    /** Fetches a tile out of the .mbtiles SQLite database. */
+    // PMD complains about returning null for an array return type, but we
+    // really do want to return null when there is no tile available.
+    @SuppressWarnings(&quot;PMD.ReturnEmptyArrayRatherThanNull&quot;)
+    public byte[] getTileBlob(int zoom, int column, int row) {
+        // We have to use String.format because the templating mechanism in
+        // SQLiteDatabase.query is written for a strange alternate universe
+        // in which numbers don't exist -- it only supports strings!
+<span class="nc" id="L97">        String selection = String.format(</span>
+                Locale.US,
+                &quot;zoom_level = %d and tile_column = %d and tile_row = %d&quot;,
+<span class="nc" id="L100">                zoom, column, row</span>
+        );
+
+<span class="nc" id="L103">        try (Cursor results = db.query(&quot;tiles&quot;, new String[] {&quot;tile_data&quot;},</span>
+                selection, null, null, null, null)) {
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            if (results.moveToFirst()) {</span>
+                try {
+<span class="nc" id="L107">                    return results.getBlob(0);</span>
+<span class="nc" id="L108">                } catch (IllegalStateException e) {</span>
+<span class="nc" id="L109">                    Timber.w(e, &quot;Could not select tile data at zoom %d, column %d, row %d&quot;, zoom, column, row);</span>
+                    // In Android, the SQLite cursor can handle at most 2 MB in one row;
+                    // exceeding 2 MB in an .mbtiles file is rare, but it can happen.
+                    // When an attempt to fetch a large row fails, the database ends up
+                    // in an unusable state, so we need to close it and reopen it.
+                    // See https://stackoverflow.com/questions/20094421/cursor-window-window-is-full
+<span class="nc" id="L115">                    db.close();</span>
+<span class="nc" id="L116">                    db = SQLiteDatabase.openOrCreateDatabase(file, null);</span>
+                }
+            }
+<span class="nc bnc" id="L119" title="All 12 branches missed.">        }</span>
+<span class="nc" id="L120">        return null;</span>
+    }
+
+    /** Returns information about the vector layers available in the tiles. */
+    public List&lt;VectorLayer&gt; getVectorLayers() {
+<span class="fc" id="L125">        List&lt;VectorLayer&gt; layers = new ArrayList&lt;&gt;();</span>
+        JSONArray jsonLayers;
+        try {
+<span class="fc" id="L128">            JSONObject json = new JSONObject(getMetadata(&quot;json&quot;));</span>
+<span class="fc" id="L129">            jsonLayers = json.getJSONArray(&quot;vector_layers&quot;);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">            for (int i = 0; i &lt; jsonLayers.length(); i++) {</span>
+<span class="fc" id="L131">                layers.add(new VectorLayer(jsonLayers.getJSONObject(i)));</span>
+            }
+<span class="nc" id="L133">        } catch (JSONException e) {</span>
+<span class="nc" id="L134">            Timber.e(e);</span>
+<span class="fc" id="L135">        }</span>
+<span class="fc" id="L136">        return layers;</span>
+    }
+
+    /** Vector layer metadata.  See https://github.com/mapbox/mbtiles-spec for details. */
+    public static class VectorLayer {
+        public final String name;
+
+<span class="fc" id="L143">        public VectorLayer(JSONObject json) {</span>
+<span class="fc" id="L144">            name = json.optString(&quot;id&quot;, &quot;&quot;);</span>
+<span class="fc" id="L145">        }</span>
+    }
+
+    public class UnsupportedFormatException extends IOException {
+<span class="nc" id="L149">        public UnsupportedFormatException(File file, String format) {</span>
+<span class="nc" id="L150">            super(String.format(&quot;Unrecognized .mbtiles format \&quot;%s\&quot; in %s&quot;, format, file));</span>
+<span class="nc" id="L151">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

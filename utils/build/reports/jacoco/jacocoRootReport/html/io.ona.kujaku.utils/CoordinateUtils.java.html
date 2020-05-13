@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoordinateUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">utils</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils</a> &gt; <span class="el_source">CoordinateUtils.java</span></div><h1>CoordinateUtils.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.turf.TurfConstants;
+import com.mapbox.turf.TurfMeasurement;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 19/12/2017.
+ */
+
+<span class="nc" id="L16">public class CoordinateUtils {</span>
+
+    /**
+     * Checks whether the provided coordinate is within the provided Bounds.
+     *
+     * @param positionInQuestion
+     * @param myMapBounds
+     * @return
+     */
+    public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, @NonNull LatLngBounds myMapBounds) {
+<span class="nc" id="L26">        return isLocationInBounds(positionInQuestion, myMapBounds.getLatNorth(), myMapBounds.getLatSouth(), myMapBounds.getLonEast(), myMapBounds.getLonWest());</span>
+    }
+
+    /**
+     * Checks whether the provided coordinate is within the provided Bounds.
+     *
+     * @param positionInQuestion
+     * @param latNorth
+     * @param latSouth
+     * @param lonEast
+     * @param lonWest
+     * @return
+     */
+    public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, double latNorth, double latSouth, double lonEast, double lonWest) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        return (positionInQuestion.getLatitude() &lt;= latNorth</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">                &amp;&amp; positionInQuestion.getLatitude() &gt;= latSouth</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">                &amp;&amp; positionInQuestion.getLongitude() &lt;= lonEast</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">                &amp;&amp; positionInQuestion.getLongitude() &gt;= lonWest);</span>
+    }
+
+
+    /**
+     * Returns a padded bbox of in this order {@code [minX, minY, maxX, maxY]} with a padding of
+     * the distance in metres passed
+     *
+     * @param bbox            in this order  {@code [minX, minY, maxX, maxY]}
+     * @param paddingInMetres
+     * @return
+     */
+    public static double[] getPaddedBbox(@NonNull double[] bbox, double paddingInMetres) {
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (bbox.length &lt; 4 || paddingInMetres &lt;= 0) {</span>
+<span class="nc" id="L57">            return bbox;</span>
+        }
+
+<span class="nc" id="L60">        double minX = TurfMeasurement.destination(Point.fromLngLat(bbox[0], bbox[1])</span>
+                , paddingInMetres
+                , -90d
+                , TurfConstants.UNIT_METRES
+<span class="nc" id="L64">                ).longitude();</span>
+
+<span class="nc" id="L66">        double minY = TurfMeasurement.destination(Point.fromLngLat(bbox[0], bbox[1])</span>
+                        , paddingInMetres
+                        , -180d
+                        , TurfConstants.UNIT_METRES
+<span class="nc" id="L70">                ).latitude();</span>
+
+<span class="nc" id="L72">        double maxX = TurfMeasurement.destination(Point.fromLngLat(bbox[2], bbox[3])</span>
+                , paddingInMetres
+                , 90d
+                , TurfConstants.UNIT_METRES
+<span class="nc" id="L76">                ).longitude();</span>
+
+<span class="nc" id="L78">        double maxY = TurfMeasurement.destination(Point.fromLngLat(bbox[2], bbox[3])</span>
+                        , paddingInMetres
+                        , 0d
+                        , TurfConstants.UNIT_METRES
+<span class="nc" id="L82">                ).latitude();</span>
+
+<span class="nc" id="L84">        return new double[]{minX, minY, maxX, maxY};</span>
+    }
+
+    /**
+     * This generates the 5 coordinates required by the geometry of a polygon to create a 4-sided
+     * polygon. This polygon will be used to draw on the map. In case you just need four points,
+     * then you can leave the last point.
+     *
+     * @param bbox
+     * @return
+     */
+    @Nullable
+    public static LatLng[] generate5pointsFromBbox(@NonNull double[] bbox) {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (bbox.length &lt; 4) {</span>
+<span class="nc" id="L98">            return null;</span>
+        }
+
+<span class="nc" id="L101">        return new LatLng[]{</span>
+                new LatLng(bbox[1], bbox[0]),
+                new LatLng(bbox[3], bbox[0]),
+                new LatLng(bbox[3], bbox[2]),
+                new LatLng(bbox[1], bbox[2]),
+                new LatLng(bbox[1], bbox[0])
+        };
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

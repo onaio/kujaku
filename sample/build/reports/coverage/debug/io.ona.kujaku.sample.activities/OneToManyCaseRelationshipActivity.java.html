@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OneToManyCaseRelationshipActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">OneToManyCaseRelationshipActivity.java</span></div><h1>OneToManyCaseRelationshipActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
+import java.io.IOException;
+
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
+import io.ona.kujaku.layers.ArrowLineLayer;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.utils.FeatureFilter;
+import io.ona.kujaku.views.KujakuMapView;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.all;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.literal;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.neq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.rgba;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
+import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
+
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 07/02/2019
+ */
+
+<span class="nc" id="L50">public class OneToManyCaseRelationshipActivity extends BaseNavigationDrawerActivity {</span>
+
+    private KujakuMapView kujakuMapView;
+
+<span class="nc" id="L54">    private static final String TAG = OneToManyCaseRelationshipActivity.class.getName();</span>
+    private static final String CASES_SOURCE_ID = &quot;sample-cases-source&quot;;
+
+    private ArrowLineLayer arrowLineLayer;
+    private GeoJsonSource sampleCasesSource;
+
+    private Button drawArrowsBtn;
+    private Button changeFeatureBtn;
+    private Button filterFeaturesBtn;
+
+    private FeatureCollection caseFeatureCollection;
+
+    private LatLng focusPoint1;
+
+<span class="nc" id="L68">    private Expression defaultCircleLayerExpression = eq(geometryType(), &quot;Point&quot;);</span>
+<span class="nc" id="L69">    private Expression defaultFillLayerExpression = neq(geometryType(), &quot;Point&quot;);</span>
+<span class="nc" id="L70">    private Expression testStatusPositiveExpression = eq(get(&quot;testStatus&quot;), &quot;positive&quot;);</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L74">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L75">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L77">        kujakuMapView = findViewById(R.id.kmv_caseRelationship_mapView);</span>
+<span class="nc" id="L78">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L80">        drawArrowsBtn = findViewById(R.id.btn_caseRelationshipAct_drawArrows);</span>
+<span class="nc" id="L81">        changeFeatureBtn = findViewById(R.id.btn_caseRelationshipAct_change);</span>
+<span class="nc" id="L82">        changeFeatureBtn.setVisibility(View.GONE);</span>
+<span class="nc" id="L83">        filterFeaturesBtn = findViewById(R.id.btn_caseRelationshipAct_filter);</span>
+
+<span class="nc" id="L85">        drawArrowsBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L88">                toggleDrawingArrowsShowingRelationship();</span>
+<span class="nc" id="L89">            }</span>
+        });
+
+        try {
+<span class="nc" id="L93">            caseFeatureCollection = FeatureCollection.fromJson(</span>
+<span class="nc" id="L94">                    readInputStreamAsString(getAssets().open(&quot;case-relationship-features.geojson&quot;))</span>
+            );
+<span class="nc" id="L96">        } catch (IOException e) {</span>
+<span class="nc" id="L97">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L98">        }</span>
+
+<span class="nc" id="L100">        focusPoint1 = new LatLng(0.15380840901698828, 37.66387939453125);</span>
+
+<span class="nc" id="L102">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+<span class="nc" id="L105">                mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {</span>
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L108">                        addStructuresToMap(style);</span>
+
+                        // Zoom to the position
+<span class="nc" id="L111">                        mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(focusPoint1, 8d));</span>
+<span class="nc" id="L112">                    }</span>
+                });
+<span class="nc" id="L114">            }</span>
+        });
+
+<span class="nc" id="L117">        filterFeaturesBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L120">                toggleFeatureFilter();</span>
+<span class="nc" id="L121">            }</span>
+        });
+<span class="nc" id="L123">    }</span>
+
+    private void addStructuresToMap(@NonNull Style style) {
+<span class="nc" id="L126">        sampleCasesSource = new GeoJsonSource(CASES_SOURCE_ID, caseFeatureCollection);</span>
+<span class="nc" id="L127">        style.addSource(sampleCasesSource);</span>
+
+<span class="nc" id="L129">        Expression colorExpression = match(get(&quot;testStatus&quot;)</span>
+<span class="nc" id="L130">                , rgba(0, 0, 0, 0)</span>
+<span class="nc" id="L131">                , stop(literal(&quot;positive&quot;), Expression.color(getColorv16(R.color.positiveTasksColor)))</span>
+<span class="nc" id="L132">                , stop(literal(&quot;negative&quot;), Expression.color(getColorv16(R.color.negativeTasksColor))));</span>
+
+<span class="nc" id="L134">        FillLayer fillLayer = new FillLayer(&quot;sample-cases-fill&quot;, CASES_SOURCE_ID);</span>
+<span class="nc" id="L135">        fillLayer.withFilter(defaultFillLayerExpression);</span>
+<span class="nc" id="L136">        fillLayer.withProperties(fillColor(colorExpression));</span>
+
+<span class="nc" id="L138">        CircleLayer circleLayer = new CircleLayer(&quot;sample-cases-symbol&quot;, CASES_SOURCE_ID);</span>
+<span class="nc" id="L139">        circleLayer.withFilter(defaultCircleLayerExpression);</span>
+<span class="nc" id="L140">        circleLayer.withProperties(circleColor(colorExpression), circleRadius(10f));</span>
+
+<span class="nc" id="L142">        style.addLayer(circleLayer);</span>
+<span class="nc" id="L143">        style.addLayer(fillLayer);</span>
+<span class="nc" id="L144">    }</span>
+
+    private void toggleDrawingArrowsShowingRelationship() {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (arrowLineLayer == null) {</span>
+<span class="nc" id="L148">            ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(</span>
+                    new FeatureFilter.Builder(caseFeatureCollection)
+<span class="nc" id="L150">                            .whereEq(&quot;testStatus&quot;, &quot;positive&quot;));</span>
+            try {
+<span class="nc" id="L152">                ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig(&quot;childCases&quot;);</span>
+<span class="nc" id="L153">                arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, oneToManyConfig)</span>
+<span class="nc" id="L154">                        .setArrowLineColor(R.color.mapbox_blue)</span>
+<span class="nc" id="L155">                        .setArrowLineWidth(3)</span>
+<span class="nc" id="L156">                        .setAddBelowLayerId(&quot;sample-cases-symbol&quot;)</span>
+<span class="nc" id="L157">                        .build();</span>
+<span class="nc" id="L158">            } catch (InvalidArrowLineConfigException invalidArrowLineConfigException) {</span>
+<span class="nc" id="L159">                Log.e(TAG, Log.getStackTraceString(invalidArrowLineConfigException));</span>
+<span class="nc" id="L160">            }</span>
+        }
+
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (arrowLineLayer.isVisible()) {</span>
+<span class="nc" id="L164">            kujakuMapView.disableLayer(arrowLineLayer);</span>
+<span class="nc" id="L165">            drawArrowsBtn.setText(R.string.show_case_relationships);</span>
+        } else {
+<span class="nc" id="L167">            kujakuMapView.addLayer(arrowLineLayer);</span>
+<span class="nc" id="L168">            drawArrowsBtn.setText(R.string.hide_case_relationships);</span>
+        }
+<span class="nc" id="L170">    }</span>
+
+    private void toggleFeatureFilter() {
+<span class="nc" id="L173">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L176">                mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L179">                        FillLayer fillLayer = style.getLayerAs(&quot;sample-cases-fill&quot;);</span>
+<span class="nc" id="L180">                        CircleLayer circleLayer = style.getLayerAs(&quot;sample-cases-symbol&quot;);</span>
+
+<span class="nc bnc" id="L182" title="All 4 branches missed.">                        if (fillLayer != null &amp;&amp; circleLayer != null) {</span>
+<span class="nc" id="L183">                            Expression fillLayerExpression = fillLayer.getFilter();</span>
+
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                            if (fillLayerExpression != null) {</span>
+<span class="nc" id="L186">                                String filterExString = fillLayerExpression.toString();</span>
+
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                                if (filterExString.contains(&quot;testStatus&quot;)) {</span>
+                                    // Already filtered then reset
+<span class="nc" id="L190">                                    fillLayer.setFilter(defaultFillLayerExpression);</span>
+<span class="nc" id="L191">                                    circleLayer.setFilter(defaultCircleLayerExpression);</span>
+<span class="nc" id="L192">                                    filterFeaturesBtn.setText(R.string.only_cases);</span>
+                                } else {
+<span class="nc" id="L194">                                    fillLayer.setFilter(all(defaultFillLayerExpression, testStatusPositiveExpression));</span>
+<span class="nc" id="L195">                                    circleLayer.setFilter(all(defaultCircleLayerExpression, testStatusPositiveExpression));</span>
+<span class="nc" id="L196">                                    filterFeaturesBtn.setText(R.string.show_all);</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L200">                    }</span>
+                });
+<span class="nc" id="L202">            }</span>
+        });
+<span class="nc" id="L204">    }</span>
+
+
+    private void changeFocus(@NonNull LatLng point) {
+<span class="nc" id="L208">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L211">                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngZoom(point, 8d));</span>
+<span class="nc" id="L212">            }</span>
+        });
+<span class="nc" id="L214">    }</span>
+
+    private int getColorv16(@ColorRes int colorRes) {
+<span class="nc" id="L217">        return getResources().getColor(colorRes);</span>
+    }
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L222">        return R.layout.activity_case_relationship_activity;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L227">        return R.id.nav_one_to_many_case_relationship_activity;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L232">        super.onResume();</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L234">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L238">        super.onStart();</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L240">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L244">        super.onStop();</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L246">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L250">        super.onPause();</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L252">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L256">        super.onDestroy();</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L258">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L262">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L264">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L268">        super.onLowMemory();</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L270">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

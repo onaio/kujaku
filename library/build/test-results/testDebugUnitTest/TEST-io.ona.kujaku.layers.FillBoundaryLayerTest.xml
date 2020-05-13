@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.layers.FillBoundaryLayerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:15" hostname="kigamba-ThinkPad-T580" time="0.019">
+  <properties/>
+  <testcase name="getLayerIdsShouldReturnStringArrayWithLayerIds" classname="io.ona.kujaku.layers.FillBoundaryLayerTest" time="0.011"/>
+  <testcase name="testFillLayerProperties" classname="io.ona.kujaku.layers.FillBoundaryLayerTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -5,10 +5,8 @@
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 **/secrets.xml
 
-**/jacoco.exec
 **/*-journal

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sorter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sorting</a> &gt; <span class="el_source">Sorter.java</span></div><h1>Sorter.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sorting;
+
+import android.support.annotation.NonNull;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.threeten.bp.DateTimeUtils;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+
+import java.util.ArrayList;
+import java.util.Date;
+
+import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2017.
+ */
+
+public class Sorter {
+
+<span class="nc" id="L24">    private static final String TAG = Sorter.class.getSimpleName();</span>
+<span class="nc" id="L25">    private ArrayList&lt;InfoWindowObject&gt; infoWindowObjects = new ArrayList&lt;&gt;();</span>
+    private InfoWindowObject[] infoWindowObjectsHelper;
+
+<span class="nc" id="L28">    public Sorter(@NonNull ArrayList&lt;InfoWindowObject&gt; infoWindowObjects) {</span>
+<span class="nc" id="L29">        this.infoWindowObjects = infoWindowObjects;</span>
+<span class="nc" id="L30">        infoWindowObjectsHelper = new InfoWindowObject[infoWindowObjects.size()];</span>
+<span class="nc" id="L31">    }</span>
+
+
+    public ArrayList&lt;InfoWindowObject&gt; mergeSort(int low, int high, String fieldName, SortFieldConfig.FieldType fieldType) throws JSONException {
+        // check if low is smaller than high, if not then the array is sorted
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (low &lt; high) {</span>
+            // Get the index of the element which is in the middle
+<span class="nc" id="L38">            int middle = low + (high - low) / 2;</span>
+            // Sort the left side of the array
+<span class="nc" id="L40">            mergeSort(low, middle, fieldName, fieldType);</span>
+            // Sort the right side of the array
+<span class="nc" id="L42">            mergeSort(middle + 1, high, fieldName, fieldType);</span>
+            // Combine them both
+<span class="nc" id="L44">            merge(low, middle, high, fieldName, fieldType);</span>
+        }
+
+<span class="nc" id="L47">        return  infoWindowObjects;</span>
+    }
+
+    private void merge(int low, int middle, int high, String fieldName, SortFieldConfig.FieldType fieldType) throws JSONException {
+
+        // Copy both parts into the helper array
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        for (int i = low; i &lt;= high; i++) {</span>
+<span class="nc" id="L54">            infoWindowObjectsHelper[i] = infoWindowObjects.get(i);</span>
+        }
+
+<span class="nc" id="L57">        int i = low;</span>
+<span class="nc" id="L58">        int j = middle + 1;</span>
+<span class="nc" id="L59">        int k = low;</span>
+        // Copy the smallest values from either the left or the right side back
+        // to the original array
+<span class="nc bnc" id="L62" title="All 4 branches missed.">        while (i &lt;= middle &amp;&amp; j &lt;= high) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (compare(infoWindowObjectsHelper[i], infoWindowObjectsHelper[j], fieldName, fieldType) &lt; 1) {</span>
+<span class="nc" id="L64">                infoWindowObjects.set(k, infoWindowObjectsHelper[i]);</span>
+<span class="nc" id="L65">                i++;</span>
+            } else {
+<span class="nc" id="L67">                infoWindowObjects.set(k, infoWindowObjectsHelper[j]);</span>
+<span class="nc" id="L68">                j++;</span>
+            }
+
+<span class="nc" id="L71">            k++;</span>
+        }
+        // Copy the rest of the left side of the array into the target array
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        while (i &lt;= middle) {</span>
+<span class="nc" id="L75">            infoWindowObjects.set(k, infoWindowObjectsHelper[i]);</span>
+<span class="nc" id="L76">            k++;</span>
+<span class="nc" id="L77">            i++;</span>
+        }
+
+        // Since we are sorting in-place any leftover elements from the right side
+        // are already at the right position.
+
+<span class="nc" id="L83">    }</span>
+
+    private int compare(@NonNull InfoWindowObject object1, @NonNull InfoWindowObject object2, @NonNull String fieldName, @NonNull SortFieldConfig.FieldType fieldType) throws JSONException {
+<span class="nc" id="L86">        JSONObject jsonObject1 = object1.getJsonObject();</span>
+<span class="nc" id="L87">        JSONObject jsonObject2 = object2.getJsonObject();</span>
+
+<span class="nc bnc" id="L89" title="All 4 branches missed.">        if (jsonObject1.has(&quot;properties&quot;) &amp;&amp; jsonObject2.has(&quot;properties&quot;)) {</span>
+
+<span class="nc" id="L91">            JSONObject object1Properties = jsonObject1.getJSONObject(&quot;properties&quot;);</span>
+<span class="nc" id="L92">            JSONObject object2Properties = jsonObject2.getJSONObject(&quot;properties&quot;);</span>
+
+<span class="nc bnc" id="L94" title="All 4 branches missed.">            if (object1Properties.has(fieldName) &amp;&amp; object2Properties.has(fieldName)) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                if (fieldType == SortFieldConfig.FieldType.DATE) {</span>
+<span class="nc" id="L96">                    Date date1 = getDateFromISO8601(object1Properties.getString(fieldName));</span>
+<span class="nc" id="L97">                    Date date2 = getDateFromISO8601(object2Properties.getString(fieldName));</span>
+
+<span class="nc" id="L99">                    return compare(date1, date2);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                } else if (fieldType == SortFieldConfig.FieldType.NUMBER) {</span>
+<span class="nc" id="L101">                    double number1 = object1Properties.getDouble(fieldName);</span>
+<span class="nc" id="L102">                    double number2 = object2Properties.getDouble(fieldName);</span>
+
+<span class="nc" id="L104">                    return compare(number1, number2);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">                } else if (fieldType == SortFieldConfig.FieldType.STRING) {</span>
+<span class="nc" id="L106">                    String s1 = object1Properties.getString(fieldName);</span>
+<span class="nc" id="L107">                    String s2 = object2Properties.getString(fieldName);</span>
+
+<span class="nc" id="L109">                    return compare(s1, s2);</span>
+                }
+            }
+        }
+
+<span class="nc" id="L114">        return 0;</span>
+    }
+
+    private int compare(@NonNull Object object1, @NonNull Object object2) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (object1 instanceof Date) {</span>
+<span class="nc" id="L119">            Date date1 = (Date) object1;</span>
+<span class="nc" id="L120">            Date date2 = (Date) object2;</span>
+
+<span class="nc" id="L122">            return date1.compareTo(date2);</span>
+        }
+
+        // Test this
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (object1 instanceof Double) {</span>
+<span class="nc" id="L127">            Double d1 = new Double((double) object1);</span>
+<span class="nc" id="L128">            Double d2 = new Double((double) object2);</span>
+<span class="nc" id="L129">            return d1.compareTo(d2);</span>
+        }
+
+        // Also test this
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (object1 instanceof  String) {</span>
+<span class="nc" id="L134">            String s1 = (String) object1;</span>
+<span class="nc" id="L135">            String s2 = (String) object2;</span>
+
+<span class="nc" id="L137">            return s1.compareTo(s2);</span>
+        }
+
+<span class="nc" id="L140">        return 0;</span>
+    }
+
+    private Date getDateFromISO8601(@NonNull String dateString) {
+<span class="nc" id="L144">        LocalDateTime localDateTime = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME);</span>
+<span class="nc" id="L145">        return DateTimeUtils.toDate(localDateTime.atZone(ZoneId.systemDefault()).toInstant());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

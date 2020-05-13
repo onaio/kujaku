@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SplittingManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.manager</a> &gt; <span class="el_source">SplittingManager.java</span></div><h1>SplittingManager.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.manager;
+
+import android.graphics.Color;
+import android.support.annotation.NonNull;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
+import com.mapbox.mapboxsdk.plugins.annotation.Line;
+import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
+import com.mapbox.mapboxsdk.plugins.annotation.LineOptions;
+import com.mapbox.mapboxsdk.plugins.annotation.OnCircleDragListener;
+import com.mapbox.turf.models.LineIntersectsResult;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.ona.kujaku.layers.FillBoundaryLayer;
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
+import io.ona.kujaku.listeners.OnSplittingClickListener;
+import io.ona.kujaku.manager.options.SplittingManagerDefaultOptions;
+import io.ona.kujaku.manager.options.SplittingManagerOptions;
+import io.ona.kujaku.views.KujakuMapView;
+
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
+
+/**
+ * Manager use to split a polygon
+ * Encapsulate a LineManager and CircleManager
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch on 02/07/2019
+ */
+public class SplittingManager {
+
+    private KujakuMapView kujakuMapView;
+    private MapboxMap mapboxMap;
+    private FillBoundaryLayer fillBoundaryLayer;
+    private Circle circleStart;
+    private Circle circleEnd;
+    private Line splittingLine;
+
+    private List&lt;Point&gt; polygonToSplit;
+
+    private LineManager lineManager;
+    private CircleManager circleManager;
+
+    private OnSplittingClickListener onSplittingClickListener;
+    private OnKujakuLayerClickListener onKujakuLayerClickListener;
+
+    private boolean splittingEnabled;
+
+    private SplittingManagerOptions options;
+
+    /**
+     * Constructor
+     *
+     * @param mapView
+     * @param mapboxMap
+     * @param style
+     */
+<span class="fc" id="L69">    public SplittingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {</span>
+<span class="fc" id="L70">        this.kujakuMapView = mapView;</span>
+<span class="fc" id="L71">        this.mapboxMap = mapboxMap;</span>
+
+<span class="fc" id="L73">        lineManager = AnnotationRepositoryManager.getLineManagerInstance(mapView, mapboxMap, style);</span>
+<span class="fc" id="L74">        circleManager = AnnotationRepositoryManager.getCircleManagerInstance(mapView, mapboxMap, style);</span>
+
+<span class="fc" id="L76">        options = new SplittingManagerDefaultOptions();</span>
+
+<span class="fc" id="L78">        circleManager.addDragListener(new OnCircleDragListener() {</span>
+            @Override
+            public void onAnnotationDragStarted(Circle circle) {
+                // Left empty on purpose
+<span class="nc" id="L82">            }</span>
+
+            @Override
+            public void onAnnotationDrag(Circle circle) {
+<span class="nc" id="L86">                refreshSplitLine();</span>
+<span class="nc" id="L87">            }</span>
+
+            @Override
+            public void onAnnotationDragFinished(Circle circle) {
+                // Left empty on purpose
+<span class="nc" id="L92">            }</span>
+        });
+
+<span class="fc" id="L95">        mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {</span>
+            @Override
+            public boolean onMapClick(@NonNull LatLng point) {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                if (splittingEnabled) {</span>
+<span class="nc" id="L99">                    drawCircle(point);</span>
+
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                    if (onSplittingClickListener != null) {</span>
+<span class="nc" id="L102">                        onSplittingClickListener.onSplittingClick(point);</span>
+                    }
+                }
+
+<span class="nc" id="L106">                return false;</span>
+            }
+        });
+
+<span class="fc" id="L110">        kujakuMapView.setOnKujakuLayerClickListener(new OnKujakuLayerClickListener() {</span>
+            @Override
+            public void onKujakuLayerClick(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc bnc" id="L113" title="All 4 branches missed.">                if (!isSplittingEnabled() &amp;&amp; kujakuLayer instanceof FillBoundaryLayer) {</span>
+
+<span class="nc" id="L115">                    startSplitting((FillBoundaryLayer)kujakuLayer);</span>
+
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                    if (onKujakuLayerClickListener != null) {</span>
+<span class="nc" id="L118">                        onKujakuLayerClickListener.onKujakuLayerClick(kujakuLayer);</span>
+                    }
+                }
+<span class="nc" id="L121">            }</span>
+        });
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Set a SplittingManager Options
+     *
+     * @param options
+     */
+    public void setSplittingManagerOptions(@NonNull SplittingManagerOptions options) {
+<span class="fc" id="L131">        this.options = options;</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Start Splitting. A FillBoundaryLayer has to be passed to init the drawing.
+     * @param fillBoundaryLayer
+     * @return
+     */
+    public boolean startSplitting(@NonNull FillBoundaryLayer fillBoundaryLayer) {
+<span class="fc" id="L140">        this.stopSplitting();</span>
+<span class="fc" id="L141">        this.fillBoundaryLayer = fillBoundaryLayer;</span>
+<span class="fc" id="L142">        this.startSplitting();</span>
+
+<span class="fc" id="L144">        return this.splittingEnabled;</span>
+    }
+
+    /**
+     * Start Splitting mode
+     */
+    private void startSplitting() {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (this.fillBoundaryLayer != null) {</span>
+<span class="fc" id="L152">            Geometry geometry = this.fillBoundaryLayer.getFeatureCollection().features().get(0).geometry();</span>
+
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">            if (geometry instanceof Polygon) {</span>
+<span class="fc" id="L155">                Polygon polygon = (Polygon) geometry;</span>
+<span class="fc" id="L156">                this.polygonToSplit = polygon.coordinates().get(0);</span>
+<span class="fc" id="L157">                this.polygonToSplit.add(this.polygonToSplit.get(0));</span>
+<span class="fc" id="L158">                this.splittingEnabled = true;</span>
+
+<span class="fc" id="L160">                fillBoundaryLayer.updateLineLayerProperties(lineColor(options.getKujakuFillLayerColorSelected()));</span>
+            }
+        }
+<span class="fc" id="L163">    }</span>
+
+    public void stopSplitting() {
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (this.fillBoundaryLayer != null) {</span>
+<span class="fc" id="L167">            this.fillBoundaryLayer.updateLineLayerProperties(lineColor(options.getKujakuFillLayerColor()));</span>
+<span class="fc" id="L168">            this.fillBoundaryLayer = null;</span>
+        }
+<span class="fc" id="L170">        this.deleteAll();</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Draw circle with kujakuCircleOptions
+     *
+     * @param latLng
+     * @return
+     */
+    public Circle drawCircle(@NonNull LatLng latLng) {
+<span class="fc" id="L180">        return this.create(options.getKujakuCircleOptions().withLatLng(latLng));</span>
+    }
+
+
+    /**
+     * Create new Circle1 or Circle 2 drawing the splitting line
+     * Refresh the splitting line
+     *
+     * @param options
+     * @return
+     */
+    private Circle create(@NonNull KujakuCircleOptions options) {
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">        if (this.checkSplitPoints()) {</span>
+<span class="nc" id="L193">            return null;</span>
+        }
+
+<span class="fc" id="L196">        Circle circle = circleManager.create(options);</span>
+
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if (this.circleStart == null) {</span>
+<span class="fc" id="L199">            this.circleStart = circle;</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">        } else if (this.circleEnd == null) {</span>
+<span class="fc" id="L201">            this.circleEnd = circle;</span>
+        }
+
+<span class="fc" id="L204">        this.refreshSplitLine();</span>
+
+<span class="fc" id="L206">        return circle;</span>
+    }
+
+    /**
+     * Return true if the 2 circles have been drawn
+     *
+     * @return
+     */
+    private boolean checkSplitPoints() {
+<span class="fc bfc" id="L215" title="All 4 branches covered.">        return this.circleStart != null &amp;&amp; this.circleEnd != null ;</span>
+    }
+
+    /**
+     * Refresh the split line when start or end points are dragging
+     */
+    private void refreshSplitLine() {
+<span class="fc bfc" id="L222" title="All 2 branches covered.">        if (this.checkSplitPoints()) {</span>
+<span class="fc" id="L223">            this.deleteLine();</span>
+
+<span class="fc" id="L225">            List&lt;LatLng&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L226">            list.add(this.circleStart.getLatLng());</span>
+<span class="fc" id="L227">            list.add(this.circleEnd.getLatLng());</span>
+
+<span class="fc" id="L229">            this.splittingLine = lineManager.create(new LineOptions()</span>
+<span class="fc" id="L230">                    .withLatLngs(list)</span>
+<span class="fc" id="L231">                    .withLineColor(options.getLineColor()));</span>
+        }
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Function splitting the polygon into list of Polygons
+     *
+     * @return List&lt;List&lt;Point&gt;&gt;
+     */
+    public List&lt;List&lt;Point&gt;&gt; split() {
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">        if (!checkSplitPoints()) {</span>
+<span class="nc" id="L242">            return null;</span>
+        }
+
+<span class="fc" id="L245">        Point pointA = null;</span>
+<span class="fc" id="L246">        Point pointB = null;</span>
+<span class="fc" id="L247">        Point splitA = Point.fromLngLat(this.circleStart.getLatLng().getLongitude(), this.circleStart.getLatLng().getLatitude());</span>
+<span class="fc" id="L248">        Point splitB = Point.fromLngLat(this.circleEnd.getLatLng().getLongitude(), this.circleEnd.getLatLng().getLatitude());</span>
+
+<span class="fc" id="L250">        List&lt;Point&gt; initialPolygon = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L251">        List&lt;Point&gt; newPolygon = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L252">        boolean crossed = false ;</span>
+
+<span class="fc" id="L254">        List&lt;List&lt;Point&gt;&gt; polygons = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        for (Point p : polygonToSplit) {</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">            if (pointA == null) {</span>
+<span class="fc" id="L258">                pointA = p;</span>
+<span class="fc" id="L259">                continue;</span>
+            }
+
+<span class="fc" id="L262">            pointB = p;</span>
+
+            // Check if the split line cross this line
+<span class="fc" id="L265">            LineIntersectsResult result = lineIntersects(pointA, pointB, splitA, splitB);</span>
+
+<span class="pc bpc" id="L267" title="2 of 6 branches missed.">            if (result != null &amp;&amp; result.onLine1() &amp;&amp; result.onLine2()) {</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">                crossed = !crossed ;</span>
+                // Cross the line
+<span class="fc" id="L270">                Point cross = Point.fromLngLat(result.horizontalIntersection(), result.verticalIntersection());</span>
+
+<span class="fc bfc" id="L272" title="All 2 branches covered.">                if (crossed) {</span>
+<span class="fc" id="L273">                    this.addPointsToPolygons(pointA, pointB, cross, initialPolygon, newPolygon);</span>
+                } else {
+<span class="fc" id="L275">                    this.addPointsToPolygons(pointA, pointB, cross, newPolygon, initialPolygon);</span>
+
+<span class="fc" id="L277">                    polygons.add(newPolygon);</span>
+<span class="fc" id="L278">                    newPolygon = new ArrayList&lt;&gt;();</span>
+                }
+<span class="fc" id="L280">            } else {</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">                if (!crossed) {</span>
+<span class="fc" id="L282">                    this.addPointsToPolygons(pointA, pointB, null, initialPolygon, initialPolygon);</span>
+                } else {
+<span class="fc" id="L284">                    this.addPointsToPolygons(pointA, pointB, null, newPolygon, newPolygon);</span>
+                }
+            }
+<span class="fc" id="L287">            pointA = pointB;</span>
+<span class="fc" id="L288">        }</span>
+
+<span class="fc" id="L290">        polygons.add(initialPolygon);</span>
+<span class="fc" id="L291">        this.displayPolygons(polygons);</span>
+<span class="fc" id="L292">        this.fillBoundaryLayer.removeLayerOnMap(mapboxMap);</span>
+<span class="fc" id="L293">        this.deleteAll();</span>
+
+<span class="fc" id="L295">        return polygons;</span>
+    }
+
+    /**
+     * Add points A, B and cross to Lists of points A and B.
+     *
+     * @param pointA
+     * @param pointB
+     * @param crossPoint
+     * @param polygonA
+     * @param polygonB
+     */
+    private void addPointsToPolygons(@NonNull Point pointA, @NonNull Point pointB, Point crossPoint,  @NonNull List&lt;Point&gt; polygonA,  @NonNull List&lt;Point&gt; polygonB) {
+<span class="fc bfc" id="L308" title="All 2 branches covered.">        if (!polygonA.contains(pointA)) {</span>
+<span class="fc" id="L309">            polygonA.add(pointA);</span>
+        }
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        if (crossPoint != null) {</span>
+<span class="fc" id="L312">            polygonA.add(crossPoint);</span>
+<span class="fc" id="L313">            polygonB.add(crossPoint);</span>
+        }
+<span class="fc bfc" id="L315" title="All 2 branches covered.">        if (!polygonB.contains(pointB)) {</span>
+<span class="fc" id="L316">            polygonB.add(pointB);</span>
+        }
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Display Polygons on the map
+     *
+     * @param polygons
+     */
+    private void displayPolygons(List&lt;List&lt;Point&gt;&gt; polygons) {
+<span class="fc bfc" id="L326" title="All 2 branches covered.">        for (List&lt;Point&gt; list : polygons) {</span>
+<span class="fc" id="L327">            List&lt;List&lt;Point&gt;&gt; lists = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L328">            lists.add(list);</span>
+<span class="fc" id="L329">            Polygon polygon =  Polygon.fromLngLats(lists);</span>
+
+<span class="fc" id="L331">            Feature feature = Feature.fromGeometry(polygon);</span>
+<span class="fc" id="L332">            FeatureCollection collection = FeatureCollection.fromFeature(feature);</span>
+<span class="fc" id="L333">            FillBoundaryLayer layer = new FillBoundaryLayer.Builder(collection)</span>
+<span class="fc" id="L334">                    .setBoundaryColor(Color.parseColor(options.getKujakuFillLayerColor()))</span>
+<span class="fc" id="L335">                    .setBoundaryWidth(3f)</span>
+<span class="fc" id="L336">                    .build();</span>
+
+<span class="fc" id="L338">            kujakuMapView.addLayer(layer);</span>
+<span class="fc" id="L339">        }</span>
+<span class="fc" id="L340">    }</span>
+
+    /**
+     * Delete circles and line
+     */
+    private void deleteAll() {
+<span class="fc bfc" id="L346" title="All 2 branches covered.">        if (this.circleStart != null) {</span>
+<span class="fc" id="L347">            this.circleManager.delete(this.circleStart);</span>
+<span class="fc" id="L348">            this.circleStart = null;</span>
+        }
+
+<span class="fc bfc" id="L351" title="All 2 branches covered.">        if (this.circleEnd != null) {</span>
+<span class="fc" id="L352">            this.circleManager.delete(this.circleEnd);</span>
+<span class="fc" id="L353">            this.circleEnd = null;</span>
+        }
+
+<span class="fc" id="L356">        this.splittingEnabled = false;</span>
+
+<span class="fc" id="L358">        this.deleteLine();</span>
+<span class="fc" id="L359">    }</span>
+
+    /**
+     * Delete the line
+     */
+    private void deleteLine() {
+<span class="fc bfc" id="L365" title="All 2 branches covered.">        if (this.splittingLine != null) {</span>
+<span class="fc" id="L366">            lineManager.delete(this.splittingLine);</span>
+        }
+<span class="fc" id="L368">    }</span>
+
+
+    /**
+     * Return true is splitting is enabled
+     *
+     * @return value of splittingEnabled
+     */
+    public boolean isSplittingEnabled() {
+<span class="fc" id="L377">        return this.splittingEnabled;</span>
+    }
+
+    /**
+     * Return true if the 2 points have been drawn
+     *
+     * @return if split() function is ready
+     */
+    public boolean isSplittingReady() {
+<span class="fc" id="L386">        return this.checkSplitPoints();</span>
+    }
+
+    /**
+     * Set a listener for OnSplittingClickListener
+     *
+     * @param listener
+     */
+    public void addOnSplittingClickListener(OnSplittingClickListener listener) {
+<span class="nc" id="L395">        this.onSplittingClickListener = listener;</span>
+<span class="nc" id="L396">    }</span>
+
+    /**
+     * Set listener when pressing a KujakuLayer
+     *
+     * @param listener
+     */
+    public void addOnKujakuLayerClickListener(OnKujakuLayerClickListener listener) {
+<span class="nc" id="L404">        this.onKujakuLayerClickListener = listener;</span>
+<span class="nc" id="L405">    }</span>
+
+    private static LineIntersectsResult lineIntersects(Point start, Point end, Point splitStart, Point splitEnd) {
+<span class="fc" id="L408">        return lineIntersects(start.longitude(),</span>
+<span class="fc" id="L409">                start.latitude(),</span>
+<span class="fc" id="L410">                end.longitude(),</span>
+<span class="fc" id="L411">                end.latitude(),</span>
+<span class="fc" id="L412">                splitStart.longitude(),</span>
+<span class="fc" id="L413">                splitStart.latitude(),</span>
+<span class="fc" id="L414">                splitEnd.longitude(),</span>
+<span class="fc" id="L415">                splitEnd.latitude());</span>
+    }
+
+    /**
+     * Calculate the intersection point between 2 lines
+     *
+     * @param line1StartX
+     * @param line1StartY
+     * @param line1EndX
+     * @param line1EndY
+     * @param line2StartX
+     * @param line2StartY
+     * @param line2EndX
+     * @param line2EndY
+     * @return
+     */
+    private static LineIntersectsResult lineIntersects(double line1StartX, double line1StartY,
+                                                                      double line1EndX, double line1EndY,
+                                                                      double line2StartX, double line2StartY,
+                                                                      double line2EndX, double line2EndY) {
+        // If the lines intersect, the result contains the x and y of the intersection
+        // (treating the lines as infinite) and booleans for whether line segment 1 or line
+        // segment 2 contain the point
+<span class="fc" id="L438">        LineIntersectsResult result = LineIntersectsResult.builder()</span>
+<span class="fc" id="L439">                .onLine1(false)</span>
+<span class="fc" id="L440">                .onLine2(false)</span>
+<span class="fc" id="L441">                .build();</span>
+
+<span class="fc" id="L443">        double denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX))</span>
+                - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+<span class="pc bpc" id="L445" title="1 of 2 branches missed.">        if (denominator == 0) {</span>
+<span class="nc bnc" id="L446" title="All 4 branches missed.">            if (result.horizontalIntersection() != null &amp;&amp; result.verticalIntersection() != null) {</span>
+<span class="nc" id="L447">                return result;</span>
+            } else {
+<span class="nc" id="L449">                return null;</span>
+            }
+        }
+<span class="fc" id="L452">        double varA = line1StartY - line2StartY;</span>
+<span class="fc" id="L453">        double varB = line1StartX - line2StartX;</span>
+<span class="fc" id="L454">        double numerator1 = ((line2EndX - line2StartX) * varA) - ((line2EndY - line2StartY) * varB);</span>
+<span class="fc" id="L455">        double numerator2 = ((line1EndX - line1StartX) * varA) - ((line1EndY - line1StartY) * varB);</span>
+<span class="fc" id="L456">        varA = numerator1 / denominator;</span>
+<span class="fc" id="L457">        varB = numerator2 / denominator;</span>
+
+        // if we cast these lines infinitely in both directions, they intersect here:
+<span class="fc" id="L460">        result = result.toBuilder().horizontalIntersection(line1StartX</span>
+<span class="fc" id="L461">                + (varA * (line1EndX - line1StartX))).build();</span>
+<span class="fc" id="L462">        result = result.toBuilder().verticalIntersection(line1StartY</span>
+<span class="fc" id="L463">                + (varA * (line1EndY - line1StartY))).build();</span>
+
+        // if line1 is a segment and line2 is infinite, they intersect if:
+<span class="pc bpc" id="L466" title="1 of 4 branches missed.">        if (varA &gt; 0 &amp;&amp; varA &lt; 1) {</span>
+<span class="fc" id="L467">            result = result.toBuilder().onLine1(true).build();</span>
+        }
+        // if line2 is a segment and line1 is infinite, they intersect if:
+<span class="fc bfc" id="L470" title="All 4 branches covered.">        if (varB &gt; 0 &amp;&amp; varB &lt; 1) {</span>
+<span class="fc" id="L471">            result = result.toBuilder().onLine2(true).build();</span>
+        }
+        // if line1 and line2 are segments, they intersect if both of the above are true
+<span class="pc bpc" id="L474" title="1 of 4 branches missed.">        if (result.onLine1() &amp;&amp; result.onLine2()) {</span>
+<span class="fc" id="L475">            return result;</span>
+        } else {
+<span class="fc" id="L477">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

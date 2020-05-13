@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfoWindowViewHolder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.adapters.holders</a> &gt; <span class="el_source">InfoWindowViewHolder.java</span></div><h1>InfoWindowViewHolder.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.adapters.holders;
+
+import android.animation.Animator;
+import android.animation.ValueAnimator;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.adapters.InfoWindowAdapter;
+import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.utils.Views;
+import io.ona.kujaku.utils.config.InfoWindowConfig;
+
+public class InfoWindowViewHolder extends RecyclerView.ViewHolder
+        implements InfoWindowObject.OnFocusChangeListener, View.OnClickListener {
+<span class="nc" id="L30">    private static final String TAG = InfoWindowViewHolder.class.getSimpleName();</span>
+    private static final float UNSELECTED_OPACITY = 0.5f;
+    private static final float SELECTED_OPACITY = 1.0f;
+    private static final long ANIMATION_DURATION = 200;
+
+    private final InfoWindowAdapter adapter;
+    private final CardView cardView;
+    private final ArrayList&lt;TextView&gt; propertyLabels;
+    private final ArrayList&lt;TextView&gt; propertyValues;
+    private InfoWindowObject currentInfoWindowObject;
+    private LinearLayout canvasLayout;
+
+    public InfoWindowViewHolder(@NonNull InfoWindowAdapter adapter, @NonNull CardView cardView) {
+<span class="nc" id="L43">        super(cardView);</span>
+<span class="nc" id="L44">        this.adapter = adapter;</span>
+<span class="nc" id="L45">        this.cardView = cardView;</span>
+<span class="nc" id="L46">        this.propertyLabels = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L47">        this.propertyValues = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L48">        canvasLayout = cardView.findViewById(R.id.ll_canvas_layout);</span>
+
+<span class="nc" id="L50">        this.cardView.setOnClickListener(this);</span>
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * Resets the stored configuration as well as all the views affected by the configuration.
+     *
+     * @param infoWindowConfig    The new configuration to be applied
+     * @throws JSONException If unable to parse the new configuration
+     */
+    public void setInfoWindowConfig(@NonNull InfoWindowConfig infoWindowConfig)
+            throws JSONException {
+<span class="nc" id="L61">        removeDynamicViews();</span>
+<span class="nc" id="L62">        JSONArray visibleProperties = infoWindowConfig.getVisibleProperties();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (visibleProperties != null) {</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            for (int i = 0; i &lt; visibleProperties.length(); i++) {</span>
+<span class="nc" id="L65">                createPropertyViews(visibleProperties.getJSONObject(i));</span>
+            }
+        }
+<span class="nc" id="L68">    }</span>
+
+    private void removeDynamicViews() {
+<span class="nc" id="L71">        canvasLayout.removeAllViews();</span>
+<span class="nc" id="L72">        propertyLabels.clear();</span>
+<span class="nc" id="L73">        propertyValues.clear();</span>
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * Creates views for a GeoJSON property meant to be visible, as defined in the
+     * {@link InfoWindowConfig}
+     *
+     * @param property The GeoJSON property to be displayed as defined in
+     *                 {@code utils.helpers.MapBoxStyleHelper.KujakuConfig.InfoWindowConfig.addVisibleProperty}
+     */
+    private void createPropertyViews(JSONObject property) throws JSONException {
+<span class="nc" id="L84">        String label = property</span>
+<span class="nc" id="L85">                .getString(InfoWindowConfig.KEY_VP_LABEL);</span>
+<span class="nc" id="L86">        String id = property.getString(InfoWindowConfig.KEY_VP_ID);</span>
+
+<span class="nc" id="L88">        LinearLayout itemCanvas = (LinearLayout) LayoutInflater</span>
+<span class="nc" id="L89">                .from(adapter.getContext()).inflate(R.layout.item_info_window, canvasLayout, true);</span>
+<span class="nc" id="L90">        itemCanvas.setId(Views.generateViewId());</span>
+
+<span class="nc" id="L92">        TextView labelTV = (TextView) itemCanvas.findViewById(R.id.tv_label);</span>
+<span class="nc" id="L93">        labelTV.setId(Views.generateViewId());</span>
+<span class="nc" id="L94">        labelTV.setText(label + &quot;:&quot;);</span>
+<span class="nc" id="L95">        labelTV.setTag(id);</span>
+<span class="nc" id="L96">        propertyLabels.add(labelTV);</span>
+
+<span class="nc" id="L98">        TextView valueTV = (TextView) itemCanvas.findViewById(R.id.tv_value);</span>
+<span class="nc" id="L99">        valueTV.setId(Views.generateViewId());</span>
+<span class="nc" id="L100">        valueTV.setTag(id);</span>
+<span class="nc" id="L101">        propertyValues.add(valueTV);</span>
+<span class="nc" id="L102">    }</span>
+
+    public void setData(InfoWindowObject infoWindowObject) throws JSONException {
+<span class="nc" id="L105">        this.currentInfoWindowObject = infoWindowObject;</span>
+<span class="nc" id="L106">        this.currentInfoWindowObject.setOnFocusChangeListener(this);</span>
+<span class="nc" id="L107">        JSONObject jsonObject = infoWindowObject.getJsonObject();</span>
+
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (jsonObject.has(&quot;properties&quot;)) {</span>
+<span class="nc" id="L110">            JSONObject propertiesJSON = jsonObject.getJSONObject(&quot;properties&quot;);</span>
+
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for (TextView curField : propertyValues) {</span>
+<span class="nc" id="L113">                String propertyId = (String) curField.getTag();</span>
+<span class="nc bnc" id="L114" title="All 4 branches missed.">                if (propertyId != null &amp;&amp; propertiesJSON.has(propertyId)) {</span>
+<span class="nc" id="L115">                    curField.setText(propertiesJSON.getString(propertyId));</span>
+                } else {
+<span class="nc" id="L117">                    curField.setText(null);</span>
+                }
+<span class="nc" id="L119">            }</span>
+        }
+
+<span class="nc" id="L122">        updateFocusViews();</span>
+<span class="nc" id="L123">    }</span>
+
+    private void startCardViewWidthAnimation(int endWidth,
+                                             Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L127">        final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();</span>
+<span class="nc" id="L128">        final ValueAnimator anim = ValueAnimator.ofInt(layoutParams.width, endWidth);</span>
+<span class="nc" id="L129">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L132">                int val = (Integer) valueAnimator.getAnimatedValue();</span>
+<span class="nc" id="L133">                layoutParams.width = val;</span>
+<span class="nc" id="L134">                cardView.setLayoutParams(layoutParams);</span>
+<span class="nc" id="L135">            }</span>
+        });
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L138">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L140">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L141">        anim.start();</span>
+<span class="nc" id="L142">    }</span>
+
+    private void startCardViewAlphaAnimation(float endAlpha,
+                                             Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L146">        ValueAnimator anim = ValueAnimator.ofFloat(cardView.getAlpha(), endAlpha);</span>
+<span class="nc" id="L147">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L150">                float val = (Float) valueAnimator.getAnimatedValue();</span>
+<span class="nc" id="L151">                cardView.setAlpha(val);</span>
+<span class="nc" id="L152">            }</span>
+        });
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L155">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L157">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L158">        anim.start();</span>
+<span class="nc" id="L159">    }</span>
+
+    private void startCardViewHeightAnimation(int endHeight,
+                                              Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L163">        final ViewGroup.LayoutParams layoutParams = cardView.getLayoutParams();</span>
+<span class="nc" id="L164">        ValueAnimator anim = ValueAnimator.ofInt(layoutParams.height, endHeight);</span>
+<span class="nc" id="L165">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L168">                int val = (Integer) valueAnimator.getAnimatedValue();</span>
+<span class="nc" id="L169">                layoutParams.height = val;</span>
+<span class="nc" id="L170">                cardView.setLayoutParams(layoutParams);</span>
+<span class="nc" id="L171">            }</span>
+        });
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L174">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L176">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L177">        anim.start();</span>
+<span class="nc" id="L178">    }</span>
+
+    private void startCardViewVMarginAnimation(int endMargin,
+                                               Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L182">        final ViewGroup.MarginLayoutParams layoutParams =</span>
+<span class="nc" id="L183">                (ViewGroup.MarginLayoutParams) cardView.getLayoutParams();</span>
+<span class="nc" id="L184">        ValueAnimator anim = ValueAnimator.ofInt(layoutParams.bottomMargin, endMargin);</span>
+<span class="nc" id="L185">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L188">                int val = (Integer) valueAnimator.getAnimatedValue();</span>
+<span class="nc" id="L189">                layoutParams.bottomMargin = val;</span>
+<span class="nc" id="L190">                layoutParams.topMargin = val;</span>
+<span class="nc" id="L191">                cardView.setLayoutParams(layoutParams);</span>
+<span class="nc" id="L192">            }</span>
+        });
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L195">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L197">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L198">        anim.start();</span>
+<span class="nc" id="L199">    }</span>
+
+    private void startTextSizeAnimation(float endTextSize,
+                                        Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L203">        ValueAnimator anim =</span>
+<span class="nc" id="L204">                ValueAnimator.ofFloat(propertyLabels.get(0).getPaint().getTextSize(), endTextSize);</span>
+<span class="nc" id="L205">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L208">                float animatedValue = (Float) valueAnimator.getAnimatedValue();</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">                for (TextView curTextView : propertyLabels) {</span>
+<span class="nc" id="L210">                    curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);</span>
+<span class="nc" id="L211">                }</span>
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                for (TextView curTextView : propertyValues) {</span>
+<span class="nc" id="L214">                    curTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, animatedValue);</span>
+<span class="nc" id="L215">                }</span>
+<span class="nc" id="L216">            }</span>
+        });
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L219">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L221">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L222">        anim.start();</span>
+<span class="nc" id="L223">    }</span>
+
+    private void startCanvasPaddingAnimation(int endPadding,
+                                             Animator.AnimatorListener animatorListener) {
+<span class="nc" id="L227">        ValueAnimator anim = ValueAnimator.ofInt(canvasLayout.getPaddingTop(), endPadding);</span>
+<span class="nc" id="L228">        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+<span class="nc" id="L231">                int animatedValue = (Integer) valueAnimator.getAnimatedValue();</span>
+<span class="nc" id="L232">                canvasLayout.setPadding(animatedValue, animatedValue, animatedValue, animatedValue);</span>
+<span class="nc" id="L233">            }</span>
+        });
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (animatorListener != null) {</span>
+<span class="nc" id="L236">            anim.addListener(animatorListener);</span>
+        }
+<span class="nc" id="L238">        anim.setDuration(ANIMATION_DURATION);</span>
+<span class="nc" id="L239">        anim.start();</span>
+<span class="nc" id="L240">    }</span>
+
+    private void moveCardToCenterScreen() {
+<span class="nc" id="L243">        adapter.getRecyclerView().scrollToPosition(currentInfoWindowObject.getPosition());</span>
+<span class="nc" id="L244">    }</span>
+
+    public void select() {
+<span class="nc" id="L247">        moveCardToCenterScreen();</span>
+<span class="nc" id="L248">        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_width), null);</span>
+<span class="nc" id="L249">        startCardViewAlphaAnimation(SELECTED_OPACITY, null);</span>
+<span class="nc" id="L250">        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_height), null);</span>
+<span class="nc" id="L251">        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_v_margin), null);</span>
+<span class="nc" id="L252">        startTextSizeAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_text_size), null);</span>
+<span class="nc" id="L253">        startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_focus_padding), new Animator.AnimatorListener() {</span>
+            @Override
+            public void onAnimationStart(Animator animation) {
+<span class="nc" id="L256">                Log.d(TAG, &quot;Info window selected animation started&quot;);</span>
+<span class="nc" id="L257">            }</span>
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+<span class="nc bnc" id="L261" title="All 2 branches missed.">                if (!currentInfoWindowObject.isFocused()) {</span>
+<span class="nc" id="L262">                    unselect();</span>
+                }
+<span class="nc" id="L264">            }</span>
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+<span class="nc" id="L268">                Log.d(TAG, &quot;Info windo selected animation canceled&quot;);</span>
+<span class="nc" id="L269">            }</span>
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+<span class="nc" id="L273">                Log.d(TAG, &quot;Info window selected animation repeating&quot;);</span>
+<span class="nc" id="L274">            }</span>
+        });
+<span class="nc" id="L276">    }</span>
+
+    public void unselect() {
+<span class="nc" id="L279">        startCardViewWidthAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_width), null);</span>
+<span class="nc" id="L280">        startCardViewAlphaAnimation(UNSELECTED_OPACITY, null);</span>
+<span class="nc" id="L281">        startCardViewHeightAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_height), null);</span>
+<span class="nc" id="L282">        startCardViewVMarginAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_v_margin), null);</span>
+<span class="nc" id="L283">        startTextSizeAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_text_size), null);</span>
+<span class="nc" id="L284">        startCanvasPaddingAnimation(adapter.getContext().getResources().getDimensionPixelSize(R.dimen.info_window_nonfocus_padding), new Animator.AnimatorListener() {</span>
+            @Override
+            public void onAnimationStart(Animator animation) {
+<span class="nc" id="L287">                Log.d(TAG, &quot;Info window unselected animation started&quot;);</span>
+<span class="nc" id="L288">            }</span>
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                if (currentInfoWindowObject.isFocused()) {</span>
+<span class="nc" id="L293">                    select();</span>
+                }
+<span class="nc" id="L295">            }</span>
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+<span class="nc" id="L299">                Log.d(TAG, &quot;Info window unselected animation canceled&quot;);</span>
+<span class="nc" id="L300">            }</span>
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+<span class="nc" id="L304">                Log.d(TAG, &quot;Info window unselected animation repeated&quot;);</span>
+<span class="nc" id="L305">            }</span>
+        });
+<span class="nc" id="L307">    }</span>
+
+    private void updateFocusViews() {
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (currentInfoWindowObject.isFocused()) {</span>
+<span class="nc" id="L311">            select();</span>
+        } else {
+<span class="nc" id="L313">            unselect();</span>
+        }
+<span class="nc" id="L315">    }</span>
+
+    @Override
+    public void onFocusChanged(InfoWindowObject object) {
+<span class="nc bnc" id="L319" title="All 2 branches missed.">        if (currentInfoWindowObject == object) {</span>
+<span class="nc" id="L320">            updateFocusViews();</span>
+        }
+<span class="nc" id="L322">    }</span>
+
+    @Override
+    public void onClick(View v) {
+<span class="nc bnc" id="L326" title="All 4 branches missed.">        if (v == cardView &amp;&amp; currentInfoWindowObject != null) {</span>
+<span class="nc" id="L327">            adapter.focusOnPosition(currentInfoWindowObject.getPosition(), true);</span>
+        }
+<span class="nc" id="L329">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

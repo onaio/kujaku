@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxDeleteTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.data</a> &gt; <span class="el_source">MapBoxDeleteTask.java</span></div><h1>MapBoxDeleteTask.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.data;
+
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Date;
+import java.util.UUID;
+
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.realm.Realm;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+
+/**
+ * Holds an Offline Map delete task definition&lt;br/&gt;
+ * Holds the:
+ * &lt;ul&gt;
+ *          &lt;li&gt;mapName - Unique name of the map&lt;/li&gt;
+ *          &lt;li&gt;mapBoxAccessToken - Token with which the download was made&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 20/11/2017.
+ */
+
+public class MapBoxDeleteTask {
+
+    private String mapName;
+    private String mapBoxAccessToken;
+<span class="fc" id="L31">    private static final String TAG = MapBoxDeleteTask.class.getSimpleName();</span>
+
+    public static final String MAP_NAME = &quot;mapName&quot;
+            , MAP_BOX_ACCESS_TOKEN = &quot;mapBoxAccessToken&quot;;
+
+<span class="nc" id="L36">    public MapBoxDeleteTask() {}</span>
+
+<span class="nc" id="L38">    public MapBoxDeleteTask(@NonNull String mapName,@NonNull String mapBoxAccessToken) {</span>
+<span class="nc" id="L39">        this.mapName = mapName;</span>
+<span class="nc" id="L40">        this.mapBoxAccessToken = mapBoxAccessToken;</span>
+<span class="nc" id="L41">    }</span>
+
+<span class="fc" id="L43">    public MapBoxDeleteTask(JSONObject jsonObject) throws MalformedDataException {</span>
+        try {
+<span class="fc" id="L45">            this.mapName = jsonObject.getString(MAP_NAME);</span>
+<span class="fc" id="L46">            this.mapBoxAccessToken = jsonObject.getString(MAP_BOX_ACCESS_TOKEN);</span>
+<span class="nc" id="L47">        } catch (JSONException e) {</span>
+<span class="nc" id="L48">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L49">            throw new MalformedDataException(&quot;Invalid Delete Task definition&quot;, e);</span>
+<span class="fc" id="L50">        }</span>
+<span class="fc" id="L51">    }</span>
+
+    public String getMapName() {
+<span class="fc" id="L54">        return mapName;</span>
+    }
+
+    public void setMapName(String mapName) {
+<span class="nc" id="L58">        this.mapName = mapName;</span>
+<span class="nc" id="L59">    }</span>
+
+    public String getMapBoxAccessToken() {
+<span class="fc" id="L62">        return mapBoxAccessToken;</span>
+    }
+
+    public void setMapBoxAccessToken(String mapBoxAccessToken) {
+<span class="nc" id="L66">        this.mapBoxAccessToken = mapBoxAccessToken;</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Generates the {@link JSONObject} of the task that will be saved in {@link MapBoxOfflineQueueTask#task}
+     *
+     * @return
+     * @throws JSONException
+     */
+    public JSONObject getJSONObject() throws JSONException {
+<span class="nc" id="L76">        JSONObject jsonObject = new JSONObject();</span>
+<span class="nc" id="L77">        jsonObject.put(MAP_NAME, mapName);</span>
+<span class="nc" id="L78">        jsonObject.put(MAP_BOX_ACCESS_TOKEN, mapBoxAccessToken);</span>
+
+<span class="nc" id="L80">        return jsonObject;</span>
+    }
+
+    /**
+     * Creates a valid {@link MapBoxOfflineQueueTask} given a {@link MapBoxDeleteTask} with default
+     * {@link MapBoxOfflineQueueTask#taskStatus} as {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
+     * of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DELETE}
+     *
+     * @param mapBoxDeleteTask
+     * @return
+     */
+    public static MapBoxOfflineQueueTask constructMapBoxOfflineQueueTask(@NonNull MapBoxDeleteTask mapBoxDeleteTask) {
+<span class="nc" id="L92">        Realm realm = Realm.getDefaultInstance();</span>
+        try {
+<span class="nc" id="L94">            realm.beginTransaction();</span>
+
+<span class="nc" id="L96">            MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realm.createObject(MapBoxOfflineQueueTask.class, UUID.randomUUID().toString());</span>
+<span class="nc" id="L97">            mapBoxOfflineQueueTask.setDateCreated(new Date());</span>
+<span class="nc" id="L98">            mapBoxOfflineQueueTask.setDateUpdated(new Date());</span>
+<span class="nc" id="L99">            mapBoxOfflineQueueTask.setTask(mapBoxDeleteTask.getJSONObject());</span>
+<span class="nc" id="L100">            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);</span>
+<span class="nc" id="L101">            mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DELETE);</span>
+
+<span class="nc" id="L103">            realm.commitTransaction();</span>
+
+<span class="nc" id="L105">            return mapBoxOfflineQueueTask;</span>
+<span class="nc" id="L106">        } catch (Exception e){</span>
+<span class="nc" id="L107">            realm.cancelTransaction();</span>
+<span class="nc" id="L108">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

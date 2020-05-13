@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrackingServiceDefaultUIConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.services.configurations</a> &gt; <span class="el_source">TrackingServiceDefaultUIConfiguration.java</span></div><h1>TrackingServiceDefaultUIConfiguration.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.services.configurations;
+
+import android.view.Gravity;
+import io.ona.kujaku.R;
+
+/**
+ * Default UI Configuration for Tracking Service Icon.
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/04/19.
+ */
+public class TrackingServiceDefaultUIConfiguration extends TrackingServiceUIConfiguration{
+
+    public TrackingServiceDefaultUIConfiguration() {
+<span class="fc" id="L14">        super();</span>
+
+<span class="fc" id="L16">        this.displayTrackingServiceIcons = true;</span>
+
+<span class="fc" id="L18">        this.recordingDrawable = R.drawable.ic_recording_red;</span>
+<span class="fc" id="L19">        this.stoppedDrawable = R.drawable.ic_recording_gray;</span>
+<span class="fc" id="L20">        this.backgroundDrawable = R.drawable.circle_button_black_border;</span>
+
+<span class="fc" id="L22">        this.layoutWidth = R.dimen.tracking_service_location_dimen;</span>
+<span class="fc" id="L23">        this.layoutHeight = R.dimen.tracking_service_location_dimen;</span>
+
+<span class="fc" id="L25">        this.layoutMarginTop = R.dimen.tracking_service_location_margin;</span>
+<span class="fc" id="L26">        this.layoutMarginLeft = R.dimen.tracking_service_location_margin;</span>
+<span class="fc" id="L27">        this.layoutMarginRight = R.dimen.tracking_service_location_margin;</span>
+<span class="fc" id="L28">        this.layoutMarginBottom = R.dimen.tracking_service_location_margin;</span>
+
+<span class="fc" id="L30">        this.padding = R.dimen.tracking_service_location_padding;</span>
+
+<span class="fc" id="L32">        this.layoutGravity = Gravity.TOP | Gravity.LEFT;</span>
+<span class="fc" id="L33">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

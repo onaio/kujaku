@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.layers.ArrowLineLayerTest" tests="27" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:14" hostname="kigamba-ThinkPad-T580" time="0.984">
+  <properties/>
+  <testcase name="updateFeaturesShouldUpdateFilterBuilderFeatureCollectionWhenFeatureFilterIsBeingUsed" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.057"/>
+  <testcase name="sortFeaturesShouldSortAscByDateTime" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.131"/>
+  <testcase name="getCenterWhenGivenPointFeature" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.013"/>
+  <testcase name="sortFeaturesShouldSortDescByDateTime" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.01"/>
+  <testcase name="sortFeaturesShouldSortAscByNumber" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.008"/>
+  <testcase name="sortFeaturesShouldSortAscByString" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.009"/>
+  <testcase name="getLayerIdsShouldReturnStringArrayWithLayerIds" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.008"/>
+  <testcase name="removeLayerOnMapShouldReturnFalseWhenStyleIsNotReady" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.015"/>
+  <testcase name="updateFeaturesShouldUpdateFeatureCollectionWhenNoFilterIsBeingUsed" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.01"/>
+  <testcase name="getCenterWhenGivenPolygonFeature" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.013"/>
+  <testcase name="sortFeaturesShouldSortDescByNumber" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.009"/>
+  <testcase name="sortFeaturesShouldSortDescByString" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.011"/>
+  <testcase name="getCenterWhenGivenMultiPolygonFeature" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.012"/>
+  <testcase name="createLineLayerSource" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.01"/>
+  <testcase name="calculateMultiLineStringWhenGivenFeatureCollectionWithFeatures" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.013"/>
+  <testcase name="constructorShouldThrowExceptionWhenDateTimeFormatIsNotSet" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.016"/>
+  <testcase name="filterFeaturesByRegex" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.017"/>
+  <testcase name="createArrowHeadSource" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.012"/>
+  <testcase name="getCenterWhenGivenPolygonWithHolesFeature" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.009"/>
+  <testcase name="filterFeaturesByStringEqualTo" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.009"/>
+  <testcase name="removeLayerOnMapShouldReturnTrueWhenStyleIsReadyAndRemoveLayersAndSources" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.45"/>
+  <testcase name="calculateLineStringWhenGivenFeatureCollectionWithNoFeatures" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.013"/>
+  <testcase name="generateArrowHeadFeatureCollection" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.011"/>
+  <testcase name="filterFeaturesShouldReturnAllFeaturesIfFeatureFilterIsNotSpecified" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.009"/>
+  <testcase name="setLayerPropertiesFromBuilder" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.088"/>
+  <testcase name="calculateLineStringWhenGivenFeatureCollectionWithFeatures" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.007"/>
+  <testcase name="createArrowHeadLayer" classname="io.ona.kujaku.layers.ArrowLineLayerTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

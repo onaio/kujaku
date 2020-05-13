@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PermissionsHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers</a> &gt; <span class="el_source">PermissionsHelper.java</span></div><h1>PermissionsHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.util.Log;
+
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+
+import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
+
+<span class="nc" id="L13">public class PermissionsHelper {</span>
+
+    public static void checkPermissions(String TAG, Context context) {
+<span class="nc bnc" id="L16" title="All 2 branches missed.">        if (context instanceof Activity) {</span>
+<span class="nc" id="L17">            final Activity activity = (Activity) context;</span>
+
+<span class="nc" id="L19">            MultiplePermissionsListener dialogMultiplePermissionListener = new KujakuMultiplePermissionListener(activity);</span>
+
+<span class="nc" id="L21">            Dexter.withActivity(activity)</span>
+<span class="nc" id="L22">                    .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)</span>
+<span class="nc" id="L23">                    .withListener(dialogMultiplePermissionListener)</span>
+<span class="nc" id="L24">                    .check();</span>
+
+<span class="nc" id="L26">        } else {</span>
+<span class="nc" id="L27">            Log.wtf(TAG, &quot;KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck&quot;);</span>
+        }
+<span class="nc" id="L29">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

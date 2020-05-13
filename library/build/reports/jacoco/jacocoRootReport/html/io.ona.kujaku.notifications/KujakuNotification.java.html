@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KujakuNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.notifications</a> &gt; <span class="el_source">KujakuNotification.java</span></div><h1>KujakuNotification.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.notifications;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+import android.support.annotation.ColorInt;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.
+ */
+
+<span class="fc" id="L16">abstract class KujakuNotification {</span>
+
+    protected NotificationChannel notificationChannel;
+    public static final int NO_LED_COLOR = 0;
+    private int smallIcon;
+    protected Context context;
+
+    public void createNotificationChannel(int importance, String channelName, String channelId) {
+<span class="fc" id="L24">        createNotificationChannel(importance, channelName, channelId, null);</span>
+<span class="fc" id="L25">    }</span>
+
+    public void createNotificationChannel(int importance, String channelName, String channelId, @Nullable String description) {
+<span class="fc" id="L28">        createNotificationChannel(importance, channelName, channelId, description, NO_LED_COLOR, null);</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Creates a notification channel for the app using the given importance, channel name, channel id, description, LED color &amp; vibration pattern.
+     * &lt;br/&gt;
+     * &lt;br/&gt;
+     * If you don't want an LED color, pass {@link KujakuNotification#NO_LED_COLOR} to ledColor parameter
+     * &lt;br/&gt;
+     * If you don't want vibration, pass {@code null} to vibrationPattern parameter
+     * &lt;p&gt;
+     * &lt;br/&gt;
+     * &lt;strong&gt;This only works on API 26&lt;/strong&gt;
+     *
+     * @param importance
+     * @param channelName
+     * @param channelId
+     * @param description
+     * @param ledColor
+     * @param vibrationPattern
+     */
+    public void createNotificationChannel(int importance, String channelName, String channelId, @Nullable String description, @ColorInt int ledColor, @Nullable long[] vibrationPattern) {
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {</span>
+<span class="fc" id="L51">            notificationChannel = new NotificationChannel(channelId, channelName, importance);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (description != null) {</span>
+<span class="fc" id="L53">                notificationChannel.setDescription(description);</span>
+            }
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (ledColor != NO_LED_COLOR) {</span>
+<span class="fc" id="L57">                notificationChannel.enableLights(true);</span>
+<span class="fc" id="L58">                notificationChannel.setLightColor(ledColor);</span>
+            }
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">            if (vibrationPattern != null) {</span>
+<span class="fc" id="L62">                notificationChannel.enableVibration(true);</span>
+<span class="fc" id="L63">                notificationChannel.setVibrationPattern(vibrationPattern);</span>
+            }
+
+<span class="fc" id="L66">            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);</span>
+<span class="fc" id="L67">            notificationManager.createNotificationChannel(notificationChannel);</span>
+        }
+<span class="fc" id="L69">    }</span>
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void createNotificationChannel(int importance, String channelName, String channelId, @Nullable String description, @ColorInt int ledColor) {
+<span class="fc" id="L73">        createNotificationChannel(importance, channelName, channelId, description, ledColor, null);</span>
+<span class="fc" id="L74">    }</span>
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void createNotificationChannel(int importance, String channelName, String channelId, @Nullable String description, long[] vibrationPattern) {
+<span class="fc" id="L78">        createNotificationChannel(importance, channelName, channelId, description, NO_LED_COLOR, vibrationPattern);</span>
+<span class="fc" id="L79">    }</span>
+
+    NotificationChannel getNotificationChannel() {
+<span class="nc" id="L82">        return notificationChannel;</span>
+    }
+
+    @SuppressWarnings(&quot;deprecation&quot;)
+    public NotificationCompat.Builder createNotification(String title, @Nullable String content) {
+<span class="fc" id="L87">        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)</span>
+<span class="fc" id="L88">                .setContentTitle(title)</span>
+<span class="fc" id="L89">                .setSmallIcon(smallIcon);</span>
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (content != null) {</span>
+<span class="fc" id="L92">            builder.setContentText(content);</span>
+        }
+
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {</span>
+<span class="fc" id="L96">            builder.setChannelId(notificationChannel.getId());</span>
+        }
+
+<span class="fc" id="L99">        return builder;</span>
+    }
+
+    public NotificationCompat.Builder createNotification(String title) {
+<span class="fc" id="L103">        return createNotification(title, null);</span>
+    }
+
+
+    public void displayNotification(NotificationCompat.Builder notificationBuilder, int notificationId) {
+<span class="fc" id="L108">        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);</span>
+<span class="fc" id="L109">        notificationManager.notify(notificationId, notificationBuilder.build());</span>
+<span class="fc" id="L110">    }</span>
+
+    public void setSmallIcon(int icon) {
+<span class="fc" id="L113">        this.smallIcon = icon;</span>
+<span class="fc" id="L114">    }</span>
+
+    public void setContext(Context context) {
+<span class="fc" id="L117">        this.context = context;</span>
+<span class="fc" id="L118">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

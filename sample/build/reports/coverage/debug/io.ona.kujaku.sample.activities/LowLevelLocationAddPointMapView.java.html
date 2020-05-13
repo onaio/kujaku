@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LowLevelLocationAddPointMapView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">LowLevelLocationAddPointMapView.java</span></div><h1>LowLevelLocationAddPointMapView.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.location.Location;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import org.json.JSONObject;
+
+import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+<span class="nc" id="L26">public class LowLevelLocationAddPointMapView extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L28">    private static final String TAG = LowLevelLocationAddPointMapView.class.getName();</span>
+    private KujakuMapView kujakuMapView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L33">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L35">        kujakuMapView = findViewById(R.id.kmv_lowLevelLocationAddPointMapView_mapView);</span>
+<span class="nc" id="L36">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L38">        Button doneBtn = findViewById(R.id.btn_lowLevelLocationAddPointMapView_doneBtn);</span>
+<span class="nc" id="L39">        Button goToMyLocationBtn = findViewById(R.id.btn_lowLevelLocationAddPointMapView_myLocationBtn);</span>
+
+<span class="nc" id="L41">        doneBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">                if (!kujakuMapView.isCanAddPoint()) {</span>
+<span class="nc" id="L45">                    Toasty.info(getApplicationContext(), getString(R.string.click_go_to_my_location_msg), Toast.LENGTH_LONG, true).show();</span>
+                }
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">                if (kujakuMapView.isCanAddPoint()) {</span>
+<span class="nc" id="L49">                    JSONObject featurePoint = kujakuMapView.dropPoint();</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">                    if (featurePoint != null) {</span>
+<span class="nc" id="L51">                        Log.e(&quot;FEATURE POINT&quot;, featurePoint.toString());</span>
+                    }
+                }
+<span class="nc" id="L54">            }</span>
+        });
+
+<span class="nc" id="L57">        goToMyLocationBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                // callback
+<span class="nc" id="L61">                OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack = new OnLocationServicesEnabledCallBack() {</span>
+                    @Override
+                    public void onSuccess() {
+<span class="nc" id="L64">                        kujakuMapView.enableAddPoint(true, new OnLocationChanged() {</span>
+                            @Override
+                            public void onLocationChanged(Location location) {
+<span class="nc" id="L67">                                Log.d(TAG, new Gson().toJson(location));</span>
+<span class="nc" id="L68">                            }</span>
+                        });
+<span class="nc" id="L70">                    }</span>
+                };
+                // warm gps
+<span class="nc" id="L73">                kujakuMapView.setWarmGps(true,</span>
+                        &quot;Location disabled&quot;,
+                        &quot;The add point features will not work. We cannot drop points without your location.&quot;,
+                        onLocationServicesEnabledCallBack);
+<span class="nc" id="L77">            }</span>
+        });
+
+<span class="nc" id="L80">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L83">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L84">            }</span>
+        });
+<span class="nc" id="L86">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L90">        return R.layout.activity_low_level_location_add_point_map_view;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L95">        return R.id.nav_low_level_location_add_point;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L100">        super.onResume();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L102">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L106">        super.onStart();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L108">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L112">        super.onStop();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L114">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L118">        super.onPause();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L120">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L124">        super.onDestroy();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L126">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L130">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L132">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L136">        super.onLowMemory();</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L138">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

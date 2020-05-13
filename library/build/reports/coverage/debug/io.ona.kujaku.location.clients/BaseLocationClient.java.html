@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseLocationClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.location.clients</a> &gt; <span class="el_source">BaseLocationClient.java</span></div><h1>BaseLocationClient.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.location.clients;
+
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.annotation.Nullable;
+
+import io.ona.kujaku.interfaces.ILocationClient;
+import io.ona.kujaku.listeners.LocationClientListener;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
+ */
+
+<span class="nc" id="L16">public abstract class BaseLocationClient implements ILocationClient {</span>
+
+    private LocationClientListener locationClientListener;
+    private LocationListener locationListener;
+    protected LocationManager locationManager;
+    protected Context context;
+
+    private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+    @Override
+    public void setListener(LocationClientListener locationClientListener) {
+<span class="nc" id="L27">        this.locationClientListener = locationClientListener;</span>
+<span class="nc" id="L28">    }</span>
+
+    @Nullable
+    @Override
+    public LocationClientListener getListener() {
+<span class="nc" id="L33">        return locationClientListener;</span>
+    }
+
+    @Override
+    public void setLocationListener(@Nullable LocationListener locationListener) {
+<span class="nc" id="L38">        this.locationListener = locationListener;</span>
+<span class="nc" id="L39">    }</span>
+
+    @Nullable
+    @Override
+    public LocationListener getLocationListener() {
+<span class="nc" id="L44">        return locationListener;</span>
+    }
+
+    @Override
+    public boolean isProviderEnabled() {
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        return locationManager != null &amp;&amp; locationManager.isProviderEnabled(getProvider());</span>
+    }
+
+    @Override
+    public void close() {
+<span class="nc" id="L54">        locationManager = null;</span>
+<span class="nc" id="L55">        context = null;</span>
+<span class="nc" id="L56">    }</span>
+
+    /**
+     * Determines whether one Location reading is better than the current Location fix
+     *
+     * @param location            The new Location that you want to evaluate
+     * @param currentBestLocation The current Location fix, to which you want to compare the new one
+     */
+    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (currentBestLocation == null) {</span>
+            // A new location is always better than no location
+<span class="nc" id="L67">            return true;</span>
+        }
+
+        // Check whether the new location fix is newer or older
+<span class="nc" id="L71">        long timeDelta = location.getTime() - currentBestLocation.getTime();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        boolean isSignificantlyNewer = timeDelta &gt; TWO_MINUTES;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        boolean isSignificantlyOlder = timeDelta &lt; -TWO_MINUTES;</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        boolean isNewer = timeDelta &gt; 0;</span>
+
+        // If it's been more than two minutes since the current location, use the new location
+        // because the user has likely moved
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (isSignificantlyNewer) {</span>
+<span class="nc" id="L79">            return true;</span>
+            // If the new location is more than two minutes older, it must be worse
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        } else if (isSignificantlyOlder) {</span>
+<span class="nc" id="L82">            return false;</span>
+        }
+
+        // Check whether the new location fix is more or less accurate
+<span class="nc" id="L86">        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        boolean isLessAccurate = accuracyDelta &gt; 0;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        boolean isMoreAccurate = accuracyDelta &lt; 0;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        boolean isSignificantlyLessAccurate = accuracyDelta &gt; 200;</span>
+
+        // Check if the old and new location are from the same provider
+<span class="nc" id="L92">        boolean isFromSameProvider = isSameProvider(location.getProvider(),</span>
+<span class="nc" id="L93">                currentBestLocation.getProvider());</span>
+
+        // Determine location quality using a combination of timeliness and accuracy
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (isMoreAccurate) {</span>
+<span class="nc" id="L97">            return true;</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        } else if (isNewer &amp;&amp; !isLessAccurate) {</span>
+<span class="nc" id="L99">            return true;</span>
+<span class="nc bnc" id="L100" title="All 6 branches missed.">        } else if (isNewer &amp;&amp; !isSignificantlyLessAccurate &amp;&amp; isFromSameProvider) {</span>
+<span class="nc" id="L101">            return true;</span>
+        }
+
+<span class="nc" id="L104">        return false;</span>
+    }
+
+    /**
+     * Checks whether two providers are the same
+     */
+    protected boolean isSameProvider(String provider1, String provider2) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (provider1 == null) {</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            return provider2 == null;</span>
+        }
+<span class="nc" id="L114">        return provider1.equals(provider2);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

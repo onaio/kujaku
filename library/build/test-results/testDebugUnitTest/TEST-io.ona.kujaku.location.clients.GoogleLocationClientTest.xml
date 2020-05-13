@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.location.clients.GoogleLocationClientTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:17" hostname="kigamba-ThinkPad-T580" time="0.123">
+  <properties/>
+  <testcase name="requestLocationUpdatesShouldDefaultCallToHighAccuracy" classname="io.ona.kujaku.location.clients.GoogleLocationClientTest" time="0.09"/>
+  <testcase name="stopLocationUpdatesShouldSetListenerToNullWhenListenerIsCurrentlySet" classname="io.ona.kujaku.location.clients.GoogleLocationClientTest" time="0.033"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

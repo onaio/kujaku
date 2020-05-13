@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SplittingPolygonActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">SplittingPolygonActivity.java</span></div><h1>SplittingPolygonActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.OnDrawingCircleClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
+import io.ona.kujaku.listeners.OnSplittingClickListener;
+import io.ona.kujaku.manager.DrawingManager;
+import io.ona.kujaku.manager.SplittingManager;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+<span class="nc" id="L25">public class SplittingPolygonActivity extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L27">    private static final String TAG = SplittingPolygonActivity.class.getName();</span>
+
+    private KujakuMapView kujakuMapView;
+    private DrawingManager drawingManager;
+    private SplittingManager splittingManager;
+
+    private Button deleteBtn;
+    private Button drawingBtn;
+    private Button splitBtn;
+    private Button cancelBtn;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L40">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L42">        kujakuMapView = findViewById(R.id.kmv_splittingPolygon_mapView);</span>
+<span class="nc" id="L43">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L45">        this.splitBtn = findViewById(R.id.btn_splittingPolygon_split);</span>
+<span class="nc" id="L46">        this.splitBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View view) {
+<span class="nc bnc" id="L49" title="All 4 branches missed.">                if (splittingManager != null &amp;&amp; splittingManager.isSplittingReady()) {</span>
+<span class="nc" id="L50">                    splittingManager.split();</span>
+<span class="nc" id="L51">                    view.setEnabled(false);</span>
+                }
+<span class="nc" id="L53">            }</span>
+        });
+
+<span class="nc" id="L56">        this.cancelBtn = findViewById(R.id.btn_splittingPolygon_cancel);</span>
+<span class="nc" id="L57">        this.cancelBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View view) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                if (splittingManager != null) {</span>
+<span class="nc" id="L61">                    splittingManager.stopSplitting();</span>
+<span class="nc" id="L62">                    splitBtn.setEnabled(false);</span>
+<span class="nc" id="L63">                    cancelBtn.setEnabled(false);</span>
+                }
+<span class="nc" id="L65">            }</span>
+        });
+
+<span class="nc" id="L68">        this.deleteBtn = findViewById(R.id.btn_splittingPolygon_delete);</span>
+<span class="nc" id="L69">        this.deleteBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View view) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                if (drawingManager != null) {</span>
+<span class="nc" id="L73">                    drawingManager.deleteDrawingCurrentCircle();</span>
+<span class="nc" id="L74">                    view.setEnabled(false);</span>
+                }
+<span class="nc" id="L76">            }</span>
+        });
+
+<span class="nc" id="L79">        this.drawingBtn = findViewById(R.id.btn_splittingPolygon_drawing);</span>
+<span class="nc" id="L80">        this.drawingBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View view) {
+                // start Drawing from scratch
+<span class="nc bnc" id="L84" title="All 4 branches missed.">                if (drawingManager != null &amp;&amp; splittingManager != null) {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                    if (!drawingManager.isDrawingEnabled()) {</span>
+<span class="nc" id="L86">                        splittingManager.stopSplitting();</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                        if (drawingManager.startDrawing(null)) {</span>
+<span class="nc" id="L89">                            drawingBtn.setText(R.string.drawing_boundaries_stop_draw);</span>
+                        }
+                    } else {
+<span class="nc" id="L92">                        drawingManager.stopDrawingAndDisplayLayer();</span>
+<span class="nc" id="L93">                        drawingBtn.setText(R.string.drawing_boundaries_start_draw);</span>
+                    }
+
+<span class="nc" id="L96">                    cancelBtn.setEnabled(false);</span>
+                } else {
+<span class="nc" id="L98">                    Log.e(TAG, &quot;Drawing manager instance is null&quot;);</span>
+                }
+
+<span class="nc" id="L101">                deleteBtn.setEnabled(false);</span>
+<span class="nc" id="L102">            }</span>
+        });
+
+<span class="nc" id="L105">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L108">                kujakuMapView.focusOnUserLocation(true);</span>
+<span class="nc" id="L109">                mapboxMap.setStyle(Style.MAPBOX_STREETS,  new Style.OnStyleLoaded() {</span>
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L112">                        drawingManager = new DrawingManager(kujakuMapView, mapboxMap, style);</span>
+<span class="nc" id="L113">                        splittingManager = new SplittingManager(kujakuMapView, mapboxMap, style);</span>
+
+<span class="nc" id="L115">                        drawingManager.addOnDrawingCircleClickListener(new OnDrawingCircleClickListener() {</span>
+                            @Override
+                            public void onCircleClick(@NonNull Circle circle) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                                deleteBtn.setEnabled(drawingManager.getCurrentKujakuCircle() != null);</span>
+<span class="nc" id="L119">                            }</span>
+
+                            @Override
+                            public void onCircleNotClick(@NonNull LatLng latLng) {
+<span class="nc" id="L123">                                deleteBtn.setEnabled(false);</span>
+<span class="nc" id="L124">                            }</span>
+                        });
+
+<span class="nc" id="L127">                        drawingManager.addOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {</span>
+                            @Override
+                            public void onKujakuLayerLongClick(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                                if (drawingManager.isDrawingEnabled()) {</span>
+<span class="nc" id="L131">                                    drawingBtn.setText(R.string.drawing_boundaries_stop_draw);</span>
+                                }
+<span class="nc" id="L133">                            }</span>
+                        });
+
+<span class="nc" id="L136">                        splittingManager.addOnKujakuLayerClickListener(new OnKujakuLayerClickListener() {</span>
+                            @Override
+                            public void onKujakuLayerClick(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                                if (drawingManager.isDrawingEnabled()) {</span>
+<span class="nc" id="L140">                                    splittingManager.stopSplitting();</span>
+                                } else {
+<span class="nc" id="L142">                                    cancelBtn.setEnabled(true);</span>
+                                }
+<span class="nc" id="L144">                            }</span>
+                        });
+
+<span class="nc" id="L147">                        splittingManager.addOnSplittingClickListener(new OnSplittingClickListener() {</span>
+                            @Override
+                            public void onSplittingClick(@NonNull LatLng latLng) {
+<span class="nc" id="L150">                                splitBtn.setEnabled(splittingManager.isSplittingReady());</span>
+<span class="nc" id="L151">                            }</span>
+                        });
+<span class="nc" id="L153">                    }</span>
+                });
+<span class="nc" id="L155">            }</span>
+        });
+<span class="nc" id="L157">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L161">        return R.layout.activity_splitting_polygon_map_view;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L166">        return R.id.nav_splitting_polygon;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L171">        super.onResume();</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L173">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L177">        super.onStart();</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L179">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L183">        super.onStop();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L185">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L189">        super.onPause();</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L191">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L195">        super.onDestroy();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L197">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L201">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L203">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L207">        super.onLowMemory();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L209">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

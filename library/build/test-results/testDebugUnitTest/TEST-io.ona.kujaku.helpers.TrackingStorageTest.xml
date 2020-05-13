@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.TrackingStorageTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:25" hostname="kigamba-ThinkPad-T580" time="0.063">
+  <properties/>
+  <testcase name="initLocationStorageTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.013"/>
+  <testcase name="kujakuLocationAttributesTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.01"/>
+  <testcase name="baseStorageDeleteFolderWhichIsAFileTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.007"/>
+  <testcase name="baseStorageReadFileCompletePathTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.007"/>
+  <testcase name="baseStorageDeleteFileTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.011"/>
+  <testcase name="baseStorageReadFileTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.007"/>
+  <testcase name="baseStorageDeleteFolderTest" classname="io.ona.kujaku.helpers.TrackingStorageTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

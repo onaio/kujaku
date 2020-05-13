@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseStorage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers.storage</a> &gt; <span class="el_source">BaseStorage.java</span></div><h1>BaseStorage.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers.storage;
+
+import android.os.Environment;
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import io.ona.kujaku.activities.MapActivity;
+
+/**
+ * Created by Emmanuel OTIN - eo@novel-t.ch on 12/03/2019.
+ *
+ */
+<span class="nc" id="L21">public abstract class BaseStorage {</span>
+<span class="nc" id="L22">    protected static final String TAG = BaseStorage.class.getSimpleName();</span>
+
+    /**
+     * Writes content to a file on local storage
+     *
+     * @param folderName Folder name(s) eg. AppFiles where to create file
+     * @param fileName   Filename with extension
+     * @param content    String content to be written to the file
+     * @return Absolute Path to the Stored file if SUCCESSFUL eg /emulated/storage/... or NULL is the operation FAILS
+     * This operation fails if the file exists, permissions denied, invalid
+     */
+    public String writeToFile(String folderName, String fileName, String content) {
+<span class="nc" id="L34">        File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);</span>
+
+<span class="nc" id="L36">        new File(Environment.getExternalStorageDirectory(), folderName)</span>
+<span class="nc" id="L37">                .mkdirs();</span>
+
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (!file.exists()) {</span>
+            try {
+<span class="nc" id="L41">                FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());</span>
+<span class="nc" id="L42">                fileWriter.write(content);</span>
+<span class="nc" id="L43">                fileWriter.flush();</span>
+<span class="nc" id="L44">                fileWriter.close();</span>
+
+<span class="nc" id="L46">                return file.getAbsolutePath();</span>
+<span class="nc" id="L47">            } catch (IOException e) {</span>
+<span class="nc" id="L48">                Log.e(TAG, Log.getStackTraceString(e));</span>
+            }
+        }
+
+<span class="nc" id="L52">        return null;</span>
+    }
+
+
+    /**
+     * Serialize in a file an object with the com.google.gson library
+     *
+     * @param folderName
+     * @param fileName
+     * @param object
+     * @return {@code TRUE} serialization worked, {@code FALSE} otherwise
+     */
+    public boolean gsonWriteObject(String folderName, String fileName, Object object) {
+<span class="nc" id="L65">        File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);</span>
+<span class="nc" id="L66">        Gson gson = new GsonBuilder().create();</span>
+
+        try {
+<span class="nc" id="L69">            FileWriter fw  = new FileWriter(file);</span>
+<span class="nc" id="L70">            gson.toJson(object, fw);</span>
+<span class="nc" id="L71">            fw.close();</span>
+
+<span class="nc" id="L73">            return true;</span>
+<span class="nc" id="L74">        } catch (IOException ex) {</span>
+<span class="nc" id="L75">            Log.e(TAG, &quot;An error occurs when writing object with Gson&quot;, ex);</span>
+        }
+
+<span class="nc" id="L78">        return false;</span>
+    }
+
+    /**
+     * Deserialize from a file an object with the com.google.gson library
+     *
+     * @param folderName
+     * @param fileName
+     * @param objClass
+     * @param &lt;T&gt;
+     * @return
+     */
+    public &lt;T&gt; T gsonReadObject(String folderName, String fileName, Class&lt;T&gt; objClass) {
+<span class="nc" id="L91">        File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);</span>
+<span class="nc" id="L92">        Gson gson = new GsonBuilder().create();</span>
+
+        try {
+<span class="nc" id="L95">            FileReader fr  = new FileReader(file);</span>
+<span class="nc" id="L96">            T obj = gson.fromJson(fr, objClass);</span>
+<span class="nc" id="L97">            fr.close();</span>
+<span class="nc" id="L98">            return obj;</span>
+<span class="nc" id="L99">        } catch (IOException ex) {</span>
+<span class="nc" id="L100">            Log.e(TAG, &quot;An error occurs when reading object with Gson&quot;, ex);</span>
+        }
+
+<span class="nc" id="L103">        return null ;</span>
+    }
+
+    /**
+     * Test if file exists
+     *
+     * @param folderName Folder name(s) eg. AppFiles where to create file
+     * @param fileName Filename with extension
+     * @return {@code TRUE} if file exists, {@code FALSE} otherwise
+     */
+    public boolean fileExists(String folderName, String fileName) {
+<span class="nc" id="L114">        File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);</span>
+<span class="nc" id="L115">        return file.exists();</span>
+    }
+
+    /**
+     * Test if directory exists
+     *
+     * @param folderName Folder name(s) eg. AppFiles where to create file
+     * @return {@code TRUE} if directory exists, {@code FALSE} otherwise
+     */
+    public boolean directoryExists(String folderName) {
+<span class="nc" id="L125">        File dir = new File(Environment.getExternalStorageDirectory(), folderName);</span>
+<span class="nc bnc" id="L126" title="All 4 branches missed.">        return dir.exists() &amp;&amp; dir.isDirectory();</span>
+    }
+
+    /**
+     * Create file
+     *
+     * @param folderName Folder name(s) eg. AppFiles where to create file
+     * @param fileName Filename with extension
+     * @return result of File.creation method
+     */
+    public boolean createFile(String folderName, String fileName) {
+<span class="nc" id="L137">        File file = new File(Environment.getExternalStorageDirectory(), folderName + File.separator + fileName);</span>
+
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (!fileExists(folderName, fileName)) {</span>
+            try {
+<span class="nc" id="L141">                new File(Environment.getExternalStorageDirectory(), folderName)</span>
+<span class="nc" id="L142">                        .mkdirs();</span>
+<span class="nc" id="L143">                return file.createNewFile();</span>
+<span class="nc" id="L144">            } catch (IOException ex) {</span>
+<span class="nc" id="L145">                Log.e(TAG, &quot;The file already exists&quot;, ex);</span>
+            }
+        }
+
+<span class="nc" id="L149">        return false ;</span>
+    }
+
+
+    /**
+     * Rename a file from the old file name to the new filename
+     *
+     * @param oldFolderName
+     * @param oldFileName
+     * @param newFolderName
+     * @param newFileName
+     * @return result of File.renameTo method
+     */
+    public boolean renameFile(String oldFolderName, String oldFileName, String newFolderName, String newFileName) {
+<span class="nc" id="L163">        File from = new File(Environment.getExternalStorageDirectory(),oldFolderName + File.separator + oldFileName);</span>
+<span class="nc" id="L164">        File to = new File(Environment.getExternalStorageDirectory(),newFolderName + File.separator + newFileName);</span>
+<span class="nc" id="L165">        return from.renameTo(to);</span>
+    }
+
+    /**
+     * Deletes a file on external/shared storage given the path or file name
+     * This should be called on {@link MapActivity#onDestroy()} so as to clean up the resources created
+     *
+     * @param filePath       Path to the file eg. /emulated/storage/style.json, style.json
+     * @param isCompletePath Flag indicating whether the Path is complete
+     *                       eg. /emulated/storage/style.json is a complete path
+     *                       style.json is not a complete path &amp; will be resolved to /sdcard/{@link MapBoxStyleStorage#BASE_DIRECTORY}/styles.json
+     * @param isFolder        if it is a folder
+     * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
+     */
+    public boolean deleteFile(String filePath, boolean isCompletePath, boolean isFolder) {
+<span class="nc" id="L180">        String finalPath = filePath;</span>
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        if (!isCompletePath) {</span>
+<span class="nc" id="L183">            finalPath = Environment.getExternalStorageDirectory() + File.separator + getDirectory() + File.separator + filePath;</span>
+        }
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (!isFolder) {</span>
+<span class="nc" id="L187">            return deleteFile(finalPath);</span>
+        } else {
+<span class="nc" id="L189">            return deleteFolder(finalPath);</span>
+        }
+    }
+
+    /**
+     * Deletes a file given the complete path
+     * This should be called on {@link MapActivity#onDestroy()} so as to clean up the resources created
+     *
+     * @param filePath Path to the file eg. /emulated/storage/style.json
+     * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
+     */
+    public boolean deleteFile(String filePath) {
+<span class="nc" id="L201">        File file = new File(filePath);</span>
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (!file.exists()) {</span>
+<span class="nc" id="L204">            return false;</span>
+        }
+<span class="nc" id="L206">        return file.delete();</span>
+    }
+
+
+    /**
+     * Deletes a folder given the complete path
+     *
+     * @param folderPath Path to the file eg. /emulated/storage/folder
+     * @return {@code TRUE} if the operation was SUCCESSFUL, {@code FALSE} if it failed
+     */
+    public boolean deleteFolder(String folderPath) {
+<span class="nc" id="L217">        File folder = new File(folderPath);</span>
+
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (!folder.isDirectory()) {</span>
+<span class="nc" id="L220">            return false;</span>
+        }
+
+        // delete all files in there
+<span class="nc" id="L224">        File[] files = folder.listFiles();</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        for (File file: files) {</span>
+<span class="nc" id="L226">            file.delete() ;</span>
+        }
+
+<span class="nc" id="L229">        return folder.delete();</span>
+    }
+
+    /**
+     * Reads the contents of a file, returns them as a string
+     *
+     * @param folders        The directory hierarchy for the file
+     * @param filename       The name of the file to read
+     * @param isPathComplete
+     * @return NULL if unable to read the file or a String containing the contents of the file
+     */
+    public String readFile(String folders, String filename, boolean isPathComplete) {
+        File fileFolders;
+
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (isPathComplete) {</span>
+<span class="nc" id="L244">            fileFolders = new File(folders);</span>
+        } else {
+<span class="nc" id="L246">            fileFolders = new File(Environment.getExternalStorageDirectory() + folders);</span>
+        }
+
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (!fileFolders.exists()) {</span>
+<span class="nc" id="L250">            fileFolders.mkdirs();</span>
+        }
+
+        File finalFile;
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (isPathComplete) {</span>
+<span class="nc" id="L255">            finalFile = new File(folders + File.separator + filename);</span>
+        } else {
+<span class="nc" id="L257">            finalFile = new File(Environment.getExternalStorageDirectory(), folders + File.separator + filename);</span>
+        }
+<span class="nc" id="L259">        StringBuilder text = new StringBuilder();</span>
+
+        try {
+<span class="nc" id="L262">            BufferedReader br = new BufferedReader(new FileReader(finalFile));</span>
+            String line;
+
+<span class="nc bnc" id="L265" title="All 2 branches missed.">            while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L266">                text.append(line);</span>
+<span class="nc" id="L267">                text.append('\n');</span>
+            }
+<span class="nc" id="L269">            br.close();</span>
+<span class="nc" id="L270">        } catch (IOException e) {</span>
+<span class="nc" id="L271">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L272">            return null;</span>
+<span class="nc" id="L273">        }</span>
+
+<span class="nc" id="L275">        return text.toString();</span>
+
+    }
+
+    /**
+     * Reads the contents of a file, returns them as a string
+     *
+     * @param folders        The directory hierarchy for the file
+     * @param filename       The name of the file to read
+     * @return NULL if unable to read the file or a String containing the contents of the file
+     */
+    public String readFile(String folders, String filename) {
+<span class="nc" id="L287">        return readFile(folders, filename, false);</span>
+    }
+
+    /**
+     * Return the directory name that needs to be defined in children classes
+     *
+     * @return
+     */
+    protected abstract String getDirectory();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.activities</a> &gt; <span class="el_source">MapActivity.java</span></div><h1>MapActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.activities;
+
+import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.PointF;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.adapters.InfoWindowAdapter;
+import io.ona.kujaku.adapters.InfoWindowObject;
+import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
+import io.ona.kujaku.sorting.Sorter;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.utils.config.DataSourceConfig;
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.config.SortFieldConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
+import io.ona.kujaku.views.InfoWindowLayoutManager;
+import io.ona.kujaku.views.KujakuMapView;
+
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
+
+
+/**
+ * This activity displays a MapView once provided with a a MapBox Access Key &amp; String array.
+ * These are passed as:
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - MapBox Access Token ({@code String})
+ * {@link Constants#PARCELABLE_KEY_MAPBOX_STYLES} - MapBox Styles ({@code String[]}
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * - MapBox Styles - String array containing &lt;a href=&quot;https://www.mapbox.com/mapbox-gl-js/style-spec/&quot;&gt;valid MapBox Style&lt;/a&gt; at index 0
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io
+ */
+<span class="nc" id="L78">public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {</span>
+    private static final int PERMISSIONS_REQUEST_CODE = 342;
+    private KujakuMapView kujakuMapView;
+    private String currentStylePath;
+
+    private SortFieldConfig[] sortFields;
+    private String[] dataLayers;
+    private JSONObject mapboxStyleJSON;
+<span class="fc" id="L86">    private static final String TAG = MapActivity.class.getSimpleName();</span>
+
+<span class="nc" id="L88">    private LinkedHashMap&lt;String, InfoWindowObject&gt; featuresMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L89">    private ArrayList&lt;String&gt; featureIdList = new ArrayList&lt;&gt;();</span>
+    private MapboxMap mapboxMap;
+<span class="nc" id="L91">    private boolean infoWindowDisplayed = false;</span>
+
+    // Info window stuff
+    private RecyclerView infoWindowsRecyclerView;
+    private InfoWindowLayoutManager linearLayoutManager;
+    private HashMap&lt;Integer, AlertDialog&gt; alertDialogs;
+<span class="nc" id="L97">    private int lastSelected = -1;</span>
+    private ImageButton focusOnMyLocationImgBtn;
+
+<span class="nc" id="L100">    private int animateToNewTargetDuration = 1000;</span>
+<span class="nc" id="L101">    private int animateToNewInfoWindowDuration = 300;</span>
+<span class="nc" id="L102">    private int screenWidth = 0;</span>
+
+    private InfoWindowAdapter infoWindowAdapter;
+
+<span class="nc" id="L106">    private double maxZoom = -1;</span>
+<span class="nc" id="L107">    private double minZoom = -1;</span>
+    private Bundle savedInstanceState;
+
+<span class="nc" id="L110">    private boolean enableDropPoint = false;</span>
+
+    private List&lt;JSONObject&gt; newPoints;
+
+    private static final String DATA = &quot;data&quot;;
+    private static final String FEATURES = &quot;features&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L119">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L121">        screenWidth = getScreenWidth(this);</span>
+
+<span class="nc" id="L123">        newPoints = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L125">        Bundle bundle = getIntentExtras();</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (bundle != null</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                &amp;&amp; bundle.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                &amp;&amp; bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN) != null) {</span>
+<span class="nc" id="L129">            String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);</span>
+<span class="nc" id="L130">            Mapbox.getInstance(this, mapBoxAccessToken);</span>
+<span class="nc" id="L131">            List&lt;Point&gt; points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);</span>
+<span class="nc" id="L132">            enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);</span>
+
+<span class="nc" id="L134">            setContentView(R.layout.activity_map);</span>
+<span class="nc" id="L135">            initializeViews(points, enableDropPoint);</span>
+<span class="nc" id="L136">            checkPermissions(savedInstanceState);</span>
+<span class="nc" id="L137">        } else {</span>
+<span class="nc" id="L138">            finish();</span>
+        }
+<span class="nc" id="L140">    }</span>
+
+    private Bundle getIntentExtras() {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (getIntent() != null) {</span>
+<span class="nc" id="L144">            Bundle bundle = getIntent().getExtras();</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            if (bundle != null) {</span>
+<span class="nc" id="L146">                return bundle;</span>
+            }
+        }
+<span class="nc" id="L149">        return null;</span>
+    }
+
+    private void initializeMapActivityAfterPermissionsSupplied(Bundle savedInstanceState) {
+<span class="nc" id="L153">        Bundle bundle = getIntentExtras();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (bundle != null) {</span>
+<span class="nc" id="L155">            String[] stylesArray = bundle.getStringArray(Constants.PARCELABLE_KEY_MAPBOX_STYLES);</span>
+<span class="nc" id="L156">            currentStylePath = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (bundle.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)) {</span>
+<span class="nc" id="L159">                maxZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MAX_ZOOM);</span>
+            }
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (bundle.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)) {</span>
+<span class="nc" id="L163">                minZoom = bundle.getDouble(Constants.PARCELABLE_KEY_MIN_ZOOM);</span>
+            }
+
+<span class="nc bnc" id="L166" title="All 4 branches missed.">            if (stylesArray != null &amp;&amp; stylesArray.length &gt; 0) {</span>
+<span class="nc" id="L167">                currentStylePath = stylesArray[0];</span>
+<span class="nc bnc" id="L168" title="All 4 branches missed.">                if (currentStylePath != null &amp;&amp; !currentStylePath.isEmpty()) {</span>
+<span class="nc" id="L169">                    currentStylePath = new MapBoxStyleStorage()</span>
+<span class="nc" id="L170">                            .getStyleURL(currentStylePath);</span>
+<span class="nc" id="L171">                    mapboxStyleJSON = getStyleJSON(currentStylePath);</span>
+
+                    // Extract kujaku meta-data
+                    try {
+<span class="nc" id="L175">                        MapBoxStyleHelper styleHelper = new MapBoxStyleHelper(mapboxStyleJSON);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                        if (styleHelper.isKujakuConfigPresent()) {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                            if (!styleHelper.getKujakuConfig().isValid()) {</span>
+<span class="nc" id="L178">                                showIncompleteStyleError();</span>
+                            } else {
+<span class="nc" id="L180">                                sortFields = SortFieldConfig.extractSortFieldConfigs(styleHelper);</span>
+<span class="nc" id="L181">                                dataLayers = DataSourceConfig.extractDataSourceNames(styleHelper.getKujakuConfig().getDataSourceConfigs());</span>
+<span class="nc" id="L182">                                featuresMap = extractLayerData(mapboxStyleJSON, dataLayers);</span>
+<span class="nc" id="L183">                                featuresMap = sortData(featuresMap, sortFields);</span>
+<span class="nc" id="L184">                                displayInitialFeatures(featuresMap, styleHelper.getKujakuConfig());</span>
+                            }
+                        }
+<span class="nc" id="L187">                    } catch (JSONException | InvalidMapBoxStyleException e) {</span>
+<span class="nc" id="L188">                        Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L189">                    }</span>
+                }
+            }
+
+<span class="nc" id="L193">            initMapBoxSdk(savedInstanceState, currentStylePath, maxZoom, minZoom);</span>
+        }
+<span class="nc" id="L195">    }</span>
+
+    private void showIncompleteStyleError() {
+<span class="nc" id="L198">        showAlertDialog(</span>
+                R.string.error_kujaku_config,
+                R.string.error_kujaku_config_description,
+                R.string.ok,
+<span class="nc" id="L202">                new DialogInterface.OnClickListener() {</span>
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+<span class="nc" id="L205">                        dialog.dismiss();</span>
+<span class="nc" id="L206">                    }</span>
+                }, -1, null);
+<span class="nc" id="L208">    }</span>
+
+    private void initMapBoxSdk(Bundle savedInstanceState, String mapBoxStylePath,
+                               final double maxZoom, final double minZoom) {
+
+<span class="nc" id="L213">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L215">        kujakuMapView.setDisableMyLocationOnMapMove(true);</span>
+
+<span class="nc" id="L217">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+                //Set listener for markers
+<span class="nc" id="L221">                MapActivity.this.mapboxMap = mapboxMap;</span>
+<span class="nc" id="L222">                mapboxMap.addOnMapClickListener(MapActivity.this);</span>
+
+<span class="nc bnc" id="L224" title="All 4 branches missed.">                if (mapBoxStylePath != null &amp;&amp; !mapBoxStylePath.isEmpty()) {</span>
+<span class="nc" id="L225">                    mapboxMap.setStyle(new Style.Builder().fromUrl(mapBoxStylePath), new Style.OnStyleLoaded() {</span>
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L228">                            setupMapPosition(mapboxMap);</span>
+<span class="nc" id="L229">                        }</span>
+                    });
+                } else {
+<span class="nc" id="L232">                    setupMapPosition(mapboxMap);</span>
+                }
+
+
+<span class="nc" id="L236">            }</span>
+        });
+<span class="nc" id="L238">    }</span>
+
+    private void setupMapPosition(@NonNull MapboxMap mapboxMap) {
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (minZoom != -1) {</span>
+<span class="nc" id="L242">            mapboxMap.setMinZoomPreference(minZoom);</span>
+        }
+
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (maxZoom != -1) {</span>
+<span class="nc" id="L246">            mapboxMap.setMaxZoomPreference(maxZoom);</span>
+        }
+
+<span class="nc" id="L249">        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder();</span>
+<span class="nc" id="L250">        boolean cameraPositionChanged = false;</span>
+
+
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (cameraPositionChanged) {</span>
+<span class="nc" id="L254">            mapboxMap.setCameraPosition(cameraPositionBuilder.build());</span>
+        }
+
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (!mapboxStyleJSON.has(MapBoxStyleHelper.KEY_MAP_CENTER)) {</span>
+<span class="nc" id="L258">            kujakuMapView.focusOnUserLocation(true);</span>
+        }
+<span class="nc" id="L260">    }</span>
+
+    private LatLng getBoundsCenter(LatLng topLeftBound, LatLng bottomRightBound) {
+<span class="nc" id="L263">        double latDifference = topLeftBound.getLatitude() - bottomRightBound.getLatitude();</span>
+<span class="nc" id="L264">        double lngDifference = bottomRightBound.getLongitude() - topLeftBound.getLongitude();</span>
+
+<span class="nc" id="L266">        return new LatLng(</span>
+<span class="nc" id="L267">                bottomRightBound.getLatitude() + (latDifference / 2),</span>
+<span class="nc" id="L268">                topLeftBound.getLongitude() + (lngDifference / 2)</span>
+        );
+    }
+
+    private void initializeViews(List&lt;Point&gt; points, boolean enableDropPoint) {
+<span class="nc" id="L273">        dismissAllDialogs();</span>
+<span class="nc" id="L274">        alertDialogs = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L275">        infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);</span>
+<span class="nc" id="L276">        focusOnMyLocationImgBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);</span>
+
+<span class="nc" id="L278">        Button btnDone = findViewById(R.id.btn_done_map_activity);</span>
+<span class="nc" id="L279">        List&lt;String&gt; newPointsJSON = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L280">        btnDone.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L283">                Log.i(TAG, &quot;Done using the MapActivity, exiting ...&quot;);</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">                for (JSONObject featureJSON : newPoints) {</span>
+<span class="nc" id="L285">                    newPointsJSON.add(featureJSON.toString());</span>
+<span class="nc" id="L286">                }</span>
+<span class="nc" id="L287">                Intent intent = new Intent();</span>
+<span class="nc" id="L288">                intent.putStringArrayListExtra(NEW_FEATURE_POINTS_JSON, (ArrayList&lt;String&gt;) newPointsJSON);</span>
+<span class="nc" id="L289">                setResult(Activity.RESULT_OK, intent);</span>
+<span class="nc" id="L290">                finish();</span>
+<span class="nc" id="L291">            }</span>
+        });
+
+<span class="nc" id="L294">        kujakuMapView = findViewById(R.id.map_view);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (enableDropPoint) {</span>
+<span class="nc" id="L296">            kujakuMapView.enableAddPoint(true);</span>
+<span class="nc" id="L297">            ImageButton locationAdditionBtn = findViewById(R.id.map_activity_location_addition_btn);</span>
+<span class="nc" id="L298">            locationAdditionBtn.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L299">            locationAdditionBtn.setOnClickListener(new View.OnClickListener() {</span>
+                @Override
+                public void onClick(View v) {
+<span class="nc bnc" id="L302" title="All 2 branches missed.">                    if (kujakuMapView.isCanAddPoint()) {</span>
+<span class="nc" id="L303">                        JSONObject featurePoint = kujakuMapView.dropPoint();</span>
+<span class="nc" id="L304">                        Log.e(&quot;FEATURE POINT&quot;, featurePoint.toString());</span>
+<span class="nc" id="L305">                        newPoints.add(featurePoint);</span>
+                    }
+<span class="nc" id="L307">                }</span>
+            });
+<span class="nc" id="L309">            btnDone.setVisibility(View.VISIBLE);</span>
+
+<span class="nc bnc" id="L311" title="All 2 branches missed.">            if (points != null) {</span>
+<span class="nc" id="L312">                kujakuMapView.updateDroppedPoints(new ArrayList&lt;&gt;(points));</span>
+            }
+        }
+<span class="nc" id="L315">    }</span>
+
+    private void dismissAllDialogs() {
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        if (alertDialogs != null) {</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">            for (AlertDialog curDialog : alertDialogs.values()) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">                if (curDialog.isShowing()) {</span>
+<span class="nc" id="L321">                    curDialog.dismiss();</span>
+                }
+<span class="nc" id="L323">            }</span>
+        }
+<span class="nc" id="L325">    }</span>
+
+    private LinkedHashMap&lt;String, InfoWindowObject&gt; extractLayerData(@NonNull JSONObject mapBoxStyleJSON, String[] dataSourceNames) throws JSONException {
+<span class="nc" id="L328">        LinkedHashMap&lt;String, InfoWindowObject&gt; featuresMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L329" title="All 4 branches missed.">        if (dataSourceNames != null &amp;&amp; mapBoxStyleJSON.has(&quot;sources&quot;)) {</span>
+<span class="nc" id="L330">            JSONObject sources = mapBoxStyleJSON.getJSONObject(&quot;sources&quot;);</span>
+<span class="nc" id="L331">            int counter = 0;</span>
+
+<span class="nc bnc" id="L333" title="All 2 branches missed.">            for (String dataSourceName : dataSourceNames) {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                if (sources.has(dataSourceName)) {</span>
+<span class="nc" id="L335">                    JSONObject jsonObject = sources.getJSONObject(dataSourceName);</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">                    if (jsonObject.has(DATA)) {</span>
+<span class="nc" id="L337">                        JSONObject sourceDataJSONObject = jsonObject.optJSONObject(DATA);</span>
+<span class="nc bnc" id="L338" title="All 4 branches missed.">                        if (sourceDataJSONObject != null &amp;&amp; sourceDataJSONObject.has(FEATURES)) {</span>
+<span class="nc" id="L339">                            JSONArray featuresJSONArray = sourceDataJSONObject.getJSONArray(FEATURES);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                            for (int i = 0; i &lt; featuresJSONArray.length(); i++) {</span>
+<span class="nc" id="L341">                                JSONObject featureJSON = featuresJSONArray.getJSONObject(i);</span>
+
+<span class="nc" id="L343">                                String id = getFeatureId(featureJSON);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">                                if (!TextUtils.isEmpty(id)) {</span>
+                                    //Todo: Should check for errors here &amp; print them in LogCat or notify the dev somehow
+<span class="nc" id="L346">                                    featuresMap.put(id, new InfoWindowObject(counter, featureJSON));</span>
+<span class="nc" id="L347">                                    featureIdList.add(id);</span>
+<span class="nc" id="L348">                                    counter++;</span>
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+<span class="nc" id="L357">        return featuresMap;</span>
+    }
+
+    private JSONObject getStyleJSON(@NonNull String stylePathOrJSON) {
+        try {
+<span class="nc" id="L362">            return new JSONObject(getStyleJSONString(stylePathOrJSON));</span>
+<span class="nc" id="L363">        } catch (JSONException e) {</span>
+<span class="nc" id="L364">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L365">            return new JSONObject();</span>
+        }
+    }
+
+    //Todo handle this better --&gt; In the near future but not now
+    private String getStyleJSONString(@NonNull String stylePathOrJSON) {
+<span class="nc" id="L371">        String defaultStyleJSONString = &quot;&quot;;</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">        if (stylePathOrJSON.matches(Constants.MAP_BOX_URL_FORMAT)) {</span>
+<span class="nc" id="L373">            return defaultStyleJSONString;</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        } else if (stylePathOrJSON.contains(&quot;asset://&quot;)) {</span>
+<span class="nc" id="L375">            return defaultStyleJSONString;</span>
+<span class="nc bnc" id="L376" title="All 2 branches missed.">        } else if (stylePathOrJSON.contains(&quot;file://&quot;)) {</span>
+<span class="nc" id="L377">            return (new MapBoxStyleStorage())</span>
+<span class="nc" id="L378">                    .readStyle(stylePathOrJSON);</span>
+        } else {
+<span class="nc" id="L380">            return defaultStyleJSONString;</span>
+        }
+    }
+
+    private void displayInitialFeatures(@NonNull LinkedHashMap&lt;String, InfoWindowObject&gt; featuresMap, @NonNull KujakuConfig kujakuConfig) {
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (!featuresMap.isEmpty()) {</span>
+<span class="nc" id="L386">            infoWindowAdapter = new InfoWindowAdapter(this, featuresMap, infoWindowsRecyclerView, kujakuConfig);</span>
+<span class="nc" id="L387">            infoWindowsRecyclerView.setHasFixedSize(true);</span>
+<span class="nc" id="L388">            linearLayoutManager = new InfoWindowLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);</span>
+<span class="nc" id="L389">            infoWindowsRecyclerView.setLayoutManager(linearLayoutManager);</span>
+<span class="nc" id="L390">            infoWindowsRecyclerView.setAdapter(infoWindowAdapter);</span>
+        }
+<span class="nc" id="L392">    }</span>
+
+    private LinkedHashMap&lt;String, InfoWindowObject&gt; sortData(@NonNull LinkedHashMap&lt;String, InfoWindowObject&gt; featuresMap, @NonNull SortFieldConfig[] sortFields) throws JSONException {
+        //TODO: Add support for multiple sorts
+<span class="nc" id="L396">        int counter = 0;</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">        if (sortFields.length &gt; 0) {</span>
+<span class="nc" id="L398">            SortFieldConfig sortField = sortFields[0];</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">            if (sortField.getType() == SortFieldConfig.FieldType.DATE) {</span>
+<span class="nc" id="L400">                Sorter sorter = new Sorter(new ArrayList(featuresMap.values()));</span>
+<span class="nc" id="L401">                ArrayList&lt;InfoWindowObject&gt; infoWindowObjectArrayList = sorter.mergeSort(0, featuresMap.size() - 1, sortField.getDataField(), sortField.getType());</span>
+
+<span class="nc" id="L403">                featuresMap.clear();</span>
+
+<span class="nc bnc" id="L405" title="All 2 branches missed.">                for (InfoWindowObject infoWindowObject : infoWindowObjectArrayList) {</span>
+<span class="nc" id="L406">                    String id = getFeatureId(infoWindowObject);</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">                    if (!TextUtils.isEmpty(id)) {</span>
+<span class="nc" id="L408">                        infoWindowObject.setPosition(counter);</span>
+<span class="nc" id="L409">                        featuresMap.put(id, infoWindowObject);</span>
+<span class="nc" id="L410">                        counter++;</span>
+                    }
+<span class="nc" id="L412">                }</span>
+            }
+        }
+
+<span class="nc" id="L416">        return featuresMap;</span>
+    }
+
+    public void showAlertDialog(int title, int message,
+                                int posButtonText,
+                                @Nullable DialogInterface.OnClickListener posOnClickListener,
+                                int negButtonText,
+                                @Nullable DialogInterface.OnClickListener negOnClickListener) {
+<span class="nc bnc" id="L424" title="All 2 branches missed.">        if (!alertDialogs.containsKey(message)</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">                || !alertDialogs.get(message).isShowing()) {</span>
+<span class="nc" id="L426">            AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L427">            builder.setTitle(title);</span>
+<span class="nc" id="L428">            builder.setMessage(message);</span>
+<span class="nc" id="L429">            builder.setCancelable(true);</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">            if (posOnClickListener != null) {</span>
+<span class="nc" id="L431">                builder.setPositiveButton(posButtonText, posOnClickListener);</span>
+<span class="nc" id="L432">                builder.setCancelable(false);</span>
+            }
+<span class="nc bnc" id="L434" title="All 2 branches missed.">            if (negOnClickListener != null) {</span>
+<span class="nc" id="L435">                builder.setNegativeButton(negButtonText, negOnClickListener);</span>
+<span class="nc" id="L436">                builder.setCancelable(false);</span>
+            }
+<span class="nc" id="L438">            alertDialogs.put(message, builder.show());</span>
+        }
+<span class="nc" id="L440">    }</span>
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L444">        super.onResume();</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">        if (kujakuMapView != null) {</span>
+<span class="nc" id="L446">            kujakuMapView.onResume();</span>
+        }
+<span class="nc" id="L448">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L452">        super.onStart();</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L454">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L458">        super.onStop();</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L460">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L464">        super.onPause();</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L466">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L470">        super.onDestroy();</span>
+
+<span class="nc bnc" id="L472" title="All 6 branches missed.">        if (currentStylePath != null &amp;&amp; currentStylePath.startsWith(&quot;file://&quot;) &amp;&amp; currentStylePath.contains(MapBoxStyleStorage.BASE_DIRECTORY)) {</span>
+<span class="nc" id="L473">            new MapBoxStyleStorage()</span>
+<span class="nc" id="L474">                    .deleteFile(currentStylePath.replace(&quot;file://&quot;, &quot;&quot;), true, false);</span>
+        }
+
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L478">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L482">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L484">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L488">        super.onLowMemory();</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L490">    }</span>
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        if (requestCode == PERMISSIONS_REQUEST_CODE) {</span>
+<span class="nc" id="L495">            checkPermissions(this.savedInstanceState);</span>
+        }
+<span class="nc" id="L497">    }</span>
+
+    private void checkPermissions(Bundle savedInstanceState) {
+<span class="nc" id="L500">        this.savedInstanceState = savedInstanceState;</span>
+<span class="nc" id="L501">        String[] unauthorizedPermissions = Permissions.getUnauthorizedCriticalPermissions(this);</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">        if (unauthorizedPermissions.length &gt; 0) {</span>
+<span class="nc" id="L503">            Permissions.request(this, unauthorizedPermissions, PERMISSIONS_REQUEST_CODE);</span>
+        } else {
+<span class="nc" id="L505">            initializeMapActivityAfterPermissionsSupplied(savedInstanceState);</span>
+        }
+<span class="nc" id="L507">    }</span>
+
+    @Override
+    public boolean onMapClick(@NonNull LatLng point) {
+        // Convert LatLng coordinates to screen pixel and only query the rendered features.
+<span class="nc" id="L512">        final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);</span>
+<span class="nc" id="L513">        List&lt;Feature&gt; features = mapboxMap.queryRenderedFeatures(pixel);</span>
+
+        // Get the first feature within the list if one exist
+<span class="nc bnc" id="L516" title="All 2 branches missed.">        if (features.size() &gt; 0) {</span>
+<span class="nc bnc" id="L517" title="All 2 branches missed.">            for (Feature feature : features) {</span>
+
+                // Ensure the feature has properties defined
+<span class="nc bnc" id="L520" title="All 4 branches missed.">                if (feature.properties() != null &amp;&amp; feature.hasProperty(&quot;id&quot;)) {</span>
+<span class="nc" id="L521">                    String id = feature.getProperty(&quot;id&quot;).getAsString();</span>
+<span class="nc bnc" id="L522" title="All 2 branches missed.">                    if (featuresMap.containsKey(id)) {</span>
+<span class="nc" id="L523">                        focusOnFeature(id);</span>
+<span class="nc" id="L524">                        break;</span>
+                    }
+                }
+<span class="nc" id="L527">            }</span>
+        }
+
+<span class="nc" id="L530">        return false;</span>
+    }
+
+    private void showInfoWindowListAndScrollToPosition(final int position, final boolean informInfoWindowAdapter) {
+<span class="nc bnc" id="L534" title="All 2 branches missed.">        if (!infoWindowDisplayed) {</span>
+
+            // Good enough for now
+<span class="nc" id="L537">            infoWindowsRecyclerView.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L538">            infoWindowsRecyclerView.getViewTreeObserver()</span>
+<span class="nc" id="L539">                    .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {</span>
+                        @Override
+                        public void onGlobalLayout() {
+<span class="nc" id="L542">                            infoWindowsRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);</span>
+<span class="nc" id="L543">                            scrollToInfoWindowPosition(position, informInfoWindowAdapter);</span>
+<span class="nc" id="L544">                        }</span>
+                    });
+
+<span class="nc" id="L547">            disableAlignBottomAndEnableAlignAbove(focusOnMyLocationImgBtn);</span>
+<span class="nc" id="L548">            infoWindowDisplayed = true;</span>
+        } else {
+<span class="nc" id="L550">            scrollToInfoWindowPosition(position, informInfoWindowAdapter);</span>
+        }
+<span class="nc" id="L552">    }</span>
+
+    private void scrollToInfoWindowPosition(final int position, boolean informInfoWindowAdapter) {
+<span class="nc bnc" id="L555" title="All 2 branches missed.">        if (position &gt; -1) {</span>
+<span class="nc bnc" id="L556" title="All 2 branches missed.">            if (informInfoWindowAdapter) infoWindowAdapter.focusOnPosition(position, false);</span>
+
+            // Supposed to scroll to the selected position
+<span class="nc" id="L559">            final InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);</span>
+<span class="nc" id="L560">            int lastVisiblePosition = linearLayoutManager.findLastVisibleItemPosition();</span>
+<span class="nc" id="L561">            int firstVisiblePosition = linearLayoutManager.findFirstVisibleItemPosition();</span>
+
+<span class="nc bnc" id="L563" title="All 6 branches missed.">            if (infoWindowViewHolder == null || (position &lt; firstVisiblePosition || position &gt; lastVisiblePosition)) {</span>
+<span class="nc" id="L564">                infoWindowsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {</span>
+                    @Override
+                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+<span class="nc" id="L567">                        super.onScrollStateChanged(recyclerView, newState);</span>
+
+<span class="nc bnc" id="L569" title="All 2 branches missed.">                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {</span>
+<span class="nc" id="L570">                            InfoWindowViewHolder infoWindowViewHolder = (InfoWindowViewHolder) infoWindowsRecyclerView.findViewHolderForAdapterPosition(position);</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">                            if (infoWindowViewHolder != null) {</span>
+<span class="nc" id="L572">                                View v = infoWindowViewHolder.itemView;</span>
+
+<span class="nc" id="L574">                                int offset = (screenWidth / 2) - (v.getWidth() / 2);</span>
+<span class="nc" id="L575">                                linearLayoutManager.scrollToPositionWithOffset(position, offset);</span>
+
+<span class="nc" id="L577">                                infoWindowViewHolder.select();</span>
+                            }
+
+<span class="nc" id="L580">                            infoWindowsRecyclerView.removeOnScrollListener(this);</span>
+                        }
+<span class="nc" id="L582">                    }</span>
+                });
+<span class="nc" id="L584">                infoWindowsRecyclerView.smoothScrollToPosition(position);</span>
+
+            } else {
+<span class="nc" id="L587">                View v = infoWindowViewHolder.itemView;</span>
+<span class="nc" id="L588">                animateScrollToPosition(v, position, infoWindowViewHolder, animateToNewInfoWindowDuration);</span>
+            }
+        }
+<span class="nc" id="L591">    }</span>
+
+    private void animateScrollToPosition(@NonNull View view, final int position, @NonNull final InfoWindowViewHolder infoWindowViewHolder, final int animationDuration) {
+<span class="nc" id="L594">        final int left = view.getLeft();</span>
+<span class="nc" id="L595">        final int offset = (screenWidth / 2) - (view.getWidth() / 2);</span>
+<span class="nc" id="L596">        final float totalOffset = offset - left;</span>
+
+<span class="nc" id="L598">        ValueAnimator valueAnimator = ValueAnimator.ofFloat(totalOffset);</span>
+<span class="nc" id="L599">        valueAnimator.setDuration(animationDuration);</span>
+<span class="nc" id="L600">        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {</span>
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+<span class="nc" id="L603">                float updatedValue = (float) animation.getAnimatedValue();</span>
+<span class="nc" id="L604">                float currentOffset = updatedValue + left;</span>
+
+<span class="nc" id="L606">                linearLayoutManager.scrollToPositionWithOffset(position, (int) currentOffset);</span>
+
+<span class="nc bnc" id="L608" title="All 2 branches missed.">                if (updatedValue == totalOffset) {</span>
+<span class="nc" id="L609">                    infoWindowViewHolder.select();</span>
+                }
+<span class="nc" id="L611">            }</span>
+        });
+
+<span class="nc" id="L614">        valueAnimator.start();</span>
+        //Todo Figure out how to handle another item being selected while this one is being animated
+<span class="nc" id="L616">    }</span>
+
+    private int getScreenWidth(Activity activity) {
+        // Get the screen width
+<span class="nc" id="L620">        DisplayMetrics displayMetrics = new DisplayMetrics();</span>
+<span class="nc" id="L621">        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);</span>
+<span class="nc" id="L622">        return displayMetrics.widthPixels;</span>
+    }
+
+    private void focusOnFeature(int position, @Nullable String id, @Nullable LatLng latLng, boolean informInfoWindowAdapter) {
+<span class="nc bnc" id="L626" title="All 6 branches missed.">        if (position == -1 &amp;&amp; id != null &amp;&amp; !id.isEmpty()) {</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">            if (featuresMap.containsKey(id)) {</span>
+<span class="nc" id="L628">                position = featuresMap.get(id).getPosition();</span>
+            } else {
+<span class="nc" id="L630">                return;</span>
+            }
+        }
+
+<span class="nc bnc" id="L634" title="All 4 branches missed.">        if (id == null &amp;&amp; position &gt; -1) {</span>
+<span class="nc bnc" id="L635" title="All 2 branches missed.">            if (featureIdList.isEmpty()) {</span>
+<span class="nc" id="L636">                return;</span>
+            }
+
+<span class="nc" id="L639">            id = featureIdList.get(position);</span>
+        }
+
+<span class="nc bnc" id="L642" title="All 2 branches missed.">        if (latLng == null) {</span>
+<span class="nc" id="L643">            latLng = getFeaturePoint(featuresMap.get(id)</span>
+<span class="nc" id="L644">                    .getJsonObject());</span>
+
+<span class="nc bnc" id="L646" title="All 2 branches missed.">            if (latLng == null) {</span>
+<span class="nc" id="L647">                return;</span>
+            }
+        }
+
+<span class="nc bnc" id="L651" title="All 2 branches missed.">        if (lastSelected == position) {</span>
+<span class="nc" id="L652">            performInfoWindowDoubleClickAction(featuresMap.get(id));</span>
+        } else {
+<span class="nc" id="L654">            showInfoWindowListAndScrollToPosition(position, informInfoWindowAdapter);</span>
+<span class="nc" id="L655">            kujakuMapView.centerMap(latLng, animateToNewTargetDuration);</span>
+        }
+<span class="nc" id="L657">        lastSelected = position;</span>
+<span class="nc" id="L658">    }</span>
+
+    public void focusOnFeature(int position) {
+<span class="nc" id="L661">        focusOnFeature(position, null, null, false);</span>
+<span class="nc" id="L662">    }</span>
+
+    private void focusOnFeature(String id, LatLng latLng) {
+<span class="nc" id="L665">        focusOnFeature(-1, id, latLng, true);</span>
+<span class="nc" id="L666">    }</span>
+
+    private void focusOnFeature(String id) {
+<span class="nc" id="L669">        focusOnFeature(-1, id, null, true);</span>
+<span class="nc" id="L670">    }</span>
+
+    private LatLng getFeaturePoint(JSONObject featureJSON) {
+<span class="nc bnc" id="L673" title="All 2 branches missed.">        if (featureJSON.has(&quot;geometry&quot;)) {</span>
+            try {
+<span class="nc" id="L675">                JSONObject featureGeometry = featureJSON.getJSONObject(&quot;geometry&quot;);</span>
+<span class="nc bnc" id="L676" title="All 6 branches missed.">                if (featureGeometry.has(&quot;type&quot;) &amp;&amp; GeoJSONFeature.Type.POINT.toString().equalsIgnoreCase(featureGeometry.getString(&quot;type&quot;)) &amp;&amp; featureGeometry.has(&quot;coordinates&quot;)) {</span>
+<span class="nc" id="L677">                    JSONArray coordinatesArray = featureGeometry.getJSONArray(&quot;coordinates&quot;);</span>
+<span class="nc bnc" id="L678" title="All 2 branches missed.">                    if (coordinatesArray.length() &gt; 2) {</span>
+<span class="nc" id="L679">                        double lng = coordinatesArray.getDouble(0);</span>
+<span class="nc" id="L680">                        double lat = coordinatesArray.getDouble(1);</span>
+
+<span class="nc" id="L682">                        return (new LatLng(lat, lng));</span>
+                    }
+                }
+<span class="nc" id="L685">            } catch (JSONException e) {</span>
+<span class="nc" id="L686">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L687">            }</span>
+        }
+
+<span class="nc" id="L690">        return null;</span>
+    }
+
+    private String getFeatureId(@NonNull InfoWindowObject infoWindowObject) throws JSONException {
+<span class="nc" id="L694">        JSONObject jsonObject = infoWindowObject.getJsonObject();</span>
+<span class="nc" id="L695">        return getFeatureId(jsonObject);</span>
+    }
+
+    private String getFeatureId(@NonNull JSONObject jsonObject) throws JSONException {
+<span class="nc bnc" id="L699" title="All 2 branches missed.">        if (jsonObject.has(&quot;id&quot;)) {</span>
+<span class="nc" id="L700">            return jsonObject.getString(&quot;id&quot;);</span>
+        }
+
+<span class="nc bnc" id="L703" title="All 2 branches missed.">        if (jsonObject.has(&quot;properties&quot;)) {</span>
+<span class="nc" id="L704">            JSONObject propertiesJSON = jsonObject.getJSONObject(&quot;properties&quot;);</span>
+<span class="nc bnc" id="L705" title="All 2 branches missed.">            if (propertiesJSON.has(&quot;id&quot;)) {</span>
+<span class="nc" id="L706">                return propertiesJSON.getString(&quot;id&quot;);</span>
+            }
+        }
+
+<span class="nc" id="L710">        return null;</span>
+    }
+
+    private void performInfoWindowDoubleClickAction(InfoWindowObject infoWindowObject) {
+        //For now, this will be a return Result with the current GeoJSON Feature
+<span class="nc" id="L715">        Intent intent = new Intent();</span>
+<span class="nc" id="L716">        intent.putExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE, infoWindowObject.getJsonObject().toString());</span>
+
+<span class="nc" id="L718">        setResult(Activity.RESULT_OK, intent);</span>
+<span class="nc" id="L719">        finish();</span>
+<span class="nc" id="L720">    }</span>
+
+    private void disableAlignBottomAndEnableAlignAbove(View view) {
+<span class="nc" id="L723">        ViewGroup.LayoutParams viewGroupParams = view.getLayoutParams();</span>
+
+<span class="nc bnc" id="L725" title="All 2 branches missed.">        if (viewGroupParams instanceof RelativeLayout.LayoutParams) {</span>
+<span class="nc" id="L726">            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) viewGroupParams;</span>
+
+<span class="nc" id="L728">            relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);</span>
+<span class="nc" id="L729">            relativeLayoutParams.addRule(RelativeLayout.ABOVE, R.id.rv_mapActivity_infoWindow);</span>
+
+<span class="nc" id="L731">            view.setLayoutParams(relativeLayoutParams);</span>
+        }
+<span class="nc" id="L733">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

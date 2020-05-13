@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CGRIntegrationActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">CGRIntegrationActivity.java</span></div><h1>CGRIntegrationActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.graphics.Color;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
+import com.vividsolutions.jts.geom.Point;
+
+import org.commongeoregistry.adapter.android.AndroidHttpCredentialConnector;
+import org.commongeoregistry.adapter.android.AndroidRegistryClient;
+import org.commongeoregistry.adapter.constants.DefaultAttribute;
+import org.commongeoregistry.adapter.dataaccess.ChildTreeNode;
+import org.commongeoregistry.adapter.dataaccess.GeoObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.views.KujakuMapView;
+import timber.log.Timber;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
+
+<span class="nc" id="L54">public class CGRIntegrationActivity extends BaseNavigationDrawerActivity implements OnFeatureClickListener {</span>
+
+    private KujakuMapView kujakuMapView;
+
+    private GeoJsonSource locationsGeoJsonSource;
+    private GeoJsonSource labelSource;
+
+    private GeoObject cambodiaCountry;
+    private ChildTreeNode currentDrillDown;
+    private ChildTreeNode cambodiaCountryDrillDown;
+
+    private Button restartDrillDownBtn;
+
+    private AndroidRegistryClient client;
+
+<span class="nc" id="L69">    private String fillLayerId = &quot;cgr-admin-boundaries&quot;;</span>
+<span class="nc" id="L70">    private String pointLayerId = &quot;cgr-admin-location-points&quot;;</span>
+
+    private static final String LABEL_LAYER_ID = &quot;label-layer-name&quot;;
+    private static final String LABEL_SOURCE_ID = &quot;label-source-id&quot;;
+
+<span class="nc" id="L75">    private String[] adminHierarchy = new String[]{&quot;Cambodia&quot;, &quot;Province&quot;, &quot;District&quot;, &quot;Commune&quot;, &quot;Village&quot;};</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L79">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L81">        kujakuMapView = findViewById(R.id.kmv_cgrIntegration_mapView);</span>
+<span class="nc" id="L82">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L84">        restartDrillDownBtn = findViewById(R.id.btn_cgrIntegration_restartDrillDownBtn);</span>
+
+<span class="nc" id="L86">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L89">                mapboxMap.setStyle(Style.SATELLITE);</span>
+
+<span class="nc" id="L91">                mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L94">                        style.removeLayer(&quot;Thailand 2&quot;);</span>
+<span class="nc" id="L95">                        addAdministrativeLayer(style);</span>
+
+<span class="nc" id="L97">                        callSafeLoadCGR();</span>
+<span class="nc" id="L98">                    }</span>
+                });
+<span class="nc" id="L100">            }</span>
+        });
+
+<span class="nc" id="L103">        restartDrillDownBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L106">                currentDrillDown = cambodiaCountryDrillDown;</span>
+<span class="nc" id="L107">                startDrillDown();</span>
+<span class="nc" id="L108">            }</span>
+        });
+<span class="nc" id="L110">    }</span>
+
+    private void callSafeLoadCGR() {
+        try {
+<span class="nc" id="L114">            loadCGR();</span>
+<span class="nc" id="L115">        } catch (Exception e) {</span>
+<span class="nc" id="L116">            Timber.e(e);</span>
+
+<span class="nc" id="L118">            Snackbar snackbar = Snackbar.make(kujakuMapView, &quot;Oops! An error occurred&quot;, Snackbar.LENGTH_INDEFINITE);</span>
+<span class="nc" id="L119">            snackbar.setAction(R.string.retry, new View.OnClickListener() {</span>
+                @Override
+                public void onClick(View v) {
+<span class="nc" id="L122">                    callSafeLoadCGR();</span>
+<span class="nc" id="L123">                }</span>
+            });
+<span class="nc" id="L125">            snackbar.show();</span>
+<span class="nc" id="L126">        }</span>
+<span class="nc" id="L127">    }</span>
+
+    private void startDrillDown() {
+<span class="nc" id="L130">        locationsGeoJsonSource.setGeoJson(cambodiaCountry.toJSON().toString());</span>
+<span class="nc" id="L131">        centerOnBoundingBox(cambodiaCountry);</span>
+<span class="nc" id="L132">        createLabelSource(cambodiaCountry);</span>
+<span class="nc" id="L133">    }</span>
+
+    private void addAdministrativeLayer(@NonNull Style style) {
+<span class="nc" id="L136">        String adminSource = &quot;cgr-admin-boundary-source&quot;;</span>
+
+<span class="nc" id="L138">        FillLayer fillLayer = new FillLayer(fillLayerId, adminSource);</span>
+<span class="nc" id="L139">        fillLayer.withProperties(PropertyFactory.fillOpacity(0.75f)</span>
+<span class="nc" id="L140">                , PropertyFactory.fillColor(&quot;rgba(161, 202, 241, 0.75)&quot;)</span>
+<span class="nc" id="L141">                , PropertyFactory.fillOutlineColor(Color.BLACK));</span>
+
+<span class="nc" id="L143">        CircleLayer cityDotLayer = new CircleLayer(pointLayerId, adminSource);</span>
+<span class="nc" id="L144">        cityDotLayer.withFilter(eq(geometryType(), &quot;Point&quot;))</span>
+<span class="nc" id="L145">                .withProperties(PropertyFactory.circleColor(Color.BLACK)</span>
+<span class="nc" id="L146">                , PropertyFactory.circleRadius(5F)</span>
+<span class="nc" id="L147">                , PropertyFactory.circleStrokeColor(Color.WHITE)</span>
+<span class="nc" id="L148">                , PropertyFactory.circleStrokeWidth(1F));</span>
+
+<span class="nc" id="L150">        locationsGeoJsonSource = new GeoJsonSource(adminSource);</span>
+<span class="nc" id="L151">        SymbolLayer polygonAdminLayer = new SymbolLayer(LABEL_LAYER_ID, LABEL_SOURCE_ID)</span>
+<span class="nc" id="L152">                .withProperties(</span>
+<span class="nc" id="L153">                        PropertyFactory.textField(Expression.toString(Expression.get(&quot;displayLabel&quot;))),</span>
+<span class="nc" id="L154">                        PropertyFactory.textSize(20f),</span>
+<span class="nc" id="L155">                        PropertyFactory.textColor(Color.BLACK),</span>
+<span class="nc" id="L156">                        PropertyFactory.textHaloColor(Color.WHITE),</span>
+<span class="nc" id="L157">                        PropertyFactory.textHaloWidth(1f),</span>
+<span class="nc" id="L158">                        PropertyFactory.textHaloBlur(.5f),</span>
+<span class="nc" id="L159">                        PropertyFactory.textAllowOverlap(true),</span>
+<span class="nc" id="L160">                        PropertyFactory.textOffset(new Float[]{0F, 1F})</span>
+                );
+
+<span class="nc" id="L163">        labelSource = new GeoJsonSource(LABEL_SOURCE_ID);</span>
+
+<span class="nc" id="L165">        style.addSource(locationsGeoJsonSource);</span>
+<span class="nc" id="L166">        style.addSource(labelSource);</span>
+<span class="nc" id="L167">        style.addLayer(fillLayer);</span>
+<span class="nc" id="L168">        style.addLayer(cityDotLayer);</span>
+<span class="nc" id="L169">        style.addLayer(polygonAdminLayer);</span>
+<span class="nc" id="L170">    }</span>
+
+    private void loadCGR() {
+        // Configure our connection with the remote registry server
+<span class="nc" id="L174">        AndroidHttpCredentialConnector connector = new AndroidHttpCredentialConnector();</span>
+<span class="nc" id="L175">        connector.setCredentials(BuildConfig.CGR_USERNAME, BuildConfig.CGR_PASSWORD);</span>
+<span class="nc" id="L176">        connector.setServerUrl(BuildConfig.CGR_URL);</span>
+<span class="nc" id="L177">        connector.initialize();</span>
+
+<span class="nc" id="L179">        AlertDialog alertDialog = setProgressDialog();</span>
+
+<span class="nc" id="L181">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+                // Synchronize with the Registry server (requires an internet connection)
+<span class="nc" id="L185">                client = new AndroidRegistryClient(connector, CGRIntegrationActivity.this);</span>
+                // Pull our metadata objects which we'll use later
+<span class="nc" id="L187">                client.refreshMetadataCache();</span>
+                // Fetch 500 ids from the GeoRegistry which we'll use later to create GeoObjects. These ids are persisted in an offline database on the android phone.
+<span class="nc" id="L189">                client.getIdService().populate(30);</span>
+
+<span class="nc" id="L191">                GeoObject country = client.getGeoObjectByCode(&quot;1&quot;, &quot;Cambodia&quot;);</span>
+<span class="nc" id="L192">                ChildTreeNode countryChildren = client.getChildGeoObjects(country.getUid(), country.getType().getCode(), adminHierarchy, true);</span>
+
+<span class="nc" id="L194">                return new Object[]{country, countryChildren};</span>
+            }
+        });
+
+<span class="nc" id="L198">        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+                // Add the country geoobject
+<span class="nc" id="L202">                alertDialog.dismiss();</span>
+<span class="nc" id="L203">                restartDrillDownBtn.setEnabled(true);</span>
+
+<span class="nc" id="L205">                cambodiaCountry = (GeoObject) objects[0];</span>
+<span class="nc" id="L206">                currentDrillDown = (ChildTreeNode) objects[1];</span>
+<span class="nc" id="L207">                cambodiaCountryDrillDown = currentDrillDown;</span>
+
+<span class="nc" id="L209">                showToast(R.string.cgr_instructions);</span>
+
+<span class="nc" id="L211">                startDrillDown();</span>
+
+                // Set click listener
+<span class="nc" id="L214">                kujakuMapView.setOnFeatureClickListener(CGRIntegrationActivity.this, fillLayerId);</span>
+<span class="nc" id="L215">            }</span>
+
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L219">                Timber.e(e);</span>
+<span class="nc" id="L220">                alertDialog.dismiss();</span>
+
+<span class="nc" id="L222">                Snackbar snackbar = Snackbar.make(kujakuMapView, R.string.error_occurred_check_internet_connection, Snackbar.LENGTH_INDEFINITE);</span>
+<span class="nc" id="L223">                snackbar.setAction(R.string.retry, new View.OnClickListener() {</span>
+                    @Override
+                    public void onClick(View v) {
+<span class="nc" id="L226">                        loadCGR();</span>
+<span class="nc" id="L227">                    }</span>
+                });
+<span class="nc" id="L229">                snackbar.show();</span>
+<span class="nc" id="L230">            }</span>
+        });
+
+<span class="nc" id="L233">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L234">    }</span>
+
+    private void showToast(@StringRes int stringRes) {
+<span class="nc" id="L237">        Toast.makeText(CGRIntegrationActivity.this, stringRes, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L238">                .show();</span>
+<span class="nc" id="L239">    }</span>
+
+    public AlertDialog setProgressDialog() {
+<span class="nc" id="L242">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L243">        builder.setCancelable(false);</span>
+<span class="nc" id="L244">        builder.setView(LayoutInflater.from(this).inflate(R.layout.dialog_progress, null));</span>
+
+<span class="nc" id="L246">        AlertDialog dialog = builder.create();</span>
+<span class="nc" id="L247">        dialog.show();</span>
+
+<span class="nc" id="L249">        return dialog;</span>
+    }
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L254">        return R.layout.activity_cgr_integration_activity;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L259">        return R.id.nav_cgr_integration;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L264">        super.onResume();</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L266">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L270">        super.onStart();</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L272">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L276">        super.onStop();</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L278">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L282">        super.onPause();</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L284">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L288">        super.onDestroy();</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L290">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L294">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L296">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L300">        super.onLowMemory();</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L302">    }</span>
+
+    @Override
+    public void onFeatureClick(List&lt;Feature&gt; features) {
+        try {
+<span class="nc bnc" id="L307" title="All 2 branches missed.">            if (features.size() &gt; 0) {</span>
+<span class="nc" id="L308">                final Feature feature = features.get(0);</span>
+
+<span class="nc bnc" id="L310" title="All 6 branches missed.">                if (feature.hasProperty(DefaultAttribute.UID.getName()) &amp;&amp; feature.hasProperty(DefaultAttribute.CODE.getName()) &amp;&amp; feature.hasProperty(DefaultAttribute.TYPE.getName())) {</span>
+<span class="nc" id="L311">                    Timber.e(&quot;Feature clicked %s&quot;, new Gson().toJson(feature));</span>
+
+<span class="nc bnc" id="L313" title="All 6 branches missed.">                    if (feature.hasProperty(DefaultAttribute.TYPE.getName()) &amp;&amp; feature.hasProperty(DefaultAttribute.UID.getName()) &amp;&amp; feature.hasProperty(DefaultAttribute.CODE.getName())) {</span>
+<span class="nc" id="L314">                        ChildTreeNode childTreeNode = null;</span>
+
+<span class="nc bnc" id="L316" title="All 2 branches missed.">                        if (feature.getStringProperty(DefaultAttribute.UID.getName()).equals(currentDrillDown.getGeoObject().getUid())) {</span>
+<span class="nc" id="L317">                            childTreeNode = currentDrillDown;</span>
+                        } else {
+<span class="nc bnc" id="L319" title="All 2 branches missed.">                            for (ChildTreeNode childTreeNode1 : currentDrillDown.getChildren()) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">                                if (childTreeNode1.getGeoObject().getUid().equals(feature.getStringProperty(DefaultAttribute.UID.getName()))) {</span>
+<span class="nc" id="L321">                                    currentDrillDown = childTreeNode1;</span>
+<span class="nc" id="L322">                                    childTreeNode = childTreeNode1;</span>
+                                }
+<span class="nc" id="L324">                            }</span>
+                        }
+
+<span class="nc" id="L327">                        List&lt;ChildTreeNode&gt; childTreeNodes = childTreeNode.getChildren();</span>
+
+<span class="nc" id="L329">                        List&lt;GeoObject&gt; renderFeatures = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L330">                        List&lt;Feature&gt; listFeatures = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L332">                        double[] bbox = null;</span>
+
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                        for (ChildTreeNode childTreeNode1 : childTreeNodes) {</span>
+<span class="nc" id="L335">                            GeoObject childGeoObject = childTreeNode1.getGeoObject();</span>
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">                            if (childGeoObject.getGeometry() != null) {</span>
+<span class="nc" id="L338">                                renderFeatures.add(childGeoObject);</span>
+<span class="nc" id="L339">                                Feature mapboxFeature = Feature.fromJson(childTreeNode1.getGeoObject().toJSON().toString());</span>
+
+<span class="nc" id="L341">                                Geometry featureGeometry = mapboxFeature.geometry();</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                                if (featureGeometry != null) {</span>
+<span class="nc" id="L343">                                    double[] featureBbox = TurfMeasurement.bbox(featureGeometry);</span>
+
+<span class="nc bnc" id="L345" title="All 2 branches missed.">                                    if (bbox == null) {</span>
+<span class="nc" id="L346">                                        bbox = featureBbox;</span>
+                                    } else {
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                                        if (featureBbox[0] &lt; bbox[0]) {</span>
+<span class="nc" id="L349">                                            bbox[0] = featureBbox[0];</span>
+                                        }
+
+<span class="nc bnc" id="L352" title="All 2 branches missed.">                                        if (featureBbox[1] &lt; bbox[1]) {</span>
+<span class="nc" id="L353">                                            bbox[1] = featureBbox[1];</span>
+                                        }
+
+<span class="nc bnc" id="L356" title="All 2 branches missed.">                                        if (featureBbox[2] &gt; bbox[2]) {</span>
+<span class="nc" id="L357">                                            bbox[2] = featureBbox[2];</span>
+                                        }
+
+<span class="nc bnc" id="L360" title="All 2 branches missed.">                                        if (featureBbox[3] &gt; bbox[3]) {</span>
+<span class="nc" id="L361">                                            bbox[3] = featureBbox[3];</span>
+                                        }
+                                    }
+
+<span class="nc" id="L365">                                    listFeatures.add(mapboxFeature);</span>
+                                }
+                            }
+<span class="nc" id="L368">                        }</span>
+
+<span class="nc bnc" id="L370" title="All 2 branches missed.">                        if (listFeatures.size() &gt; 0) {</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">                            if (bbox != null) {</span>
+<span class="nc" id="L372">                                centerOnBoundingBox(bbox);</span>
+                            }
+
+<span class="nc" id="L375">                            FeatureCollection featureCollection = FeatureCollection.fromFeatures(listFeatures);</span>
+<span class="nc" id="L376">                            locationsGeoJsonSource.setGeoJson(featureCollection);</span>
+<span class="nc" id="L377">                            createLabelSource(renderFeatures.toArray(new GeoObject[]{}));</span>
+<span class="nc" id="L378">                        } else {</span>
+<span class="nc" id="L379">                            Toast.makeText(CGRIntegrationActivity.this, &quot;This is the last hierarchy item&quot;, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L380">                                    .show();</span>
+                        }
+                    }
+                }
+            }
+<span class="nc" id="L385">        } catch (Exception e) {</span>
+<span class="nc" id="L386">            Timber.e(e);</span>
+<span class="nc" id="L387">            Snackbar snackbar = Snackbar.make(kujakuMapView, R.string.an_error_occurred_click_feature_again, Snackbar.LENGTH_INDEFINITE);</span>
+<span class="nc" id="L388">            snackbar.show();</span>
+<span class="nc" id="L389">        }</span>
+<span class="nc" id="L390">    }</span>
+
+    private void centerOnBoundingBox(@NonNull GeoObject geoObject) {
+<span class="nc" id="L393">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L396">                Geometry geometry = Feature.fromJson(geoObject.toJSON().toString()).geometry();</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                if (geometry != null) {</span>
+<span class="nc" id="L398">                    double[] bbox = TurfMeasurement.bbox(geometry);</span>
+<span class="nc" id="L399">                    mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(</span>
+<span class="nc" id="L400">                            LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]), 50)</span>
+                    );
+                }
+<span class="nc" id="L403">            }</span>
+        });
+<span class="nc" id="L405">    }</span>
+
+    private void centerOnBoundingBox(@NonNull double[] bbox) {
+<span class="nc" id="L408">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L411">                mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(</span>
+<span class="nc" id="L412">                        LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]), 50)</span>
+                );
+<span class="nc" id="L414">            }</span>
+        });
+<span class="nc" id="L416">    }</span>
+
+    private void createLabelSource(@NonNull GeoObject... geoObjects) {
+<span class="nc" id="L419">        ArrayList&lt;Feature&gt; features = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L421" title="All 2 branches missed.">        for (GeoObject geoObject: geoObjects) {</span>
+            //Get the center
+<span class="nc" id="L423">            com.vividsolutions.jts.geom.Geometry geometry = geoObject.getGeometry();</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">            if (geometry != null) {</span>
+<span class="nc" id="L425">                Point center = geometry.getCentroid();</span>
+<span class="nc" id="L426">                com.mapbox.geojson.Point point = com.mapbox.geojson.Point.fromLngLat(center.getX(), center.getY());</span>
+
+<span class="nc" id="L428">                Feature feature = Feature.fromGeometry(point);</span>
+<span class="nc" id="L429">                feature.addStringProperty(&quot;displayLabel&quot;, geoObject.getDisplayLabel().getValue());</span>
+
+<span class="nc" id="L431">                features.add(feature);</span>
+            }
+        }
+
+<span class="nc" id="L435">        labelSource.setGeoJson(FeatureCollection.fromFeatures(features));</span>
+<span class="nc" id="L436">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

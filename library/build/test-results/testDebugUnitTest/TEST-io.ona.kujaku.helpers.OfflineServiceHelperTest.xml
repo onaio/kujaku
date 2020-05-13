@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.OfflineServiceHelperTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:24" hostname="kigamba-ThinkPad-T580" time="0.617">
+  <properties/>
+  <testcase name="deleteOfflineMapShouldCreateValidIntentAndCallStartService" classname="io.ona.kujaku.helpers.OfflineServiceHelperTest" time="0.421"/>
+  <testcase name="requestOfflineMapDownloadShouldCreateValidIntentAndCallStartService" classname="io.ona.kujaku.helpers.OfflineServiceHelperTest" time="0.176"/>
+  <testcase name="stopMapDownloadShouldCreateValidIntentAndCallStartService" classname="io.ona.kujaku.helpers.OfflineServiceHelperTest" time="0.018"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

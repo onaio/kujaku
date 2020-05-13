@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LayerUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils</a> &gt; <span class="el_source">LayerUtil.java</span></div><h1>LayerUtil.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+import android.text.TextUtils;
+
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.BackgroundLayer;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.ExposedLayoutPropertyValue;
+import com.mapbox.mapboxsdk.style.layers.ExposedPaintPropertyValue;
+import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
+import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.layers.HeatmapLayer;
+import com.mapbox.mapboxsdk.style.layers.HillshadeLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
+import com.mapbox.mapboxsdk.style.layers.RasterLayer;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import timber.log.Timber;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-20
+ */
+
+<span class="fc" id="L36">public class LayerUtil {</span>
+
+    public static final String TYPE = &quot;type&quot;;
+    public static final String ID = &quot;id&quot;;
+    public static final String SOURCE = &quot;source&quot;;
+    public static final String SOURCE_LAYER = &quot;source-layer&quot;;
+    public static final String MINZOOM = &quot;minzoom&quot;;
+    public static final String MAXZOOM = &quot;maxzoom&quot;;
+    public static final String FILTER = &quot;filter&quot;;
+    public static final String LAYOUT = &quot;layout&quot;;
+    public static final String PAINT = &quot;paint&quot;;
+
+    public static final String URL = &quot;url&quot;;
+
+<span class="nc" id="L50">    public static final class LAYER_TYPE {</span>
+        public static final String FILL = &quot;fill&quot;;
+        public static final String LINE = &quot;line&quot;;
+        public static final String SYMBOL = &quot;symbol&quot;;
+        public static final String CIRCLE = &quot;circle&quot;;
+        public static final String HEATMAP = &quot;heatmap&quot;;
+        public static final String FILL_EXTRUSION = &quot;fill-extrusion&quot;;
+        public static final String RASTER = &quot;raster&quot;;
+        public static final String HILLSHADE = &quot;hillshade&quot;;
+        public static final String BACKGROUND = &quot;background&quot;;
+    }
+
+<span class="nc" id="L62">    public static final class SOURCE_TYPE {</span>
+        public static final String VECTOR = &quot;vector&quot;;
+        public static final String RASTER = &quot;raster&quot;;
+        public static final String RASTER_DEM = &quot;raster-dem&quot;;
+        public static final String GEOJSON = &quot;geojson&quot;;
+        public static final String IMAGE = &quot;image&quot;;
+        public static final String VIDEO = &quot;video&quot;;
+    }
+
+    @Nullable
+    public Layer getLayer(@NonNull String layerJSON) {
+<span class="fc" id="L73">        Layer layer = null;</span>
+        try {
+<span class="fc" id="L75">            JSONObject jsonObject = new JSONObject(layerJSON);</span>
+<span class="fc" id="L76">            String layerType = jsonObject.getString(TYPE);</span>
+<span class="fc" id="L77">            String layerId = jsonObject.getString(ID);</span>
+<span class="fc" id="L78">            String source = jsonObject.optString(SOURCE);</span>
+<span class="fc" id="L79">            String sourceLayer = jsonObject.optString(SOURCE_LAYER);</span>
+<span class="fc" id="L80">            String filter = jsonObject.optString(FILTER);</span>
+<span class="fc" id="L81">            Expression filterExpression = null;</span>
+
+<span class="fc" id="L83">            ArrayList&lt;PropertyValue&gt; propertyValues = new ArrayList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (!jsonObject.optString(LAYOUT).equals(&quot;&quot;)) {</span>
+<span class="fc" id="L86">                JSONObject layoutObject = jsonObject.optJSONObject(LAYOUT);</span>
+
+<span class="fc" id="L88">                Iterator&lt;String&gt; keys = layoutObject.keys();</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">                while (keys.hasNext()) {</span>
+<span class="nc" id="L90">                    String key = keys.next();</span>
+<span class="nc" id="L91">                    Object value = layoutObject.opt(key);</span>
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                    if (value instanceof JSONArray) {</span>
+                        // Check if this is an array of numbers
+<span class="nc" id="L95">                        JSONArray jsonArray = (JSONArray) value;</span>
+
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                        if (isJSONArrayOfNumbers(jsonArray)) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                            if (&quot;text-offset&quot;.equals(key)) {</span>
+<span class="nc" id="L99">                                value = getFloatArray(jsonArray);</span>
+                            }
+                        } else {
+<span class="nc" id="L102">                            value = Expression.raw(value.toString());</span>
+                        }
+<span class="nc bnc" id="L104" title="All 2 branches missed.">                    } else if (value instanceof JSONObject) {</span>
+<span class="nc" id="L105">                        value = value.toString();</span>
+                    }
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">                    if (value != null) {</span>
+<span class="nc" id="L109">                        propertyValues.add(new ExposedLayoutPropertyValue&lt;&gt;(key, value));</span>
+                    }
+
+<span class="nc" id="L112">                }</span>
+            }
+
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if (!jsonObject.optString(PAINT).equals(&quot;&quot;)) {</span>
+<span class="fc" id="L116">                JSONObject paintObject = jsonObject.optJSONObject(PAINT);</span>
+
+<span class="fc" id="L118">                Iterator&lt;String&gt; keys = paintObject.keys();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                while (keys.hasNext()) {</span>
+<span class="fc" id="L120">                    String key = keys.next();</span>
+<span class="fc" id="L121">                    Object value = paintObject.opt(key);</span>
+
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">                    if (value instanceof JSONArray) {</span>
+                        // Check if this is an array of numbers
+<span class="fc" id="L125">                        JSONArray jsonArray = (JSONArray) value;</span>
+
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                        if (isJSONArrayOfNumbers(jsonArray)) {</span>
+<span class="nc bnc" id="L128" title="All 6 branches missed.">                            if (&quot;line-dasharray&quot;.equals(key) || &quot;line-translate&quot;.equals(key) || &quot;text-translate&quot;.equals(key)) {</span>
+<span class="nc" id="L129">                                value = getFloatArray(jsonArray);</span>
+                            }
+                        } else {
+<span class="fc" id="L132">                            value = Expression.raw(value.toString());</span>
+                        }
+<span class="pc bnc" id="L134" title="All 2 branches missed.">                    } else if (value instanceof JSONObject) {</span>
+<span class="nc" id="L135">                        value = value.toString();</span>
+                    }
+
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                    if (value != null) {</span>
+<span class="fc" id="L139">                        propertyValues.add(new ExposedPaintPropertyValue&lt;&gt;(key, value));</span>
+                    }
+
+<span class="fc" id="L142">                }</span>
+            }
+
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">            if (!TextUtils.isEmpty(filter)) {</span>
+<span class="nc" id="L146">                filterExpression = Expression.raw(filter);</span>
+            }
+
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            if (layerType.equals(LAYER_TYPE.RASTER)) {</span>
+<span class="fc" id="L150">                layer = new RasterLayer(layerId, source);</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L152">                    ((RasterLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.FILL)) {</span>
+<span class="nc" id="L155">                layer = new FillLayer(layerId, source);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L157">                    ((FillLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L161">                    ((FillLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.LINE)) {</span>
+<span class="nc" id="L164">                layer = new LineLayer(layerId, source);</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L166">                    ((LineLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L170">                    ((LineLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.SYMBOL)) {</span>
+<span class="nc" id="L173">                layer = new SymbolLayer(layerId, source);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L175">                    ((SymbolLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L179">                    ((SymbolLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.CIRCLE)) {</span>
+<span class="nc" id="L182">                layer = new CircleLayer(layerId, source);</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L184">                    ((CircleLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L188">                    ((CircleLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.HEATMAP)) {</span>
+<span class="nc" id="L191">                layer = new HeatmapLayer(layerId, source);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L193">                    ((HeatmapLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L196" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L197">                    ((HeatmapLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.FILL_EXTRUSION)) {</span>
+<span class="nc" id="L200">                layer = new FillExtrusionLayer(layerId, source);</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L202">                    ((FillExtrusionLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                if (filterExpression != null) {</span>
+<span class="nc" id="L206">                    ((FillExtrusionLayer) layer).setFilter(filterExpression);</span>
+                }
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.HILLSHADE)) {</span>
+<span class="nc" id="L209">                layer = new HillshadeLayer(layerId, source);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L211">                    ((HillshadeLayer) layer).setSourceLayer(sourceLayer);</span>
+                }
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">            } else if (layerType.equals(LAYER_TYPE.BACKGROUND)) {</span>
+<span class="fc" id="L214">                layer = new BackgroundLayer(layerId);</span>
+            }
+
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">            if (layer != null) {</span>
+<span class="fc" id="L218">                layer.setProperties(propertyValues.toArray(new PropertyValue[0]));</span>
+
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">                if (jsonObject.has(MINZOOM)) {</span>
+<span class="nc" id="L221">                    layer.setMinZoom(((Double) jsonObject.getDouble(MINZOOM)).floatValue());</span>
+                }
+
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">                if (jsonObject.has(MAXZOOM)) {</span>
+<span class="nc" id="L225">                    layer.setMaxZoom(((Double) jsonObject.getDouble(MAXZOOM)).floatValue());</span>
+                }
+            }
+<span class="nc" id="L228">        } catch (JSONException e) {</span>
+<span class="nc" id="L229">            Timber.e(e);</span>
+<span class="nc" id="L230">            return null;</span>
+<span class="fc" id="L231">        }</span>
+
+<span class="fc" id="L233">        return layer;</span>
+    }
+
+    @VisibleForTesting
+    @NonNull
+    protected Float[] getFloatArray(JSONArray jsonArray) throws JSONException {
+<span class="fc" id="L239">        Float[] lineDashArrayValue = new Float[jsonArray.length()];</span>
+
+<span class="fc bfc" id="L241" title="All 2 branches covered.">        for (int i = 0; i &lt; jsonArray.length(); i++) {</span>
+<span class="fc" id="L242">            lineDashArrayValue[i] = Double.valueOf(jsonArray.getDouble(i)).floatValue();</span>
+        }
+
+<span class="fc" id="L245">        return lineDashArrayValue;</span>
+    }
+
+    private boolean isJSONArrayOfNumbers(@NonNull JSONArray jsonArray) {
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if (jsonArray.length() &gt; 1) {</span>
+<span class="pc bpc" id="L250" title="3 of 4 branches missed.">            return !Double.isNaN(jsonArray.optDouble(0)) &amp;&amp; !Double.isNaN(jsonArray.optDouble(1));</span>
+        } else {
+<span class="nc bnc" id="L252" title="All 2 branches missed.">            return !Double.isNaN(jsonArray.optDouble(0));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

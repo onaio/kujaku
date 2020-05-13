@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.FeatureFilterTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:24" hostname="kigamba-ThinkPad-T580" time="0.041">
+  <properties/>
+  <testcase name="filterShouldReturnAllFeaturesIfThereAreNoConditions" classname="io.ona.kujaku.utils.FeatureFilterTest" time="0.016"/>
+  <testcase name="filterShouldFilterWithChainedProperties" classname="io.ona.kujaku.utils.FeatureFilterTest" time="0.006"/>
+  <testcase name="filterShouldChainConditions" classname="io.ona.kujaku.utils.FeatureFilterTest" time="0.005"/>
+  <testcase name="filterShouldReturnEmptyFeatureCollectionWhenGivenEmptyFeatureCollection" classname="io.ona.kujaku.utils.FeatureFilterTest" time="0.006"/>
+  <testcase name="filterShouldReturnOnlyFeaturesWithFilterProperty" classname="io.ona.kujaku.utils.FeatureFilterTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

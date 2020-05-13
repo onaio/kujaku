@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.config.SortFieldConfigTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:25" hostname="kigamba-ThinkPad-T580" time="4.831">
+  <properties/>
+  <testcase name="testExtractSortFieldConfigs" classname="io.ona.kujaku.utils.config.SortFieldConfigTest" time="4.815"/>
+  <testcase name="testToJsonObject" classname="io.ona.kujaku.utils.config.SortFieldConfigTest" time="0.004"/>
+  <testcase name="testIsValidType" classname="io.ona.kujaku.utils.config.SortFieldConfigTest" time="0.004"/>
+  <testcase name="testSetType" classname="io.ona.kujaku.utils.config.SortFieldConfigTest" time="0.004"/>
+  <testcase name="testConstructor" classname="io.ona.kujaku.utils.config.SortFieldConfigTest" time="0.004"/>
+  <system-out><![CDATA[WARNING: No manifest file found at build/intermediates/bundles/debug/--none.
+Falling back to the Android OS resources only.
+To remove this warning, annotate your test class with @Config(manifest=Config.NONE).
+]]></system-out>
+  <system-err><![CDATA[No such manifest file: build/intermediates/bundles/debug/--none
+]]></system-err>
+</testsuite>

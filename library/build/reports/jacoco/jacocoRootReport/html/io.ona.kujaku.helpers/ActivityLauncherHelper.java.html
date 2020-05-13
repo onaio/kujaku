@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ActivityLauncherHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers</a> &gt; <span class="el_source">ActivityLauncherHelper.java</span></div><h1>ActivityLauncherHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.Constants;
+
+import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
+import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
+
+/**
+ * @author Vincent Karuri
+ */
+<span class="nc" id="L32">public class ActivityLauncherHelper {</span>
+
+<span class="fc" id="L34">    public static final String TAG = ActivityLauncherHelper.class.getName();</span>
+
+    public static void launchMapActivity(@NonNull Activity hostActivity, @NonNull String mapboxAccessToken
+            , @Nullable List&lt;Point&gt; points, boolean enableDropPoint) {
+<span class="fc" id="L38">        Intent intent = new Intent(hostActivity, MapActivity.class);</span>
+<span class="fc" id="L39">        createCustomStyleLayer(hostActivity.getApplicationContext(), new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+<span class="fc" id="L42">                JSONObject mapboxStyleJSON = (JSONObject) objects[0];</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">                if (mapboxStyleJSON != null) {</span>
+<span class="fc" id="L44">                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{</span>
+<span class="fc" id="L45">                            mapboxStyleJSON.toString()</span>
+                    });
+
+<span class="fc" id="L48">                    intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapboxAccessToken);</span>
+<span class="fc" id="L49">                    intent.putExtra(ENABLE_DROP_POINT_BUTTON, enableDropPoint);</span>
+<span class="fc" id="L50">                    intent.putParcelableArrayListExtra(PARCELABLE_POINTS_LIST, (ArrayList&lt;? extends Parcelable&gt;) points);</span>
+
+<span class="fc" id="L52">                    hostActivity.startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);</span>
+                }
+<span class="fc" id="L54">            }</span>
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L57">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L58">            }</span>
+        });
+<span class="fc" id="L60">    }</span>
+
+    /**
+     * This method creates a custom layer sourced from the file assets/2017-nov-27-kujaku-metadata.json
+     *
+     * @param onFinishedListener
+     */
+    private static void createCustomStyleLayer(Context context, OnFinishedListener onFinishedListener) {
+<span class="fc" id="L68">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="fc" id="L71">                String style = readInputStreamAsString(context.getAssets().open(&quot;sample-point-file.json&quot;));</span>
+
+<span class="fc" id="L73">                JSONObject mapboxStyleJSON = new JSONObject(style);</span>
+
+<span class="fc" id="L75">                return new Object[]{mapboxStyleJSON};</span>
+            }
+        });
+<span class="fc" id="L78">        genericAsyncTask.setOnFinishedListener(onFinishedListener);</span>
+<span class="fc" id="L79">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="fc" id="L80">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

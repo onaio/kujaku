@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CriticalDownloadErrorNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.notifications</a> &gt; <span class="el_source">CriticalDownloadErrorNotification.java</span></div><h1>CriticalDownloadErrorNotification.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.notifications;
+
+import android.app.NotificationManager;
+import android.content.Context;
+import android.graphics.Color;
+import android.support.v4.app.NotificationCompat;
+
+import io.ona.kujaku.R;
+
+/**
+ * Creates the appropriate channel for download error notifications.
+ * This notification displays critical download errors. Such errors include 404s and Mapbox tile
+ * count limit exceeded errors
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 04/12/2018
+ */
+
+public class CriticalDownloadErrorNotification extends KujakuNotification {
+
+    public static final String CHANNEL_ID = &quot;KUJAKU_DOWNLOAD_ERROR_CHANNEL&quot;;
+    public static final int NOTIFICATION_COLOR = Color.RED;
+<span class="fc" id="L22">    public static final long[] VIBRATION_PATTERN = new long[]{200, 600, 300, 600};</span>
+
+
+<span class="fc" id="L25">    public CriticalDownloadErrorNotification(Context context) {</span>
+<span class="fc" id="L26">        setContext(context);</span>
+<span class="fc" id="L27">        setSmallIcon(R.drawable.ic_stat_file_download);</span>
+
+<span class="fc" id="L29">        createNotificationChannel(NotificationManager.IMPORTANCE_HIGH, context.getString(R.string.download_error_channel_name)</span>
+<span class="fc" id="L30">                , CHANNEL_ID, context.getString(R.string.download_error_channel_description), NOTIFICATION_COLOR, VIBRATION_PATTERN);</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Displays a download error notification given the title, content and notificationId
+     *
+     * @param title
+     * @param content
+     * @param notificationId
+     */
+    public void displayNotification(String title, String content, int notificationId) {
+<span class="fc" id="L41">        NotificationCompat.Builder notificationBuilder = createNotification(title, content);</span>
+<span class="fc" id="L42">        notificationBuilder.setSmallIcon(android.R.drawable.ic_dialog_info);</span>
+<span class="fc" id="L43">        displayNotification(notificationBuilder, notificationId);</span>
+<span class="fc" id="L44">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

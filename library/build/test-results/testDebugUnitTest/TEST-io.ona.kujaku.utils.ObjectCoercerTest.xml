@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.ObjectCoercerTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:24" hostname="kigamba-ThinkPad-T580" time="0.005">
+  <properties/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenDoubleObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.001"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenIntegerObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenFloatObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenLongPrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenLongObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenLongPrimitiveShouldReturnFloatPrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenLongObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenIntegerObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenDoubleObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenFloatObjectShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenFloatPrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenIntegerPrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenNonNumberObjectShouldReturnZero" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.001"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenDoublePrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenNonNumberObjectShouldReturnZero" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenIntegerPrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToDoublePrimitiveWhenGivenDoublePrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <testcase name="coerceNumberObjectToFloatPrimitiveWhenGivenFloatPrimitiveShouldReturnDoublePrimitive" classname="io.ona.kujaku.utils.ObjectCoercerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

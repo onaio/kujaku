@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.LayerUtilTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:21" hostname="kigamba-ThinkPad-T580" time="3.171">
+  <properties/>
+  <testcase name="getFloatArray" classname="io.ona.kujaku.utils.LayerUtilTest" time="3.036"/>
+  <testcase name="getLayerShouldParseBackgroundLayer" classname="io.ona.kujaku.utils.LayerUtilTest" time="0.127"/>
+  <testcase name="getLayerShouldParseRasterLayer" classname="io.ona.kujaku.utils.LayerUtilTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[initialize called
+]]></system-err>
+</testsuite>

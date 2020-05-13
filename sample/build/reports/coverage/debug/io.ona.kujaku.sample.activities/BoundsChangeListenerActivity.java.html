@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoundsChangeListenerActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">BoundsChangeListenerActivity.java</span></div><h1>BoundsChangeListenerActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.widget.TextView;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import java.text.DecimalFormat;
+
+import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 27/11/2018
+ */
+
+<span class="nc" id="L22">public class BoundsChangeListenerActivity extends BaseNavigationDrawerActivity {</span>
+
+    private KujakuMapView kujakuMapView;
+    private TextView topRightBound;
+    private TextView topLeftBound;
+    private TextView bottomRightBound;
+    private TextView bottomLeftBound;
+
+    private DecimalFormat sixDForm;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L35">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L37">        kujakuMapView = findViewById(R.id.kmv_boundingBoxListener_mapView);</span>
+<span class="nc" id="L38">        kujakuMapView.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L40">        topRightBound = findViewById(R.id.tv_boundingBoxListener_topRightCoordinate);</span>
+<span class="nc" id="L41">        topLeftBound = findViewById(R.id.tv_boundingBoxListener_topLeftCoordinate);</span>
+<span class="nc" id="L42">        bottomRightBound = findViewById(R.id.tv_boundingBoxListener_bottomRightCoordinate);</span>
+<span class="nc" id="L43">        bottomLeftBound = findViewById(R.id.tv_boundingBoxListener_bottomLeftCoordinate);</span>
+
+<span class="nc" id="L45">        sixDForm = new DecimalFormat(&quot;0.######&quot;);</span>
+<span class="nc" id="L46">        String latLongFormat = getString(R.string.lat_long_format);</span>
+
+<span class="nc" id="L48">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L51">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L52">            }</span>
+        });
+<span class="nc" id="L54">        kujakuMapView.setBoundsChangeListener(new BoundsChangeListener() {</span>
+            @Override
+            public void onBoundsChanged(LatLng topLeft, LatLng topRight, LatLng bottomRight, LatLng bottomLeft) {
+<span class="nc" id="L57">                topRightBound.setText(</span>
+<span class="nc" id="L58">                        String.format(latLongFormat, topRight.getLatitude(), topRight.getLongitude())</span>
+                );
+<span class="nc" id="L60">                topLeftBound.setText(</span>
+<span class="nc" id="L61">                        String.format(latLongFormat, topLeft.getLatitude(), topLeft.getLongitude())</span>
+                );
+
+<span class="nc" id="L64">                bottomLeftBound.setText(</span>
+<span class="nc" id="L65">                        String.format(latLongFormat, bottomLeft.getLatitude(), bottomLeft.getLongitude())</span>
+                );
+
+<span class="nc" id="L68">                bottomRightBound.setText(</span>
+<span class="nc" id="L69">                        String.format(latLongFormat, bottomRight.getLatitude(), bottomRight.getLongitude())</span>
+                );
+<span class="nc" id="L71">            }</span>
+        });
+<span class="nc" id="L73">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L77">        return R.layout.activity_bounding_box_listener_activity;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L82">        return R.id.nav_bounding_box_listener;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L87">        super.onResume();</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L89">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L93">        super.onStart();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L95">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L99">        super.onStop();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L101">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L105">        super.onPause();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L107">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L111">        super.onDestroy();</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L113">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L117">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L119">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L123">        super.onLowMemory();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L125">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

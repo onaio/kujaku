@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaddedBboxCalculatorActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">PaddedBboxCalculatorActivity.java</span></div><h1>PaddedBboxCalculatorActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.MultiPoint;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.Polyline;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.turf.TurfMeasurement;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.utils.CoordinateUtils;
+import io.ona.kujaku.views.KujakuMapView;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 27/11/2018
+ */
+
+<span class="nc" id="L35">public class PaddedBboxCalculatorActivity extends BaseNavigationDrawerActivity {</span>
+
+    private KujakuMapView kujakuMapView;
+
+<span class="nc" id="L39">    private ArrayList&lt;Point&gt; markerPoints = new ArrayList&lt;&gt;();</span>
+    private MapboxMap mapboxMap;
+
+    private Polyline normalPolyline;
+    private Polyline paddedPolyline;
+
+<span class="nc" id="L45">    private boolean firstTime = true;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L49">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L50">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L52">        kujakuMapView = findViewById(R.id.kmv_paddedBboxCalculator_mapView);</span>
+<span class="nc" id="L53">        kujakuMapView.onCreate(savedInstanceState);</span>
+<span class="nc" id="L54">        kujakuMapView.enableAddPoint(true);</span>
+
+<span class="nc" id="L56">        Button dropPointBtn = findViewById(R.id.btn_paddedBboxCalculator_dropPoint);</span>
+<span class="nc" id="L57">        Button generatePaddedBbox = findViewById(R.id.btn_paddedBboxCalculator_generatePaddedBbox);</span>
+
+<span class="nc" id="L59">        dropPointBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                if (kujakuMapView.isCanAddPoint()) {</span>
+<span class="nc" id="L63">                    JSONObject jsonObject = kujakuMapView.dropPoint();</span>
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                    if (jsonObject != null) {</span>
+<span class="nc" id="L66">                        Geometry geometry = Feature.fromJson(jsonObject.toString()).geometry();</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                        if (geometry instanceof Point) {</span>
+<span class="nc" id="L69">                            markerPoints.add((Point) geometry);</span>
+                        }
+
+                    }
+                }
+<span class="nc" id="L74">            }</span>
+        });
+
+<span class="nc" id="L77">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(MapboxMap mapboxMap) {
+<span class="nc" id="L80">                PaddedBboxCalculatorActivity.this.mapboxMap = mapboxMap;</span>
+<span class="nc" id="L81">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L82">            }</span>
+        });
+
+<span class="nc" id="L85">        generatePaddedBbox.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">                if (markerPoints.size() &gt; 0) {</span>
+                    // Generate bbox from Polygon, MultiPolygon or Points(MultiPoints)
+<span class="nc" id="L90">                    double[] bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(markerPoints));</span>
+
+                    // Generate the padded bbox
+<span class="nc" id="L93">                    double[] paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000);</span>
+
+                    // Generate (4-sided)Polygon with 5 coordinates
+<span class="nc" id="L96">                    LatLng[] normalBboxCoordinates = CoordinateUtils.generate5pointsFromBbox(bbox);</span>
+<span class="nc" id="L97">                    LatLng[] paddedBboxCoordinates = CoordinateUtils.generate5pointsFromBbox(paddedBbox);</span>
+
+<span class="nc bnc" id="L99" title="All 6 branches missed.">                    if (normalBboxCoordinates != null &amp;&amp; paddedBboxCoordinates != null &amp;&amp; mapboxMap != null) {</span>
+
+<span class="nc bnc" id="L101" title="All 2 branches missed.">                        if (firstTime) {</span>
+<span class="nc" id="L102">                            normalPolyline = mapboxMap.addPolyline(new PolylineOptions()</span>
+<span class="nc" id="L103">                                    .color(getResources().getColor(R.color.my_location_marker_color))</span>
+<span class="nc" id="L104">                                    .add(normalBboxCoordinates)</span>
+<span class="nc" id="L105">                                    .width(5));</span>
+
+<span class="nc" id="L107">                            paddedPolyline = mapboxMap.addPolyline(new PolylineOptions()</span>
+<span class="nc" id="L108">                                    .color(getResources().getColor(R.color.red))</span>
+<span class="nc" id="L109">                                    .add(paddedBboxCoordinates)</span>
+<span class="nc" id="L110">                                    .width(5));</span>
+
+<span class="nc" id="L112">                            firstTime = false;</span>
+                        } else {
+<span class="nc" id="L114">                            normalPolyline.setPoints(Arrays.asList(normalBboxCoordinates));</span>
+<span class="nc" id="L115">                            paddedPolyline.setPoints(Arrays.asList(paddedBboxCoordinates));</span>
+
+<span class="nc" id="L117">                            mapboxMap.updatePolyline(normalPolyline);</span>
+<span class="nc" id="L118">                            mapboxMap.updatePolyline(paddedPolyline);</span>
+                        }
+                    }
+
+<span class="nc" id="L122">                } else {</span>
+<span class="nc" id="L123">                    Toasty.error(PaddedBboxCalculatorActivity.this, getString(R.string.first_add_some_points))</span>
+<span class="nc" id="L124">                            .show();</span>
+                }
+<span class="nc" id="L126">            }</span>
+        });
+
+<span class="nc" id="L129">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L133">        return R.layout.activity_padded_bbox_activity;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L138">        return R.id.nav_padded_bbox_calculator;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L143">        super.onResume();</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L145">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L149">        super.onStart();</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L151">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L155">        super.onStop();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L157">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L161">        super.onPause();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L163">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L167">        super.onDestroy();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L169">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L173">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L175">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L179">        super.onLowMemory();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L181">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

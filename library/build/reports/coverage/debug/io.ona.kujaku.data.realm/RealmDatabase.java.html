@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealmDatabase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.data.realm</a> &gt; <span class="el_source">RealmDatabase.java</span></div><h1>RealmDatabase.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.data.realm;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
+
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+import io.realm.Sort;
+
+/**
+ * Created by Jason Rogena - jrogena@ona.io on 11/20/17.
+ */
+public class RealmDatabase {
+    protected static final long VERSION = 1l;
+    protected static final String NAME = &quot;kujaku.realm&quot;;
+    private static RealmDatabase realmDatabase;
+    private final Context context;
+
+    public static RealmDatabase init(@NonNull Context context) {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (realmDatabase == null) {</span>
+<span class="nc" id="L26">            realmDatabase = new RealmDatabase(context);</span>
+        }
+
+<span class="nc" id="L29">        return realmDatabase;</span>
+    }
+
+<span class="nc" id="L32">    private RealmDatabase(Context context) {</span>
+<span class="nc" id="L33">        this.context = context;</span>
+<span class="nc" id="L34">        Realm.init(context);</span>
+<span class="nc" id="L35">        RealmConfiguration configuration = new RealmConfiguration.Builder()</span>
+<span class="nc" id="L36">                .name(NAME)</span>
+<span class="nc" id="L37">                .schemaVersion(VERSION)</span>
+<span class="nc" id="L38">                .build();</span>
+<span class="nc" id="L39">        Realm.setDefaultConfiguration(configuration);</span>
+<span class="nc" id="L40">    }</span>
+
+    /**
+     * Retrieves all {@link MapBoxOfflineQueueTask} records in ASCENDING order of the date created
+     *
+     * @return list of {@link MapBoxOfflineQueueTask} records
+     */
+    public RealmResults&lt;MapBoxOfflineQueueTask&gt; getTasks() {
+<span class="nc" id="L48">        Realm realm = Realm.getDefaultInstance();</span>
+<span class="nc" id="L49">        RealmResults&lt;MapBoxOfflineQueueTask&gt; realmResults = realm.where(MapBoxOfflineQueueTask.class)</span>
+<span class="nc" id="L50">                .findAll();</span>
+
+<span class="nc" id="L52">        return realmResults.sort(&quot;dateCreated&quot;, Sort.ASCENDING);</span>
+    }
+
+    public boolean deleteTask(@NonNull String mapName, boolean isDownloadTask) {
+<span class="nc" id="L56">        Realm realm = Realm.getDefaultInstance();</span>
+        MapBoxOfflineQueueTask taskToDelete;
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        String taskType = isDownloadTask ? MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD : MapBoxOfflineQueueTask.TASK_TYPE_DELETE;</span>
+
+<span class="nc" id="L60">        taskToDelete = realm.where(MapBoxOfflineQueueTask.class)</span>
+<span class="nc" id="L61">                .equalTo(&quot;taskType&quot;, taskType)</span>
+<span class="nc" id="L62">                .contains(&quot;task&quot;, &quot;\&quot;mapName\&quot;:\&quot;&quot; + mapName + &quot;\&quot;&quot;)</span>
+<span class="nc" id="L63">                .findFirst();</span>
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (taskToDelete != null) {</span>
+<span class="nc" id="L66">            realm.beginTransaction();</span>
+<span class="nc" id="L67">            taskToDelete.deleteFromRealm();</span>
+<span class="nc" id="L68">            realm.commitTransaction();</span>
+
+<span class="nc" id="L70">            realm.close();</span>
+
+<span class="nc" id="L72">            return true;</span>
+        } else {
+<span class="nc" id="L74">            return false;</span>
+        }
+    }
+
+    /**
+     * Saves a {@link MapBoxOfflineQueueTask} as {@link MapBoxOfflineQueueTask#TASK_STATUS_DONE}&lt;br/&gt;
+     * This means the {@link OfflineRegion} can no longer be resumed if it was incomplete.&lt;br/&gt;
+     * This also means that a {@link OfflineRegion} will still be in storage if it was not successfully deleted
+     *
+     * @param mapBoxOfflineQueueTask
+     */
+    public void persistCompletedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+<span class="nc" id="L86">        Realm realm = Realm.getDefaultInstance();</span>
+<span class="nc" id="L87">        realm.beginTransaction();</span>
+
+<span class="nc" id="L89">        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_DONE);</span>
+<span class="nc" id="L90">        realm.commitTransaction();</span>
+<span class="nc" id="L91">    }</span>
+
+    /**
+     * Updates the {@link MapBoxOfflineQueueTask} status as {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}&lt;br/&gt;
+     * This means that subsequent Offline Region download calls with a similar map name will not result in this task being deleted.
+     *
+     * @param mapBoxOfflineQueueTask
+     */
+    public void persistDownloadStartedStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask) {
+<span class="nc" id="L100">        Realm realm = Realm.getDefaultInstance();</span>
+<span class="nc" id="L101">        realm.beginTransaction();</span>
+<span class="nc" id="L102">        mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_STARTED);</span>
+
+<span class="nc" id="L104">        realm.commitTransaction();</span>
+<span class="nc" id="L105">    }</span>
+
+    /**
+     * Retrieves the {@link MapBoxOfflineQueueTask}s of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD}
+     * which are pending i.e. their downloads have not started. Their status is {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
+     *
+     * @param mapName
+     * @return
+     */
+    protected RealmResults&lt;MapBoxOfflineQueueTask&gt; getPendingOfflineMapDownloadsWithSimilarNames(String mapName) {
+<span class="nc" id="L115">        Realm realm = Realm.getDefaultInstance();</span>
+
+<span class="nc" id="L117">        RealmResults&lt;MapBoxOfflineQueueTask&gt; mapBoxOfflineQueueTaskRealmResults = realm.where(MapBoxOfflineQueueTask.class)</span>
+<span class="nc" id="L118">                .equalTo(&quot;taskType&quot;, MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD)</span>
+<span class="nc" id="L119">                .equalTo(&quot;taskStatus&quot;, MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)</span>
+<span class="nc" id="L120">                .contains(&quot;task&quot;, &quot;\&quot;mapName\&quot;:\&quot;&quot; + mapName + &quot;\&quot;&quot;)</span>
+<span class="nc" id="L121">                .findAll();</span>
+
+<span class="nc" id="L123">        return mapBoxOfflineQueueTaskRealmResults;</span>
+    }
+
+    /**
+     * Deletes all {@link MapBoxOfflineQueueTask}s of type {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD}
+     * whose download has not started
+     *
+     * @param mapName
+     * @return
+     */
+    public boolean deletePendingOfflineMapDownloadsWithSimilarNames(@Nullable String mapName) {
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (mapName == null) {</span>
+<span class="nc" id="L135">            return false;</span>
+        }
+
+<span class="nc" id="L138">        RealmResults&lt;MapBoxOfflineQueueTask&gt; realmResults = getPendingOfflineMapDownloadsWithSimilarNames(mapName);</span>
+
+<span class="nc" id="L140">        Realm realm = Realm.getDefaultInstance();</span>
+<span class="nc" id="L141">        realm.beginTransaction();</span>
+
+<span class="nc" id="L143">        boolean isDeleted = realmResults.deleteAllFromRealm();</span>
+
+<span class="nc" id="L145">        realm.commitTransaction();</span>
+
+<span class="nc" id="L147">        return isDeleted;</span>
+    }
+
+    /**
+     * Returns the next {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED} {@link MapBoxOfflineQueueTask}
+     *
+     * @return
+     */
+    public MapBoxOfflineQueueTask getNextTask() {
+<span class="nc" id="L156">        Realm realm = Realm.getDefaultInstance();</span>
+
+<span class="nc" id="L158">        RealmResults&lt;MapBoxOfflineQueueTask&gt; realmResults = realm.where(MapBoxOfflineQueueTask.class)</span>
+<span class="nc" id="L159">                .equalTo(&quot;taskStatus&quot;, MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)</span>
+<span class="nc" id="L160">                .findAllSorted(&quot;dateUpdated&quot;, Sort.ASCENDING);</span>
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (realmResults.size() &gt; 0) {</span>
+<span class="nc" id="L163">            return realmResults.first();</span>
+        }
+
+<span class="nc" id="L166">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

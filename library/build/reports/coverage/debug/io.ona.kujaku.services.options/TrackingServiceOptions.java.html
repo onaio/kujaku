@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrackingServiceOptions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.services.options</a> &gt; <span class="el_source">TrackingServiceOptions.java</span></div><h1>TrackingServiceOptions.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.services.options;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+/**
+ * Abstract Options for Tracking Service.
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 03/07/19.
+ */
+abstract public class TrackingServiceOptions implements Parcelable {
+    private long minTime;
+
+    protected long tag;
+    protected long minDistance;
+    protected long gpsMinDistance;
+    protected long toleranceIntervalDistance;
+    protected long distanceFromDeparture;
+    protected long minAccuracy;
+
+<span class="nc" id="L21">    public TrackingServiceOptions() {</span>
+<span class="nc" id="L22">        this.minTime = 0;</span>
+<span class="nc" id="L23">        this.tag = 0;</span>
+<span class="nc" id="L24">    }</span>
+
+    /**
+     * Get the min distance in meters between 2 points registered by the TrackingService
+     *
+     * @return
+     */
+    public long getMinDistance() {
+<span class="nc" id="L32">        return minDistance;</span>
+    }
+
+    /**
+     * Get the tolerance in meters (more or less) to the min distance between 2 points registered by the TrackingService
+     *
+     * @return
+     */
+    public long getToleranceIntervalDistance() {
+<span class="nc" id="L41">        return toleranceIntervalDistance;</span>
+    }
+
+    /**
+     * Define the maximum distance in meters from the first point recorded to raise the
+     * {@link io.ona.kujaku.listeners.TrackingServiceListener#onCloseToDepartureLocation} function
+     *
+     * @return
+     */
+    public long getDistanceFromDeparture() {
+<span class="nc" id="L51">        return distanceFromDeparture;</span>
+    }
+
+    /**
+     * Get the minimum accuracy in meters to record a location
+     *
+     * @return
+     */
+    public long getMinAccuracy() {
+<span class="nc" id="L60">        return minAccuracy;</span>
+    }
+
+    /**
+     * Get the minimum time in seconds between getting a point from the {@link android.location.LocationManager#requestLocationUpdates}
+     *
+     * @return
+     */
+    public long getMinTime() {
+<span class="nc" id="L69">        return minTime;</span>
+    }
+
+    /**
+     * Get the minimum distance in meters between getting a point from the {@link android.location.LocationManager#requestLocationUpdates}
+     *
+     * @return
+     */
+    public long getGpsMinDistance() {
+<span class="nc" id="L78">        return gpsMinDistance;</span>
+    }
+
+    /**
+     * Get the tag assigned to GPS points
+     *
+     * @return
+     */
+    public long getTag() {
+<span class="nc" id="L87">        return tag;</span>
+    }
+
+    /**
+     * Set Tag to locations
+     *
+     * @param tag
+     */
+    public void setTag(long tag) {
+<span class="nc" id="L96">        this.tag = tag;</span>
+<span class="nc" id="L97">    }</span>
+
+    @Override
+    public int describeContents() {
+<span class="nc" id="L101">        return 0;</span>
+    }
+
+    /**
+     * Parcelable implementation of writeToParcel function
+     *
+     * @param dest
+     * @param flags
+     */
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+<span class="nc" id="L112">        dest.writeLong(minTime);</span>
+<span class="nc" id="L113">        dest.writeLong(minDistance);</span>
+<span class="nc" id="L114">        dest.writeLong(gpsMinDistance);</span>
+<span class="nc" id="L115">        dest.writeLong(toleranceIntervalDistance);</span>
+<span class="nc" id="L116">        dest.writeLong(distanceFromDeparture);</span>
+<span class="nc" id="L117">        dest.writeLong(minAccuracy);</span>
+<span class="nc" id="L118">        dest.writeLong(tag);</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * Parcelable implementation of createFromParcel function called in subclasses
+     *
+     * @param in
+     */
+    protected void createFromParcel(Parcel in) {
+<span class="nc" id="L127">        this.minTime = in.readLong();</span>
+<span class="nc" id="L128">        this.minDistance = in.readLong();</span>
+<span class="nc" id="L129">        this.gpsMinDistance = in.readLong();</span>
+<span class="nc" id="L130">        this.toleranceIntervalDistance = in.readLong();</span>
+<span class="nc" id="L131">        this.distanceFromDeparture = in.readLong();</span>
+<span class="nc" id="L132">        this.minAccuracy = in.readLong();</span>
+<span class="nc" id="L133">        this.tag = in.readLong();</span>
+<span class="nc" id="L134">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

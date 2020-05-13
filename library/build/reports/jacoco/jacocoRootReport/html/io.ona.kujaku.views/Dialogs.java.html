@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Dialogs.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.views</a> &gt; <span class="el_source">Dialogs.java</span></div><h1>Dialogs.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.views;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.utils.LocationSettingsHelper;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 29/01/2019
+ */
+
+<span class="nc" id="L21">public final class Dialogs {</span>
+
+    public static final void showDialogIfLocationDisabled(@NonNull Activity activity, @Nullable String dialogTitle, @Nullable String dialogMessage) {
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        String finalDialogTitle = dialogTitle != null ? dialogTitle : activity.getString(R.string.location_service_disabled);</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        String finalDialogMessage = dialogMessage != null ? dialogMessage : activity.getString(R.string.location_service_disabled_dialog_explanation);</span>
+
+<span class="nc" id="L27">        LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback&lt;LocationSettingsResult&gt;() {</span>
+            @Override
+            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+<span class="nc" id="L30">                final Status status = locationSettingsResult.getStatus();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">                if (status.getStatusCode() == LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {</span>
+<span class="nc" id="L32">                    new AlertDialog.Builder(activity)</span>
+<span class="nc" id="L33">                            .setTitle(finalDialogTitle)</span>
+<span class="nc" id="L34">                            .setMessage(finalDialogMessage)</span>
+<span class="nc" id="L35">                            .setPositiveButton(activity.getString(android.R.string.ok), new DialogInterface.OnClickListener() {</span>
+                                @Override public void onClick(DialogInterface dialog, int which) {
+<span class="nc" id="L37">                                    dialog.dismiss();</span>
+<span class="nc" id="L38">                                }</span>
+                            })
+<span class="nc" id="L40">                            .show();</span>
+                }
+
+<span class="nc" id="L43">            }</span>
+        });
+<span class="nc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

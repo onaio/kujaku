@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoundsAwareActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">BoundsAwareActivity.java</span></div><h1>BoundsAwareActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+import static io.ona.kujaku.sample.utils.TestDataUtils.createFeatureList;
+import static io.ona.kujaku.sample.utils.TestDataUtils.generateMapBoxLayer;
+
+<span class="nc" id="L33">public class BoundsAwareActivity extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L35">    private final String TAG = BoundsAwareActivity.class.getName();</span>
+
+    private KujakuMapView kujakuMapView;
+
+<span class="nc" id="L39">    private boolean isBoundsAware = false;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L43">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L44">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L46">        kujakuMapView = findViewById(R.id.bounds_aware_activity_map_view);</span>
+<span class="nc" id="L47">        kujakuMapView.setBoundsChangeListener(new BoundsChangeListener() {</span>
+            @Override
+            public void onBoundsChanged(LatLng topLeft, LatLng topRight, LatLng bottomRight, LatLng bottomLeft) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">                if (isBoundsAware) {</span>
+<span class="nc" id="L51">                    Log.i(TAG, &quot;Recording bounds change!&quot;);</span>
+<span class="nc" id="L52">                    addPointsToMap(calculateCenterCoordinates(topLeft, bottomRight));</span>
+                }
+<span class="nc" id="L54">            }</span>
+        });
+
+<span class="nc" id="L57">        Button btnToggleBoundsListener = findViewById(R.id.btn_toggle_bounds_listener);</span>
+<span class="nc" id="L58">        btnToggleBoundsListener.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                isBoundsAware = !isBoundsAware;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                ((Button) v).setText(!isBoundsAware ? R.string.enable_bounds_listener : R.string.disable_bounds_listener);</span>
+<span class="nc" id="L63">            }</span>
+        });
+
+<span class="nc" id="L66">        initializeGenericLayer();</span>
+<span class="nc" id="L67">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L70">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L71">            }</span>
+        });
+<span class="nc" id="L73">    }</span>
+
+
+    private LatLng calculateCenterCoordinates(LatLng topLeft, LatLng bottomRight) {
+<span class="nc" id="L77">        double longitude = (topLeft.getLongitude() + bottomRight.getLongitude()) / 2.0;</span>
+<span class="nc" id="L78">        double latitude = (topLeft.getLatitude() + bottomRight.getLatitude()) / 2.0;</span>
+<span class="nc" id="L79">        return new LatLng(latitude, longitude);</span>
+    }
+
+    private void initializeGenericLayer() {
+<span class="nc" id="L83">        kujakuMapView.initializePrimaryGeoJsonSource(&quot;kujaku_primary_source&quot;, false, null);</span>
+<span class="nc" id="L84">        Layer circleLayer = generateMapBoxLayer(&quot;kujaku_primary_layer&quot;, kujakuMapView.getPrimaryGeoJsonSource().getId());</span>
+<span class="nc" id="L85">        kujakuMapView.setPrimaryLayer(circleLayer);</span>
+        // set camera position
+<span class="nc" id="L87">        CameraPosition cameraPosition = new CameraPosition.Builder()</span>
+<span class="nc" id="L88">                .target(new LatLng(-1.284956, 36.768831))</span>
+<span class="nc" id="L89">                .zoom(16)</span>
+<span class="nc" id="L90">                .build();</span>
+<span class="nc" id="L91">        kujakuMapView.setCameraPosition(cameraPosition);</span>
+<span class="nc" id="L92">    }</span>
+
+    private void addPointsToMap(LatLng latLng) {
+        try {
+<span class="nc" id="L96">            final String[] featureGroup = {&quot;White&quot;, &quot;Black&quot;, &quot;Hispanic&quot;, &quot;Asian&quot;, &quot;Other&quot;};</span>
+<span class="nc" id="L97">            List&lt;Feature&gt; existingFeatures = new ArrayList&lt;&gt;(kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all()));</span>
+<span class="nc" id="L98">            List&lt;Feature&gt; newFeatures = createFeatureList(20, existingFeatures.size(), latLng.getLongitude(), latLng.getLatitude(), &quot;ethnicity&quot;, &quot;Point&quot;, false, featureGroup, 0.0009);</span>
+<span class="nc" id="L99">            existingFeatures.addAll(newFeatures);</span>
+            // add features to map
+<span class="nc" id="L101">            kujakuMapView.addFeaturePoints(FeatureCollection.fromFeatures(existingFeatures));</span>
+<span class="nc" id="L102">        } catch (JSONException e) {</span>
+<span class="nc" id="L103">            Log.e(TAG, e.getMessage());</span>
+<span class="nc" id="L104">        }</span>
+<span class="nc" id="L105">    }</span>
+
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L110">        return R.layout.activity_bounds_aware;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L115">        super.onResume();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L117">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L121">        super.onStart();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L123">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L127">        super.onStop();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L129">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L133">        super.onPause();</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L135">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L139">        super.onDestroy();</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L141">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L145">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L147">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L151">        super.onLowMemory();</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L153">    }</span>
+
+    @Override
+<span class="nc" id="L156">    protected int getSelectedNavigationItem() { return  R.id.nav_bounds_aware_activity; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

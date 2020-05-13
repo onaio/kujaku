@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.location.clients.BaseLocationClientTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:17" hostname="kigamba-ThinkPad-T580" time="0.095">
+  <properties/>
+  <testcase name="setIsBetterLocationWhenGivenNewerAndNotSignificantlyLessAccurateLocationFromSameProviderShouldReturnTrue" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.017"/>
+  <testcase name="setIsBetterLocationWhenGivenNewerAndNotLessAccurateLocationShouldReturnTrue" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.013"/>
+  <testcase name="setIsBetterLocationWhenGivenOlderAndSameAccuracyLocationFromSameProviderShouldReturnFalse" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.013"/>
+  <testcase name="isBetterLocationWhenGivenSignificantlyNewerLocationShouldReturnTrue" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.014"/>
+  <testcase name="setIsBetterLocationWhenGivenNewerAndSignificantlyLessAccurateLocationFromSameProviderShouldReturnFalse" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.012"/>
+  <testcase name="setIsBetterLocationWhenGivenMoreAccurateLocationShouldReturnTrue" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.013"/>
+  <testcase name="isBetterLocationWhenGivenSignificantlyOlderLocationShouldReturnFalse" classname="io.ona.kujaku.location.clients.BaseLocationClientTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

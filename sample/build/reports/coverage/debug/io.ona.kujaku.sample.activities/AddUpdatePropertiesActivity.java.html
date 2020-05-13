@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AddUpdatePropertiesActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">AddUpdatePropertiesActivity.java</span></div><h1>AddUpdatePropertiesActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import io.ona.kujaku.mbtiles.MBTilesHelper;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+import static io.ona.kujaku.sample.utils.TestDataUtils.alterFeatureJsonProperties;
+import static io.ona.kujaku.sample.utils.TestDataUtils.createFeatureList;
+import static io.ona.kujaku.sample.utils.TestDataUtils.generateMapBoxLayer;
+import static io.ona.kujaku.sample.utils.TestDataUtils.readAssetContents;
+
+<span class="nc" id="L40">public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L42">    private final String TAG = AddUpdatePropertiesActivity.class.getName();</span>
+
+    private KujakuMapView kujakuMapView;
+
+<span class="nc" id="L46">    private boolean isFirstClick = true;</span>
+
+<span class="nc" id="L48">    private final String[] genericFeatureGroup = {&quot;White&quot;, &quot;Black&quot;, &quot;Hispanic&quot;, &quot;Asian&quot;, &quot;Other&quot;};</span>
+<span class="nc" id="L49">    private final String[] featureGroup = {&quot;Not Visited&quot;, &quot;Sprayed&quot;, &quot;Not Sprayable&quot;, &quot;Not Sprayed&quot;};</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L53">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L54">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+<span class="nc" id="L55">        kujakuMapView = findViewById(R.id.add_update_activity_map_view);</span>
+
+        // initializeFromGenericLayer(); // Uncomment this to use a generic layer
+        // setListeners(false); // Uncomment this to use a generic layer
+<span class="nc" id="L59">        initializeFromStyleSource(); // Comment this out when using generic layer</span>
+<span class="nc" id="L60">        setListeners(true); // Comment this out when using generic layer</span>
+<span class="nc" id="L61">    }</span>
+
+    private void initializeFromGenericLayer() {
+<span class="nc" id="L64">        kujakuMapView.initializePrimaryGeoJsonSource(&quot;kujaku_primary_source&quot;, false, null);</span>
+<span class="nc" id="L65">        Layer circleLayer = generateMapBoxLayer(&quot;kujaku_primary_layer&quot;, kujakuMapView.getPrimaryGeoJsonSource().getId());</span>
+<span class="nc" id="L66">        kujakuMapView.setPrimaryLayer(circleLayer);</span>
+        // set camera position
+<span class="nc" id="L68">        CameraPosition cameraPosition = new CameraPosition.Builder()</span>
+<span class="nc" id="L69">                .target(new LatLng(-1.284956, 36.768831))</span>
+<span class="nc" id="L70">                .zoom(16)</span>
+<span class="nc" id="L71">                .build();</span>
+<span class="nc" id="L72">        kujakuMapView.setCameraPosition(cameraPosition);</span>
+<span class="nc" id="L73">    }</span>
+
+    private void initializeFromStyleSource() {
+<span class="nc" id="L76">        String geoJson = readAssetContents(AddUpdatePropertiesActivity.this, &quot;reveal-geojson.json&quot;);</span>
+<span class="nc" id="L77">        kujakuMapView.initializePrimaryGeoJsonSource(&quot;reveal-data-set&quot;, true, geoJson);</span>
+        // set camera position
+<span class="nc" id="L79">        CameraPosition cameraPosition = new CameraPosition.Builder()</span>
+<span class="nc" id="L80">                .target(new LatLng(-14.1706623, 32.5987837))</span>
+<span class="nc" id="L81">                .zoom(16)</span>
+<span class="nc" id="L82">                .build();</span>
+<span class="nc" id="L83">        kujakuMapView.setCameraPosition(cameraPosition);</span>
+<span class="nc" id="L84">        File mbFilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);</span>
+<span class="nc" id="L85">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L88">                mapboxMap.setStyle(new Style.Builder().fromUrl(&quot;asset://reveal-streets-style.json&quot;), new Style.OnStyleLoaded() {</span>
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+<span class="nc bnc" id="L91" title="All 6 branches missed.">                        if (mbFilesDir.exists() &amp;&amp; mbFilesDir.isDirectory() &amp;&amp; mbFilesDir.listFiles() != null)</span>
+<span class="nc" id="L92">                            kujakuMapView.getMbTilesHelper().initializeMbTileslayers(style, Arrays.asList(mbFilesDir.listFiles()));</span>
+<span class="nc" id="L93">                    }</span>
+                });
+<span class="nc" id="L95">            }</span>
+        });
+<span class="nc" id="L97">    }</span>
+
+    private void setListeners(boolean isFetchFromStyle) {
+        // test button actions
+<span class="nc" id="L101">        Button btnAddFeaturePoints = findViewById(R.id.btn_test_feature_point_addition);</span>
+<span class="nc" id="L102">        btnAddFeaturePoints.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                try {
+                    // helpful message
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                    if (isFirstClick) {</span>
+<span class="nc" id="L108">                        isFirstClick = false;</span>
+<span class="nc" id="L109">                        Toast.makeText(AddUpdatePropertiesActivity.this, &quot;Zoom out!&quot;, Toast.LENGTH_LONG).show();</span>
+                    }
+                    // update existing features list
+<span class="nc" id="L112">                    List&lt;Feature&gt; existingFeatures = new ArrayList&lt;&gt;(kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all()));</span>
+                    List&lt;Feature&gt; newFeatures;
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                    if (isFetchFromStyle) {</span>
+<span class="nc" id="L115">                        newFeatures = createFeatureList(20, existingFeatures.size(), 32.5987837, -14.1706623, &quot;taskBusinessStatus&quot;, &quot;Point&quot;, false, featureGroup, 0.0009);</span>
+                    } else {
+<span class="nc" id="L117">                        newFeatures = createFeatureList(20, existingFeatures.size(), 36.768831, -1.284956, &quot;ethnicity&quot;, &quot;Point&quot;, false, genericFeatureGroup, 0.0009);</span>
+                    }
+<span class="nc" id="L119">                    existingFeatures.addAll(newFeatures);</span>
+                    // add features to map
+<span class="nc" id="L121">                    kujakuMapView.addFeaturePoints(FeatureCollection.fromFeatures(existingFeatures));</span>
+<span class="nc" id="L122">                } catch (JSONException e) {</span>
+<span class="nc" id="L123">                    Log.e(TAG, e.getMessage());</span>
+<span class="nc" id="L124">                }</span>
+<span class="nc" id="L125">            }</span>
+        });
+
+<span class="nc" id="L128">        Button btnModifyFeaturePoints = findViewById(R.id.btn_test_properties_modification);</span>
+<span class="nc" id="L129">        btnModifyFeaturePoints.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                try {
+                    // fetch existing features
+<span class="nc" id="L134">                    List&lt;Feature&gt; features = kujakuMapView.getPrimaryGeoJsonSource().querySourceFeatures(Expression.all());</span>
+                    // modify properties
+                    FeatureCollection featureCollection;
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                    if (isFetchFromStyle) {</span>
+<span class="nc" id="L138">                        featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), &quot;taskBusinessStatus&quot;, featureGroup);</span>
+                    } else {
+<span class="nc" id="L140">                        featureCollection = alterFeatureJsonProperties(features.size(), new JSONObject(FeatureCollection.fromFeatures(features).toJson()), &quot;ethnicity&quot;, genericFeatureGroup);</span>
+                    }
+                    // update features on map
+<span class="nc" id="L143">                    kujakuMapView.updateFeaturePointProperties(featureCollection);</span>
+<span class="nc" id="L144">                } catch (JSONException e) {</span>
+<span class="nc" id="L145">                    Log.e(TAG, e.getMessage());</span>
+<span class="nc" id="L146">                }</span>
+<span class="nc" id="L147">            }</span>
+        });
+<span class="nc" id="L149">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L153">        return R.layout.activity_add_update_properties;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L158">        super.onResume();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L160">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L164">        super.onStart();</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L166">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L170">        super.onStop();</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L172">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L176">        super.onPause();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L178">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L182">        super.onDestroy();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L184">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L188">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L190">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L194">        super.onLowMemory();</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L196">    }</span>
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L200">        return R.id.nav_add_update_activity;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

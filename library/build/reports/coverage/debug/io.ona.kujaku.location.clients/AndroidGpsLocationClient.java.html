@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AndroidGpsLocationClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.location.clients</a> &gt; <span class="el_source">AndroidGpsLocationClient.java</span></div><h1>AndroidGpsLocationClient.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.location.clients;
+
+import android.app.Activity;
+import android.content.Context;
+import android.location.GnssStatus;
+import android.location.GpsStatus;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.utils.LocationSettingsHelper;
+import timber.log.Timber;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-11-22
+ */
+
+public class AndroidGpsLocationClient extends BaseLocationClient {
+
+    private Location lastLocation;
+
+<span class="nc" id="L31">    private long updateInterval = 5000;</span>
+<span class="nc" id="L32">    private long fastestUpdateInterval = 1000;</span>
+    private Object gpsStatusCallback;
+
+
+<span class="nc" id="L36">    public AndroidGpsLocationClient(@NonNull Context context) {</span>
+<span class="nc" id="L37">        this.context = context;</span>
+<span class="nc" id="L38">        locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);</span>
+<span class="nc" id="L39">    }</span>
+
+    @Override
+    public void stopLocationUpdates() {
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (isMonitoringLocation()) {</span>
+<span class="nc" id="L44">            lastLocation = null;</span>
+<span class="nc" id="L45">            locationManager.removeUpdates(getLocationListener());</span>
+<span class="nc" id="L46">            setLocationListener(null);</span>
+        }
+
+<span class="nc" id="L49">        unregisterForGpsStoppedEvent();</span>
+<span class="nc" id="L50">    }</span>
+
+    private void registerForGpsStoppedEvent() {
+        try {
+            // Multiple calls to this method are possible
+            // Therefore, we need to prevent multiple registration of the listener by only registering if it's null
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            if (gpsStatusCallback == null) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">                if (Build.VERSION.SDK_INT &gt; 23) {</span>
+<span class="nc" id="L58">                    gpsStatusCallback = new GnssStatus.Callback() {</span>
+                        @Override
+                        public void onStopped() {
+<span class="nc" id="L61">                            resetLastLocationIfLocationServiceIsOff();</span>
+<span class="nc" id="L62">                        }</span>
+                    };
+<span class="nc" id="L64">                    locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);</span>
+                } else {
+<span class="nc" id="L66">                    gpsStatusCallback = new GpsStatus.Listener() {</span>
+                        @Override
+                        public void onGpsStatusChanged(int event) {
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                            if (event == GpsStatus.GPS_EVENT_STOPPED) {</span>
+                                // Check if location is still enabled
+<span class="nc" id="L71">                                resetLastLocationIfLocationServiceIsOff();</span>
+                            }
+<span class="nc" id="L73">                        }</span>
+                    };
+<span class="nc" id="L75">                    locationManager.addGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);</span>
+                }
+            }
+<span class="nc" id="L78">        } catch (SecurityException ex) {</span>
+<span class="nc" id="L79">            Timber.e(ex);</span>
+<span class="nc" id="L80">        }</span>
+<span class="nc" id="L81">    }</span>
+
+    private void unregisterForGpsStoppedEvent() {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (gpsStatusCallback != null) {</span>
+            try {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                if (Build.VERSION.SDK_INT &gt; 23) {</span>
+<span class="nc" id="L87">                    locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsStatusCallback);</span>
+                } else {
+<span class="nc" id="L89">                    locationManager.removeGpsStatusListener((GpsStatus.Listener) gpsStatusCallback);</span>
+                }
+
+<span class="nc" id="L92">                gpsStatusCallback = null;</span>
+<span class="nc" id="L93">            } catch (SecurityException ex) {</span>
+<span class="nc" id="L94">                Timber.e(ex);</span>
+<span class="nc" id="L95">            }</span>
+        }
+<span class="nc" id="L97">    }</span>
+
+    private void resetLastLocationIfLocationServiceIsOff() {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (context instanceof Activity) {</span>
+<span class="nc" id="L101">            LocationSettingsHelper.checkLocationEnabled((Activity) context, new ResultCallback&lt;LocationSettingsResult&gt;() {</span>
+                @Override
+                public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+<span class="nc" id="L104">                    int statusCode = locationSettingsResult.getStatus().getStatusCode();</span>
+
+<span class="nc bnc" id="L106" title="All 4 branches missed.">                    if (statusCode == LocationSettingsStatusCodes.RESOLUTION_REQUIRED</span>
+                            || statusCode == LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE) {
+<span class="nc" id="L108">                        lastLocation = null;</span>
+                    }
+<span class="nc" id="L110">                }</span>
+            });
+        }
+<span class="nc" id="L113">    }</span>
+
+    @Nullable
+    @Override
+    public Location getLastLocation() {
+<span class="nc" id="L118">        return lastLocation;</span>
+    }
+
+    @Override
+    public void requestLocationUpdates(@NonNull LocationListener locationListener) {
+<span class="nc" id="L123">        setLocationListener(locationListener);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (isProviderEnabled()) {</span>
+            try {
+<span class="nc" id="L126">                Location location = locationManager.getLastKnownLocation(getProvider());</span>
+<span class="nc bnc" id="L127" title="All 8 branches missed.">                if (location != null &amp;&amp; (lastLocation == null || (location != null &amp;&amp; isBetterLocation(location, lastLocation)))) {</span>
+<span class="nc" id="L128">                    lastLocation = location;</span>
+<span class="nc" id="L129">                    locationListener.onLocationChanged(lastLocation);</span>
+                } else {
+                    // Enable snackbar in the activity
+<span class="nc" id="L132">                    Toast.makeText(context, R.string.retrieving_gps_location_couple_of_minutes, Toast.LENGTH_SHORT).show();</span>
+                }
+
+<span class="nc" id="L135">                locationManager.requestLocationUpdates(</span>
+                        LocationManager.GPS_PROVIDER
+                        , fastestUpdateInterval
+                        , 0f
+                        , locationListener);
+
+                // This method protects itself from multiple calls
+<span class="nc" id="L142">                registerForGpsStoppedEvent();</span>
+<span class="nc" id="L143">            } catch (SecurityException e) {</span>
+<span class="nc" id="L144">                Timber.e(e);</span>
+<span class="nc" id="L145">                Toast.makeText(context, R.string.location_disabled_location_permissions_not_granted, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L146">                        .show();</span>
+<span class="nc" id="L147">            }</span>
+        } else {
+<span class="nc" id="L149">            setLocationListener(null);</span>
+<span class="nc" id="L150">            Timber.e(new Exception(), &quot;The provider (&quot; + getProvider() + &quot;) is not enabled&quot;);</span>
+        }
+
+<span class="nc" id="L153">    }</span>
+
+    @Override
+    public void setUpdateIntervals(long updateInterval, long fastestUpdateInterval) {
+<span class="nc" id="L157">        this.updateInterval = updateInterval;</span>
+<span class="nc" id="L158">        this.fastestUpdateInterval = fastestUpdateInterval;</span>
+<span class="nc" id="L159">    }</span>
+
+    @Override
+    public boolean isMonitoringLocation() {
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        return getLocationListener() != null;</span>
+    }
+
+    @NonNull
+    @Override
+    public String getProvider() {
+<span class="nc" id="L169">        return LocationManager.GPS_PROVIDER;</span>
+    }
+
+    @Override
+    public void close() {
+<span class="nc" id="L174">        stopLocationUpdates();</span>
+<span class="nc" id="L175">        super.close();</span>
+<span class="nc" id="L176">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

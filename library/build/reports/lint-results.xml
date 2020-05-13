@@ -1,0 +1,3026 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="4" by="lint 3.2.0">
+
+    <issue
+        id="ObsoleteLintCustomCheck"
+        severity="Warning"
+        message="Lint found an issue registry (`timber.lint.TimberIssueRegistry`) which is older than the current API level; these checks may not work correctly.&#xA;&#xA;Recompile the checks against the latest version. Custom check API version is 1 (3.1+), current lint API level is 2 (3.2+)"
+        category="Lint"
+        priority="10"
+        summary="Obsolete custom lint check"
+        explanation="Lint can be extended with &quot;custom checks&quot;: additional checks implemented by developers and libraries to for example enforce specific API usages required by a library or a company coding style guideline.&#xA;&#xA;The Lint APIs are not yet stable, so these checks may either cause a performance degradation, or stop working, or provide wrong results.&#xA;&#xA;This warning flags custom lint checks that are found to be using obsolete APIs and will need to be updated to run in the current lint environment.&#xA;&#xA;It may also flag issues found to be using a **newer** version of the API, meaning that you need to use a newer version of lint (or Android Studio or Gradle plugin etc) to work with these checks."
+        includedVariants="debug"
+        excludedVariants="release">
+        <location
+            file="/home/ona-kigamba/.gradle/caches/transforms-1/files-1.1/timber-4.7.1.aar/c8654ee4211bd34e9f1d260496c8451a/jars/lint.jar"/>
+    </issue>
+
+    <issue
+        id="DuplicatePlatformClasses"
+        severity="Fatal"
+        message="`xpp3` defines classes that conflict with classes now provided by Android. Solutions include finding newer versions or alternative libraries that don&apos;t have the same problem (for example, for `httpclient` use `HttpUrlConnection` or `okhttp` instead), or repackaging the library using something like `jarjar`."
+        category="Correctness"
+        priority="8"
+        summary="Duplicate Platform Classes"
+        explanation="There are a number of libraries that duplicate not just functionality of the Android platform but using the exact same class names as the ones provided in Android -- for example the apache http classes. This can lead to unexpected crashes.&#xA;&#xA;To solve this, you need to either find a newer version of the library which no longer has this problem, or to repackage the library (and all of its dependencies) using something like the `jarjar` tool, or finally, rewriting the code to use different APIs (for example, for http code, consider using `HttpUrlConnection` or a library like `okhttp`)."
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/build.gradle"/>
+    </issue>
+
+    <issue
+        id="InlinedApi"
+        severity="Warning"
+        message="Field requires API level 24 (current min is 16): `android.app.NotificationManager#IMPORTANCE_HIGH`"
+        category="Correctness"
+        priority="6"
+        summary="Using inlined constants on older versions"
+        explanation="This check scans through all the Android API field references in the application and flags certain constants, such as static final integers and Strings, which were introduced in later versions. These will actually be copied into the class files rather than being referenced, which means that the value is available even when running on older devices. In some cases that&apos;s fine, and in other cases it can result in a runtime crash or incorrect behavior. It depends on the context, so consider the code carefully and decide whether it&apos;s safe and can be suppressed or whether the code needs to be guarded.&#xA;&#xA;If you really want to use this API and don&apos;t need to support older devices just set the `minSdkVersion` in your `build.gradle` or `AndroidManifest.xml` files.&#xA;If your code is **deliberately** accessing newer APIs, and you have ensured (e.g. with conditional execution) that this code will only ever be called on a supported platform, then you can annotate your class or method with the `@TargetApi` annotation specifying the local minimum SDK to apply, such as `@TargetApi(11)`, such that this check considers 11 rather than your manifest file&apos;s minimum SDK as the required API level."
+        errorLine1="        createNotificationChannel(NotificationManager.IMPORTANCE_HIGH, context.getString(R.string.download_error_channel_name)"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/notifications/CriticalDownloadErrorNotification.java"
+            line="29"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="InlinedApi"
+        severity="Warning"
+        message="Field requires API level 24 (current min is 16): `android.app.NotificationManager#IMPORTANCE_DEFAULT`"
+        category="Correctness"
+        priority="6"
+        summary="Using inlined constants on older versions"
+        explanation="This check scans through all the Android API field references in the application and flags certain constants, such as static final integers and Strings, which were introduced in later versions. These will actually be copied into the class files rather than being referenced, which means that the value is available even when running on older devices. In some cases that&apos;s fine, and in other cases it can result in a runtime crash or incorrect behavior. It depends on the context, so consider the code carefully and decide whether it&apos;s safe and can be suppressed or whether the code needs to be guarded.&#xA;&#xA;If you really want to use this API and don&apos;t need to support older devices just set the `minSdkVersion` in your `build.gradle` or `AndroidManifest.xml` files.&#xA;If your code is **deliberately** accessing newer APIs, and you have ensured (e.g. with conditional execution) that this code will only ever be called on a supported platform, then you can annotate your class or method with the `@TargetApi` annotation specifying the local minimum SDK to apply, such as `@TargetApi(11)`, such that this check considers 11 rather than your manifest file&apos;s minimum SDK as the required API level."
+        errorLine1="        createNotificationChannel(NotificationManager.IMPORTANCE_DEFAULT, context.getString(R.string.download_complete_channel_name), CHANNEL_ID, context.getString(R.string.download_complete_channel_description), NOTIFICATION_COLOR, VIBRATION_PATTERN);"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/notifications/DownloadCompleteNotification.java"
+            line="26"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="InlinedApi"
+        severity="Warning"
+        message="Field requires API level 24 (current min is 16): `android.app.NotificationManager#IMPORTANCE_LOW`"
+        category="Correctness"
+        priority="6"
+        summary="Using inlined constants on older versions"
+        explanation="This check scans through all the Android API field references in the application and flags certain constants, such as static final integers and Strings, which were introduced in later versions. These will actually be copied into the class files rather than being referenced, which means that the value is available even when running on older devices. In some cases that&apos;s fine, and in other cases it can result in a runtime crash or incorrect behavior. It depends on the context, so consider the code carefully and decide whether it&apos;s safe and can be suppressed or whether the code needs to be guarded.&#xA;&#xA;If you really want to use this API and don&apos;t need to support older devices just set the `minSdkVersion` in your `build.gradle` or `AndroidManifest.xml` files.&#xA;If your code is **deliberately** accessing newer APIs, and you have ensured (e.g. with conditional execution) that this code will only ever be called on a supported platform, then you can annotate your class or method with the `@TargetApi` annotation specifying the local minimum SDK to apply, such as `@TargetApi(11)`, such that this check considers 11 rather than your manifest file&apos;s minimum SDK as the required API level."
+        errorLine1="        createNotificationChannel(NotificationManager.IMPORTANCE_LOW, context.getString(R.string.download_progress_channel_name), CHANNEL_ID, context.getString(R.string.download_progress_channel_description));"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/notifications/DownloadProgressNotification.java"
+            line="33"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        severity="Error"
+        message="Call requires API level 19 (current min is 16): java.util.Objects#hash"
+        category="Correctness"
+        priority="6"
+        summary="Calling new methods on older versions"
+        explanation="This check scans through all the Android API calls in the application and warns about any calls that are not available on **all** versions targeted by this application (according to its minimum SDK attribute in the manifest).&#xA;&#xA;If you really want to use this API and don&apos;t need to support older devices just set the `minSdkVersion` in your `build.gradle` or `AndroidManifest.xml` files.&#xA;&#xA;If your code is **deliberately** accessing newer APIs, and you have ensured (e.g. with conditional execution) that this code will only ever be called on a supported platform, then you can annotate your class or method with the `@TargetApi` annotation specifying the local minimum SDK to apply, such as `@TargetApi(11)`, such that this check considers 11 rather than your manifest file&apos;s minimum SDK as the required API level.&#xA;&#xA;If you are deliberately setting `android:` attributes in style definitions, make sure you place this in a `values-v`*NN* folder in order to avoid running into runtime conflicts on certain devices where manufacturers have added custom attributes whose ids conflict with the new ones on later platforms.&#xA;&#xA;Similarly, you can use tools:targetApi=&quot;11&quot; in an XML file to indicate that the element will only be inflated in an adequate context."
+        errorLine1="        return Objects.hash(getLat(), getLng());"
+        errorLine2="                       ~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/domain/Point.java"
+            line="68"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        severity="Warning"
+        message="Attribute `elevation` is only used in API level 21 and higher (current min is 16)"
+        category="Correctness"
+        priority="6"
+        summary="Attribute unused on older versions"
+        explanation="This check finds attributes set in XML files that were introduced in a version newer than the oldest version targeted by your application (with the `minSdkVersion` attribute).&#xA;&#xA;This is not an error; the application will simply ignore the attribute. However, if the attribute is important to the appearance or functionality of your application, you should consider finding an alternative way to achieve the same result with only available attributes, and then you can optionally create a copy of the layout in a layout-vNN folder which will be used on API NN or higher where you can take advantage of the newer attribute.&#xA;&#xA;Note: This check does not only apply to attributes. For example, some tags can be unused too, such as the new `&lt;tag>` element in layouts introduced in API 21."
+        errorLine1="    android:elevation=&quot;11dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/view_info_window.xml"
+            line="12"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="BatteryLife"
+        severity="Warning"
+        message="Declaring a broadcastreceiver for `android.net.conn.CONNECTIVITY_CHANGE` is deprecated for apps targeting N and higher. In general, apps should not rely on this broadcast and instead use `JobScheduler` or `GCMNetworkManager`."
+        category="Correctness"
+        priority="5"
+        summary="Battery Life Issues"
+        explanation="This issue flags code that either&#xA;* negatively affects battery life, or&#xA;* uses APIs that have recently changed behavior to prevent background tasks from consuming memory and battery excessively.&#xA;&#xA;Generally, you should be using `JobScheduler` or `GcmNetworkManager` instead.&#xA;&#xA;For more details on how to update your code, please see http://developer.android.com/preview/features/background-optimization.html"
+        url="http://developer.android.com/preview/features/background-optimization.html"
+        urls="http://developer.android.com/preview/features/background-optimization.html"
+        errorLine1="                &lt;action android:name=&quot;android.net.conn.CONNECTIVITY_CHANGE&quot;/>"
+        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/AndroidManifest.xml"
+            line="27"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="RestrictedApi"
+        severity="Error"
+        message="VisibilityAwareImageButton.setVisibility can only be called from within the same library group (groupId=com.android.support)"
+        category="Correctness"
+        priority="4"
+        summary="Restricted API"
+        explanation="This API has been flagged with a restriction that has not been met.&#xA;&#xA;Examples of API restrictions:&#xA;* Method can only be invoked by a subclass&#xA;* Method can only be accessed from within the same library (defined by the Gradle library group id)&#xA;* Method can only be accessed from tests.&#xA;&#xA;You can add your own API restrictions with the `@RestrictTo` annotation."
+        errorLine1="            layerSwitcherFab.setVisibility(View.VISIBLE);"
+        errorLine2="                             ~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/plugin/switcher/BaseLayerSwitcherPlugin.java"
+            line="105"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="PrivateResource"
+        severity="Warning"
+        message="Overriding `@layout/mapbox_mapview_internal` which is marked as private in com.mapbox.mapboxsdk:mapbox-android-sdk. If deliberate, use tools:override=&quot;true&quot;, otherwise pick a different name."
+        category="Correctness"
+        priority="3"
+        summary="Using private resources"
+        explanation="Private resources should not be referenced; the may not be present everywhere, and even where they are they may disappear without notice.&#xA;&#xA;To fix this, copy the resource into your own project instead.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"/>
+    </issue>
+
+    <issue
+        id="PrivateResource"
+        severity="Warning"
+        message="The resource `@drawable/mapbox_markerview_icon_default` is marked as private in com.mapbox.mapboxsdk:mapbox-android-sdk"
+        category="Correctness"
+        priority="3"
+        summary="Using private resources"
+        explanation="Private resources should not be referenced; the may not be present everywhere, and even where they are they may disappear without notice.&#xA;&#xA;To fix this, copy the resource into your own project instead."
+        errorLine1="        android:src=&quot;@drawable/mapbox_markerview_icon_default&quot;/>"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="48"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="SpUsage"
+        severity="Warning"
+        message="This dimension is used as a text size: Should use &quot;`sp`&quot; instead of &quot;`dp`&quot;"
+        category="Correctness"
+        priority="3"
+        summary="Using `dp` instead of `sp` for text sizes"
+        explanation="When setting text sizes, you should normally use `sp`, or &quot;scale-independent pixels&quot;. This is like the `dp` unit, but it is also scaled by the user&apos;s font size preference. It is recommend you use this unit when specifying font sizes, so they will be adjusted for both the screen density and the user&apos;s preference.&#xA;&#xA;There **are** cases where you might need to use `dp`; typically this happens when the text is in a container with a specific dp-size. This will prevent the text from spilling outside the container. Note however that this means that the user&apos;s font size settings are not respected, so consider adjusting the layout itself to be more flexible."
+        url="http://developer.android.com/training/multiscreen/screendensities.html"
+        urls="http://developer.android.com/training/multiscreen/screendensities.html"
+        errorLine1="    &lt;dimen name=&quot;info_window_nonfocus_text_size&quot;>14dp&lt;/dimen>"
+        errorLine2="                                                 ^"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/values/dimens.xml"
+            line="9"
+            column="50"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/item_info_window.xml"
+            line="21"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        severity="Error"
+        message="&quot;locationClient&quot; is not translated in &quot;th&quot; (Thai)"
+        category="Correctness:Messages"
+        priority="8"
+        summary="Incomplete translation"
+        explanation="If an application has more than one locale, then all the strings declared in one language should also be translated in all other languages.&#xA;&#xA;If the string should **not** be translated, you can add the attribute `translatable=&quot;false&quot;` on the `&lt;string>` element, or you can define all your non-translatable strings in a resource file called `donottranslate.xml`. Or, you can ignore the issue with a `tools:ignore=&quot;MissingTranslation&quot;` attribute.&#xA;&#xA;You can tell lint (and other tools) which language is the default language in your `res/values/` folder by specifying `tools:locale=&quot;languageCode&quot;` for the root `&lt;resources>` element in your resource file. (The `tools` prefix refers to the namespace declaration `http://schemas.android.com/tools`.)"
+        errorLine1="    &lt;string name=&quot;locationClient&quot;>locationClient&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/values/strings.xml"
+            line="33"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        severity="Error"
+        message="&quot;retrieving_gps_location_couple_of_minutes&quot; is not translated in &quot;th&quot; (Thai)"
+        category="Correctness:Messages"
+        priority="8"
+        summary="Incomplete translation"
+        explanation="If an application has more than one locale, then all the strings declared in one language should also be translated in all other languages.&#xA;&#xA;If the string should **not** be translated, you can add the attribute `translatable=&quot;false&quot;` on the `&lt;string>` element, or you can define all your non-translatable strings in a resource file called `donottranslate.xml`. Or, you can ignore the issue with a `tools:ignore=&quot;MissingTranslation&quot;` attribute.&#xA;&#xA;You can tell lint (and other tools) which language is the default language in your `res/values/` folder by specifying `tools:locale=&quot;languageCode&quot;` for the root `&lt;resources>` element in your resource file. (The `tools` prefix refers to the namespace declaration `http://schemas.android.com/tools`.)"
+        errorLine1="    &lt;string name=&quot;retrieving_gps_location_couple_of_minutes&quot;>Retrieving your GPS Location. This might take a couple of minutes depending on signal strength&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/values/strings.xml"
+            line="47"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/ActivityLauncherHelper.java"
+            line="57"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/ArrowLineLayer.java"
+            line="290"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Could not remove the layers &amp; source because the the style is null or not fully loaded&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/ArrowLineLayer.java"
+            line="351"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/ArrowLineLayer.java"
+            line="401"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/BaseStorage.java"
+            line="48"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;An error occurs when writing object with Gson&quot;, ex);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/BaseStorage.java"
+            line="75"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;An error occurs when reading object with Gson&quot;, ex);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/BaseStorage.java"
+            line="100"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, &quot;The file already exists&quot;, ex);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/BaseStorage.java"
+            line="145"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/BaseStorage.java"
+            line="271"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/BoundaryLayer.java"
+            line="153"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Could not remove the layers &amp; source because the the style is null or not fully loaded&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/BoundaryLayer.java"
+            line="282"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/layers/BoundaryLayer.java"
+            line="320"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/InfoWindowAdapter.java"
+            line="61"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/InfoWindowAdapter.java"
+            line="87"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info window selected animation started&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="256"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info windo selected animation canceled&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="268"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info window selected animation repeating&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="273"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info window unselected animation started&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="287"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info window unselected animation canceled&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="299"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Info window unselected animation repeated&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="304"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/LogUtil.java"
+            line="13"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, message);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/LogUtil.java"
+            line="19"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.i(TAG, message);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/LogUtil.java"
+            line="25"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, message);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/LogUtil.java"
+            line="31"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/LogUtil.java"
+            line="37"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="188"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.i(TAG, &quot;Done using the MapActivity, exiting ...&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="283"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(&quot;FEATURE POINT&quot;, featurePoint.toString());"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="304"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="364"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="686"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/data/MapBoxDeleteTask.java"
+            line="48"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/data/MapBoxDownloadTask.java"
+            line="96"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/data/MapBoxDownloadTask.java"
+            line="261"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, error);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="183"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="190"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="199"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, &quot;Context passed is null&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="246"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.i(TAG, &quot;ON DELETE MAP {&quot; + name + &quot;} SUCCESS&quot;);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="268"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, &quot;ON DELETE MAP : &quot; + name + &quot; --> &quot; + error);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="273"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="284"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Context passed is null&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="300"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, &quot;Map could not be found&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="313"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, &quot;Map download is already complete&quot;);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="324"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, &quot;Map is already downloading&quot;);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="329"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(TAG, error);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="341"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="351"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, &quot;Message: &quot; + error.getMessage() + &quot;\nREASON: &quot; + error.getReason());"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="386"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, errorMessage);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="398"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Context passed is null&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="413"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, error);"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="432"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="441"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, &quot;Map could not be found&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="466"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                Log.e(TAG, &quot;Map download is already complete&quot;);"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="483"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                Log.e(TAG, &quot;Map was not downloading&quot;);"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="488"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(TAG, error);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="498"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="508"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Context passed is null&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="524"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(TAG, &quot;Map could not be found : &quot; + name);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="534"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                Log.e(TAG, error);"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="549"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.e(TAG, error);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="560"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="587"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                            Log.i(TAG, &quot;Map deleted successfully!&quot;);"
+        errorLine2="                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="617"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                            Log.e(TAG, error);"
+        errorLine2="                                            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="622"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="629"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, error);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="638"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/MapboxOfflineDownloaderService.java"
+            line="405"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/MapboxOfflineDownloaderService.java"
+            line="527"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.e(TAG, error);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/MapboxOfflineDownloaderService.java"
+            line="630"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.e(TAG, finalMessage);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/MapboxOfflineDownloaderService.java"
+            line="646"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/MapboxOfflineDownloaderService.java"
+            line="694"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/utils/NetworkUtil.java"
+            line="24"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.wtf(TAG, &quot;KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/PermissionsHelper.java"
+            line="27"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/comparisons/RegexComparison.java"
+            line="21"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Initializing tracking service.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="116"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Main ThreadID: &quot; + android.os.Process.myTid());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="157"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Min distance gps setting: &quot; + trackingServiceOptions.getMinDistance());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="171"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Tolerance interval distance setting: &quot; + trackingServiceOptions.getToleranceIntervalDistance());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="172"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Tag for location: &quot; + trackingServiceOptions.getTag());"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="173"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.w(TAG, &quot;Service thread is already running.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="179"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Service starting.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="183"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.i(TAG, &quot;Start tracking service thread.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="191"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                        Log.e(TAG, &quot;Failed to start service thread.&quot;, e);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="201"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.i(TAG, &quot;Tracking service running.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="213"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.w(TAG,"
+        errorLine2="                    ^">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="222"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Tracking service stopping.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="236"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Remove location manager updates.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="241"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Quitting looper&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="247"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Release wake lock.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="252"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Failed to stop service properly.&quot;, e);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="257"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Wait for the threads to exit.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="260"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.w(TAG, &quot;Time out waiting for service thread to exit.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="266"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Service thread has stopped.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="268"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Main application thread was interrupted.&quot;, ie);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="272"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.i(TAG, &quot;Tracking service stopped.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="279"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;Launch activity class not found&quot;, ex);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="329"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Register location update listener.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="340"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;First kujakuLocation since service started or GPS was lost&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="367"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Distance to last recorded kujakuLocation (m) = &quot; + distanceBetweenLocations);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="386"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;New kujakuLocation too close from last recorded kujakuLocation.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="389"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;New kujakuLocation within distance tolerance from last recorded kujakuLocation.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="394"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;No pending kujakuLocation.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="398"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG, &quot;New kujakuLocation is better than pending kujakuLocation.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="404"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG,"
+        errorLine2="                    ^">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="409"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;New kujakuLocation out of distance tolerance.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="418"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="        Log.d(TAG, &quot;Overwrite pending kujakuLocation.&quot;);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="467"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;Record pending location.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="483"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;Service is not recording.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="493"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG, &quot;GPS available.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="509"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG, &quot;GPS temporary unavailable.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="513"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG, &quot;GPS out of service.&quot;);"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="517"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.i(TAG, &quot;GPS Provider has been disabled.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="532"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.i(TAG, &quot;Stopping tracking service.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="533"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;GPS position received&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="540"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;GPS Location ThreadID: &quot; + android.os.Process.myTid());"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="541"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;No location available.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="546"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Track ignored because of accuracy.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="557"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                    Log.d(TAG,"
+        errorLine2="                    ^">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="570"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;Tracking thread started.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="586"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;Register GPS status listener.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="591"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.d(TAG, &quot;Exiting looper.&quot;);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="614"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Record last pending location.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="618"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, &quot;Cannot stop service thread.&quot;);"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="637"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="            Log.e(TAG, &quot;UnBindService failed&quot;, ex);"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="935"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.d(TAG, &quot;Cannot read folder &quot; + directory.getAbsolutePath());"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/helpers/storage/TrackingStorage.java"
+            line="100"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="LogNotTimber"
+        severity="Warning"
+        message="Using &apos;Log&apos; instead of &apos;Timber&apos;"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Logging call to Log instead of Timber"
+        explanation="Since Timber is included in the project, it is likely that calls to Log should instead be going to Timber."
+        errorLine1="                Log.e(TAG, Log.getStackTraceString(e));"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/WmtsCapabilitiesService.java"
+            line="83"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        severity="Warning"
+        message="Formatting %d followed by words (&quot;while&quot;): This should probably be a plural rather than a string"
+        category="Correctness:Messages"
+        priority="5"
+        summary="Potential Plurals"
+        explanation="This lint check looks for potential errors in internationalization where you have translated a message which involves a quantity and it looks like other parts of the string may need grammatical changes.&#xA;&#xA;For example, rather than something like this:&#xA;  &lt;string name=&quot;try_again&quot;>Try again in %d seconds.&lt;/string>&#xA;you should be using a plural:&#xA;   &lt;plurals name=&quot;try_again&quot;>&#xA;        &lt;item quantity=&quot;one&quot;>Try again in %d second&lt;/item>&#xA;        &lt;item quantity=&quot;other&quot;>Try again in %d seconds&lt;/item>&#xA;    &lt;/plurals>&#xA;This will ensure that in other languages the right set of translations are provided for the different quantity classes.&#xA;&#xA;(This check depends on some heuristics, so it may not accurately determine whether a string really should be a quantity. You can use tools:ignore to filter out false positives."
+        url="http://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+        urls="http://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+        errorLine1="    &lt;string name=&quot;error_mapbox_tile_count_limit&quot;>MapBox Tile Count limit exceeded %1$d while Downloading %2$s&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/values/strings.xml"
+            line="16"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnsafeProtectedBroadcastReceiver"
+        severity="Warning"
+        message="This broadcast receiver declares an intent-filter for a protected broadcast action string, which can only be sent by the system, not third-party applications. However, the receiver&apos;s onReceive method does not appear to call getAction to ensure that the received Intent&apos;s action string matches the expected value, potentially making it possible for another actor to send a spoofed intent with no action string or a different action string and cause undesired behavior."
+        category="Security"
+        priority="6"
+        summary="Unsafe Protected BroadcastReceiver"
+        explanation="BroadcastReceivers that declare an intent-filter for a protected-broadcast action string must check that the received intent&apos;s action string matches the expected value, otherwise it is possible for malicious actors to spoof intents."
+        errorLine1="    public void onReceive(Context context, Intent intent) {"
+        errorLine2="                ~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/receivers/KujakuNetworkChangeReceiver.java"
+            line="28"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="WakelockTimeout"
+        severity="Warning"
+        message="Provide a timeout when requesting a wakelock with `PowerManager.Wakelock.acquire(long timeout)`. This will ensure the OS will cleanup any wakelocks that last longer than you intend, and will save your user&apos;s battery."
+        category="Performance"
+        priority="9"
+        summary="Using wakeLock without timeout"
+        explanation="Wakelocks have two acquire methods: one with a timeout, and one without. You should generally always use the one with a timeout. A typical timeout is 10 minutes. If the task takes longer than it is critical that it happens (i.e. can&apos;t use `JobScheduler`) then maybe they should consider a foreground service instead (which is a stronger run guarantee and lets the user know something long/important is happening)."
+        errorLine1="                    this.getWakeLock().acquire();"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/TrackingService.java"
+            line="187"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="StaticFieldLeak"
+        severity="Warning"
+        message="Do not place Android context classes in static fields (static reference to `KujakuLibrary` which has field `context` pointing to `Context`); this is a memory leak (and also breaks Instant Run)"
+        category="Performance"
+        priority="6"
+        summary="Static Field Leaks"
+        explanation="A static field will leak contexts.&#xA;&#xA;Non-static inner classes have an implicit reference to their outer class. If that outer class is for example a `Fragment` or `Activity`, then this reference means that the long-running handler/loader/task will hold a reference to the activity which prevents it from getting garbage collected.&#xA;&#xA;Similarly, direct field references to activities and fragments from these longer running instances can cause leaks.&#xA;&#xA;ViewModel classes should never point to Views or non-application Contexts."
+        errorLine1="    private static KujakuLibrary library;"
+        errorLine2="            ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/KujakuLibrary.java"
+            line="35"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StaticFieldLeak"
+        severity="Warning"
+        message="Do not place Android context classes in static fields (static reference to `MapBoxOfflineResourcesDownloader` which has field `context` pointing to `Context`); this is a memory leak (and also breaks Instant Run)"
+        category="Performance"
+        priority="6"
+        summary="Static Field Leaks"
+        explanation="A static field will leak contexts.&#xA;&#xA;Non-static inner classes have an implicit reference to their outer class. If that outer class is for example a `Fragment` or `Activity`, then this reference means that the long-running handler/loader/task will hold a reference to the activity which prevents it from getting garbage collected.&#xA;&#xA;Similarly, direct field references to activities and fragments from these longer running instances can cause leaks.&#xA;&#xA;ViewModel classes should never point to Views or non-application Contexts."
+        errorLine1="    protected static MapBoxOfflineResourcesDownloader instance = null;"
+        errorLine2="              ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/downloaders/MapBoxOfflineResourcesDownloader.java"
+            line="52"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="StaticFieldLeak"
+        severity="Warning"
+        message="Do not place Android context classes in static fields (static reference to `RealmDatabase` which has field `context` pointing to `Context`); this is a memory leak (and also breaks Instant Run)"
+        category="Performance"
+        priority="6"
+        summary="Static Field Leaks"
+        explanation="A static field will leak contexts.&#xA;&#xA;Non-static inner classes have an implicit reference to their outer class. If that outer class is for example a `Fragment` or `Activity`, then this reference means that the long-running handler/loader/task will hold a reference to the activity which prevents it from getting garbage collected.&#xA;&#xA;Similarly, direct field references to activities and fragments from these longer running instances can cause leaks.&#xA;&#xA;ViewModel classes should never point to Views or non-application Contexts."
+        errorLine1="    private static RealmDatabase realmDatabase;"
+        errorLine2="            ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/data/realm/RealmDatabase.java"
+            line="21"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseSparseArrays"
+        severity="Warning"
+        message="Use `new SparseArray&lt;AlertDialog>(...)` instead for better performance"
+        category="Performance"
+        priority="4"
+        summary="HashMap can be replaced with SparseArray"
+        explanation="For maps where the keys are of type integer, it&apos;s typically more efficient to use the Android `SparseArray` API. This check identifies scenarios where you might want to consider using `SparseArray` instead of `HashMap` for better performance.&#xA;&#xA;This is **particularly** useful when the value types are primitives like ints, where you can use `SparseIntArray` and avoid auto-boxing the values from `int` to `Integer`.&#xA;&#xA;If you need to construct a `HashMap` because you need to call an API outside of your control which requires a `Map`, you can suppress this warning using for example the `@SuppressLint` annotation."
+        errorLine1="        alertDialogs = new HashMap&lt;>();"
+        errorLine2="                       ~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/activities/MapActivity.java"
+            line="274"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseValueOf"
+        severity="Warning"
+        message="Use `Double.valueOf((double) object1)` instead"
+        category="Performance"
+        priority="4"
+        summary="Should use `valueOf` instead of `new`"
+        explanation="You should not call the constructor for wrapper classes directly, such as`new Integer(42)`. Instead, call the `valueOf` factory method, such as `Integer.valueOf(42)`. This will typically use less memory because common integers such as 0 and 1 will share a single instance."
+        errorLine1="            Double d1 = new Double((double) object1);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/sorting/Sorter.java"
+            line="127"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseValueOf"
+        severity="Warning"
+        message="Use `Double.valueOf((double) object2)` instead"
+        category="Performance"
+        priority="4"
+        summary="Should use `valueOf` instead of `new`"
+        explanation="You should not call the constructor for wrapper classes directly, such as`new Integer(42)`. Instead, call the `valueOf` factory method, such as `Integer.valueOf(42)`. This will typically use less memory because common integers such as 0 and 1 will share a single instance."
+        errorLine1="            Double d2 = new Double((double) object2);"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/sorting/Sorter.java"
+            line="128"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="IconDipSize"
+        severity="Warning"
+        message="The image `ic_cross_hair.png` varies significantly in its density-independent (dip) size across the various density versions: drawable-hdpi/ic_cross_hair.png: 96x96 dp (144x144 px), drawable-mdpi/ic_cross_hair.png: 36x36 dp (36x36 px), drawable-xhdpi/ic_cross_hair.png: 36x36 dp (72x72 px), drawable-xxhdpi/ic_cross_hair.png: 36x36 dp (108x108 px), drawable-xxxhdpi/ic_cross_hair.png: 36x36 dp (144x144 px)"
+        category="Usability:Icons"
+        priority="5"
+        summary="Icon density-independent size validation"
+        explanation="Checks the all icons which are provided in multiple densities, all compute to roughly the same density-independent pixel (`dip`) size. This catches errors where images are either placed in the wrong folder, or icons are changed to new sizes but some folders are forgotten.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-mdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-hdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDipSize"
+        severity="Warning"
+        message="The image `ic_cross_hair.png` varies significantly in its density-independent (dip) size across the various density versions: drawable-sw600dp-hdpi/ic_cross_hair.png: 96x96 dp (144x144 px), drawable-sw600dp-mdpi/ic_cross_hair.png: 36x36 dp (36x36 px), drawable-sw600dp-xhdpi/ic_cross_hair.png: 48x48 dp (96x96 px), drawable-sw600dp-xxhdpi/ic_cross_hair.png: 36x36 dp (108x108 px), drawable-sw600dp-xxxhdpi/ic_cross_hair.png: 36x36 dp (144x144 px)"
+        category="Usability:Icons"
+        priority="5"
+        summary="Icon density-independent size validation"
+        explanation="Checks the all icons which are provided in multiple densities, all compute to roughly the same density-independent pixel (`dip`) size. This catches errors where images are either placed in the wrong folder, or icons are changed to new sizes but some folders are forgotten.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-mdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-hdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDipSize"
+        severity="Warning"
+        message="The image `ic_cross_hair_blue.png` varies significantly in its density-independent (dip) size across the various density versions: drawable-sw600dp-hdpi/ic_cross_hair_blue.png: 36x36 dp (54x54 px), drawable-sw600dp-mdpi/ic_cross_hair_blue.png: 36x36 dp (36x36 px), drawable-sw600dp-xhdpi/ic_cross_hair_blue.png: 48x48 dp (96x96 px), drawable-sw600dp-xxhdpi/ic_cross_hair_blue.png: 36x36 dp (108x108 px), drawable-sw600dp-xxxhdpi/ic_cross_hair_blue.png: 36x36 dp (144x144 px)"
+        category="Usability:Icons"
+        priority="5"
+        summary="Icon density-independent size validation"
+        explanation="Checks the all icons which are provided in multiple densities, all compute to roughly the same density-independent pixel (`dip`) size. This catches errors where images are either placed in the wrong folder, or icons are changed to new sizes but some folders are forgotten.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxhdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-mdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-hdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxxhdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xhdpi/ic_cross_hair_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair.png` icon has identical contents in the following configuration folders: drawable-hdpi, drawable-sw600dp-hdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-hdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-hdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair.png` icon has identical contents in the following configuration folders: drawable-mdpi, drawable-sw600dp-mdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-mdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-mdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair.png` icon has identical contents in the following configuration folders: drawable-sw600dp-xxhdpi, drawable-xxhdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxhdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair.png` icon has identical contents in the following configuration folders: drawable-sw600dp-xxxhdpi, drawable-xxxhdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxxhdpi/ic_cross_hair.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxxhdpi/ic_cross_hair.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair_blue.png` icon has identical contents in the following configuration folders: drawable-hdpi, drawable-sw600dp-hdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-hdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-hdpi/ic_cross_hair_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair_blue.png` icon has identical contents in the following configuration folders: drawable-mdpi, drawable-sw600dp-mdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-mdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-mdpi/ic_cross_hair_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair_blue.png` icon has identical contents in the following configuration folders: drawable-sw600dp-xxhdpi, drawable-xxhdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxhdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxhdpi/ic_cross_hair_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        severity="Warning"
+        message="The `ic_cross_hair_blue.png` icon has identical contents in the following configuration folders: drawable-sw600dp-xxxhdpi, drawable-xxxhdpi"
+        category="Usability:Icons"
+        priority="5"
+        summary="Identical bitmaps across various configurations"
+        explanation="If an icon is provided under different configuration parameters such as `drawable-hdpi` or `-v11`, they should typically be different. This detector catches cases where the same icon is provided in different configuration folder which is usually not intentional.">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xxxhdpi/ic_cross_hair_blue.png"/>
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-sw600dp-xxxhdpi/ic_cross_hair_blue.png"/>
+    </issue>
+
+    <issue
+        id="IconDensities"
+        severity="Warning"
+        message="Missing the following drawables in `drawable-xhdpi`: ic_add.png, ic_hamburger_menu.png"
+        category="Usability:Icons"
+        priority="4"
+        summary="Icon densities validation"
+        explanation="Icons will look best if a custom version is provided for each of the major screen density classes (low, medium, high, extra high). This lint check identifies icons which do not have complete coverage across the densities.&#xA;&#xA;Low density is not really used much anymore, so this check ignores the ldpi density. To force lint to include it, set the environment variable `ANDROID_LINT_INCLUDE_LDPI=true`. For more information on current density usage, see http://developer.android.com/resources/dashboard/screens.html"
+        url="http://developer.android.com/guide/practices/screens_support.html"
+        urls="http://developer.android.com/guide/practices/screens_support.html">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/drawable-xhdpi"/>
+    </issue>
+
+    <issue
+        id="ButtonOrder"
+        severity="Warning"
+        message="Cancel button should be on the left (was &quot;DONE | CANCEL&quot;, should be &quot;CANCEL | DONE&quot;)"
+        category="Usability"
+        priority="8"
+        summary="Button order"
+        explanation="According to the Android Design Guide,&#xA;&#xA;&quot;Action buttons are typically Cancel and/or OK, with OK indicating the preferred or most likely action. However, if the options consist of specific actions such as Close or Wait rather than a confirmation or cancellation of the action described in the content, then all the buttons should be active verbs. As a rule, the dismissive action of a dialog is always on the left whereas the affirmative actions are on the right.&quot;&#xA;&#xA;This check looks for button bars and buttons which look like cancel buttons, and makes sure that these are on the left."
+        url="http://developer.android.com/design/building-blocks/dialogs.html"
+        urls="http://developer.android.com/design/building-blocks/dialogs.html"
+        errorLine1="        &lt;Button"
+        errorLine2="         ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="149"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="ButtonStyle"
+        severity="Warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)"
+        category="Usability"
+        priority="5"
+        summary="Button should be borderless"
+        explanation="Button bars typically use a borderless style for the buttons. Set the `style=&quot;?android:attr/buttonBarButtonStyle&quot;` attribute on each of the buttons, and set `style=&quot;?android:attr/buttonBarStyle&quot;` on the parent layout"
+        url="http://developer.android.com/design/building-blocks/buttons.html"
+        urls="http://developer.android.com/design/building-blocks/buttons.html"
+        errorLine1="        &lt;Button"
+        errorLine2="         ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="139"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="ButtonStyle"
+        severity="Warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)"
+        category="Usability"
+        priority="5"
+        summary="Button should be borderless"
+        explanation="Button bars typically use a borderless style for the buttons. Set the `style=&quot;?android:attr/buttonBarButtonStyle&quot;` attribute on each of the buttons, and set `style=&quot;?android:attr/buttonBarStyle&quot;` on the parent layout"
+        url="http://developer.android.com/design/building-blocks/buttons.html"
+        urls="http://developer.android.com/design/building-blocks/buttons.html"
+        errorLine1="        &lt;Button"
+        errorLine2="         ~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="149"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="ButtonCase"
+        severity="Warning"
+        message="The standard Android way to capitalize CANCEL is &quot;Cancel&quot; (tip: use `@android:string/cancel` instead)"
+        category="Usability"
+        priority="2"
+        summary="Cancel/OK dialog button capitalization"
+        explanation="The standard capitalization for OK/Cancel dialogs is &quot;OK&quot; and &quot;Cancel&quot;. To ensure that your dialogs use the standard strings, you can use the resource strings @android:string/ok and @android:string/cancel."
+        errorLine1="    &lt;string name=&quot;cancel&quot;>CANCEL&lt;/string>"
+        errorLine2="                          ^">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/values/strings.xml"
+            line="28"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        severity="Warning"
+        message="Missing `contentDescription` attribute on image"
+        category="Accessibility"
+        priority="3"
+        summary="Image without `contentDescription`"
+        explanation="Non-textual widgets like ImageViews and ImageButtons should use the `contentDescription` attribute to specify a textual description of the widget such that screen readers and other accessibility tools can adequately describe the user interface.&#xA;&#xA;Note that elements in application screens that are purely decorative and do not provide any content or enable a user action should not have accessibility content descriptions. In this case, just suppress the lint warning with a tools:ignore=&quot;ContentDescription&quot; attribute.&#xA;&#xA;Note that for text fields, you should not set both the `hint` and the `contentDescription` attributes since the hint will never be shown. Just set the `hint`. See http://developer.android.com/guide/topics/ui/accessibility/checklist.html#special-cases."
+        errorLine1="    &lt;ImageButton"
+        errorLine2="     ~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/activity_map.xml"
+            line="18"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        severity="Warning"
+        message="Missing `contentDescription` attribute on image"
+        category="Accessibility"
+        priority="3"
+        summary="Image without `contentDescription`"
+        explanation="Non-textual widgets like ImageViews and ImageButtons should use the `contentDescription` attribute to specify a textual description of the widget such that screen readers and other accessibility tools can adequately describe the user interface.&#xA;&#xA;Note that elements in application screens that are purely decorative and do not provide any content or enable a user action should not have accessibility content descriptions. In this case, just suppress the lint warning with a tools:ignore=&quot;ContentDescription&quot; attribute.&#xA;&#xA;Note that for text fields, you should not set both the `hint` and the `contentDescription` attributes since the hint will never be shown. Just set the `hint`. See http://developer.android.com/guide/topics/ui/accessibility/checklist.html#special-cases."
+        errorLine1="    &lt;ImageView"
+        errorLine2="     ~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="42"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        severity="Warning"
+        message="Missing `contentDescription` attribute on image"
+        category="Accessibility"
+        priority="3"
+        summary="Image without `contentDescription`"
+        explanation="Non-textual widgets like ImageViews and ImageButtons should use the `contentDescription` attribute to specify a textual description of the widget such that screen readers and other accessibility tools can adequately describe the user interface.&#xA;&#xA;Note that elements in application screens that are purely decorative and do not provide any content or enable a user action should not have accessibility content descriptions. In this case, just suppress the lint warning with a tools:ignore=&quot;ContentDescription&quot; attribute.&#xA;&#xA;Note that for text fields, you should not set both the `hint` and the `contentDescription` attributes since the hint will never be shown. Just set the `hint`. See http://developer.android.com/guide/topics/ui/accessibility/checklist.html#special-cases."
+        errorLine1="    &lt;ImageButton"
+        errorLine2="     ~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="51"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        severity="Warning"
+        message="Missing `contentDescription` attribute on image"
+        category="Accessibility"
+        priority="3"
+        summary="Image without `contentDescription`"
+        explanation="Non-textual widgets like ImageViews and ImageButtons should use the `contentDescription` attribute to specify a textual description of the widget such that screen readers and other accessibility tools can adequately describe the user interface.&#xA;&#xA;Note that elements in application screens that are purely decorative and do not provide any content or enable a user action should not have accessibility content descriptions. In this case, just suppress the lint warning with a tools:ignore=&quot;ContentDescription&quot; attribute.&#xA;&#xA;Note that for text fields, you should not set both the `hint` and the `contentDescription` attributes since the hint will never be shown. Just set the `hint`. See http://developer.android.com/guide/topics/ui/accessibility/checklist.html#special-cases."
+        errorLine1="    &lt;ImageView"
+        errorLine2="     ~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="64"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="ContentDescription"
+        severity="Warning"
+        message="Missing `contentDescription` attribute on image"
+        category="Accessibility"
+        priority="3"
+        summary="Image without `contentDescription`"
+        explanation="Non-textual widgets like ImageViews and ImageButtons should use the `contentDescription` attribute to specify a textual description of the widget such that screen readers and other accessibility tools can adequately describe the user interface.&#xA;&#xA;Note that elements in application screens that are purely decorative and do not provide any content or enable a user action should not have accessibility content descriptions. In this case, just suppress the lint warning with a tools:ignore=&quot;ContentDescription&quot; attribute.&#xA;&#xA;Note that for text fields, you should not set both the `hint` and the `contentDescription` attributes since the hint will never be shown. Just set the `hint`. See http://developer.android.com/guide/topics/ui/accessibility/checklist.html#special-cases."
+        errorLine1="            &lt;ImageButton"
+        errorLine2="             ~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="96"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        severity="Warning"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+        category="Internationalization"
+        priority="6"
+        summary="TextView Internationalization"
+        explanation="When calling `TextView#setText`&#xA;* Never call `Number#toString()` to format numbers; it will not handle fraction separators and locale-specific digits properly. Consider using `String#format` with proper format specifications (`%d` or `%f`) instead.&#xA;* Do not pass a string literal (e.g. &quot;Hello&quot;) to display text. Hardcoded text can not be properly translated to other languages. Consider using Android resource strings instead.&#xA;* Do not build messages by concatenating text chunks. Such messages can not be properly translated."
+        url="http://developer.android.com/guide/topics/resources/localization.html"
+        urls="http://developer.android.com/guide/topics/resources/localization.html"
+        errorLine1="        labelTV.setText(label + &quot;:&quot;);"
+        errorLine2="                        ~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/adapters/holders/InfoWindowViewHolder.java"
+            line="94"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        severity="Warning"
+        message="Hardcoded string &quot;DONE&quot;, should use `@string` resource"
+        category="Internationalization"
+        priority="5"
+        summary="Hardcoded text"
+        explanation="Hardcoding text attributes directly in layout files is bad for several reasons:&#xA;&#xA;* When creating configuration variations (for example for landscape or portrait) you have to repeat the actual text (and keep it up to date when making changes)&#xA;&#xA;* The application cannot be translated to other languages by just adding new translations for existing string resources.&#xA;&#xA;There are quickfixes to automatically extract this hardcoded string into a resource lookup."
+        errorLine1="        android:text=&quot;DONE&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/activity_map.xml"
+            line="43"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        severity="Warning"
+        message="Hardcoded string &quot;Greater than&quot;, should use `@string` resource"
+        category="Internationalization"
+        priority="5"
+        summary="Hardcoded text"
+        explanation="Hardcoding text attributes directly in layout files is bad for several reasons:&#xA;&#xA;* When creating configuration variations (for example for landscape or portrait) you have to repeat the actual text (and keep it up to date when making changes)&#xA;&#xA;* The application cannot be translated to other languages by just adding new translations for existing string resources.&#xA;&#xA;There are quickfixes to automatically extract this hardcoded string into a resource lookup."
+        errorLine1="        android:text=&quot;Greater than&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/item_info_window.xml"
+            line="12"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        severity="Warning"
+        message="Hardcoded string &quot;Less than&quot;, should use `@string` resource"
+        category="Internationalization"
+        priority="5"
+        summary="Hardcoded text"
+        explanation="Hardcoding text attributes directly in layout files is bad for several reasons:&#xA;&#xA;* When creating configuration variations (for example for landscape or portrait) you have to repeat the actual text (and keep it up to date when making changes)&#xA;&#xA;* The application cannot be translated to other languages by just adding new translations for existing string resources.&#xA;&#xA;There are quickfixes to automatically extract this hardcoded string into a resource lookup."
+        errorLine1="        android:text=&quot;Less than&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/item_info_window.xml"
+            line="20"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        severity="Warning"
+        message="Hardcoded string &quot;This is test data!&quot;, should use `@string` resource"
+        category="Internationalization"
+        priority="5"
+        summary="Hardcoded text"
+        explanation="Hardcoding text attributes directly in layout files is bad for several reasons:&#xA;&#xA;* When creating configuration variations (for example for landscape or portrait) you have to repeat the actual text (and keep it up to date when making changes)&#xA;&#xA;* The application cannot be translated to other languages by just adding new translations for existing string resources.&#xA;&#xA;There are quickfixes to automatically extract this hardcoded string into a resource lookup."
+        errorLine1="                    android:text=&quot;This is test data!&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="120"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`Gravity.END`&quot; instead of &quot;`Gravity.RIGHT`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        popupMenu = new PopupMenu(kujakuMapView.getContext(), anchorView, Gravity.RIGHT, 0, R.style.PopupMenu);"
+        errorLine2="                                                                                  ~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/plugin/switcher/BaseLayerSwitcherPlugin.java"
+            line="121"
+            column="83"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`Gravity.START`&quot; instead of &quot;`Gravity.LEFT`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        this.layoutGravity = Gravity.TOP | Gravity.LEFT;"
+        errorLine2="                                                   ~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/java/io/ona/kujaku/services/configurations/TrackingServiceDefaultUIConfiguration.java"
+            line="32"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_alignParentStart=&quot;true&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_alignParentLeft=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/activity_map.xml"
+            line="14"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_alignParentStart=&quot;true&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_alignParentLeft=&quot;true&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/activity_map.xml"
+            line="27"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_marginEnd=&quot;10dp&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_marginRight=&quot;10dp&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/item_info_window.xml"
+            line="11"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_marginEnd=&quot;@dimen/my_location_btn_margin&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_marginRight=&quot;@dimen/my_location_btn_margin&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="57"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`end`&quot; instead of &quot;`right`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_gravity=&quot;top|right&quot;"
+        errorLine2="                                ~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="58"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_marginStart=&quot;@dimen/tracking_service_location_margin&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_marginLeft=&quot;@dimen/tracking_service_location_margin&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="70"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`start`&quot; instead of &quot;`left`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_gravity=&quot;top|left&quot;"
+        errorLine2="                                ~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="71"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`start`&quot; instead of &quot;`left`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="        android:layout_gravity=&quot;bottom|left&quot;>"
+        errorLine2="                                ~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="89"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Use &quot;`start`&quot; instead of &quot;`left`&quot; to ensure correct behavior in right-to-left locales"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="                android:layout_gravity=&quot;bottom|left&quot;/>"
+        errorLine2="                                        ~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="106"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_marginStart=&quot;20dp&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="                android:layout_marginLeft=&quot;20dp&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="114"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="RtlHardcoded"
+        severity="Warning"
+        message="Consider adding `android:layout_marginStart=&quot;20dp&quot;` to better support right-to-left layouts"
+        category="Internationalization:Bidirectional Text"
+        priority="5"
+        summary="Using left/right instead of start/end attributes"
+        explanation="Using `Gravity#LEFT` and `Gravity#RIGHT` can lead to problems when a layout is rendered in locales where text flows from right to left. Use `Gravity#START` and `Gravity#END` instead. Similarly, in XML `gravity` and `layout_gravity` attributes, use `start` rather than `left`.&#xA;&#xA;For XML attributes such as paddingLeft and `layout_marginLeft`, use `paddingStart` and `layout_marginStart`. **NOTE**: If your `minSdkVersion` is less than 17, you should add **both** the older left/right attributes **as well as** the new start/right attributes. On older platforms, where RTL is not supported and the start/right attributes are unknown and therefore ignored, you need the older left/right attributes. There is a separate lint check which catches that type of error.&#xA;&#xA;(Note: For `Gravity#LEFT` and `Gravity#START`, you can use these constants even when targeting older platforms, because the `start` bitmask is a superset of the `left` bitmask. Therefore, you can use `gravity=&quot;start&quot;` rather than `gravity=&quot;left|start&quot;`.)"
+        errorLine1="            android:layout_marginLeft=&quot;20dp&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/ona-kigamba/Documents/Projects/onaio/kujaku/library/src/main/res/layout/mapbox_mapview_internal.xml"
+            line="152"
+            column="13"/>
+    </issue>
+
+</issues>

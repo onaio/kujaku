@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.06">
+  <properties/>
+  <testcase name="getFeatureShouldReturnPointFeatureWithoutProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" time="0.028"/>
+  <testcase name="getFeatureShouldReturnPointFeatureWithProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" time="0.015"/>
+  <testcase name="getGeoJsonShouldReturnGeoJsonWithPointFeatureWithoutProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" time="0.003"/>
+  <testcase name="getFeatureShouldReturnMultiPointFeatureWithoutProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" time="0.008"/>
+  <testcase name="getFeatureShouldReturnMultiPointFeatureWithProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONHelperTest" time="0.006"/>
+  <system-out><![CDATA[WARNING: No manifest file found at build/intermediates/bundles/release/--none.
+Falling back to the Android OS resources only.
+To remove this warning, annotate your test class with @Config(manifest=Config.NONE).
+]]></system-out>
+  <system-err><![CDATA[No such manifest file: build/intermediates/bundles/release/--none
+]]></system-err>
+</testsuite>

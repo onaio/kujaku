@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.services.TrackingServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:30" hostname="kigamba-ThinkPad-T580" time="14.565">
+  <properties/>
+  <testcase name="testParcelableTrackingServiceHighAccuracyOptions" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.053"/>
+  <testcase name="testTrackingServiceDefaultUiConfiguration" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.011"/>
+  <testcase name="testServiceWithTags" classname="io.ona.kujaku.services.TrackingServiceTest" time="6.719"/>
+  <testcase name="testStartingServiceWithoutGpsProvider" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.029"/>
+  <testcase name="testTrackingServiceStatusAtCreation" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.011"/>
+  <testcase name="testStartingServiceWithGpsProvider" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.817"/>
+  <testcase name="testServiceWithLocationInDistanceTolerance" classname="io.ona.kujaku.services.TrackingServiceTest" time="6.875"/>
+  <testcase name="testStartAndBindService" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.04"/>
+  <testcase name="testParcelableTrackingServiceSaveBatteryOptions" classname="io.ona.kujaku.services.TrackingServiceTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

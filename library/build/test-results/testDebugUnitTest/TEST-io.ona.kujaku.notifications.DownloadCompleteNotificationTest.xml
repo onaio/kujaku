@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.notifications.DownloadCompleteNotificationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:34" hostname="kigamba-ThinkPad-T580" time="5.955">
+  <properties/>
+  <testcase name="displayNotificationShouldShowValidNotificationWhenGivenTitleAndContent" classname="io.ona.kujaku.notifications.DownloadCompleteNotificationTest" time="5.933"/>
+  <testcase name="constructorShouldCreateValidNotificationAndCreateNotificationChannel" classname="io.ona.kujaku.notifications.DownloadCompleteNotificationTest" time="0.011"/>
+  <testcase name="constructorShouldInitialiseVariables" classname="io.ona.kujaku.notifications.DownloadCompleteNotificationTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

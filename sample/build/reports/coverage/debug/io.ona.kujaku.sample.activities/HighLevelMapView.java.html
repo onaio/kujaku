@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HighLevelMapView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">HighLevelMapView.java</span></div><h1>HighLevelMapView.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import org.json.JSONObject;
+
+import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+<span class="nc" id="L19">public class HighLevelMapView extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L21">    private static final String TAG = HighLevelMapView.class.getName();</span>
+
+    private KujakuMapView kujakuMapView;
+<span class="nc" id="L24">    private boolean canAddPoint = true;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L28">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L30">        kujakuMapView = findViewById(R.id.kmv_highLevelMapView_mapView);</span>
+<span class="nc" id="L31">        kujakuMapView.onCreate(savedInstanceState);</span>
+<span class="nc" id="L32">        kujakuMapView.addPoint(false, new AddPointCallback() {</span>
+            @Override
+            public void onPointAdd(JSONObject jsonObject) {
+<span class="nc" id="L35">                Log.d(TAG, jsonObject.toString());</span>
+<span class="nc" id="L36">            }</span>
+
+            @Override
+            public void onCancel() {
+<span class="nc" id="L40">                Log.d(TAG, &quot;User cancelled adding points&quot;);</span>
+<span class="nc" id="L41">            }</span>
+        });
+
+<span class="nc" id="L44">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L47">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L48">            }</span>
+        });
+<span class="nc" id="L50">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L54">        return R.layout.activity_high_level_map_view;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L59">        return R.id.nav_high_level_add_point;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L64">        super.onResume();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L66">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L70">        super.onStart();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L72">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L76">        super.onStop();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L78">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L82">        super.onPause();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L84">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L88">        super.onDestroy();</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L90">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L94">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L96">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L100">        super.onLowMemory();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L102">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

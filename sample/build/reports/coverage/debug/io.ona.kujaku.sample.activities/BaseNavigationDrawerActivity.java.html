@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseNavigationDrawerActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">BaseNavigationDrawerActivity.java</span></div><h1>BaseNavigationDrawerActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+
+import com.mapbox.mapboxsdk.Mapbox;
+
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+
+<span class="nc" id="L21">public abstract class BaseNavigationDrawerActivity extends AppCompatActivity</span>
+        implements NavigationView.OnNavigationItemSelectedListener {
+
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L29">        super.onCreate(savedInstanceState);</span>
+
+        // This should ideally be in the Application class so that it's not easily forgotten when using
+        // the KujakuMapView
+<span class="nc" id="L33">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L35">        setContentView(getContentView());</span>
+<span class="nc" id="L36">        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);</span>
+<span class="nc" id="L37">        setSupportActionBar(toolbar);</span>
+
+<span class="nc" id="L39">        ActionBar actionbar = getSupportActionBar();</span>
+<span class="nc" id="L40">        actionbar.setDisplayHomeAsUpEnabled(true);</span>
+<span class="nc" id="L41">        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);</span>
+
+<span class="nc" id="L43">        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);</span>
+<span class="nc" id="L44">        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(</span>
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+<span class="nc" id="L46">        drawerLayout.addDrawerListener(toggle);</span>
+<span class="nc" id="L47">        toggle.syncState();</span>
+
+
+<span class="nc" id="L50">        navigationView = getNavigationView();</span>
+<span class="nc" id="L51">        navigationView.setNavigationItemSelectedListener(this);</span>
+
+        // Set activity title
+<span class="nc" id="L54">        setActivityTitleFromNavItem();</span>
+<span class="nc" id="L55">    }</span>
+
+    private void setActivityTitleFromNavItem() {
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (getSelectedNavigationItem() != 0) {</span>
+<span class="nc" id="L59">            MenuItem menuItem = navigationView.getMenu().findItem(getSelectedNavigationItem());</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">            if (menuItem != null) {</span>
+<span class="nc" id="L61">                setTitle(menuItem.getTitle());</span>
+            }
+        }
+<span class="nc" id="L64">    }</span>
+
+    @Override
+    public void onBackPressed() {
+<span class="nc" id="L68">        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (drawer.isDrawerOpen(GravityCompat.START)) {</span>
+<span class="nc" id="L70">            drawer.closeDrawer(GravityCompat.START);</span>
+        } else {
+<span class="nc" id="L72">            super.onBackPressed();</span>
+        }
+<span class="nc" id="L74">    }</span>
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+<span class="nc" id="L78">        return false;</span>
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+<span class="nc" id="L86">        int id = item.getItemId();</span>
+
+        //noinspection SimplifiableIfStatement
+<span class="nc bnc" id="L89" title="All 3 branches missed.">        switch (id) {</span>
+            case R.id.action_settings:
+<span class="nc" id="L91">                return true;</span>
+
+            case android.R.id.home:
+<span class="nc" id="L94">                drawerLayout.openDrawer(GravityCompat.START);</span>
+<span class="nc" id="L95">                return true;</span>
+        }
+
+<span class="nc" id="L98">        return super.onOptionsItemSelected(item);</span>
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+
+<span class="nc bnc" id="L105" title="All 26 branches missed.">        switch (item.getItemId()) {</span>
+            case R.id.nav_low_level_manual_add_point:
+<span class="nc" id="L107">                startActivity(new Intent(this, LowLevelManualAddPointMapView.class));</span>
+<span class="nc" id="L108">                drawerLayout.closeDrawer(GravityCompat.START);</span>
+<span class="nc" id="L109">                finish();</span>
+<span class="nc" id="L110">                return true;</span>
+
+            case R.id.nav_low_level_location_add_point:
+<span class="nc" id="L113">                startActivity(new Intent(this, LowLevelLocationAddPointMapView.class));</span>
+<span class="nc" id="L114">                drawerLayout.closeDrawer(GravityCompat.START);</span>
+<span class="nc" id="L115">                finish();</span>
+<span class="nc" id="L116">                return true;</span>
+
+            case R.id.nav_high_level_add_point:
+<span class="nc" id="L119">                startActivity(new Intent(this, HighLevelMapView.class));</span>
+<span class="nc" id="L120">                drawerLayout.closeDrawer(GravityCompat.START);</span>
+<span class="nc" id="L121">                finish();</span>
+<span class="nc" id="L122">                return true;</span>
+
+            case R.id.nav_offline_regions:
+<span class="nc" id="L125">                startActivity(new Intent(this, OfflineRegionsActivity.class));</span>
+<span class="nc" id="L126">                finish();</span>
+<span class="nc" id="L127">                return true;</span>
+
+            case R.id.nav_task_queue:
+<span class="nc" id="L130">                startActivity(new Intent(this, TaskQueueActivity.class));</span>
+<span class="nc" id="L131">                finish();</span>
+<span class="nc" id="L132">                return true;</span>
+
+            case R.id.nav_main_activity:
+<span class="nc" id="L135">                startActivity(new Intent(this, MainActivity.class));</span>
+<span class="nc" id="L136">                finish();</span>
+<span class="nc" id="L137">                return true;</span>
+
+            case R.id.nav_high_level_location_add_point:
+<span class="nc" id="L140">                startActivity(new Intent(this, HighLevelLocationAddPointMapView.class));</span>
+<span class="nc" id="L141">                finish();</span>
+<span class="nc" id="L142">                return true;</span>
+
+            case R.id.nav_card_activity:
+<span class="nc" id="L145">                startActivity(new Intent(this, CardActivity.class));</span>
+<span class="nc" id="L146">                finish();</span>
+<span class="nc" id="L147">                return true;</span>
+
+            case R.id.nav_low_level_add_point_custom_marker:
+<span class="nc" id="L150">                startActivity(new Intent(this, CustomMarkerLowLevelAddPoint.class));</span>
+<span class="nc" id="L151">                finish();</span>
+<span class="nc" id="L152">                return true;</span>
+
+            case R.id.nav_wmts_activity:
+<span class="nc" id="L155">                startActivity(new Intent(this, WmtsActivity.class));</span>
+<span class="nc" id="L156">                finish();</span>
+<span class="nc" id="L157">                return true;</span>
+
+            case R.id.nav_add_update_activity:
+<span class="nc" id="L160">                startActivity(new Intent(this, AddUpdatePropertiesActivity.class));</span>
+<span class="nc" id="L161">                finish();</span>
+<span class="nc" id="L162">                return true;</span>
+
+            case R.id.nav_feature_click_status:
+<span class="nc" id="L165">                startActivity(new Intent(this, FeatureClickStatusActivity.class));</span>
+<span class="nc" id="L166">                finish();</span>
+<span class="nc" id="L167">                return true;</span>
+
+            case R.id.nav_bounding_box_listener:
+<span class="nc" id="L170">                startActivity(new Intent(this, BoundsChangeListenerActivity.class));</span>
+<span class="nc" id="L171">                finish();</span>
+<span class="nc" id="L172">                return true;</span>
+
+            case R.id.nav_bounds_aware_activity:
+<span class="nc" id="L175">                startActivity(new Intent(this, BoundsAwareActivity.class));</span>
+<span class="nc" id="L176">                finish();</span>
+<span class="nc" id="L177">                return true;</span>
+
+            case R.id.nav_feature_click_listener:
+<span class="nc" id="L180">                startActivity(new Intent(this, FeatureClickListenerActivity.class));</span>
+<span class="nc" id="L181">                finish();</span>
+<span class="nc" id="L182">                return true;</span>
+
+            case R.id.nav_padded_bbox_calculator:
+<span class="nc" id="L185">                startActivity(new Intent(this, PaddedBboxCalculatorActivity.class));</span>
+<span class="nc" id="L186">                finish();</span>
+<span class="nc" id="L187">                return true;</span>
+
+            case R.id.nav_configurable_circle:
+<span class="nc" id="L190">                startActivity(new Intent(this, ConfigurableLocationCircleActivity.class));</span>
+<span class="nc" id="L191">                finish();</span>
+<span class="nc" id="L192">                return true;</span>
+
+            case R.id.nav_one_to_one_case_relationship_activity:
+<span class="nc" id="L195">                startActivity(new Intent(this, OneToOneCaseRelationshipActivity.class));</span>
+<span class="nc" id="L196">                finish();</span>
+<span class="nc" id="L197">                return true;</span>
+
+            case R.id.nav_one_to_many_case_relationship_activity:
+<span class="nc" id="L200">                startActivity(new Intent(this, OneToManyCaseRelationshipActivity.class));</span>
+<span class="nc" id="L201">                finish();</span>
+<span class="nc" id="L202">                return true;</span>
+
+            case R.id.nav_foci_boundary:
+<span class="nc" id="L205">                startActivity(new Intent(this, FociBoundaryActivity.class));</span>
+<span class="nc" id="L206">                finish();</span>
+<span class="nc" id="L207">                return true;</span>
+
+            case R.id.nav_passive_record_object:
+<span class="nc" id="L210">                startActivity(new Intent(this, PassiveRecordObjectActivity.class));</span>
+<span class="nc" id="L211">                finish();</span>
+<span class="nc" id="L212">                return true;</span>
+
+            case R.id.nav_base_layer_switcher_plugin:
+<span class="nc" id="L215">                startActivity(new Intent(this, BaseLayerSwitcherActivity.class));</span>
+<span class="nc" id="L216">                finish();</span>
+<span class="nc" id="L217">                return true;</span>
+
+            case R.id.nav_drawing_boundaries:
+<span class="nc" id="L220">                startActivity(new Intent(this, DrawingBoundariesActivity.class));</span>
+<span class="nc" id="L221">                finish();</span>
+<span class="nc" id="L222">                return true;</span>
+
+            case R.id.nav_splitting_polygon:
+<span class="nc" id="L225">                startActivity(new Intent(this, SplittingPolygonActivity.class));</span>
+<span class="nc" id="L226">                finish();</span>
+<span class="nc" id="L227">                return true;</span>
+
+            case R.id.nav_cgr_integration:
+<span class="nc" id="L230">                startActivity(new Intent(this, CGRIntegrationActivity.class));</span>
+<span class="nc" id="L231">                finish();</span>
+<span class="nc" id="L232">                return true;</span>
+
+            default:
+                break;
+        }
+<span class="nc" id="L237">        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);</span>
+<span class="nc" id="L238">        drawer.closeDrawer(GravityCompat.START);</span>
+<span class="nc" id="L239">        return true;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L244">        super.onResume();</span>
+
+<span class="nc" id="L246">        NavigationView navigationView = getNavigationView();</span>
+<span class="nc" id="L247">        setSelectedNavigationItem(getSelectedNavigationItem());</span>
+<span class="nc" id="L248">    }</span>
+
+    abstract protected int getContentView();
+
+    abstract protected int getSelectedNavigationItem();
+
+    protected NavigationView getNavigationView() {
+<span class="nc" id="L255">        return findViewById(R.id.nav_view);</span>
+    }
+
+    protected void setSelectedNavigationItem(@IdRes int navigationItem) {
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        if (navigationView == null) {</span>
+<span class="nc" id="L260">            navigationView = getNavigationView();</span>
+        }
+<span class="nc" id="L262">        navigationView.setCheckedItem(navigationItem);</span>
+<span class="nc" id="L263">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

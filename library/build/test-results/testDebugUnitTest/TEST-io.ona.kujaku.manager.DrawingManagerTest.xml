@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.manager.DrawingManagerTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:29" hostname="kigamba-ThinkPad-T580" time="0.23">
+  <properties/>
+  <testcase name="startDrawingWithoutPoints" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.034"/>
+  <testcase name="startDrawingWithExistingLayer" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.031"/>
+  <testcase name="relationsBetweenKujakuCircles" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.023"/>
+  <testcase name="deletePoint" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.025"/>
+  <testcase name="drawPoints" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.025"/>
+  <testcase name="stopDrawing" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.02"/>
+  <testcase name="setPointDraggable" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.024"/>
+  <testcase name="areMiddleCircles" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.016"/>
+  <testcase name="createInstanceOfDrawingManagerAndTestDefaultValues" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.014"/>
+  <testcase name="startDrawingWithPoints" classname="io.ona.kujaku.manager.DrawingManagerTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

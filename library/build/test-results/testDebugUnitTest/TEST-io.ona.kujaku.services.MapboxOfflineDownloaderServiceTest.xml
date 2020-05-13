@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:44" hostname="kigamba-ThinkPad-T580" time="8.555">
+  <properties/>
+  <testcase name="persistOfflineMapTaskShouldReturnTrueWhenGivenValidDeleteTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="3.599"/>
+  <testcase name="onStatusChangedShouldShowDownloadCompleteNotificationWhenGivenCompletedOfflineRegion" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="2.955"/>
+  <testcase name="onErrorShouldCreateValidBroadcastWhenGivenNonEmptyReasonAndEmptyMessage" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.028"/>
+  <testcase name="getTaskStatusShouldUpdateCurrentDownloadMapNameWhenGivenValidDeleteQueueTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.033"/>
+  <testcase name="persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntent" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.008"/>
+  <testcase name="onErrorShouldCreateValidBroadcastWhenGivenNonEmptyReasonAndMessage" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.009"/>
+  <testcase name="persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDeleteTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.009"/>
+  <testcase name="onStatusChangedShouldShowProgressNotificationWhenGivenIncompleteOfflineRegionStatus" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="1.673"/>
+  <testcase name="persistOfflineMapTaskShouldReturnTrueWhenGivenValidDownloadTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.013"/>
+  <testcase name="persistOfflineMapTaskShouldReturnFalseWhenGivenInvalidDownloadTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.015"/>
+  <testcase name="getTaskStatusShouldUpdateCurrentDownloadMapNameWhenGivenValidDownloadQueueTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.016"/>
+  <testcase name="persistOfflineMapTaskShouldSaveQueueTaskWhenGivenValidDownloadTask" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.013"/>
+  <testcase name="showDownloadCompleteNotificationShouldCreateValidNotification" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.012"/>
+  <testcase name="mapboxTileLimitExceededShouldCreateValidBroadcast" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.013"/>
+  <testcase name="observeOfflineRegionShouldChangeOfflineRegionStatus" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.095"/>
+  <testcase name="sendBroadcast2ShouldProduceValidIntentWhenGivenDownloadUpdate" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.013"/>
+  <testcase name="sendBroadcastShouldProduceValidIntentWhenGivenDownloadUpdate" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.035"/>
+  <testcase name="persistOfflineMapTaskShouldReturnFalseWhenGivenNullIntentExtras" classname="io.ona.kujaku.services.MapboxOfflineDownloaderServiceTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

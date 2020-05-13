@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxWebServiceApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers</a> &gt; <span class="el_source">MapBoxWebServiceApi.java</span></div><h1>MapBoxWebServiceApi.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import com.android.volley.NetworkError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.io.File;
+
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
+import io.ona.kujaku.utils.Constants;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 16/11/2017.
+ */
+
+public class MapBoxWebServiceApi {
+
+<span class="nc" id="L26">    private String mapboxApiUrl = &quot;https://api.mapbox.com&quot;, stylesPath = &quot;/styles/v1&quot;;</span>
+    private RequestQueue requestQueue;
+    private String mapboxAccessToken;
+
+<span class="nc" id="L30">    public MapBoxWebServiceApi(Context context, @NonNull String mapboxAccessToken) {</span>
+<span class="nc" id="L31">        requestQueue = Volley.newRequestQueue(context);</span>
+<span class="nc" id="L32">        this.mapboxAccessToken = mapboxAccessToken;</span>
+<span class="nc" id="L33">    }</span>
+
+    public void retrieveStyleJSON(@NonNull final String username, @NonNull final String styleId, @NonNull final Response.Listener&lt;String&gt; responseListener, @NonNull final Response.ErrorListener errorListener) {
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (username.isEmpty() || styleId.isEmpty()) {</span>
+<span class="nc" id="L37">            errorListener.onErrorResponse(new VolleyError(&quot;Invalid username OR styleId&quot;));</span>
+<span class="nc" id="L38">            return;</span>
+        }
+<span class="nc" id="L40">        String url = mapboxApiUrl + stylesPath + &quot;/&quot; + username + &quot;/&quot; + styleId + &quot;?access_token=&quot; + mapboxAccessToken;</span>
+
+<span class="nc" id="L42">        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener&lt;String&gt;() {</span>
+            @Override
+            public void onResponse(String response) {
+<span class="nc bnc" id="L45" title="All 4 branches missed.">                if (response != null &amp;&amp; !response.isEmpty()) {</span>
+<span class="nc" id="L46">                    MapBoxStyleStorage mapBoxStyleStorage = new MapBoxStyleStorage();</span>
+<span class="nc" id="L47">                    mapBoxStyleStorage.cacheStyle(&quot;mapbox://styles/&quot; + username + File.separator + styleId, response);</span>
+                }
+
+<span class="nc" id="L50">                responseListener.onResponse(response);</span>
+<span class="nc" id="L51">            }</span>
+<span class="nc" id="L52">        }, new Response.ErrorListener() {</span>
+            @Override
+            public void onErrorResponse(VolleyError error) {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">                if (error instanceof NetworkError) {</span>
+<span class="nc" id="L56">                    String cachedStyle = (new MapBoxStyleStorage())</span>
+<span class="nc" id="L57">                            .getCachedStyle(&quot;mapbox://styles/&quot; + username + File.separator + styleId);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                    if (!TextUtils.isEmpty(cachedStyle)) {</span>
+<span class="nc" id="L59">                        responseListener.onResponse(cachedStyle);</span>
+<span class="nc" id="L60">                        return;</span>
+                    }
+                }
+<span class="nc" id="L63">                errorListener.onErrorResponse(error);</span>
+
+<span class="nc" id="L65">            }</span>
+        });
+<span class="nc" id="L67">        requestQueue.add(stringRequest);</span>
+<span class="nc" id="L68">    }</span>
+
+    public void retrieveStyleJSON(@NonNull String mapBoxStyleURL, @NonNull Response.Listener&lt;String&gt; responseListener, @NonNull Response.ErrorListener errorListener) {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (!mapBoxStyleURL.matches(Constants.MAP_BOX_URL_FORMAT)) {</span>
+<span class="nc" id="L72">            errorListener.onErrorResponse(new VolleyError(&quot;Invalid MapBox Style URL &quot;));</span>
+<span class="nc" id="L73">            return;</span>
+        }
+
+<span class="nc" id="L76">        String[] styleParts = mapBoxStyleURL.split(&quot;/&quot;);</span>
+<span class="nc" id="L77">        String username = styleParts[styleParts.length - 2];</span>
+<span class="nc" id="L78">        String styleId = styleParts[styleParts.length - 1];</span>
+<span class="nc" id="L79">        retrieveStyleJSON(username, styleId, responseListener, errorListener);</span>
+<span class="nc" id="L80">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

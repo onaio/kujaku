@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.mbtiles.MBTilesHelperTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:53" hostname="kigamba-ThinkPad-T580" time="6.466">
+  <properties/>
+  <testcase name="testInitializeMbTilesLayersWithVectorTiles" classname="io.ona.kujaku.mbtiles.MBTilesHelperTest" time="6.273"/>
+  <testcase name="testInitializeMbTilesLayersWithRasterTiles" classname="io.ona.kujaku.mbtiles.MBTilesHelperTest" time="0.052"/>
+  <testcase name="testOnDestroy" classname="io.ona.kujaku.mbtiles.MBTilesHelperTest" time="0.04"/>
+  <testcase name="testInitializeMbTilesLayersWithSingleFile" classname="io.ona.kujaku.mbtiles.MBTilesHelperTest" time="0.032"/>
+  <testcase name="testSetMBTileLayers" classname="io.ona.kujaku.mbtiles.MBTilesHelperTest" time="0.069"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[initialize called
+initialize called
+initialize called
+initialize called
+]]></system-err>
+</testsuite>

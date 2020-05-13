@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.converters.GeoJSONFeatureTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.005">
+  <properties/>
+  <testcase name="addPointShouldIncreasePoints" classname="io.ona.kujaku.helpers.converters.GeoJSONFeatureTest" time="0.004"/>
+  <testcase name="constructorShouldCreatePointFeature" classname="io.ona.kujaku.helpers.converters.GeoJSONFeatureTest" time="0.0"/>
+  <testcase name="addPropertyShouldIncreaseProperties" classname="io.ona.kujaku.helpers.converters.GeoJSONFeatureTest" time="0.0"/>
+  <testcase name="constructorShouldCreateMultiPointFeature" classname="io.ona.kujaku.helpers.converters.GeoJSONFeatureTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

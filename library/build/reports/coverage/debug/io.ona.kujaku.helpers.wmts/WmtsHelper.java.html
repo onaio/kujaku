@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers.wmts</a> &gt; <span class="el_source">WmtsHelper.java</span></div><h1>WmtsHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers.wmts;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.RasterLayer;
+import com.mapbox.mapboxsdk.style.sources.RasterSource;
+import com.mapbox.mapboxsdk.style.sources.TileSet;
+
+import java.util.Set;
+
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
+
+/**
+ * Isolate specific Wmts functions
+ *
+ *  Created by Emmanuel Otin - eo@novel-t.ch on 20/06/2019
+ */
+<span class="nc" id="L22">public class WmtsHelper {</span>
+
+    /**
+     * Verify if Style exists for the Layer
+     *
+     * @param layer
+     * @param styleIdentifier
+     * @throws WmtsCapabilitiesException
+     */
+    private static void selectWmtsStyle (@NonNull WmtsLayer layer, @Nullable String styleIdentifier) throws WmtsCapabilitiesException {
+<span class="nc bnc" id="L32" title="All 4 branches missed.">        if (styleIdentifier != null &amp;&amp; !styleIdentifier.isEmpty()) {</span>
+            // Check if style is known
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (layer.getStyle(styleIdentifier) == null) {</span>
+<span class="nc" id="L35">                throw new WmtsCapabilitiesException(String.format(&quot;Style with identifier %1$s is not available for Layer %2$s&quot;, styleIdentifier, layer.getIdentifier()));</span>
+            } else {
+<span class="nc" id="L37">                layer.setSelectedStyleIdentifier(styleIdentifier);</span>
+            }
+        }
+<span class="nc" id="L40">    }</span>
+
+    /**
+     * Verify if TileMatrixSetlink exists exists for the Layer
+     *
+     * @param layer
+     * @param tileMatrixSetLinkIdentifier
+     * @throws WmtsCapabilitiesException
+     */
+    private static void selectWmtsTileMatrix (@NonNull WmtsLayer layer, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+<span class="nc bnc" id="L50" title="All 4 branches missed.">        if (tileMatrixSetLinkIdentifier != null &amp;&amp; !tileMatrixSetLinkIdentifier.isEmpty()) {</span>
+            // Check if style is known
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (layer.getTileMatrixSetLink(tileMatrixSetLinkIdentifier) == null) {</span>
+<span class="nc" id="L53">                throw new WmtsCapabilitiesException(String.format(&quot;tileMatrixSetLink with identifier %1$s is not available for Layer %2$s&quot;, tileMatrixSetLinkIdentifier, layer.getIdentifier()));</span>
+            } else {
+<span class="nc" id="L55">                layer.setSelectedTileMatrixLinkIdentifier(tileMatrixSetLinkIdentifier);</span>
+            }
+        }
+<span class="nc" id="L58">    }</span>
+
+    /**
+     * Set the Maximum and Minimum Zoom for this layer
+     *
+     * @param layer
+     * @param capabilities
+     */
+    private static void setZooms(@NonNull WmtsLayer layer, @NonNull  WmtsCapabilities capabilities){
+<span class="nc" id="L67">        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();</span>
+
+<span class="nc" id="L69">        int maxZoom = capabilities.getMaximumTileMatrixZoom(tileMatrixSetIdentifier);</span>
+<span class="nc" id="L70">        int minZoom = capabilities.getMinimumTileMatrixZoom(tileMatrixSetIdentifier);</span>
+
+<span class="nc" id="L72">        layer.setMaximumZoom(maxZoom);</span>
+<span class="nc" id="L73">        layer.setMinimumZoom(minZoom);</span>
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * Set the tiles Size for this layer
+     *
+     * @param layer
+     * @param capabilities
+     */
+    private static void setTilesSize(@NonNull WmtsLayer layer, @NonNull WmtsCapabilities capabilities) {
+<span class="nc" id="L83">        String tileMatrixSetIdentifier = layer.getSelectedTileMatrixLinkIdentifier();</span>
+<span class="nc" id="L84">        int tileSize = capabilities.getTilesSize(tileMatrixSetIdentifier);</span>
+<span class="nc" id="L85">        layer.setTilesSize(tileSize);</span>
+<span class="nc" id="L86">    }</span>
+
+    /**
+     * Add all Wmts Layers in wmtsLayers on the map
+     */
+    public static void addWmtsLayers(@Nullable Set&lt;WmtsLayer&gt; wmtsLayers,@NonNull Style style) {
+        // Add WmtsLayers
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (wmtsLayers != null) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            for (WmtsLayer layer : wmtsLayers) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                if (style.getSource(layer.getIdentifier()) == null) {</span>
+
+<span class="nc" id="L97">                    TileSet tileSet = new TileSet(&quot;tileset&quot;, layer.getTemplateUrl(&quot;tile&quot;));</span>
+<span class="nc" id="L98">                    tileSet.setMaxZoom(layer.getMaximumZoom());</span>
+<span class="nc" id="L99">                    tileSet.setMinZoom(layer.getMinimumZoom());</span>
+
+<span class="nc" id="L101">                    RasterSource webMapSource = new RasterSource(</span>
+<span class="nc" id="L102">                            layer.getIdentifier(),</span>
+<span class="nc" id="L103">                            tileSet, layer.getTilesSize());</span>
+<span class="nc" id="L104">                    style.addSource(webMapSource);</span>
+
+<span class="nc" id="L106">                    RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());</span>
+<span class="nc" id="L107">                    style.addLayer(webMapLayer);</span>
+                }
+<span class="nc" id="L109">            }</span>
+        }
+<span class="nc" id="L111">    }</span>
+
+    /**
+     * Identify and return layer with specific style &amp; specific tileMatrixSet to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     * @param tileMatrixSetLinkIdentifier
+     */
+    public static WmtsLayer identifyLayer(@Nullable WmtsCapabilities capabilities, @Nullable String layerIdentifier
+            , @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+        WmtsLayer layerIdentified;
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (capabilities == null) {</span>
+<span class="nc" id="L126">            throw new WmtsCapabilitiesException (&quot;capabilities object is null or empty&quot;);</span>
+        }
+
+<span class="nc bnc" id="L129" title="All 4 branches missed.">        if (layerIdentifier == null || layerIdentifier.isEmpty()) { // Take first layer accessible</span>
+<span class="nc bnc" id="L130" title="All 4 branches missed.">            if (capabilities.getLayers() == null || capabilities.getLayers().size() == 0) {</span>
+                // No layer available
+<span class="nc" id="L132">                throw new WmtsCapabilitiesException(&quot;No layer available in the capacities object&quot;);</span>
+            } else {
+<span class="nc" id="L134">                layerIdentified = capabilities.getLayers().get(0);</span>
+            }
+        } else {
+            // Get the identified layer
+<span class="nc" id="L138">            layerIdentified = capabilities.getLayer(layerIdentifier);</span>
+        }
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (layerIdentified == null) {</span>
+<span class="nc" id="L142">            throw new WmtsCapabilitiesException(String.format(&quot;Layer with identifier %1$s is unknown&quot;, layerIdentifier));</span>
+        }
+
+<span class="nc" id="L145">        WmtsHelper.selectWmtsStyle(layerIdentified, styleIdentifier);</span>
+<span class="nc" id="L146">        WmtsHelper.selectWmtsTileMatrix(layerIdentified, tileMatrixSetLinkIdentifier);</span>
+<span class="nc" id="L147">        WmtsHelper.setZooms(layerIdentified, capabilities);</span>
+<span class="nc" id="L148">        WmtsHelper.setTilesSize(layerIdentified, capabilities);</span>
+
+<span class="nc" id="L150">        return layerIdentified;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.library.KujakuLibraryTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:15" hostname="kigamba-ThinkPad-T580" time="6.005">
+  <properties/>
+  <testcase name="testMethodLaunchMapActivityShouldSuccessfullyLaunchMapActivity" classname="io.ona.kujaku.library.KujakuLibraryTest" time="6.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

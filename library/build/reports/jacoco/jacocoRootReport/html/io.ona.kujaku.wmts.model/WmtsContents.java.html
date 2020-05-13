@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsContents.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.wmts.model</a> &gt; <span class="el_source">WmtsContents.java</span></div><h1>WmtsContents.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.wmts.model;
+
+import android.support.annotation.NonNull;
+
+import org.simpleframework.xml.ElementList;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+/**
+ * Describes a Wmts Contents object from the WMTS Capabilities object
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
+ */
+<span class="fc" id="L16">public class WmtsContents {</span>
+
+    @ElementList(inline=true, entry=&quot;Layer&quot;)
+    private List&lt;WmtsLayer&gt; layers;
+
+    @ElementList(inline=true, entry=&quot;TileMatrixSet&quot;)
+    private List&lt;WmtsTileMatrixSet&gt; tileMatrixSets;
+
+    @NonNull
+    public List&lt;WmtsLayer&gt; getLayers() {
+<span class="fc" id="L26">        return this.layers;</span>
+    }
+
+    @NonNull
+    public List&lt;WmtsTileMatrixSet&gt; geTileMatrixSets() {
+<span class="nc" id="L31">        return this.tileMatrixSets;</span>
+    }
+
+    @Nullable
+    public WmtsTileMatrixSet geTileMatrixSet(@NonNull String tileMatrixSetIdentifier) {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (WmtsTileMatrixSet wmtsTileMatrixSet : this.tileMatrixSets) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (wmtsTileMatrixSet.getIdentifier().equals(tileMatrixSetIdentifier)) {</span>
+<span class="fc" id="L38">                return wmtsTileMatrixSet;</span>
+            }
+<span class="fc" id="L40">        }</span>
+
+<span class="fc" id="L42">        return null ;</span>
+    }
+
+
+    /**
+     * Return the layer corresponding to the identifier
+     *
+     * @param identifier
+     * @return
+     */
+    @Nullable
+    public WmtsLayer getLayer(@NonNull String identifier) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        for (WmtsLayer layer : this.layers) {</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">            if (layer.getIdentifier().equals(identifier)) {</span>
+<span class="fc" id="L56">                return layer;</span>
+            }
+<span class="fc" id="L58">        }</span>
+
+<span class="fc" id="L60">        return null ;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

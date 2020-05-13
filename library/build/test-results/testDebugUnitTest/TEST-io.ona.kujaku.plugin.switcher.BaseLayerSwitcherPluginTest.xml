@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:26" hostname="kigamba-ThinkPad-T580" time="8.766">
+  <properties/>
+  <testcase name="removeBaseLayerShouldRemoveBaseLayerWhenLayerIdIsSame" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="7.397"/>
+  <testcase name="addBaseLayerShouldReturnFalseWhenBaseLayerInstanceIsSame" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.018"/>
+  <testcase name="removeBaseLayerFromMapShouldCallMapViewRemoveLayerAndReturnTrue" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.094"/>
+  <testcase name="showShouldCallShowPluginSwitcherView" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.019"/>
+  <testcase name="showPluginSwitcherViewShouldEnableFab" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.712"/>
+  <testcase name="addBaseLayerShouldReturnFalseWhenBaseLayerIdIsSame" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.018"/>
+  <testcase name="addBaseLayerShouldReturnTrueWhenBaseLayerIsUnique" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.024"/>
+  <testcase name="onMenuItemClickShouldCallShowBaseLayerAndReturnTrueWhenDifferentBaseLayerIsClicked" classname="io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPluginTest" time="0.483"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[initialize called
+initialize called
+initialize called
+initialize called
+initialize called
+initialize called
+initialize called
+initialize called
+]]></system-err>
+</testsuite>

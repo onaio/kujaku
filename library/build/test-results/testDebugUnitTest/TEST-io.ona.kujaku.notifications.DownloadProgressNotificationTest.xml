@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.notifications.DownloadProgressNotificationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:40" hostname="kigamba-ThinkPad-T580" time="0.19">
+  <properties/>
+  <testcase name="updateNotificationWithNewMapDownload" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.042"/>
+  <testcase name="createInitialNotificationShouldCreateNotificationBuilderWithoutAction" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.009"/>
+  <testcase name="createStopDownloadIntentShouldCreateValidIntent" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.01"/>
+  <testcase name="formatDecimal" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.009"/>
+  <testcase name="displayForegroundNotificationShouldStartForegroundNotification" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.021"/>
+  <testcase name="clearActions" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.009"/>
+  <testcase name="updateNotificationShouldNotUpdateNotificationWithNewMapName" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.01"/>
+  <testcase name="displayNotificationShouldDisplayNotificationFromTheCurrentNotificationBuilder" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.013"/>
+  <testcase name="updateNotificationBuilderWithDownloadProgress" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.012"/>
+  <testcase name="displayForegroundNotificationShouldDisplayNotificationFromCurrentNotificationBuilder" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.013"/>
+  <testcase name="constructorShouldCreateValidNotificationChannel" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.011"/>
+  <testcase name="createInitialNotificationShouldCreateNotificationBuilderWithStopDownloadAction" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.011"/>
+  <testcase name="constructorShouldInitialiseVariables" classname="io.ona.kujaku.notifications.DownloadProgressNotificationTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

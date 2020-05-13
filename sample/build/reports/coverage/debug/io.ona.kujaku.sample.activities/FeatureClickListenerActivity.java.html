@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeatureClickListenerActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">FeatureClickListenerActivity.java</span></div><h1>FeatureClickListenerActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import java.util.List;
+
+import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2018
+ */
+
+<span class="nc" id="L26">public class FeatureClickListenerActivity extends BaseNavigationDrawerActivity {</span>
+
+    private KujakuMapView kujakuMapView;
+    private Toast currentToast;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L33">        super.onCreate(savedInstanceState);</span>
+
+<span class="nc" id="L35">        kujakuMapView = findViewById(R.id.kmv_featureClickListenerActivity_mapView);</span>
+<span class="nc" id="L36">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L39">                mapboxMap.setStyle(new Style.Builder().fromUrl(&quot;asset://basic-feature-select-style.json&quot;));</span>
+
+<span class="nc" id="L41">                showToast(Toasty.info(FeatureClickListenerActivity.this, getString(R.string.feature_click_listener_activity_instructions)));</span>
+
+<span class="nc" id="L43">                kujakuMapView.setOnFeatureClickListener(new OnFeatureClickListener() {</span>
+                    @Override
+                    public void onFeatureClick(List&lt;Feature&gt; features) {
+<span class="nc" id="L46">                        showToast(Toasty.success(FeatureClickListenerActivity.this, getString(R.string.building_exc)));</span>
+<span class="nc" id="L47">                    }</span>
+                }, &quot;building&quot;);
+<span class="nc" id="L49">            }</span>
+        });
+<span class="nc" id="L51">    }</span>
+
+    private void showToast(Toast newToast) {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (currentToast != null) {</span>
+<span class="nc" id="L55">            currentToast.cancel();</span>
+        }
+
+<span class="nc" id="L58">        currentToast = newToast;</span>
+<span class="nc" id="L59">        currentToast.show();</span>
+<span class="nc" id="L60">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L64">        return R.layout.activity_feature_click_listener;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L69">        return R.id.nav_feature_click_listener;</span>
+    }
+    @Override
+    protected void onResume() {
+<span class="nc" id="L73">        super.onResume();</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L75">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L79">        super.onStart();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L81">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L85">        super.onStop();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L87">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L91">        super.onPause();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L93">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L97">        super.onDestroy();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L99">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L103">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L105">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L109">        super.onLowMemory();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L111">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

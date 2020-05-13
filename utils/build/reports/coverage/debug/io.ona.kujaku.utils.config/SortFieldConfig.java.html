@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SortFieldConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils.config</a> &gt; <span class="el_source">SortFieldConfig.java</span></div><h1>SortFieldConfig.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils.config;
+
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+
+/**
+ * Holds configuration for the fields to be used to sort data in the MapBox data-sources to be used
+ * to render data.
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 24/11/2017.
+ */
+
+public class SortFieldConfig implements Config {
+    public static final String KEY_DATA_FIELD = &quot;data_field&quot;;
+    public static final String KEY_TYPE = &quot;type&quot;;
+
+<span class="nc" id="L25">    public enum FieldType {</span>
+<span class="nc" id="L26">        NUMBER,</span>
+<span class="nc" id="L27">        DATE,</span>
+<span class="nc" id="L28">        STRING</span>
+    }
+
+    private FieldType type;
+    private String dataField;
+
+<span class="nc" id="L34">    public SortFieldConfig(@NonNull FieldType fieldType, @NonNull String dataField) {</span>
+<span class="nc" id="L35">        setType(fieldType);</span>
+<span class="nc" id="L36">        setDataField(dataField);</span>
+<span class="nc" id="L37">    }</span>
+
+    public SortFieldConfig(@NonNull String type, @NonNull String dataField)
+<span class="nc" id="L40">            throws InvalidMapBoxStyleException {</span>
+<span class="nc" id="L41">        setType(type);</span>
+<span class="nc" id="L42">        setDataField(dataField);</span>
+<span class="nc" id="L43">    }</span>
+
+    public SortFieldConfig(@NonNull JSONObject jsonObject)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="nc" id="L47">        this(jsonObject.getString(KEY_TYPE), jsonObject.getString(KEY_DATA_FIELD));</span>
+<span class="nc" id="L48">    }</span>
+
+<span class="nc" id="L50">    public SortFieldConfig() {</span>
+<span class="nc" id="L51">    }</span>
+
+    public FieldType getType() {
+<span class="nc" id="L54">        return type;</span>
+    }
+
+    public void setType(@NonNull FieldType type) {
+<span class="nc" id="L58">        this.type = type;</span>
+<span class="nc" id="L59">    }</span>
+
+    public void setType(@NonNull String type) throws InvalidMapBoxStyleException {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (isValidType(type)) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (FieldType.NUMBER.toString().equalsIgnoreCase(type)) {</span>
+<span class="nc" id="L64">                setType(FieldType.NUMBER);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            } else if (FieldType.DATE.toString().equalsIgnoreCase(type)) {</span>
+<span class="nc" id="L66">                setType(FieldType.DATE);</span>
+            } else {
+<span class="nc" id="L68">                setType(FieldType.STRING);</span>
+            }
+        } else {
+<span class="nc" id="L71">            throw new InvalidMapBoxStyleException(&quot;Unknown SortField type '&quot; + type + &quot;'&quot;);</span>
+        }
+<span class="nc" id="L73">    }</span>
+
+    public static boolean isValidType(String type) {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        return (FieldType.NUMBER.toString().equalsIgnoreCase(type)</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                || FieldType.DATE.toString().equalsIgnoreCase(type)</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                || FieldType.STRING.toString().equalsIgnoreCase(type));</span>
+    }
+
+    public String getDataField() {
+<span class="nc" id="L82">        return dataField;</span>
+    }
+
+    public void setDataField(@NonNull String dataField) {
+<span class="nc" id="L86">        this.dataField = dataField;</span>
+<span class="nc" id="L87">    }</span>
+
+    public static SortFieldConfig[] extractSortFieldConfigs(@NonNull MapBoxStyleHelper styleHelper)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="nc" id="L91">        ArrayList&lt;SortFieldConfig&gt; sortFieldConfigs = styleHelper.getKujakuConfig()</span>
+<span class="nc" id="L92">                .getSortFieldConfigs();</span>
+<span class="nc" id="L93">        SortFieldConfig[] sortFields = sortFieldConfigs.toArray(new SortFieldConfig[]{});</span>
+
+<span class="nc" id="L95">        return sortFields;</span>
+    }
+
+    @Override
+    public boolean isValid() {
+<span class="nc bnc" id="L100" title="All 4 branches missed.">        return type != null &amp;&amp; !TextUtils.isEmpty(dataField);</span>
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+<span class="nc" id="L105">        JSONObject object = new JSONObject();</span>
+<span class="nc" id="L106">        object.put(KEY_TYPE, type.toString().toLowerCase());</span>
+<span class="nc" id="L107">        object.put(KEY_DATA_FIELD, dataField);</span>
+<span class="nc" id="L108">        return object;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

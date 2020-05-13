@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestDataUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.utils</a> &gt; <span class="el_source">TestDataUtils.java</span></div><h1>TestDataUtils.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.utils;
+
+import android.content.Context;
+import android.util.Log;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.style.layers.CircleLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.rgb;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius;
+
+/**
+ * @author Vincent Karuri
+ */
+<span class="nc" id="L35">public class TestDataUtils {</span>
+
+<span class="nc" id="L37">    private static final String TAG = TestDataUtils.class.getName();</span>
+
+    public static Layer generateMapBoxLayer(String layerId, String sourceId) {
+
+<span class="nc" id="L41">            CircleLayer circleLayer = new CircleLayer(layerId, sourceId);</span>
+
+<span class="nc" id="L43">            circleLayer.setSourceLayer(&quot;sf2010&quot;);</span>
+<span class="nc" id="L44">            circleLayer.withProperties(</span>
+<span class="nc" id="L45">                    circleRadius(</span>
+<span class="nc" id="L46">                            interpolate(</span>
+<span class="nc" id="L47">                                    exponential(1.75f),</span>
+<span class="nc" id="L48">                                    zoom(),</span>
+<span class="nc" id="L49">                                    stop(12, 2f),</span>
+<span class="nc" id="L50">                                    stop(22, 180f)</span>
+                            )),
+<span class="nc" id="L52">                    circleColor(</span>
+<span class="nc" id="L53">                            match(get(&quot;ethnicity&quot;), rgb(0, 0, 0),</span>
+<span class="nc" id="L54">                                    stop(&quot;White&quot;, rgb(251, 176, 59)),</span>
+<span class="nc" id="L55">                                    stop(&quot;Black&quot;, rgb(34, 59, 83)),</span>
+<span class="nc" id="L56">                                    stop(&quot;Hispanic&quot;, rgb(229, 94, 94)),</span>
+<span class="nc" id="L57">                                    stop(&quot;Asian&quot;, rgb(59, 178, 208)),</span>
+<span class="nc" id="L58">                                    stop(&quot;Other&quot;, rgb(204, 204, 204)))));</span>
+<span class="nc" id="L59">            return circleLayer;</span>
+    }
+
+    public static JSONArray createFeatureJsonArray(int numFeatures, double longitude, double latitude, String propertyName, final String[] featureGroup) throws JSONException {
+
+<span class="nc" id="L64">        final double LAMBDA = 0.0001;</span>
+
+        double longitudeOffset;
+        double latitudeOffset;
+<span class="nc" id="L68">        double newLongitude = longitude;</span>
+<span class="nc" id="L69">        double newLatitude = latitude;</span>
+
+<span class="nc" id="L71">        int featureNumber = 0;</span>
+<span class="nc" id="L72">        int prevFeatureNumber = -1;</span>
+
+<span class="nc" id="L74">        JSONArray featuresArray = new JSONArray();</span>
+<span class="nc" id="L75">        final int FEATURE_GROUP_SIZE = featureGroup.length;</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        while (featureNumber &lt; numFeatures) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (prevFeatureNumber != featureNumber) {</span>
+<span class="nc" id="L78">                JSONObject feature = new JSONObject();</span>
+<span class="nc" id="L79">                feature.put(&quot;id&quot;, &quot;feature_&quot; + featureNumber);</span>
+<span class="nc" id="L80">                feature.put(&quot;type&quot;, &quot;Feature&quot;);</span>
+
+<span class="nc" id="L82">                int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);</span>
+<span class="nc" id="L83">                String featureValue = featureGroup[featureIndex];</span>
+<span class="nc" id="L84">                JSONObject properties = new JSONObject();</span>
+<span class="nc" id="L85">                properties.put(propertyName, featureValue);</span>
+<span class="nc" id="L86">                feature.put(&quot;properties&quot;, properties);</span>
+
+<span class="nc" id="L88">                JSONObject geometry = new JSONObject();</span>
+<span class="nc" id="L89">                geometry.put(&quot;type&quot;, &quot;Point&quot;);</span>
+<span class="nc" id="L90">                JSONArray coordinates = new JSONArray();</span>
+<span class="nc" id="L91">                coordinates.put(newLongitude);</span>
+<span class="nc" id="L92">                coordinates.put(newLatitude);</span>
+<span class="nc" id="L93">                geometry.put(&quot;coordinates&quot;, coordinates);</span>
+
+<span class="nc" id="L95">                feature.put(&quot;geometry&quot;, geometry);</span>
+
+<span class="nc" id="L97">                featuresArray.put(feature);</span>
+            }
+            // housekeeping
+<span class="nc" id="L100">            longitudeOffset = Math.random();</span>
+<span class="nc" id="L101">            latitudeOffset = Math.random();</span>
+<span class="nc bnc" id="L102" title="All 4 branches missed.">            if (longitudeOffset &gt;= LAMBDA || latitudeOffset &gt;= LAMBDA) {</span>
+<span class="nc" id="L103">                featureNumber++;</span>
+<span class="nc" id="L104">                newLongitude += longitudeOffset;</span>
+<span class="nc" id="L105">                newLatitude += latitudeOffset;</span>
+            }
+        }
+<span class="nc" id="L108">        return featuresArray;</span>
+    }
+
+    public static List&lt;Feature&gt; createFeatureList(int numFeatures, int startingIndex, double longitude, double latitude, String propertyName, String geometryType, boolean isPolygon, final String[] featureGroup, final double spread) throws JSONException {
+
+        double longitudeOffset;
+        double latitudeOffset;
+<span class="nc" id="L115">        double newLongitude = longitude;</span>
+<span class="nc" id="L116">        double newLatitude = latitude;</span>
+
+<span class="nc" id="L118">        int featureNumber = startingIndex;</span>
+<span class="nc" id="L119">        int prevFeatureNumber = -1;</span>
+
+<span class="nc" id="L121">        List&lt;Feature&gt; features = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L122">        final int FEATURE_GROUP_SIZE = featureGroup.length;</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        while (featureNumber &lt; numFeatures + startingIndex) {</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (prevFeatureNumber != featureNumber) {</span>
+<span class="nc" id="L125">                JSONObject feature = new JSONObject();</span>
+<span class="nc" id="L126">                feature.put(&quot;id&quot;, &quot;feature_&quot; + UUID.randomUUID());</span>
+<span class="nc" id="L127">                feature.put(&quot;type&quot;, &quot;Feature&quot;);</span>
+
+<span class="nc" id="L129">                int featureIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);</span>
+<span class="nc" id="L130">                String featureValue = featureGroup[featureIndex];</span>
+<span class="nc" id="L131">                JSONObject properties = new JSONObject();</span>
+<span class="nc" id="L132">                properties.put(propertyName, featureValue);</span>
+<span class="nc" id="L133">                feature.put(&quot;properties&quot;, properties);</span>
+
+<span class="nc" id="L135">                JSONObject geometry = new JSONObject();</span>
+<span class="nc" id="L136">                geometry.put(&quot;type&quot;, geometryType);</span>
+
+<span class="nc" id="L138">                JSONArray coordinates = generateCoordinates(newLongitude, newLatitude, isPolygon);</span>
+<span class="nc" id="L139">                geometry.put(&quot;coordinates&quot;, coordinates);</span>
+
+<span class="nc" id="L141">                feature.put(&quot;geometry&quot;, geometry);</span>
+
+<span class="nc" id="L143">                features.add(com.mapbox.geojson.Feature.fromJson(feature.toString()));</span>
+            }
+            // housekeeping
+<span class="nc" id="L146">            longitudeOffset = Math.random() * 0.005;</span>
+<span class="nc" id="L147">            latitudeOffset = Math.random() * 0.005;</span>
+<span class="nc" id="L148">            Random random = new Random();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            longitudeOffset = random.nextBoolean() ? longitudeOffset : -longitudeOffset;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            latitudeOffset = random.nextBoolean() ? latitudeOffset : -latitudeOffset;</span>
+<span class="nc" id="L151">            prevFeatureNumber = featureNumber;</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">            if (Math.abs(longitudeOffset) &gt;= spread &amp;&amp; Math.abs(latitudeOffset) &gt;= spread) {</span>
+<span class="nc" id="L153">                featureNumber++;</span>
+<span class="nc" id="L154">                newLongitude = longitude + longitudeOffset;</span>
+<span class="nc" id="L155">                newLatitude = latitude + latitudeOffset;</span>
+            }
+<span class="nc" id="L157">        }</span>
+<span class="nc" id="L158">        return features;</span>
+    }
+
+    private static JSONArray generateCoordinates(double longitude, double latitude, boolean isPolygon) throws JSONException {
+<span class="nc" id="L162">        JSONArray result = new JSONArray();</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (!isPolygon) {</span>
+<span class="nc" id="L164">            result.put(longitude);</span>
+<span class="nc" id="L165">            result.put(latitude);</span>
+        } else {
+<span class="nc" id="L167">            JSONArray coordinates = new JSONArray();</span>
+<span class="nc" id="L168">            coordinates.put(longitude);</span>
+<span class="nc" id="L169">            coordinates.put(latitude);</span>
+<span class="nc" id="L170">            result.put(coordinates);</span>
+
+<span class="nc" id="L172">            coordinates = new JSONArray();</span>
+<span class="nc" id="L173">            coordinates.put(longitude + 0.0001);</span>
+<span class="nc" id="L174">            coordinates.put(latitude);</span>
+<span class="nc" id="L175">            result.put(coordinates);</span>
+
+<span class="nc" id="L177">            coordinates = new JSONArray();</span>
+<span class="nc" id="L178">            coordinates.put(longitude);</span>
+<span class="nc" id="L179">            coordinates.put(latitude + 0.0001);</span>
+<span class="nc" id="L180">            result.put(coordinates);</span>
+
+<span class="nc" id="L182">            coordinates = new JSONArray();</span>
+<span class="nc" id="L183">            coordinates.put(longitude + 0.0001);</span>
+<span class="nc" id="L184">            coordinates.put(latitude + 0.0001);</span>
+<span class="nc" id="L185">            result.put(coordinates);</span>
+
+<span class="nc" id="L187">            JSONArray tempResult = result;</span>
+<span class="nc" id="L188">            result = new JSONArray();</span>
+<span class="nc" id="L189">            result.put(tempResult);</span>
+        }
+<span class="nc" id="L191">        return result;</span>
+    }
+
+    public static FeatureCollection alterFeatureJsonProperties(int numFeatures, JSONObject featureCollection, String propertyName, final String[] featureGroup) throws JSONException {
+        JSONArray featuresArray;
+<span class="nc" id="L196">        final int FEATURE_GROUP_SIZE = featureGroup.length;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (featureCollection.getJSONArray(&quot;features&quot;).length() == 0) {</span>
+            // initial initialization
+<span class="nc" id="L199">            featuresArray = createFeatureJsonArray(10000, 36.000000, -1.000000, propertyName, featureGroup);</span>
+<span class="nc" id="L200">            Log.i(TAG, &quot;Features array size is: &quot; + featuresArray.length());</span>
+            // Create and set GeoJsonSource
+<span class="nc" id="L202">            featureCollection.put(&quot;type&quot;, &quot;FeatureCollection&quot;);</span>
+<span class="nc" id="L203">            featureCollection.put(&quot;features&quot;, featuresArray);</span>
+        } else {
+            // modify properties
+<span class="nc" id="L206">            featuresArray = featureCollection.getJSONArray(&quot;features&quot;);</span>
+<span class="nc" id="L207">            int featuresSize = featuresArray.length();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            for (int i = 0; i &lt; numFeatures; i++) {</span>
+<span class="nc" id="L209">                int featurePropertyValueIndex = (int) (Math.random() * FEATURE_GROUP_SIZE);</span>
+<span class="nc" id="L210">                String featurePropertyValue = featureGroup[featurePropertyValueIndex];</span>
+<span class="nc" id="L211">                int featureIndex = (int) (Math.random() * featuresSize);</span>
+<span class="nc" id="L212">                featuresArray.getJSONObject(featureIndex).getJSONObject(&quot;properties&quot;).put(propertyName, featurePropertyValue);</span>
+            }
+<span class="nc" id="L214">            Log.i(TAG, &quot;Features array size is: &quot; + featuresArray.length());</span>
+        }
+<span class="nc" id="L216">        return FeatureCollection.fromJson(featureCollection.toString());</span>
+    }
+
+    public static void addFeaturePoints(int numFeaturePoints, JSONObject featureCollection, String propertyName, final String[] featureGroup)  throws JSONException {
+<span class="nc" id="L220">        JSONArray featuresArray = createFeatureJsonArray(numFeaturePoints, 36.795538, -1.294638, propertyName, featureGroup);</span>
+<span class="nc" id="L221">        Log.i(TAG, &quot;Features array size is: &quot; + featuresArray.length());</span>
+
+<span class="nc" id="L223">        JSONArray currFeaturesArray = featureCollection.getJSONArray(&quot;features&quot;);</span>
+<span class="nc" id="L224">        featuresArray = concatJSONArray(featuresArray, currFeaturesArray);</span>
+        // Create and set GeoJsonSource
+<span class="nc" id="L226">        featureCollection.put(&quot;type&quot;, &quot;FeatureCollection&quot;);</span>
+<span class="nc" id="L227">        featureCollection.put(&quot;features&quot;, featuresArray);</span>
+<span class="nc" id="L228">    }</span>
+
+    private static JSONArray concatJSONArray(JSONArray array1, JSONArray array2) throws JSONException {
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        for (int i = 0; i &lt; array2.length(); i++) {</span>
+<span class="nc" id="L232">            array1.put(array2.get(i));</span>
+        }
+<span class="nc" id="L234">        return array1;</span>
+    }
+
+    public static String readAssetContents(Context context, String path) {
+<span class="nc" id="L238">        String fileContents = null;</span>
+        try {
+<span class="nc" id="L240">            InputStream is = context.getAssets().open(path);</span>
+<span class="nc" id="L241">            int size = is.available();</span>
+<span class="nc" id="L242">            byte[] buffer = new byte[size];</span>
+<span class="nc" id="L243">            is.read(buffer);</span>
+<span class="nc" id="L244">            is.close();</span>
+<span class="nc" id="L245">            fileContents = new String(buffer, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L246">        } catch (IOException ex) {</span>
+<span class="nc" id="L247">            Log.e(TAG, Log.getStackTraceString(ex));</span>
+<span class="nc" id="L248">        }</span>
+
+<span class="nc" id="L250">        return fileContents;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

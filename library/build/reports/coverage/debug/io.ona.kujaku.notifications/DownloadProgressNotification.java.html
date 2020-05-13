@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DownloadProgressNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.notifications</a> &gt; <span class="el_source">DownloadProgressNotification.java</span></div><h1>DownloadProgressNotification.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.notifications;
+
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
+
+import java.text.DecimalFormat;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.utils.Constants;
+
+/**
+ * Creates the appropriate channel for download progress notifications. Displays download progress
+ * notification or updates the current one with a valid stop button that stops the current offline map download
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.
+ */
+public class DownloadProgressNotification extends KujakuNotification {
+
+    public static final String CHANNEL_ID = &quot;KUJAKU_DOWNLOAD_PROGRESS_CHANNEL&quot;;
+    protected NotificationCompat.Builder notificationBuilder;
+    private Intent stopDownloadIntent;
+
+<span class="nc" id="L29">    public DownloadProgressNotification(Context context) {</span>
+<span class="nc" id="L30">        setContext(context);</span>
+<span class="nc" id="L31">        setSmallIcon(R.drawable.ic_stat_file_download);</span>
+
+<span class="nc" id="L33">        createNotificationChannel(NotificationManager.IMPORTANCE_LOW, context.getString(R.string.download_progress_channel_name), CHANNEL_ID, context.getString(R.string.download_progress_channel_description));</span>
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Creates the initial progress notification with a Stop Download action to stop the current download when clicked. It however does not display the created notification
+     *
+     * @param mapName
+     * @param mapBoxAccessToken
+     * @param requestCode
+     * @param showAction
+     */
+    public void createInitialNotification(String mapName, String mapBoxAccessToken, int requestCode, boolean showAction) {
+<span class="nc" id="L45">        notificationBuilder = createNotification(String.format(context.getString(R.string.notification_download_progress_title), mapName));</span>
+
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (showAction) {</span>
+<span class="nc" id="L48">            stopDownloadIntent = createStopDownloadIntent(mapName, mapBoxAccessToken);</span>
+
+<span class="nc" id="L50">            PendingIntent stopDownloadPendingIntent = PendingIntent.getService(context, requestCode, stopDownloadIntent, PendingIntent.FLAG_UPDATE_CURRENT);</span>
+<span class="nc" id="L51">            NotificationCompat.Action stopDownloadAction = new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, context.getString(R.string.stop_download), stopDownloadPendingIntent);</span>
+
+<span class="nc" id="L53">            notificationBuilder.mActions.clear();</span>
+<span class="nc" id="L54">            notificationBuilder.addAction(stopDownloadAction);</span>
+        }
+<span class="nc" id="L56">    }</span>
+
+    /**
+     * Updates the download progress notification by changing the map name, updating the {@link PendingIntent}
+     * for the STOP DOWNLOAD action &amp; updating the download progress percentage
+     *
+     * @param percentageProgress
+     * @param mapName
+     * @param requestCode
+     * @param showAction
+     */
+    public void updateNotification(double percentageProgress, String mapName, int requestCode, boolean showAction) {
+<span class="nc bnc" id="L68" title="All 4 branches missed.">        if (percentageProgress == 0 &amp;&amp; showAction) {</span>
+<span class="nc" id="L69">            updateNotificationWithNewMapDownload(mapName, requestCode);</span>
+        }
+
+        // Remove all previous actions if showAction is false
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (!showAction) {</span>
+<span class="nc" id="L74">            clearActions();</span>
+        }
+
+<span class="nc" id="L77">        updateNotificationWithDownloadProgress(percentageProgress);</span>
+<span class="nc" id="L78">    }</span>
+
+    /**
+     * Displays a foreground notification using the {@link Context} from the calling {@link Service} passed
+     *
+     * @param notificationBuilder
+     * @param notificationId
+     */
+    public void displayForegroundNotification(NotificationCompat.Builder notificationBuilder, int notificationId) {
+<span class="nc" id="L87">        ((Service) context).startForeground(notificationId, notificationBuilder.build());</span>
+<span class="nc" id="L88">    }</span>
+
+    /**
+     * Displays foreground notification using the {@link Context} from the calling {@link Service} passed on instantiation
+     *
+     * @param notificationId
+     */
+    public void displayForegroundNotification(int notificationId) {
+<span class="nc" id="L96">        displayForegroundNotification(notificationBuilder, notificationId);</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Changes the map name on the {@link NotificationCompat.Builder} title and replaces {@link PendingIntent} for the STOP DOWNLOAD action
+     *
+     * @param mapName
+     * @param requestCode
+     */
+    public void updateNotificationWithNewMapDownload(String mapName, int requestCode) {
+<span class="nc" id="L106">        notificationBuilder.setContentTitle(String.format(context.getString(R.string.notification_download_progress_title), mapName));</span>
+
+<span class="nc" id="L108">        stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);</span>
+
+<span class="nc" id="L110">        PendingIntent stopDownloadPendingIntent = PendingIntent.getService(context, requestCode, stopDownloadIntent, PendingIntent.FLAG_CANCEL_CURRENT);</span>
+<span class="nc" id="L111">        NotificationCompat.Action stopDownloadAction = new NotificationCompat.Action(R.drawable.ic_mapbox_download_stop, context.getString(R.string.stop_download), stopDownloadPendingIntent);</span>
+
+<span class="nc" id="L113">        notificationBuilder.mActions.clear();</span>
+<span class="nc" id="L114">        notificationBuilder.addAction(stopDownloadAction);</span>
+<span class="nc" id="L115">    }</span>
+
+    public void displayNotification(int notificationId) {
+<span class="nc" id="L118">        displayNotification(notificationBuilder, notificationId);</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * It updates the notification download progress by updating the text for the {@link NotificationCompat.Builder}
+     *
+     * @param percentageProgress
+     */
+    public void updateNotificationWithDownloadProgress(double percentageProgress) {
+<span class="nc" id="L127">        notificationBuilder.setContentText(String.format(context.getString(R.string.notification_download_progress_content), formatDecimal(percentageProgress)));</span>
+<span class="nc" id="L128">    }</span>
+
+    /**
+     * It clears the {@link NotificationCompat.Builder} actions
+     */
+    public void clearActions() {
+<span class="nc" id="L134">        notificationBuilder.mActions.clear();</span>
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Creates a valid service intent with {@link MapboxOfflineDownloaderService.SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+     * {@link io.ona.kujaku.services.MapboxOfflineDownloaderService.SERVICE_ACTION} to be sent to the
+     * {@Link MapboxOfflineDownloaderService} given the map name &amp; Mapbox Access Token
+     *
+     * @param mapName
+     * @param mapBoxAccessToken
+     * @return
+     */
+    public Intent createStopDownloadIntent(String mapName, String mapBoxAccessToken) {
+<span class="nc" id="L147">        Intent stopDownloadIntent = new Intent(context, MapboxOfflineDownloaderService.class);</span>
+<span class="nc" id="L148">        stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);</span>
+<span class="nc" id="L149">        stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);</span>
+<span class="nc" id="L150">        stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, mapBoxAccessToken);</span>
+<span class="nc" id="L151">        stopDownloadIntent.putExtra(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);</span>
+
+<span class="nc" id="L153">        return stopDownloadIntent;</span>
+    }
+
+    /**
+     * Formats a decimal to between 0-2 decimal places depending on the decimal places of the double passed
+     *
+     * @param no
+     * @return
+     */
+    protected static String formatDecimal(double no) {
+<span class="nc" id="L163">        DecimalFormat twoDForm = new DecimalFormat(&quot;0.##&quot;);</span>
+<span class="nc" id="L164">        return twoDForm.format(no);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

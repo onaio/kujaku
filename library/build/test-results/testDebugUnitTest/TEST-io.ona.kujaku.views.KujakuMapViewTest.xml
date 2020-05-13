@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.views.KujakuMapViewTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:00" hostname="kigamba-ThinkPad-T580" time="14.073">
+  <properties/>
+  <testcase name="addPrimaryGeoJsonSourceAndLayerToStyleShouldInitializeFeatureCollectionFromStyleWhenFlagIsTrue" classname="io.ona.kujaku.views.KujakuMapViewTest" time="7.779"/>
+  <testcase name="changeLocationUpdatesShouldCallLocationClientRequestingLocationUpdates" classname="io.ona.kujaku.views.KujakuMapViewTest" time="4.804"/>
+  <testcase name="changeLocationUpdatesShouldReturnFalseWhenGivenValidLocationUpdateParams" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.048"/>
+  <testcase name="getLocationClientShouldCallCallbackWhenLocationClientIsNullAndWarmLocationIsCalled" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.995"/>
+  <testcase name="changeLocationUpdatesShouldReturnTrueWhenGivenValidLocationUpdateParams" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.031"/>
+  <testcase name="addPrimaryGeoJsonSourceAndLayerToStyleShouldAddPrimaryGeoJsonSourceToStyleWhenSourceDoesNotExistOnTheStyle" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.188"/>
+  <testcase name="addPrimaryGeoJsonSourceAndLayerToStyleShouldAddLayerToStyleWhenLayerDoesNotExistOnStyle" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.192"/>
+  <testcase name="getLocationClientShouldCallCallbackWhenLocationClientIsNotNull" classname="io.ona.kujaku.views.KujakuMapViewTest" time="0.035"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

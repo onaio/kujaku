@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.notifications.KujakuNotificationTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:26:40" hostname="kigamba-ThinkPad-T580" time="3.905">
+  <properties/>
+  <testcase name="createNotificationChannelShouldCreateValidNotificationChannelWithoutLightsOrVibration" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.013"/>
+  <testcase name="createNotificationShouldCreateValidNotificationBuilderWithoutTextOrChannelId" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="3.846"/>
+  <testcase name="createNotificationChannelShouldCreateValidNotificationChannelWithoutLights" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.009"/>
+  <testcase name="createNotificationChannelShouldCreateValidNotificationChannel" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.008"/>
+  <testcase name="createNotificationShouldCreateValidNotificationBuilderWithChannelIdOnly" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.007"/>
+  <testcase name="createNotificationShouldCreateValidNotifcationBuilderWithTextOnly" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.007"/>
+  <testcase name="createNotificationShouldCreateValidNotificationBuilderWithTextAndChannelIdWhenGivenContent" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.008"/>
+  <testcase name="createNotificationChannelShouldCreateValidNotificationChannelWithoutVibration" classname="io.ona.kujaku.notifications.KujakuNotificationTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxDownloadTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.data</a> &gt; <span class="el_source">MapBoxDownloadTask.java</span></div><h1>MapBoxDownloadTask.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.data;
+
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Date;
+import java.util.UUID;
+
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.realm.Realm;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+
+/**
+ * Stores/Carries data on Offline MapBox Style
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 20/11/2017.
+ * Created by Jason Rogena - jrogena@ona.io on 20/11/2017.
+ */
+
+public class MapBoxDownloadTask {
+    private String packageName;
+    private String mapName;
+    private String mapBoxStyleUrl;
+    private double minZoom;
+    private double maxZoom;
+    private LatLng topLeftBound;
+    private LatLng topRightBound;
+    private LatLng bottomRightBound;
+    private LatLng bottomLeftBound;
+    private String mapBoxAccessToken;
+
+    private JSONObject jsonObject;
+<span class="fc" id="L38">    private static final String TAG = MapBoxDownloadTask.class.getSimpleName();</span>
+
+    public static final String PACKAGE_NAME = &quot;packageName&quot;
+            , MAP_NAME = &quot;mapName&quot;
+            , MAPBOX_STYLE_URL = &quot;mapBoxStyleUrl&quot;
+            , MIN_ZOOM = &quot;minZoom&quot;
+            , MAX_ZOOM = &quot;maxZoom&quot;
+            , TOP_LEFT_BOUND = &quot;topLeftBound&quot;
+            , TOP_RIGHT_BOUND = &quot;topRightBound&quot;
+            , BOTTOM_RIGHT_BOUND = &quot;bottomRightBound&quot;
+            , BOTTOM_LEFT_BOUND = &quot;bottomLeftBound&quot;
+            , MAPBOX_ACCESS_TOKEN = &quot;mapBoxAccessToken&quot;;
+
+    public static final String BOUND_LATITUDE = &quot;lat&quot;
+            , BOUND_LONGITUDE = &quot;lng&quot;;
+
+
+<span class="nc" id="L55">    public MapBoxDownloadTask() {</span>
+<span class="nc" id="L56">    }</span>
+
+    public MapBoxDownloadTask(@NonNull String packageName,
+                              @NonNull String mapName,
+                              @NonNull String mapBoxStyleUrl,
+                              double minZoom, double maxZoom,
+                              @NonNull LatLng topLeftBound,
+                              @NonNull LatLng topRightBound,
+                              @NonNull LatLng bottomRightBound,
+                              @NonNull LatLng bottomLeftBound,
+<span class="nc" id="L66">                              @NonNull String mapBoxAccessToken) {</span>
+<span class="nc" id="L67">        this.packageName = packageName;</span>
+<span class="nc" id="L68">        this.mapName = mapName;</span>
+<span class="nc" id="L69">        this.mapBoxStyleUrl = mapBoxStyleUrl;</span>
+<span class="nc" id="L70">        this.minZoom = minZoom;</span>
+<span class="nc" id="L71">        this.maxZoom = maxZoom;</span>
+<span class="nc" id="L72">        this.topLeftBound = topLeftBound;</span>
+<span class="nc" id="L73">        this.topRightBound = topRightBound;</span>
+<span class="nc" id="L74">        this.bottomRightBound = bottomRightBound;</span>
+<span class="nc" id="L75">        this.bottomLeftBound = bottomLeftBound;</span>
+<span class="nc" id="L76">        this.mapBoxAccessToken = mapBoxAccessToken;</span>
+<span class="nc" id="L77">    }</span>
+
+<span class="fc" id="L79">    public MapBoxDownloadTask(@NonNull JSONObject jsonObject) throws MalformedDataException {</span>
+<span class="fc" id="L80">        this.jsonObject = jsonObject;</span>
+
+        try {
+<span class="fc" id="L83">            packageName = jsonObject.getString(PACKAGE_NAME);</span>
+<span class="fc" id="L84">            mapName = jsonObject.getString(MAP_NAME);</span>
+<span class="fc" id="L85">            mapBoxStyleUrl = jsonObject.getString(MAPBOX_STYLE_URL);</span>
+<span class="fc" id="L86">            mapBoxAccessToken = jsonObject.getString(MAPBOX_ACCESS_TOKEN);</span>
+<span class="fc" id="L87">            minZoom = jsonObject.getDouble(MIN_ZOOM);</span>
+<span class="fc" id="L88">            maxZoom = jsonObject.getDouble(MAX_ZOOM);</span>
+
+<span class="fc" id="L90">            topLeftBound = constructLatLng(jsonObject.getJSONObject(TOP_LEFT_BOUND));</span>
+<span class="fc" id="L91">            topRightBound = constructLatLng(jsonObject.getJSONObject(TOP_RIGHT_BOUND));</span>
+<span class="fc" id="L92">            bottomRightBound = constructLatLng(jsonObject.getJSONObject(BOTTOM_RIGHT_BOUND));</span>
+<span class="fc" id="L93">            bottomLeftBound = constructLatLng(jsonObject.getJSONObject(BOTTOM_LEFT_BOUND));</span>
+
+<span class="nc" id="L95">        } catch (JSONException e) {</span>
+<span class="nc" id="L96">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L97">            throw new MalformedDataException(&quot;Invalid Download Task definition&quot;, e);</span>
+<span class="fc" id="L98">        }</span>
+
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Generates the {@link JSONObject} of the task that will be saved in {@link MapBoxOfflineQueueTask#task}
+     *
+     * @return
+     * @throws JSONException
+     */
+    public JSONObject getJSONObject() throws JSONException {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (jsonObject == null) {</span>
+<span class="nc" id="L110">            jsonObject = new JSONObject();</span>
+        }
+
+<span class="nc" id="L113">        jsonObject.put(PACKAGE_NAME, packageName);</span>
+<span class="nc" id="L114">        jsonObject.put(MAP_NAME, mapName);</span>
+<span class="nc" id="L115">        jsonObject.put(MAPBOX_STYLE_URL, mapBoxStyleUrl);</span>
+<span class="nc" id="L116">        jsonObject.put(MAPBOX_ACCESS_TOKEN, mapBoxAccessToken);</span>
+<span class="nc" id="L117">        jsonObject.put(MIN_ZOOM, minZoom);</span>
+<span class="nc" id="L118">        jsonObject.put(MAX_ZOOM, maxZoom);</span>
+<span class="nc" id="L119">        jsonObject.put(TOP_LEFT_BOUND, constructLatLngJSONObject(topLeftBound));</span>
+<span class="nc" id="L120">        jsonObject.put(TOP_RIGHT_BOUND, constructLatLngJSONObject(topRightBound));</span>
+<span class="nc" id="L121">        jsonObject.put(BOTTOM_RIGHT_BOUND, constructLatLngJSONObject(bottomRightBound));</span>
+<span class="nc" id="L122">        jsonObject.put(BOTTOM_LEFT_BOUND, constructLatLngJSONObject(bottomLeftBound));</span>
+
+<span class="nc" id="L124">        return jsonObject;</span>
+    }
+
+    public String getPackageName() {
+<span class="fc" id="L128">        return packageName;</span>
+    }
+
+    public void setPackageName(String packageName) {
+<span class="nc" id="L132">        this.packageName = packageName;</span>
+<span class="nc" id="L133">    }</span>
+
+    public String getMapName() {
+<span class="fc" id="L136">        return mapName;</span>
+    }
+
+    public void setMapName(String mapName) {
+<span class="nc" id="L140">        this.mapName = mapName;</span>
+<span class="nc" id="L141">    }</span>
+
+    public String getMapBoxStyleUrl() {
+<span class="fc" id="L144">        return mapBoxStyleUrl;</span>
+    }
+
+    public void setMapBoxStyleUrl(String mapBoxStyleUrl) {
+<span class="nc" id="L148">        this.mapBoxStyleUrl = mapBoxStyleUrl;</span>
+<span class="nc" id="L149">    }</span>
+
+    public double getMinZoom() {
+<span class="fc" id="L152">        return minZoom;</span>
+    }
+
+    public void setMinZoom(double minZoom) {
+<span class="nc" id="L156">        this.minZoom = minZoom;</span>
+<span class="nc" id="L157">    }</span>
+
+    public double getMaxZoom() {
+<span class="fc" id="L160">        return maxZoom;</span>
+    }
+
+    public void setMaxZoom(double maxZoom) {
+<span class="nc" id="L164">        this.maxZoom = maxZoom;</span>
+<span class="nc" id="L165">    }</span>
+
+    public LatLng getTopLeftBound() {
+<span class="fc" id="L168">        return topLeftBound;</span>
+    }
+
+    public void setTopLeftBound(LatLng topLeftBound) {
+<span class="nc" id="L172">        this.topLeftBound = topLeftBound;</span>
+<span class="nc" id="L173">    }</span>
+
+    public LatLng getBottomRightBound() {
+<span class="fc" id="L176">        return bottomRightBound;</span>
+    }
+
+    public void setBottomRightBound(LatLng bottomRightBound) {
+<span class="nc" id="L180">        this.bottomRightBound = bottomRightBound;</span>
+<span class="nc" id="L181">    }</span>
+
+    public String getMapBoxAccessToken() {
+<span class="fc" id="L184">        return mapBoxAccessToken;</span>
+    }
+
+    public void setMapBoxAccessToken(String mapBoxAccessToken) {
+<span class="nc" id="L188">        this.mapBoxAccessToken = mapBoxAccessToken;</span>
+<span class="nc" id="L189">    }</span>
+
+
+    public LatLng getTopRightBound() {
+<span class="nc" id="L193">        return topRightBound;</span>
+    }
+
+    public void setTopRightBound(LatLng topRightBound) {
+<span class="nc" id="L197">        this.topRightBound = topRightBound;</span>
+<span class="nc" id="L198">    }</span>
+
+    public LatLng getBottomLeftBound() {
+<span class="nc" id="L201">        return bottomLeftBound;</span>
+    }
+
+    public void setBottomLeftBound(LatLng bottomLeftBound) {
+<span class="nc" id="L205">        this.bottomLeftBound = bottomLeftBound;</span>
+<span class="nc" id="L206">    }</span>
+
+    /**
+     * Converts {@link LatLng} to JSONObject so that it can be stored in
+     * {@link MapBoxDownloadTask#bottomRightBound} &amp; {@link MapBoxDownloadTask#topLeftBound}
+     *
+     * @param latLng to convert to {@link JSONObject}
+     * @return {@link JSONObject} with the latitude &amp; longitude from {@link LatLng}
+     * @throws JSONException
+     */
+    public static JSONObject constructLatLngJSONObject(LatLng latLng) throws JSONException {
+<span class="fc" id="L217">        JSONObject jsonObject = new JSONObject();</span>
+<span class="fc" id="L218">        jsonObject.put(BOUND_LATITUDE, latLng.getLatitude());</span>
+<span class="fc" id="L219">        jsonObject.put(BOUND_LONGITUDE, latLng.getLongitude());</span>
+
+<span class="fc" id="L221">        return jsonObject;</span>
+    }
+
+    /**
+     * Converts {@link JSONObject} to {@link LatLng}. The LatLng is used as {@link JSONObject}
+     * inside {@link MapBoxDownloadTask#topLeftBound} &amp; {@link MapBoxDownloadTask#bottomRightBound}
+     *
+     * @param jsonObject {@link JSONObject} to convert
+     * @return similar {@link LatLng} to {@code jsonObject} passed
+     * @throws JSONException
+     */
+    public static LatLng constructLatLng(JSONObject jsonObject) throws JSONException {
+<span class="fc" id="L233">        return new LatLng(jsonObject.getDouble(BOUND_LATITUDE), jsonObject.getDouble(BOUND_LONGITUDE));</span>
+    }
+
+    /**
+     * Creates a valid {@link MapBoxOfflineQueueTask} given a {@link MapBoxDownloadTask} with default
+     * {@link MapBoxOfflineQueueTask#taskStatus} = {@link MapBoxOfflineQueueTask#TASK_STATUS_NOT_STARTED}
+     * &amp; adds it to the queue
+     *
+     * @param mapBoxDownloadTask to add to the queue
+     * @return the Queued MapBox Task {@link MapBoxOfflineQueueTask}
+     */
+    public static MapBoxOfflineQueueTask constructMapBoxOfflineQueueTask(@NonNull MapBoxDownloadTask mapBoxDownloadTask) {
+
+<span class="nc" id="L246">        Realm realm = Realm.getDefaultInstance();</span>
+        try {
+<span class="nc" id="L248">            realm.beginTransaction();</span>
+
+<span class="nc" id="L250">            MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realm.createObject(MapBoxOfflineQueueTask.class, UUID.randomUUID().toString());</span>
+<span class="nc" id="L251">            mapBoxOfflineQueueTask.setDateCreated(new Date());</span>
+<span class="nc" id="L252">            mapBoxOfflineQueueTask.setDateUpdated(new Date());</span>
+<span class="nc" id="L253">            mapBoxOfflineQueueTask.setTask(mapBoxDownloadTask.getJSONObject());</span>
+<span class="nc" id="L254">            mapBoxOfflineQueueTask.setTaskStatus(MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED);</span>
+<span class="nc" id="L255">            mapBoxOfflineQueueTask.setTaskType(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);</span>
+
+<span class="nc" id="L257">            realm.commitTransaction();</span>
+
+<span class="nc" id="L259">            return mapBoxOfflineQueueTask;</span>
+<span class="nc" id="L260">        } catch (Exception e){</span>
+<span class="nc" id="L261">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L262">            realm.cancelTransaction();</span>
+<span class="nc" id="L263">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

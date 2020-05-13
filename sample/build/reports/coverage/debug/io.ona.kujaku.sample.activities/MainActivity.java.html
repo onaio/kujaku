@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MainActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">MainActivity.java</span></div><h1>MainActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.Manifest;
+import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.KujakuLibrary;
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
+import io.ona.kujaku.helpers.MapBoxWebServiceApi;
+import io.ona.kujaku.helpers.OfflineServiceHelper;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.MyApplication;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.services.MapboxOfflineDownloaderService;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.Permissions;
+
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
+
+<span class="nc" id="L53">public class MainActivity extends BaseNavigationDrawerActivity {</span>
+
+    private EditText topLeftLatEd;
+    private EditText topLeftLngEd;
+    private EditText bottomRightLatEd;
+    private EditText bottomRightLngEd;
+    private EditText mapNameEd;
+    private EditText topRightLatEd;
+    private EditText topRightLngEd;
+    private EditText bottomLeftLatEd;
+    private EditText bottomLeftLngEd;
+    private EditText mapNameToDeleteEd;
+
+    private Button stopMapDownloadBtn;
+
+    private static final String SAMPLE_JSON_FILE_NAME = &quot;2017-nov-27-kujaku-metadata.json&quot;;
+    private static final int PERMISSIONS_REQUEST_CODE = 9823;
+<span class="nc" id="L70">    private String[] basicPermissions = new String[]{</span>
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    };
+
+    // Kujaku library uses notification ids 80 to 2080
+<span class="nc" id="L76">    private int lastNotificationId = 2081;</span>
+<span class="nc" id="L77">    private final static String TAG = MainActivity.class.getSimpleName();</span>
+
+    private List&lt;Point&gt; points;
+
+<span class="nc" id="L81">    private Activity mainActivity = this;</span>
+
+    private String currentMapDownload;
+<span class="nc" id="L84">    private boolean canStopMapDownload = false;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L88">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L89">        requestBasicPermissions();</span>
+
+<span class="nc" id="L91">        bottomRightLatEd = findViewById(R.id.edt_mainActivity_bottomRightLatitude);</span>
+<span class="nc" id="L92">        bottomRightLngEd = findViewById(R.id.edt_mainActivity_bottomRightLongitude);</span>
+<span class="nc" id="L93">        topLeftLatEd = findViewById(R.id.edt_mainActivity_topLeftLatitude);</span>
+<span class="nc" id="L94">        topLeftLngEd = findViewById(R.id.edt_mainActivity_topLeftLongitude);</span>
+<span class="nc" id="L95">        bottomLeftLatEd = findViewById(R.id.edt_mainActivity_bottomLeftLatitude);</span>
+<span class="nc" id="L96">        bottomLeftLngEd = findViewById(R.id.edt_mainActivity_bottomLeftLongitude);</span>
+<span class="nc" id="L97">        topRightLatEd = findViewById(R.id.edt_mainActivity_topRightLatitude);</span>
+<span class="nc" id="L98">        topRightLngEd = findViewById(R.id.edt_mainActivity_topRightLongitude);</span>
+<span class="nc" id="L99">        mapNameToDeleteEd = findViewById(R.id.edt_mainActivity_mapNameToDelete);</span>
+
+<span class="nc" id="L101">        stopMapDownloadBtn = findViewById(R.id.btn_mainActivity_stopOfflineDownloadUsingHelper);</span>
+<span class="nc" id="L102">        Button deleteMapDownloadBtn = findViewById(R.id.btn_mainActivity_deleteOfflineDownloadUsingHelper);</span>
+
+<span class="nc" id="L104">        mapNameEd = findViewById(R.id.edt_mainActivity_mapName);</span>
+
+<span class="nc" id="L106">        Button startOfflineDownload = findViewById(R.id.btn_mainActivity_startOfflineDownload);</span>
+<span class="nc" id="L107">        startOfflineDownload.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L110">                downloadMap(false);</span>
+<span class="nc" id="L111">            }</span>
+        });
+
+<span class="nc" id="L114">        Button startOfflineDownloadUsingHelper = findViewById(R.id.btn_mainActivity_startOfflineDownloadUsingHelper);</span>
+<span class="nc" id="L115">        startOfflineDownloadUsingHelper.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L118">                downloadMap(true);</span>
+<span class="nc" id="L119">            }</span>
+        });
+
+<span class="nc" id="L122">        stopMapDownloadBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (!TextUtils.isEmpty(currentMapDownload)) {</span>
+<span class="nc" id="L126">                    stopMapDownload(currentMapDownload);</span>
+                }
+<span class="nc" id="L128">            }</span>
+        });
+
+<span class="nc" id="L131">        deleteMapDownloadBtn.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L134">                String mapNameToDelete = mapNameToDeleteEd.getText().toString();</span>
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                if (!TextUtils.isEmpty(mapNameToDelete)) {</span>
+<span class="nc" id="L137">                    OfflineServiceHelper.deleteOfflineMap(MainActivity.this, mapNameToDelete, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+                }
+<span class="nc" id="L139">            }</span>
+        });
+
+<span class="nc" id="L142">        final EditText mapBoxStyleUrl = (EditText) findViewById(R.id.edt_mainActivity_mapboxStyleURL);</span>
+<span class="nc" id="L143">        mapBoxStyleUrl.setText(&quot;mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m&quot;);</span>
+<span class="nc" id="L144">        Button btnDownloadMapBoxStyle = (Button) findViewById(R.id.btn_mainActivity_downloadMapboxStyle);</span>
+<span class="nc" id="L145">        btnDownloadMapBoxStyle.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L148">                downloadMapBoxStyle(mapBoxStyleUrl.getText().toString());</span>
+<span class="nc" id="L149">            }</span>
+        });
+
+<span class="nc" id="L152">        setTitle(R.string.main_activity_title);</span>
+
+        // Fetch previously dropped points
+<span class="nc" id="L155">        final OnFinishedListener onPointsFetchFinishedListener = new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+<span class="nc" id="L158">                points = (List&lt;Point&gt;) objects[0];</span>
+<span class="nc" id="L159">                KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);</span>
+<span class="nc" id="L160">            }</span>
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L163">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L164">            }</span>
+        };
+
+<span class="nc" id="L167">        Button btnLaunchKujakuMap = findViewById(R.id.btn_mainActivity_launchKujakuMap);</span>
+<span class="nc" id="L168">        btnLaunchKujakuMap.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+<span class="nc bnc" id="L172" title="All 4 branches missed.">                if (points == null || points.size() == 0) {</span>
+<span class="nc" id="L173">                    fetchDroppedPoints(onPointsFetchFinishedListener);</span>
+                } else {
+<span class="nc" id="L175">                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);</span>
+                }
+<span class="nc" id="L177">            }</span>
+        });
+<span class="nc" id="L179">        registerLocalBroadcastReceiver();</span>
+
+<span class="nc" id="L181">        Button btnOpenMapActivity = findViewById(R.id.btn_mainActivity_openMapActivity);</span>
+<span class="nc" id="L182">        btnOpenMapActivity.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
+<span class="nc bnc" id="L186" title="All 4 branches missed.">                if (points == null || points.size() == 0) {</span>
+<span class="nc" id="L187">                    fetchDroppedPoints(onPointsFetchFinishedListener);</span>
+                } else {
+<span class="nc" id="L189">                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);</span>
+                }
+<span class="nc" id="L191">            }</span>
+        });
+<span class="nc" id="L193">    }</span>
+
+
+    private void fetchDroppedPoints(OnFinishedListener onFinishedListener) {
+<span class="nc" id="L197">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="nc" id="L200">                List&lt;Point&gt; droppedPoints = MyApplication.getInstance().getPointsRepository().getAllPoints();</span>
+<span class="nc" id="L201">                return new Object[]{droppedPoints};</span>
+            }
+        });
+<span class="nc" id="L204">        genericAsyncTask.setOnFinishedListener(onFinishedListener);</span>
+<span class="nc" id="L205">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L206">    }</span>
+
+    private void setCanStopMapDownload(boolean enabled) {
+        /*
+         * Purpose of this:
+         * 1. Is not have to call stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);
+         * repetitively if the desired state is current.
+         * 2. Also, views can tend to be unreactive to events if you update them too frequently.
+         * Map progress updates are expected to be frequent
+         */
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (canStopMapDownload != enabled) {</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">            stopMapDownloadBtn.setVisibility(enabled ? View.VISIBLE : View.GONE);</span>
+        }
+
+<span class="nc" id="L220">        canStopMapDownload = enabled;</span>
+<span class="nc" id="L221">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L225">        return R.layout.activity_main;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L230">        return R.id.nav_main_activity;</span>
+    }
+
+    private void downloadMap(boolean useDownloadHelper) {
+<span class="nc" id="L234">        double topLeftLat = 37.7897;</span>
+<span class="nc" id="L235">        double topLeftLng = -119.5073;</span>
+<span class="nc" id="L236">        double bottomRightLat = 37.6744;</span>
+<span class="nc" id="L237">        double bottomRightLng = -119.6815;</span>
+<span class="nc" id="L238">        double topRightLat = 37.7897;</span>
+<span class="nc" id="L239">        double topRightLng = -119.6815;</span>
+<span class="nc" id="L240">        double bottomLeftLat = 37.6744;</span>
+<span class="nc" id="L241">        double bottomLeftLng = -119.5073;</span>
+
+<span class="nc" id="L243">        String tllatE = topLeftLatEd.getText().toString();</span>
+<span class="nc" id="L244">        String tllngE = topLeftLngEd.getText().toString();</span>
+<span class="nc" id="L245">        String brlatE = bottomRightLatEd.getText().toString();</span>
+<span class="nc" id="L246">        String brlngE = bottomRightLngEd.getText().toString();</span>
+<span class="nc" id="L247">        String trLatE = topRightLatEd.getText().toString();</span>
+<span class="nc" id="L248">        String trLngE = topRightLngEd.getText().toString();</span>
+<span class="nc" id="L249">        String blLatE = bottomLeftLatEd.getText().toString();</span>
+<span class="nc" id="L250">        String blLngE = bottomLeftLngEd.getText().toString();</span>
+
+<span class="nc" id="L252">        String mapName = mapNameEd.getText().toString();</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (mapName.isEmpty()) {</span>
+<span class="nc" id="L254">            Toast.makeText(this, &quot;Please enter a Map Name!&quot;, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L255">                    .show();</span>
+<span class="nc" id="L256">            return;</span>
+        }
+
+<span class="nc bnc" id="L259" title="All 8 branches missed.">        if (isValidDouble(tllatE) &amp;&amp; isValidDouble(tllngE) &amp;&amp; isValidDouble(brlatE) &amp;&amp; isValidDouble(brlngE)</span>
+<span class="nc bnc" id="L260" title="All 8 branches missed.">                &amp;&amp; isValidDouble(trLatE) &amp;&amp; isValidDouble(trLngE) &amp;&amp; isValidDouble(blLatE) &amp;&amp; isValidDouble(blLngE)) {</span>
+<span class="nc" id="L261">            topLeftLat = Double.valueOf(tllatE);</span>
+<span class="nc" id="L262">            topLeftLng = Double.valueOf(tllngE);</span>
+<span class="nc" id="L263">            bottomRightLat = Double.valueOf(brlatE);</span>
+<span class="nc" id="L264">            bottomRightLng = Double.valueOf(brlngE);</span>
+<span class="nc" id="L265">            topRightLat = Double.valueOf(trLatE);</span>
+<span class="nc" id="L266">            topRightLng = Double.valueOf(trLngE);</span>
+<span class="nc" id="L267">            bottomLeftLat = Double.valueOf(blLatE);</span>
+<span class="nc" id="L268">            bottomLeftLng = Double.valueOf(blLngE);</span>
+
+<span class="nc" id="L270">            setCanStopMapDownload(true);</span>
+        } else {
+<span class="nc" id="L272">            Toast.makeText(this, &quot;Invalid Lat or Lng! Reverting to default values&quot;, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L273">                    .show();</span>
+        }
+
+<span class="nc" id="L276">        currentMapDownload = mapName;</span>
+
+<span class="nc" id="L278">        String mapboxStyle = &quot;mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m&quot;;</span>
+<span class="nc" id="L279">        LatLng topLeftBound = new LatLng(topLeftLat, topLeftLng);</span>
+<span class="nc" id="L280">        LatLng topRightBound = new LatLng(topRightLat, topRightLng);</span>
+<span class="nc" id="L281">        LatLng bottomRightBound = new LatLng(bottomRightLat, bottomRightLng);</span>
+<span class="nc" id="L282">        LatLng bottomLeftBound = new LatLng(bottomLeftLat, bottomLeftLng);</span>
+
+<span class="nc" id="L284">        double maxZoom = 20.0;</span>
+<span class="nc" id="L285">        double minZoom = 0.0;</span>
+
+<span class="nc" id="L287">        OfflineServiceHelper.ZoomRange zoomRange = new OfflineServiceHelper.ZoomRange(minZoom, maxZoom);</span>
+
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (useDownloadHelper) {</span>
+<span class="nc" id="L290">            OfflineServiceHelper.requestOfflineMapDownload(this</span>
+                    , mapName
+                    , mapboxStyle
+                    , BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
+                    , topLeftBound
+                    , topRightBound
+                    , bottomRightBound
+                    , bottomLeftBound
+                    , zoomRange
+<span class="nc" id="L299">                    ,BuildConfig.MAPBOX_DOWNLOAD_TILE_LIMIT</span>
+            );
+        } else {
+<span class="nc" id="L302">            Intent mapDownloadIntent = new Intent(this, MapboxOfflineDownloaderService.class);</span>
+<span class="nc" id="L303">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+<span class="nc" id="L304">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);</span>
+<span class="nc" id="L305">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_STYLE_URL, mapboxStyle);</span>
+<span class="nc" id="L306">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);</span>
+<span class="nc" id="L307">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAX_ZOOM, maxZoom);</span>
+<span class="nc" id="L308">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MIN_ZOOM, minZoom);</span>
+<span class="nc" id="L309">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND, topLeftBound);</span>
+<span class="nc" id="L310">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND, topRightBound);</span>
+<span class="nc" id="L311">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND, bottomRightBound);</span>
+<span class="nc" id="L312">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND, bottomLeftBound);</span>
+<span class="nc" id="L313">            mapDownloadIntent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT, BuildConfig.MAPBOX_DOWNLOAD_TILE_LIMIT);</span>
+
+<span class="nc" id="L315">            startService(mapDownloadIntent);</span>
+        }
+<span class="nc" id="L317">    }</span>
+
+    private void stopMapDownload(@NonNull String mapName) {
+<span class="nc" id="L320">        OfflineServiceHelper.stopMapDownload(this, mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+<span class="nc" id="L321">    }</span>
+
+    private boolean isValidDouble(String doubleString) {
+<span class="nc" id="L324">        String doubleRegex = &quot;[+-]{0,1}[0-9]*.{0,1}[0-9]*&quot;;</span>
+<span class="nc bnc" id="L325" title="All 4 branches missed.">        return (!doubleString.isEmpty() &amp;&amp; doubleString.matches(doubleRegex));</span>
+    }
+
+    private void registerLocalBroadcastReceiver() {
+<span class="nc" id="L329">        LocalBroadcastManager.getInstance(this)</span>
+<span class="nc" id="L330">                .registerReceiver(new BroadcastReceiver() {</span>
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+<span class="nc" id="L333">                        Bundle bundle = intent.getExtras();</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                        if (bundle != null) {</span>
+<span class="nc" id="L335">                            Log.i(&quot;KUJAKU SAMPLE APP TAG&quot;, intent.getExtras().toString());</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">                            if (bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULT_STATUS)</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">                                    &amp;&amp; bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE)</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                                    &amp;&amp; bundle.containsKey(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION)</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                                    &amp;&amp; bundle.containsKey(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME)) {</span>
+
+<span class="nc" id="L341">                                String mapUniqueName = bundle.getString(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);</span>
+<span class="nc" id="L342">                                String resultStatus = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_STATUS);</span>
+<span class="nc" id="L343">                                MapboxOfflineDownloaderService.SERVICE_ACTION serviceAction = (MapboxOfflineDownloaderService.SERVICE_ACTION) bundle.get(MapboxOfflineDownloaderService.KEY_RESULTS_PARENT_ACTION);</span>
+
+<span class="nc" id="L345">                                String message = bundle.getString(MapboxOfflineDownloaderService.KEY_RESULT_MESSAGE);</span>
+
+<span class="nc bnc" id="L347" title="All 2 branches missed.">                                if (MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT.FAILED.name().equals(resultStatus)) {</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                                    if (!TextUtils.isEmpty(message)) {</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                                        if (!message.contains(&quot;MapBox Tile Count limit exceeded&quot;)) {</span>
+<span class="nc" id="L350">                                            showInfoNotification(&quot;Error occurred &quot; + mapUniqueName + &quot;:&quot; + serviceAction.name(), message);</span>
+                                        }
+                                    }
+
+<span class="nc bnc" id="L354" title="All 4 branches missed.">                                    if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.DELETE_MAP &amp;&amp; !TextUtils.isEmpty(message)) {</span>
+<span class="nc" id="L355">                                        Toasty.error(MainActivity.this, message)</span>
+<span class="nc" id="L356">                                                .show();</span>
+                                    }
+                                    /*
+                                    (FACT) This is an error update from the service. If this is not
+                                    a DELETE_MAP action and the update is about the map that we expect
+                                    to be currently downloading, held by currentMapDownload variable, then we
+                                    need to disable the STOP MAP DOWNLOAD since the download has already been
+                                    stopped after the error. If we left this as true, then we would be misleading
+                                    the user that they can stop a non-existent download.
+                                     */
+<span class="nc bnc" id="L366" title="All 4 branches missed.">                                    else if (!TextUtils.isEmpty(mapUniqueName) &amp;&amp; mapUniqueName.equals(currentMapDownload)) {</span>
+<span class="nc" id="L367">                                        setCanStopMapDownload(false);</span>
+                                    }
+                                } else {
+                                    // We should disable the stop offline download button if it was stopped successfully
+<span class="nc bnc" id="L371" title="All 2 branches missed.">                                    if (serviceAction == MapboxOfflineDownloaderService.SERVICE_ACTION.STOP_CURRENT_DOWNLOAD) {</span>
+<span class="nc" id="L372">                                        currentMapDownload = null;</span>
+<span class="nc" id="L373">                                        setCanStopMapDownload(false);</span>
+                                    } else {
+<span class="nc bnc" id="L375" title="All 2 branches missed.">                                        if (!TextUtils.isEmpty(message)) {</span>
+                                            // This is a download progress message
+<span class="nc bnc" id="L377" title="All 2 branches missed.">                                            if (isValidDouble(message)) {</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">                                                if (Double.valueOf(message) == 100d) {</span>
+<span class="nc" id="L379">                                                    currentMapDownload = null;</span>
+<span class="nc" id="L380">                                                    setCanStopMapDownload(false);</span>
+                                                } else {
+<span class="nc" id="L382">                                                    setCanStopMapDownload(true);</span>
+                                                }
+                                            } else {
+<span class="nc" id="L385">                                                Toasty.info(MainActivity.this, message)</span>
+<span class="nc" id="L386">                                                        .show();</span>
+                                            }
+                                        }
+                                    }
+                                }
+<span class="nc" id="L391">                            }</span>
+                        } else {
+<span class="nc" id="L393">                            Log.i(&quot;KUJAKU SAMPLE APP TAG&quot;, &quot;Broadcast message has null Extras&quot;);</span>
+                        }
+<span class="nc" id="L395">                    }</span>
+                }, new IntentFilter(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES));
+<span class="nc" id="L397">    }</span>
+
+    private void downloadMapBoxStyle(String mapboxStyleUrl) {
+<span class="nc" id="L400">        MapBoxWebServiceApi mapBoxWebServiceApi = new MapBoxWebServiceApi(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+<span class="nc" id="L401">        mapBoxWebServiceApi.retrieveStyleJSON(mapboxStyleUrl, new Response.Listener&lt;String&gt;() {</span>
+            @Override
+            public void onResponse(String response) {
+<span class="nc" id="L404">                Toast.makeText(MainActivity.this, response, Toast.LENGTH_SHORT)</span>
+<span class="nc" id="L405">                        .show();</span>
+<span class="nc" id="L406">            }</span>
+<span class="nc" id="L407">        }, new Response.ErrorListener() {</span>
+            @Override
+            public void onErrorResponse(VolleyError error) {
+<span class="nc" id="L410">                Toast.makeText(MainActivity.this, &quot;Error downloading MapBox Style JSON : &quot; + error.getMessage(), Toast.LENGTH_SHORT)</span>
+<span class="nc" id="L411">                        .show();</span>
+<span class="nc" id="L412">            }</span>
+        });
+<span class="nc" id="L414">    }</span>
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+<span class="nc bnc" id="L418" title="All 2 branches missed.">        switch(requestCode) {</span>
+            case MAP_ACTIVITY_REQUEST_CODE:
+<span class="nc bnc" id="L420" title="All 2 branches missed.">                if (resultCode == Activity.RESULT_OK) {</span>
+                    // data from a dropped feature point
+<span class="nc bnc" id="L422" title="All 2 branches missed.">                    if (data.hasExtra(NEW_FEATURE_POINTS_JSON)) {</span>
+<span class="nc" id="L423">                        saveDroppedPoints(data);</span>
+                    }
+                    // data from a clicked feature point
+<span class="nc" id="L426">                    String geoJSONFeature = getString(R.string.error_msg_could_not_retrieve_chosen_feature);</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">                    if (data.hasExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE)) {</span>
+<span class="nc" id="L428">                        geoJSONFeature = data.getStringExtra(Constants.PARCELABLE_KEY_GEOJSON_FEATURE);</span>
+                    }
+<span class="nc" id="L430">                    Toast.makeText(this, geoJSONFeature, Toast.LENGTH_LONG)</span>
+<span class="nc" id="L431">                            .show();</span>
+<span class="nc" id="L432">                }</span>
+                break;
+            default:
+                break;
+        }
+<span class="nc" id="L437">    }</span>
+
+    private void saveDroppedPoints(Intent data) {
+<span class="nc" id="L440">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="nc" id="L443">                List&lt;String&gt; geoJSONFeatures = data.getStringArrayListExtra(NEW_FEATURE_POINTS_JSON);</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">                for (String geoJSONFeature : geoJSONFeatures) {</span>
+                    try {
+<span class="nc" id="L446">                        JSONObject featurePoint = new JSONObject(geoJSONFeature);</span>
+<span class="nc" id="L447">                        JSONArray coordinates = featurePoint.getJSONObject(&quot;geometry&quot;).getJSONArray(&quot;coordinates&quot;);</span>
+<span class="nc" id="L448">                        Point newPoint = new Point(null, (double) coordinates.get(1), (double) coordinates.get(0));</span>
+<span class="nc" id="L449">                        MyApplication.getInstance().getPointsRepository().addOrUpdate(newPoint);</span>
+<span class="nc" id="L450">                        newPoint.setId((int) (Math.random() * Integer.MAX_VALUE));</span>
+<span class="nc" id="L451">                        points.add(newPoint);</span>
+<span class="nc" id="L452">                    } catch (Exception e) {</span>
+<span class="nc" id="L453">                        Log.e(TAG, &quot;JsonArray parse error occured&quot;);</span>
+<span class="nc" id="L454">                    }</span>
+<span class="nc" id="L455">                }</span>
+<span class="nc" id="L456">                return null;</span>
+            }
+        });
+<span class="nc" id="L459">        genericAsyncTask.setOnFinishedListener(null);</span>
+<span class="nc" id="L460">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L461">    }</span>
+  
+    private void confirmSampleStyleAvailable() {
+<span class="nc" id="L464">        MapBoxStyleStorage mapBoxStyleStorage = new MapBoxStyleStorage();</span>
+<span class="nc" id="L465">        String style = mapBoxStyleStorage.readStyle(&quot;file:///sdcard/Dukto/2017-nov-27-kujaku-metadata.json&quot;);</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">        if (TextUtils.isEmpty(style)) {</span>
+            //Write the file to storage
+<span class="nc" id="L468">            String sampleStyleString = readAssetFile(SAMPLE_JSON_FILE_NAME);</span>
+<span class="nc" id="L469">            mapBoxStyleStorage.writeToFile(&quot;Dukto&quot;, SAMPLE_JSON_FILE_NAME, sampleStyleString);</span>
+        }
+<span class="nc" id="L471">    }</span>
+
+    public String readAssetFile(String inFile) {
+<span class="nc" id="L474">        String fileStringContents = &quot;&quot;;</span>
+
+        try {
+<span class="nc" id="L477">            InputStream stream = getAssets().open(inFile);</span>
+
+<span class="nc" id="L479">            int size = stream.available();</span>
+<span class="nc" id="L480">            byte[] buffer = new byte[size];</span>
+<span class="nc" id="L481">            stream.read(buffer);</span>
+<span class="nc" id="L482">            stream.close();</span>
+<span class="nc" id="L483">            fileStringContents = new String(buffer);</span>
+<span class="nc" id="L484">        } catch (IOException e) {</span>
+<span class="nc" id="L485">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L486">        }</span>
+
+<span class="nc" id="L488">        return fileStringContents;</span>
+    }
+
+    private void requestBasicPermissions() {
+<span class="nc" id="L492">        ArrayList&lt;String&gt; notGivenPermissions = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">        for (String permission : basicPermissions) {</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">            if (!Permissions.check(this, permission)) {</span>
+<span class="nc" id="L496">                notGivenPermissions.add(permission);</span>
+            }
+        }
+
+<span class="nc bnc" id="L500" title="All 2 branches missed.">        if (notGivenPermissions.size() &gt; 0) {</span>
+<span class="nc" id="L501">            Permissions.request(this, notGivenPermissions.toArray(new String[notGivenPermissions.size()]), PERMISSIONS_REQUEST_CODE);</span>
+        } else {
+<span class="nc" id="L503">            confirmSampleStyleAvailable();</span>
+        }
+<span class="nc" id="L505">    }</span>
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+<span class="nc bnc" id="L509" title="All 2 branches missed.">        if (requestCode == PERMISSIONS_REQUEST_CODE) {</span>
+<span class="nc" id="L510">            requestBasicPermissions();</span>
+        }
+<span class="nc" id="L512">    }</span>
+
+    private void showInfoNotification(String title, String content) {
+<span class="nc" id="L515">        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)</span>
+<span class="nc" id="L516">                .setContentTitle(title)</span>
+<span class="nc" id="L517">                .setContentText(content)</span>
+<span class="nc" id="L518">                .setSmallIcon(android.R.drawable.ic_dialog_info);</span>
+
+<span class="nc" id="L520">        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);</span>
+<span class="nc" id="L521">        notificationManager.notify(lastNotificationId, notificationBuilder.build());</span>
+<span class="nc" id="L522">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

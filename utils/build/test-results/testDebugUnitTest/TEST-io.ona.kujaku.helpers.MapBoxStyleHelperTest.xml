@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.MapBoxStyleHelperTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.029">
+  <properties/>
+  <testcase name="testInsertGeoJsonDataSource" classname="io.ona.kujaku.helpers.MapBoxStyleHelperTest" time="0.01"/>
+  <testcase name="setMapCenterWhenGivenCenterPoint" classname="io.ona.kujaku.helpers.MapBoxStyleHelperTest" time="0.007"/>
+  <testcase name="setZoomShouldUpdateZoomToStyle" classname="io.ona.kujaku.helpers.MapBoxStyleHelperTest" time="0.004"/>
+  <testcase name="setMapCenterWhenGivenBounds" classname="io.ona.kujaku.helpers.MapBoxStyleHelperTest" time="0.003"/>
+  <testcase name="setZoomShouldAddZoomToStyle" classname="io.ona.kujaku.helpers.MapBoxStyleHelperTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

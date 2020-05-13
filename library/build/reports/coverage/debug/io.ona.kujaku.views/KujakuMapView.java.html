@@ -1,0 +1,1529 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KujakuMapView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.views</a> &gt; <span class="el_source">KujakuMapView.java</span></div><h1>KujakuMapView.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.views;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.IntentSender;
+import android.content.ServiceConnection;
+import android.content.res.TypedArray;
+import android.graphics.PointF;
+import android.location.Location;
+import android.os.IBinder;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+
+import com.cocoahero.android.geojson.Feature;
+import com.cocoahero.android.geojson.Point;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.gson.JsonElement;
+import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.VisibleRegion;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
+import io.ona.kujaku.helpers.PermissionsHelper;
+import io.ona.kujaku.helpers.wmts.WmtsHelper;
+import io.ona.kujaku.interfaces.IKujakuMapView;
+import io.ona.kujaku.interfaces.ILocationClient;
+import io.ona.kujaku.layers.KujakuLayer;
+import io.ona.kujaku.listeners.BaseLocationListener;
+import io.ona.kujaku.listeners.BoundsChangeListener;
+import io.ona.kujaku.listeners.LocationClientStartedCallback;
+import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
+import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
+import io.ona.kujaku.listeners.OnLocationChanged;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
+import io.ona.kujaku.location.clients.AndroidGpsLocationClient;
+import io.ona.kujaku.location.clients.GoogleLocationClient;
+import io.ona.kujaku.manager.AnnotationRepositoryManager;
+import io.ona.kujaku.mbtiles.MBTilesHelper;
+import io.ona.kujaku.services.TrackingService;
+import io.ona.kujaku.services.configurations.TrackingServiceDefaultUIConfiguration;
+import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
+import io.ona.kujaku.services.options.TrackingServiceHighAccuracyOptions;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.LocationSettingsHelper;
+import io.ona.kujaku.utils.LogUtil;
+import io.ona.kujaku.utils.Permissions;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+import io.ona.kujaku.wmts.model.WmtsLayer;
+import timber.log.Timber;
+
+import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
+ */
+public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener, MapboxMap.OnMapLongClickListener {
+
+<span class="nc" id="L106">    private static final String TAG = KujakuMapView.class.getName();</span>
+    public static final double LOCATION_FOCUS_ZOOM = 20d;
+
+<span class="nc" id="L109">    private boolean canAddPoint = false;</span>
+
+    private ImageView markerLayout;
+    private Button doneAddingPointBtn;
+    private ImageButton addPointBtn;
+    private Button cancelAddingPoint;
+    private MapboxMap mapboxMap;
+    private ImageButton currentLocationBtn;
+    private ImageView trackingServiceStatusButton;
+
+    private ILocationClient locationClient;
+
+    private LinearLayout addPointButtonsLayout;
+
+    private OnLocationChanged onLocationChangedListener;
+
+    private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
+
+    protected Set&lt;io.ona.kujaku.domain.Point&gt; droppedPoints;
+
+    private LatLng latestLocationCoordinates;
+
+    private Location latestLocation;
+
+    private MapboxLocationComponentWrapper mapboxLocationComponentWrapper;
+
+<span class="nc" id="L135">    private boolean updateUserLocationOnMap = false;</span>
+<span class="nc" id="L136">    private boolean updateCameraUserLocationOnMap = false;</span>
+<span class="nc" id="L137">    private int locationRenderMode = RenderMode.NORMAL;</span>
+
+<span class="nc" id="L139">    private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;</span>
+
+<span class="nc" id="L141">    private float locationBufferRadius = DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS;</span>
+
+    /**
+     * Wmts Layers to add on the map
+     */
+    private Set&lt;WmtsLayer&gt; wmtsLayers;
+
+    private FeatureCollection featureCollection;
+
+    private Map&lt;String, Integer&gt; featureMap;
+
+    private Layer primaryLayer;
+
+    private GeoJsonSource primaryGeoJsonSource;
+
+    private String primaryGeoJsonSourceId;
+
+    private String geoJsonSourceString;
+
+<span class="nc" id="L160">    private boolean isFetchSourceFromStyle = false;</span>
+
+<span class="nc" id="L162">    private CameraPosition cameraPosition = null;</span>
+
+    private BoundsChangeListener boundsChangeListener;
+
+    private OnFeatureClickListener onFeatureClickListener;
+    private String[] featureClickLayerIdFilters;
+    private Expression featureClickExpressionFilter;
+
+    private OnKujakuLayerClickListener onKujakuLayerClickListener;
+    private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
+
+<span class="nc" id="L173">    private boolean warmGps = true;</span>
+<span class="nc" id="L174">    private boolean hasAlreadyRequestedEnableLocation = false;</span>
+<span class="nc" id="L175">    private boolean isResumingFromRequestingEnableLocation = false;</span>
+
+    private String locationEnableRejectionDialogTitle;
+    private String locationEnableRejectionDialogMessage;
+    private OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack;
+
+<span class="nc" id="L181">    private ArrayList&lt;KujakuLayer&gt; kujakuLayers = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L182">    private ArrayList&lt;LocationClientStartedCallback&gt; locationClientCallbacks = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Tracking Service
+     **/
+<span class="nc" id="L187">    private TrackingService trackingService = null;</span>
+<span class="nc" id="L188">    private boolean trackingServiceBound = false;</span>
+<span class="nc" id="L189">    private TrackingServiceListener trackingServiceListener = null;</span>
+<span class="nc" id="L190">    private TrackingServiceUIConfiguration trackingServiceUIConfiguration = null;</span>
+<span class="nc" id="L191">    private TrackingServiceOptions trackingServiceOptions = null;</span>
+<span class="nc" id="L192">    private boolean trackingServiceInitialized = false;</span>
+
+    private int resourceId;
+<span class="nc" id="L195">    private boolean disableMyLocationOnMapMove = false;</span>
+
+<span class="nc" id="L197">    private boolean useGoogleLocationClientInsteadOfAndroidGpsClient = true;</span>
+
+    /**
+     * MBtiles
+     **/
+    private MBTilesHelper mbTilesHelper;
+
+    /**
+     * Drawing Manager
+     **/
+    // private DrawingManager drawingManager = null ;
+    public KujakuMapView(@NonNull Context context) {
+<span class="nc" id="L209">        super(context);</span>
+<span class="nc" id="L210">        init(null);</span>
+<span class="nc" id="L211">    }</span>
+
+    public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs) {
+<span class="nc" id="L214">        super(context, attrs);</span>
+<span class="nc" id="L215">        init(attrs);</span>
+<span class="nc" id="L216">    }</span>
+
+    public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+<span class="nc" id="L219">        super(context, attrs, defStyleAttr);</span>
+<span class="nc" id="L220">        init(attrs);</span>
+<span class="nc" id="L221">    }</span>
+
+    public KujakuMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
+<span class="nc" id="L224">        super(context, options);</span>
+<span class="nc" id="L225">        init(null);</span>
+<span class="nc" id="L226">    }</span>
+
+    private void init(@Nullable AttributeSet attributeSet) {
+<span class="nc" id="L229">        PermissionsHelper.checkPermissions(TAG, getContext());</span>
+
+<span class="nc" id="L231">        markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);</span>
+
+<span class="nc" id="L233">        droppedPoints = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L234">        wmtsLayers = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L236">        doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);</span>
+<span class="nc" id="L237">        addPointButtonsLayout = findViewById(R.id.ll_mapview_locationSelectionBtns);</span>
+<span class="nc" id="L238">        addPointBtn = findViewById(R.id.imgBtn_mapview_locationAdditionBtn);</span>
+<span class="nc" id="L239">        currentLocationBtn = findViewById(R.id.ib_mapview_focusOnMyLocationIcon);</span>
+<span class="nc" id="L240">        trackingServiceStatusButton = findViewById(R.id.iv_mapview_tracking_service_status);</span>
+<span class="nc" id="L241">        mbTilesHelper = new MBTilesHelper();</span>
+
+<span class="nc" id="L243">        getMapboxMap();</span>
+<span class="nc" id="L244">        cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);</span>
+
+<span class="nc" id="L246">        currentLocationBtn.setOnClickListener(new OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+                // Enable asking for enabling the location by resetting this flag in case it was true
+<span class="nc" id="L250">                hasAlreadyRequestedEnableLocation = false;</span>
+<span class="nc" id="L251">                updateCameraUserLocationOnMap = true;</span>
+<span class="nc" id="L252">                setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {</span>
+                    @Override
+                    public void onSuccess() {
+<span class="nc bnc" id="L255" title="All 4 branches missed.">                        focusOnUserLocation(resourceId == 0 || resourceId == R.drawable.ic_cross_hair, locationBufferRadius);</span>
+<span class="nc" id="L256">                    }</span>
+                });
+<span class="nc" id="L258">            }</span>
+        });
+
+<span class="nc" id="L261">        markerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {</span>
+            @Override
+            public void onGlobalLayout() {
+<span class="nc" id="L264">                markerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);</span>
+
+<span class="nc" id="L266">                int height = markerLayout.getMeasuredHeight();</span>
+<span class="nc" id="L267">                markerLayout.setY(markerLayout.getY() - (height / 2f));</span>
+<span class="nc" id="L268">            }</span>
+        });
+
+<span class="nc" id="L271">        Map&lt;String, Object&gt; attributes = extractStyleValues(attributeSet);</span>
+<span class="nc" id="L272">        String locationBtnVisibilityKey = getContext().getString(R.string.current_location_btn_visibility);</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (attributes.containsKey(locationBtnVisibilityKey)) {</span>
+<span class="nc" id="L274">            boolean isCurrentLocationBtnVisible = (boolean) attributes.get(locationBtnVisibilityKey);</span>
+<span class="nc" id="L275">            setVisibility(currentLocationBtn, isCurrentLocationBtnVisible);</span>
+        }
+
+<span class="nc" id="L278">        String warmGPSKey = getContext().getString(R.string.mapbox_warmGps);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (attributes.containsKey(warmGPSKey)) {</span>
+<span class="nc" id="L280">            warmGps = (boolean) attributes.get(warmGPSKey);</span>
+        }
+
+<span class="nc" id="L283">        String locationClientKey = getContext().getString(R.string.locationClient);</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        if (attributes.containsKey(locationClientKey)) {</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">            useGoogleLocationClientInsteadOfAndroidGpsClient = ((int) attributes.get(locationClientKey)) == 0;</span>
+        }
+
+<span class="nc" id="L288">        featureMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L289">        mapboxLocationComponentWrapper = new MapboxLocationComponentWrapper();</span>
+<span class="nc" id="L290">    }</span>
+
+    private void showUpdatedUserLocation(Float radius) {
+<span class="nc" id="L293">        showUpdatedUserLocation(radius, 1f);</span>
+<span class="nc" id="L294">    }</span>
+
+    private void showUpdatedUserLocation(Float radius, Float distanceMoved) {
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        if (updateUserLocationOnMap) {</span>
+<span class="nc" id="L298">            updateUserLocation(radius);</span>
+        }
+
+<span class="nc bnc" id="L301" title="All 4 branches missed.">        if (updateCameraUserLocationOnMap &amp;&amp; distanceMoved != 0) {</span>
+            // Focus on the new location only if device moved
+<span class="nc" id="L303">            centerMap(latestLocationCoordinates, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM));</span>
+        }
+<span class="nc" id="L305">    }</span>
+
+    private void warmUpLocationServices() {
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        locationClient = useGoogleLocationClientInsteadOfAndroidGpsClient ? new GoogleLocationClient(getContext()) : new AndroidGpsLocationClient(getContext());</span>
+<span class="nc" id="L309">        locationClient.requestLocationUpdates(new BaseLocationListener() {</span>
+            @Override
+            public void onLocationChanged(Location location) {
+<span class="nc" id="L312">                float distanceMoved = -1;</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">                if (location != null) {</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">                    if (latestLocation != null) {</span>
+<span class="nc" id="L315">                        distanceMoved = latestLocation.distanceTo(location);</span>
+                    }
+<span class="nc" id="L317">                    latestLocation = location;</span>
+<span class="nc" id="L318">                    latestLocationCoordinates = new LatLng(location.getLatitude()</span>
+<span class="nc" id="L319">                            , location.getLongitude());</span>
+                }
+
+<span class="nc bnc" id="L322" title="All 2 branches missed.">                if (onLocationChangedListener != null) {</span>
+<span class="nc" id="L323">                    onLocationChangedListener.onLocationChanged(location);</span>
+                }
+
+<span class="nc" id="L326">                showUpdatedUserLocation(locationBufferRadius, distanceMoved);</span>
+<span class="nc" id="L327">            }</span>
+        });
+
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        for (LocationClientStartedCallback locationClientStartedCallback : locationClientCallbacks) {</span>
+<span class="nc" id="L331">            locationClientStartedCallback.onStarted(locationClient);</span>
+<span class="nc" id="L332">        }</span>
+
+<span class="nc" id="L334">        locationClientCallbacks.clear();</span>
+<span class="nc" id="L335">    }</span>
+
+    private Map&lt;String, Object&gt; extractStyleValues(@Nullable AttributeSet attrs) {
+<span class="nc" id="L338">        Map&lt;String, Object&gt; attributes = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (attrs != null) {</span>
+<span class="nc" id="L340">            TypedArray typedArray = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.KujakuMapView, 0, 0);</span>
+            try {
+<span class="nc" id="L342">                boolean isCurrentLocationBtnVisible = typedArray.getBoolean(R.styleable.KujakuMapView_current_location_btn_visibility, false);</span>
+<span class="nc" id="L343">                boolean isWarmGps = typedArray.getBoolean(R.styleable.KujakuMapView_mapbox_warmGps, true);</span>
+<span class="nc" id="L344">                attributes.put(getContext().getString(R.string.current_location_btn_visibility), isCurrentLocationBtnVisible);</span>
+<span class="nc" id="L345">                attributes.put(getContext().getString(R.string.mapbox_warmGps), isWarmGps);</span>
+<span class="nc" id="L346">                attributes.put(getContext().getString(R.string.locationClient), typedArray.getInt(R.styleable.KujakuMapView_locationClient, 0));</span>
+<span class="nc" id="L347">            } catch (Exception e) {</span>
+<span class="nc" id="L348">                LogUtil.e(TAG, e);</span>
+            } finally {
+<span class="nc" id="L350">                typedArray.recycle();</span>
+<span class="nc" id="L351">            }</span>
+        }
+<span class="nc" id="L353">        return attributes;</span>
+    }
+
+    @Override
+    public void addPoint(boolean useGPS, @NonNull final AddPointCallback addPointCallback) {
+<span class="nc" id="L358">        addPoint(useGPS, addPointCallback, null);</span>
+<span class="nc" id="L359">    }</span>
+
+    @Override
+    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions) {
+<span class="nc" id="L363">        addPointBtn.setVisibility(VISIBLE);</span>
+<span class="nc" id="L364">        addPointBtn.setOnClickListener(new OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L367">                addPointBtn.setVisibility(GONE);</span>
+<span class="nc" id="L368">                showAddPointLayout(true);</span>
+
+<span class="nc bnc" id="L370" title="All 2 branches missed.">                if (useGPS) {</span>
+<span class="nc" id="L371">                    enableAddPoint(true, null);</span>
+<span class="nc" id="L372">                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {</span>
+                        @Override
+                        public void onClick(View v) {
+<span class="nc" id="L375">                            JSONObject featureJSON = dropPoint(markerOptions);</span>
+<span class="nc" id="L376">                            addPointCallback.onPointAdd(featureJSON);</span>
+
+<span class="nc" id="L378">                            enableAddPoint(false, null);</span>
+
+<span class="nc" id="L380">                            showAddPointLayout(false);</span>
+<span class="nc" id="L381">                            addPointBtn.setVisibility(VISIBLE);</span>
+<span class="nc" id="L382">                        }</span>
+                    });
+                } else {
+                    // Enable the marker layout
+<span class="nc" id="L386">                    enableAddPoint(true);</span>
+<span class="nc" id="L387">                    doneAddingPointBtn.setOnClickListener(new OnClickListener() {</span>
+                        @Override
+                        public void onClick(View v) {
+<span class="nc" id="L390">                            JSONObject featureJSON = dropPoint(markerOptions);</span>
+<span class="nc" id="L391">                            addPointCallback.onPointAdd(featureJSON);</span>
+
+<span class="nc" id="L393">                            enableAddPoint(false);</span>
+
+<span class="nc" id="L395">                            showAddPointLayout(false);</span>
+<span class="nc" id="L396">                            addPointBtn.setVisibility(VISIBLE);</span>
+<span class="nc" id="L397">                        }</span>
+                    });
+                }
+<span class="nc" id="L400">            }</span>
+        });
+
+<span class="nc" id="L403">        cancelAddingPoint.setOnClickListener(new OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L406" title="All 2 branches missed.">                if (useGPS) {</span>
+<span class="nc" id="L407">                    enableAddPoint(false, null);</span>
+                } else {
+<span class="nc" id="L409">                    enableAddPoint(false);</span>
+                }
+
+<span class="nc" id="L412">                showAddPointLayout(false);</span>
+<span class="nc" id="L413">                addPointBtn.setVisibility(VISIBLE);</span>
+<span class="nc" id="L414">            }</span>
+        });
+<span class="nc" id="L416">    }</span>
+
+    private void showAddPointLayout(boolean showLayout) {
+<span class="nc bnc" id="L419" title="All 2 branches missed.">        int visible = showLayout ? VISIBLE : GONE;</span>
+<span class="nc" id="L420">        addPointButtonsLayout.setVisibility(visible);</span>
+<span class="nc" id="L421">    }</span>
+
+    @Override
+    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @DrawableRes int markerResourceId) {
+<span class="nc" id="L425">        addPoint(useGPS, addPointCallback,</span>
+<span class="nc" id="L426">                new MarkerOptions().setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId))</span>
+        );
+<span class="nc" id="L428">    }</span>
+
+    @Override
+    public void enableAddPoint(boolean canAddPoint) {
+<span class="nc" id="L432">        this.canAddPoint = canAddPoint;</span>
+
+<span class="nc bnc" id="L434" title="All 2 branches missed.">        if (this.canAddPoint) {</span>
+            // Show the layer with the marker in the middle
+<span class="nc" id="L436">            showMarkerLayout();</span>
+        } else {
+<span class="nc" id="L438">            hideMarkerLayout();</span>
+        }
+<span class="nc" id="L440">    }</span>
+
+    private void showMarkerLayout() {
+<span class="nc" id="L443">        markerLayout.setVisibility(VISIBLE);</span>
+<span class="nc" id="L444">    }</span>
+
+    private void hideMarkerLayout() {
+<span class="nc" id="L447">        markerLayout.setVisibility(GONE);</span>
+<span class="nc" id="L448">    }</span>
+
+    public void setViewVisibility(View view, boolean isVisible) {
+<span class="nc bnc" id="L451" title="All 2 branches missed.">        view.setVisibility(isVisible ? VISIBLE : GONE);</span>
+<span class="nc" id="L452">    }</span>
+
+    @Override
+    public void enableAddPoint(boolean canAddPoint, @Nullable final OnLocationChanged onLocationChanged) {
+<span class="nc" id="L456">        this.enableAddPoint(canAddPoint);</span>
+
+<span class="nc bnc" id="L458" title="All 2 branches missed.">        if (canAddPoint) {</span>
+<span class="nc" id="L459">            this.onLocationChangedListener = onLocationChanged;</span>
+
+            // 1. Focus on the location for the first time is a must
+            // 2. Any sub-sequent location updates are dependent on whether the user has touched the UI
+            // 3. Show the circle icon on the current position -&gt; This will happen whenever there are location updates
+<span class="nc" id="L464">            updateUserLocationOnMap = true;</span>
+<span class="nc" id="L465">            updateCameraUserLocationOnMap = true;</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">            if (latestLocationCoordinates != null) {</span>
+<span class="nc" id="L467">                showUpdatedUserLocation(locationBufferRadius);</span>
+            }
+        } else {
+            // This should just disable the layout and any ongoing operations for focus
+<span class="nc" id="L471">            this.onLocationChangedListener = null;</span>
+        }
+<span class="nc" id="L473">    }</span>
+
+    private void updateUserLocation(Float locationBufferRadius) {
+<span class="nc bnc" id="L476" title="All 2 branches missed.">        this.locationBufferRadius = locationBufferRadius == null ? this.locationBufferRadius : locationBufferRadius;</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">        if (latestLocation != null) {</span>
+<span class="nc" id="L478">            latestLocation.setAccuracy(this.locationBufferRadius);</span>
+
+<span class="nc bnc" id="L480" title="All 2 branches missed.">            if (getMapboxLocationComponentWrapper().getLocationComponent() != null) {</span>
+<span class="nc" id="L481">                getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);</span>
+            }
+        }
+<span class="nc" id="L484">    }</span>
+
+    @Override
+    public @Nullable
+    JSONObject dropPoint() {
+<span class="nc" id="L489">        return dropPoint((MarkerOptions) null);</span>
+    }
+
+
+    @Nullable
+    @Override
+    public JSONObject dropPoint(@DrawableRes int markerResourceId) {
+<span class="nc" id="L496">        MarkerOptions markerOptions = new MarkerOptions()</span>
+<span class="nc" id="L497">                .setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId));</span>
+
+<span class="nc" id="L499">        return dropPoint(markerOptions);</span>
+    }
+
+    @Override
+    public @Nullable
+    JSONObject dropPoint(@Nullable LatLng latLng) {
+<span class="nc" id="L505">        return dropPoint(</span>
+                new MarkerOptions()
+<span class="nc" id="L507">                        .setPosition(latLng)</span>
+        );
+    }
+
+    @Nullable
+    @Override
+    public JSONObject dropPoint(@Nullable MarkerOptions markerOptions) {
+<span class="nc bnc" id="L514" title="All 4 branches missed.">        if (mapboxMap != null &amp;&amp; canAddPoint) {</span>
+<span class="nc bnc" id="L515" title="All 4 branches missed.">            if (markerOptions != null &amp;&amp; markerOptions.getPosition() != null) {</span>
+<span class="nc" id="L516">                LatLng latLng = markerOptions.getPosition();</span>
+<span class="nc" id="L517">                Feature feature = new Feature();</span>
+<span class="nc" id="L518">                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));</span>
+
+                try {
+<span class="nc" id="L521">                    JSONObject jsonObject = feature.toJSON();</span>
+
+                    // Add a layer with the current point
+<span class="nc" id="L524">                    centerMap(latLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM)));</span>
+<span class="nc" id="L525">                    dropPointOnMap(latLng, markerOptions);</span>
+
+<span class="nc" id="L527">                    enableAddPoint(false);</span>
+
+<span class="nc" id="L529">                    this.onLocationChangedListener = null;</span>
+
+<span class="nc bnc" id="L531" title="All 2 branches missed.">                    if (locationClient != null) {</span>
+<span class="nc" id="L532">                        locationClient.stopLocationUpdates();</span>
+                    }
+
+<span class="nc" id="L535">                    return jsonObject;</span>
+<span class="nc" id="L536">                } catch (JSONException e) {</span>
+<span class="nc" id="L537">                    LogUtil.e(TAG, Log.getStackTraceString(e));</span>
+                }
+<span class="nc" id="L539">            } else {</span>
+<span class="nc" id="L540">                LatLng latLng = mapboxMap.getCameraPosition().target;</span>
+
+<span class="nc" id="L542">                Feature feature = new Feature();</span>
+<span class="nc" id="L543">                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));</span>
+
+                try {
+<span class="nc" id="L546">                    JSONObject jsonObject = feature.toJSON();</span>
+
+                    // Add a layer with the current point
+<span class="nc" id="L549">                    dropPointOnMap(latLng, markerOptions);</span>
+
+<span class="nc" id="L551">                    return jsonObject;</span>
+<span class="nc" id="L552">                } catch (JSONException e) {</span>
+<span class="nc" id="L553">                    LogUtil.e(TAG, Log.getStackTraceString(e));</span>
+                }
+            }
+        }
+
+<span class="nc" id="L558">        return null;</span>
+    }
+
+    @Nullable
+    @Override
+    public JSONObject dropPoint(@Nullable LatLng latLng, @DrawableRes int markerResourceId) {
+<span class="nc" id="L564">        MarkerOptions markerOptions = new MarkerOptions()</span>
+<span class="nc" id="L565">                .setPosition(latLng)</span>
+<span class="nc" id="L566">                .setIcon(</span>
+<span class="nc" id="L567">                        IconFactory.getInstance(getContext())</span>
+<span class="nc" id="L568">                                .fromResource(markerResourceId)</span>
+                );
+
+<span class="nc" id="L571">        return dropPoint(markerOptions);</span>
+    }
+
+    private void getMapboxMap() {
+<span class="nc bnc" id="L575" title="All 2 branches missed.">        if (mapboxMap == null) {</span>
+<span class="nc" id="L576">            getMapAsync(new OnMapReadyCallback() {</span>
+                @Override
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L579">                    KujakuMapView.this.mapboxMap = mapboxMap;</span>
+<span class="nc" id="L580">                    mapboxMap.getUiSettings().setCompassEnabled(false);</span>
+
+                    // Operations that require the style to be loaded
+<span class="nc" id="L583">                    mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L586">                            afterStyleLoadedOperations(style);</span>
+<span class="nc" id="L587">                        }</span>
+                    });
+<span class="nc" id="L589">                }</span>
+            });
+        }
+<span class="nc" id="L592">    }</span>
+
+    private void afterStyleLoadedOperations(@NonNull Style style) {
+<span class="nc bnc" id="L595" title="All 2 branches missed.">        if (KujakuMapView.this.droppedPoints != null) {</span>
+<span class="nc" id="L596">            List&lt;io.ona.kujaku.domain.Point&gt; droppedPoints = new ArrayList&lt;&gt;(KujakuMapView.this.droppedPoints);</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">            for (io.ona.kujaku.domain.Point point : droppedPoints) {</span>
+<span class="nc" id="L598">                dropPointOnMap(new LatLng(point.getLat(), point.getLng()));</span>
+<span class="nc" id="L599">            }</span>
+        }
+
+<span class="nc" id="L602">        addPrimaryGeoJsonSourceAndLayerToStyle(style);</span>
+
+<span class="nc bnc" id="L604" title="All 2 branches missed.">        if (getCameraPosition() != null) {</span>
+<span class="nc" id="L605">            mapboxMap.setCameraPosition(getCameraPosition());</span>
+        }
+
+        // add bounds change listener
+<span class="nc" id="L609">        addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);</span>
+<span class="nc" id="L610">        callBoundsChangedListeners();</span>
+<span class="nc" id="L611">        enableFeatureClickListenerEmitter(mapboxMap);</span>
+
+<span class="nc" id="L613">        WmtsHelper.addWmtsLayers(wmtsLayers, style);</span>
+
+<span class="nc" id="L615">        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext(), locationRenderMode);</span>
+<span class="nc" id="L616">    }</span>
+
+    private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
+<span class="nc bnc" id="L619" title="All 4 branches missed.">        if (getPrimaryGeoJsonSource() != null &amp;&amp; style.getSource(getPrimaryGeoJsonSource().getId()) == null) {</span>
+<span class="nc" id="L620">            style.addSource(getPrimaryGeoJsonSource());</span>
+        }
+
+<span class="nc bnc" id="L623" title="All 4 branches missed.">        if (getPrimaryLayer() != null &amp;&amp; style.getLayer(getPrimaryLayer().getId()) == null) {</span>
+<span class="nc" id="L624">            style.addLayer(getPrimaryLayer());</span>
+        }
+
+<span class="nc bnc" id="L627" title="All 2 branches missed.">        if (isFetchSourceFromStyle) {</span>
+<span class="nc" id="L628">            initializeSourceAndFeatureCollectionFromStyle(style);</span>
+<span class="nc" id="L629">            isFetchSourceFromStyle = false;</span>
+        }
+<span class="nc" id="L631">    }</span>
+
+    public Set&lt;WmtsLayer&gt; getWmtsLayers() {
+<span class="nc" id="L634">        return this.wmtsLayers;</span>
+    }
+
+    /**
+     * Add first available layer to the wmtsLayer list
+     *
+     * @param capabilities
+     */
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities) throws WmtsCapabilitiesException {
+<span class="nc" id="L644">        this.addWmtsLayer(capabilities, null, null, null);</span>
+<span class="nc" id="L645">    }</span>
+
+    /**
+     * Add identified layer to the wmtsLayer list
+     *
+     * @param layerIdentifier
+     * @param capabilities
+     */
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier) throws WmtsCapabilitiesException {
+<span class="nc" id="L655">        this.addWmtsLayer(capabilities, layerIdentifier, null, null);</span>
+<span class="nc" id="L656">    }</span>
+
+    /**
+     * Add identified layer with specific style to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     */
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier) throws WmtsCapabilitiesException {
+<span class="nc" id="L667">        this.addWmtsLayer(capabilities, layerIdentifier, styleIdentifier, null);</span>
+<span class="nc" id="L668">    }</span>
+
+    /**
+     * Add identified layer with specific style &amp; specific tileMatrixSet to the wmtsLayer list
+     *
+     * @param capabilities
+     * @param layerIdentifier
+     * @param styleIdentifier
+     * @param tileMatrixSetLinkIdentifier
+     */
+    @Override
+    public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
+<span class="nc" id="L680">        this.wmtsLayers.add(WmtsHelper.identifyLayer(capabilities, layerIdentifier, styleIdentifier, tileMatrixSetLinkIdentifier));</span>
+
+<span class="nc bnc" id="L682" title="All 6 branches missed.">        if (mapboxMap != null &amp;&amp; mapboxMap.getStyle() != null &amp;&amp; mapboxMap.getStyle().isFullyLoaded()) {</span>
+<span class="nc" id="L683">            WmtsHelper.addWmtsLayers(this.wmtsLayers, mapboxMap.getStyle());</span>
+        }
+<span class="nc" id="L685">    }</span>
+
+    private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L688">        mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {</span>
+            @Override
+            public void onMoveBegin(@NonNull MoveGestureDetector detector) {
+<span class="nc bnc" id="L691" title="All 2 branches missed.">                if (!disableMyLocationOnMapMove) {</span>
+                    // We should assume the user no longer wants us to focus on their location
+<span class="nc" id="L693">                    focusOnUserLocation(false);</span>
+                }
+<span class="nc" id="L695">            }</span>
+
+            @Override
+            public void onMove(@NonNull MoveGestureDetector detector) {
+                // We are not going to do anything here
+<span class="nc" id="L700">            }</span>
+
+            @Override
+            public void onMoveEnd(@NonNull MoveGestureDetector detector) {
+<span class="nc" id="L704">                callBoundsChangedListeners();</span>
+<span class="nc" id="L705">            }</span>
+        });
+<span class="nc" id="L707">    }</span>
+
+    private void callBoundsChangedListeners() {
+<span class="nc bnc" id="L710" title="All 2 branches missed.">        if (boundsChangeListener != null) {</span>
+<span class="nc" id="L711">            VisibleRegion visibleRegion = getCurrentBounds();</span>
+
+<span class="nc bnc" id="L713" title="All 2 branches missed.">            if (visibleRegion != null) {</span>
+<span class="nc" id="L714">                boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight</span>
+                        , visibleRegion.nearRight, visibleRegion.nearLeft);
+            }
+        }
+<span class="nc" id="L718">    }</span>
+
+    @VisibleForTesting
+    @Nullable
+    protected VisibleRegion getCurrentBounds() {
+<span class="nc bnc" id="L723" title="All 2 branches missed.">        return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;</span>
+    }
+
+    private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L727">        mapboxMap.removeOnMapClickListener(this);</span>
+<span class="nc" id="L728">        mapboxMap.addOnMapClickListener(this);</span>
+
+<span class="nc" id="L730">        mapboxMap.removeOnMapLongClickListener(this);</span>
+<span class="nc" id="L731">        mapboxMap.addOnMapLongClickListener(this);</span>
+<span class="nc" id="L732">    }</span>
+
+    private void dropPointOnMap(@NonNull LatLng latLng) {
+<span class="nc" id="L735">        dropPointOnMap(latLng, null);</span>
+<span class="nc" id="L736">    }</span>
+
+    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptionsParam) {
+<span class="nc" id="L739">        MarkerOptions markerOptions = markerOptionsParam;</span>
+<span class="nc bnc" id="L740" title="All 2 branches missed.">        if (markerOptions == null) {</span>
+<span class="nc" id="L741">            markerOptions = new MarkerOptions()</span>
+<span class="nc" id="L742">                    .position(latLng);</span>
+<span class="nc bnc" id="L743" title="All 2 branches missed.">        } else if (markerOptions.getPosition() == null) {</span>
+<span class="nc" id="L744">            markerOptions.setPosition(latLng);</span>
+        }
+
+<span class="nc" id="L747">        mapboxMap.addMarker(markerOptions);</span>
+<span class="nc" id="L748">    }</span>
+
+    public boolean isCanAddPoint() {
+<span class="nc" id="L751">        return canAddPoint;</span>
+    }
+
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration, double newZoom) {
+<span class="nc" id="L755">        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()</span>
+<span class="nc" id="L756">                .target(point);</span>
+<span class="nc bnc" id="L757" title="All 2 branches missed.">        if (newZoom != -1d) {</span>
+<span class="nc" id="L758">            cameraPositionBuilder.zoom(newZoom);</span>
+        }
+
+<span class="nc" id="L761">        CameraPosition cameraPosition = cameraPositionBuilder.build();</span>
+
+<span class="nc bnc" id="L763" title="All 2 branches missed.">        if (mapboxMap != null) {</span>
+<span class="nc" id="L764">            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);</span>
+        }
+<span class="nc" id="L766">    }</span>
+
+    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration) {
+<span class="nc" id="L769">        centerMap(point, animateToNewTargetDuration, -1d);</span>
+<span class="nc" id="L770">    }</span>
+
+    private double getZoomToUse(@NonNull MapboxMap mapboxMap, double zoomLevel) {
+<span class="nc bnc" id="L773" title="All 4 branches missed.">        return mapboxMap == null ? zoomLevel : mapboxMap.getCameraPosition().zoom &gt; zoomLevel ? -1d : zoomLevel;</span>
+    }
+
+    @Override
+    public void onStop() {
+<span class="nc" id="L778">        super.onStop();</span>
+
+        // Clean up location services
+<span class="nc bnc" id="L781" title="All 4 branches missed.">        if (locationClient != null &amp;&amp; locationClient.isMonitoringLocation()) {</span>
+<span class="nc" id="L782">            locationClient.setListener(null);</span>
+<span class="nc" id="L783">            locationClient = null;</span>
+        }
+
+        // Unbind TrackingService if bound
+<span class="nc" id="L787">        this.unBindTrackingService(getApplicationContext());</span>
+<span class="nc" id="L788">        AnnotationRepositoryManager.onStop();</span>
+<span class="nc" id="L789">    }</span>
+
+    @Override
+    public void showCurrentLocationBtn(boolean isVisible) {
+<span class="nc bnc" id="L793" title="All 2 branches missed.">        currentLocationBtn.setVisibility(isVisible ? VISIBLE : GONE);</span>
+<span class="nc" id="L794">    }</span>
+
+    public void setVisibility(View view, boolean isVisible) {
+<span class="nc bnc" id="L797" title="All 2 branches missed.">        view.setVisibility(isVisible ? VISIBLE : GONE);</span>
+<span class="nc" id="L798">    }</span>
+
+    public Set&lt;io.ona.kujaku.domain.Point&gt; getDroppedPoints() {
+<span class="nc" id="L801">        return droppedPoints;</span>
+    }
+
+    public void updateDroppedPoints(List&lt;io.ona.kujaku.domain.Point&gt; droppedPoints) {
+<span class="nc bnc" id="L805" title="All 2 branches missed.">        if (droppedPoints == null) {</span>
+<span class="nc" id="L806">            return;</span>
+        }
+        // remove duplicates
+<span class="nc bnc" id="L809" title="All 2 branches missed.">        for (io.ona.kujaku.domain.Point point : droppedPoints) {</span>
+<span class="nc bnc" id="L810" title="All 2 branches missed.">            if (!this.droppedPoints.contains(point)) {</span>
+                // drop new unique points
+<span class="nc bnc" id="L812" title="All 2 branches missed.">                if (this.mapboxMap != null) {</span>
+<span class="nc" id="L813">                    dropPointOnMap(new LatLng(point.getLat(), point.getLng()));</span>
+                }
+<span class="nc" id="L815">                this.droppedPoints.add(point);</span>
+            }
+<span class="nc" id="L817">        }</span>
+<span class="nc" id="L818">    }</span>
+
+    @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds) {
+<span class="nc" id="L822">        this.setOnFeatureClickListener(onFeatureClickListener, null, featureClickLayerIdFilters);</span>
+<span class="nc" id="L823">    }</span>
+
+    @Override
+    public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds) {
+<span class="nc" id="L827">        this.onFeatureClickListener = onFeatureClickListener;</span>
+<span class="nc" id="L828">        this.featureClickLayerIdFilters = layerIds;</span>
+<span class="nc" id="L829">        this.featureClickExpressionFilter = expressionFilter;</span>
+<span class="nc" id="L830">    }</span>
+
+    /**
+     * Set listener when pressing a KujakuLayer
+     *
+     * @param onKujakuLayerClickListener
+     */
+    public void setOnKujakuLayerClickListener(@NonNull OnKujakuLayerClickListener onKujakuLayerClickListener) {
+<span class="nc" id="L838">        this.onKujakuLayerClickListener = onKujakuLayerClickListener;</span>
+<span class="nc" id="L839">    }</span>
+
+    /**
+     * Set listener when long pressing a KujakuLayer
+     *
+     * @param onKujakuLayerLongClickListener
+     */
+    public void setOnKujakuLayerLongClickListener(@NonNull OnKujakuLayerLongClickListener onKujakuLayerLongClickListener) {
+<span class="nc" id="L847">        this.onKujakuLayerLongClickListener = onKujakuLayerLongClickListener;</span>
+<span class="nc" id="L848">    }</span>
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation) {
+<span class="nc" id="L852">        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderMode.NORMAL);</span>
+<span class="nc" id="L853">    }</span>
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, int renderMode) {
+<span class="nc" id="L857">        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, renderMode);</span>
+<span class="nc" id="L858">    }</span>
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
+<span class="nc" id="L862">        focusOnUserLocation(focusOnMyLocation, radius, RenderMode.NORMAL);</span>
+<span class="nc" id="L863">    }</span>
+
+    @Override
+    public void focusOnUserLocation(boolean focusOnMyLocation, Float radius, int renderMode) {
+<span class="nc bnc" id="L867" title="All 2 branches missed.">        if (focusOnMyLocation) {</span>
+<span class="nc" id="L868">            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair_blue);</span>
+
+            // Enable the listener &amp; show the current user location
+<span class="nc" id="L871">            updateUserLocationOnMap = true;</span>
+<span class="nc" id="L872">            updateCameraUserLocationOnMap = true;</span>
+<span class="nc bnc" id="L873" title="All 2 branches missed.">            if (latestLocationCoordinates != null) {</span>
+<span class="nc" id="L874">                showUpdatedUserLocation(radius);</span>
+            }
+
+        } else {
+<span class="nc" id="L878">            updateCameraUserLocationOnMap = false;</span>
+<span class="nc" id="L879">            changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);</span>
+        }
+
+<span class="nc" id="L882">        locationRenderMode = renderMode;</span>
+<span class="nc" id="L883">    }</span>
+
+    @Override
+    public void setBoundsChangeListener(@Nullable BoundsChangeListener boundsChangeListener) {
+<span class="nc" id="L887">        this.boundsChangeListener = boundsChangeListener;</span>
+
+<span class="nc" id="L889">        callBoundsChangedListeners();</span>
+<span class="nc" id="L890">    }</span>
+
+    private void changeImageButtonResource(ImageButton imageButton, int resourceId) {
+<span class="nc" id="L893">        imageButton.setImageResource(resourceId);</span>
+<span class="nc" id="L894">        this.resourceId = resourceId;</span>
+<span class="nc" id="L895">    }</span>
+
+    @Override
+    public void addFeaturePoints(FeatureCollection featureCollection) {
+<span class="nc" id="L899">        List&lt;com.mapbox.geojson.Feature&gt; features = this.featureCollection.features();</span>
+<span class="nc bnc" id="L900" title="All 2 branches missed.">        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {</span>
+<span class="nc" id="L901">            String featureId = feature.id();</span>
+<span class="nc bnc" id="L902" title="All 4 branches missed.">            if (featureId != null &amp;&amp; !featureMap.containsKey(featureId)) {</span>
+<span class="nc" id="L903">                featureMap.put(featureId, features.size());</span>
+<span class="nc" id="L904">                features.add(feature);</span>
+            }
+<span class="nc" id="L906">        }</span>
+<span class="nc bnc" id="L907" title="All 2 branches missed.">        if (mapboxMap != null) {</span>
+<span class="nc" id="L908">            mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                @Override
+                public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L911">                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);</span>
+<span class="nc" id="L912">                }</span>
+            });
+        }
+<span class="nc" id="L915">    }</span>
+
+    @Override
+    public void updateFeaturePointProperties(FeatureCollection featureCollection) throws JSONException {
+<span class="nc" id="L919">        List&lt;com.mapbox.geojson.Feature&gt; currFeatures = this.featureCollection.features();</span>
+<span class="nc" id="L920">        List&lt;com.mapbox.geojson.Feature&gt; newFeatures = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L921" title="All 2 branches missed.">        for (com.mapbox.geojson.Feature feature : featureCollection.features()) {</span>
+<span class="nc" id="L922">            String featureId = feature.id();</span>
+<span class="nc bnc" id="L923" title="All 2 branches missed.">            if (featureMap.containsKey(featureId)) {</span>
+<span class="nc" id="L924">                int featureIndex = featureMap.get(featureId);</span>
+<span class="nc" id="L925">                com.mapbox.geojson.Feature currFeature = currFeatures.get(featureIndex);</span>
+<span class="nc bnc" id="L926" title="All 2 branches missed.">                for (Map.Entry&lt;String, JsonElement&gt; entry : feature.properties().entrySet()) {</span>
+<span class="nc" id="L927">                    currFeature.removeProperty(entry.getKey());</span>
+<span class="nc" id="L928">                    currFeature.addStringProperty(entry.getKey(), entry.getValue().getAsString());</span>
+<span class="nc" id="L929">                }</span>
+<span class="nc" id="L930">            } else {</span>
+<span class="nc" id="L931">                newFeatures.add(feature);</span>
+            }
+<span class="nc" id="L933">        }</span>
+        // add new features if any
+<span class="nc" id="L935">        FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);</span>
+<span class="nc" id="L936">        addFeaturePoints(newFeatureCollection);</span>
+<span class="nc bnc" id="L937" title="All 2 branches missed.">        if (mapboxMap != null) {</span>
+<span class="nc" id="L938">            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);</span>
+        }
+<span class="nc" id="L940">    }</span>
+
+    public void initializePrimaryGeoJsonSource(String sourceId, boolean isFetchSourceFromStyle, String geoJsonSource) {
+<span class="nc bnc" id="L943" title="All 6 branches missed.">        if (sourceId == null || (isFetchSourceFromStyle &amp;&amp; geoJsonSource == null)) {</span>
+<span class="nc" id="L944">            Timber.e(new Exception(&quot;GeoJson source initialization failed! Ensure that the source id is not null or that the GeoJson source is not null.&quot;));</span>
+<span class="nc" id="L945">            return;</span>
+        }
+<span class="nc" id="L947">        featureCollection = FeatureCollection.fromFeatures(new ArrayList&lt;&gt;());</span>
+
+<span class="nc bnc" id="L949" title="All 2 branches missed.">        if (isFetchSourceFromStyle) {</span>
+<span class="nc" id="L950">            this.isFetchSourceFromStyle = true;</span>
+<span class="nc" id="L951">            setPrimaryGeoJsonSourceId(sourceId);</span>
+<span class="nc" id="L952">            setGeoJsonSourceString(geoJsonSource);</span>
+        } else {
+<span class="nc" id="L954">            primaryGeoJsonSource = new GeoJsonSource(sourceId, featureCollection);</span>
+        }
+<span class="nc" id="L956">    }</span>
+
+    private void initializeSourceAndFeatureCollectionFromStyle(@NonNull Style style) {
+        try {
+<span class="nc" id="L960">            FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());</span>
+<span class="nc" id="L961">            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());</span>
+<span class="nc" id="L962">            addFeaturePoints(featureCollection);</span>
+<span class="nc" id="L963">        } catch (Exception e) {</span>
+<span class="nc" id="L964">            Timber.e(e);</span>
+<span class="nc" id="L965">        }</span>
+<span class="nc" id="L966">    }</span>
+
+    public CameraPosition getCameraPosition() {
+<span class="nc" id="L969">        return cameraPosition;</span>
+    }
+
+    public void setCameraPosition(CameraPosition cameraPosition) {
+<span class="nc" id="L973">        this.cameraPosition = cameraPosition;</span>
+<span class="nc" id="L974">    }</span>
+
+    public GeoJsonSource getPrimaryGeoJsonSource() {
+<span class="nc" id="L977">        return primaryGeoJsonSource;</span>
+    }
+
+    public Layer getPrimaryLayer() {
+<span class="nc" id="L981">        return primaryLayer;</span>
+    }
+
+    public void setPrimaryLayer(Layer layer) {
+<span class="nc" id="L985">        primaryLayer = layer;</span>
+<span class="nc" id="L986">    }</span>
+
+    public String getPrimaryGeoJsonSourceId() {
+<span class="nc" id="L989">        return primaryGeoJsonSourceId;</span>
+    }
+
+    public void setPrimaryGeoJsonSourceId(String primaryGeoJsonSourceId) {
+<span class="nc" id="L993">        this.primaryGeoJsonSourceId = primaryGeoJsonSourceId;</span>
+<span class="nc" id="L994">    }</span>
+
+    public String getGeoJsonSourceString() {
+<span class="nc" id="L997">        return geoJsonSourceString;</span>
+    }
+
+    public void setGeoJsonSourceString(String geoJsonSourceString) {
+<span class="nc" id="L1001">        this.geoJsonSourceString = geoJsonSourceString;</span>
+<span class="nc" id="L1002">    }</span>
+
+    @Override
+    public void onPause() {
+<span class="nc bnc" id="L1006" title="All 4 branches missed.">        if (locationClient != null &amp;&amp; locationClient.isMonitoringLocation()) {</span>
+<span class="nc" id="L1007">            locationClient.close();</span>
+        }
+<span class="nc" id="L1009">    }</span>
+
+    @Override
+    public void onResume() {
+<span class="nc" id="L1013">        super.onResume();</span>
+<span class="nc" id="L1014">        getMapboxMap();</span>
+        // This prevents an overlay issue the first time when requesting for permissions
+<span class="nc bnc" id="L1016" title="All 6 branches missed.">        if (warmGps &amp;&amp; Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) &amp;&amp; !isResumingFromRequestingEnableLocation) {</span>
+<span class="nc" id="L1017">            checkLocationSettingsAndStartLocationServices(true, null);</span>
+<span class="nc bnc" id="L1018" title="All 6 branches missed.">        } else if (warmGps &amp;&amp; Permissions.check(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) &amp;&amp; isResumingFromRequestingEnableLocation) {</span>
+<span class="nc" id="L1019">            checkLocationSettingsAndStartLocationServices(true, onLocationServicesEnabledCallBack);</span>
+        }
+
+        // Explain the consequence of rejecting enabling location
+<span class="nc bnc" id="L1023" title="All 2 branches missed.">        if (isResumingFromRequestingEnableLocation) {</span>
+<span class="nc" id="L1024">            isResumingFromRequestingEnableLocation = false;</span>
+<span class="nc" id="L1025">            Activity activity = (Activity) getContext();</span>
+<span class="nc" id="L1026">            Dialogs.showDialogIfLocationDisabled(activity, locationEnableRejectionDialogTitle, locationEnableRejectionDialogMessage);</span>
+
+            // The dialog message is supposed to be configurable only when the setWarmGps is called
+            // and not a permanent change because we have other uses for warming GPS and in the widget already
+<span class="nc" id="L1030">            resetRejectionDialogContent();</span>
+        }
+
+<span class="nc" id="L1033">        this.resumeTrackingService(getApplicationContext());</span>
+<span class="nc" id="L1034">    }</span>
+
+    private void checkLocationSettingsAndStartLocationServices(boolean shouldStartNow, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
+<span class="nc bnc" id="L1037" title="All 2 branches missed.">        if (getContext() instanceof Activity) {</span>
+<span class="nc" id="L1038">            Activity activity = (Activity) getContext();</span>
+
+<span class="nc" id="L1040">            LocationSettingsHelper.checkLocationEnabled(activity, new ResultCallback&lt;LocationSettingsResult&gt;() {</span>
+                @Override
+                public void onResult(@NonNull LocationSettingsResult result) {
+<span class="nc" id="L1043">                    final Status status = result.getStatus();</span>
+
+                    // The rejection dialog message is supposed to be configurable only when the setWarmGps is called
+                    // and not a permanent change because we have other uses for warming GPS and in the widget already
+<span class="nc bnc" id="L1047" title="All 2 branches missed.">                    if (status.getStatusCode() != LocationSettingsStatusCodes.RESOLUTION_REQUIRED) {</span>
+<span class="nc" id="L1048">                        resetRejectionDialogContent();</span>
+                    }
+
+<span class="nc bnc" id="L1051" title="All 4 branches missed.">                    switch (status.getStatusCode()) {</span>
+                        case LocationSettingsStatusCodes.SUCCESS:
+<span class="nc" id="L1053">                            Timber.i(&quot;All location settings are satisfied.&quot;);</span>
+
+                            // You can continue warming the GPS
+<span class="nc bnc" id="L1056" title="All 2 branches missed.">                            if (shouldStartNow) {</span>
+<span class="nc" id="L1057">                                warmUpLocationServices();</span>
+                            }
+<span class="nc bnc" id="L1059" title="All 2 branches missed.">                            if (onLocationServicesEnabledCallBack != null) {</span>
+<span class="nc" id="L1060">                                onLocationServicesEnabledCallBack.onSuccess();</span>
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+<span class="nc" id="L1064">                            Timber.i(&quot;Location settings are not satisfied. Show the user a dialog to upgrade location settings&quot;);</span>
+
+                            // This enables us to back-off(in onResume) in case the user has already denied the request
+                            // to turn on location settings
+<span class="nc bnc" id="L1068" title="All 2 branches missed.">                            if (!hasAlreadyRequestedEnableLocation) {</span>
+<span class="nc" id="L1069">                                hasAlreadyRequestedEnableLocation = true;</span>
+<span class="nc" id="L1070">                                isResumingFromRequestingEnableLocation = true;</span>
+
+                                try {
+                                    // Show the dialog by calling startResolutionForResult(), and check the result
+                                    // in onActivityResult().
+<span class="nc" id="L1075">                                    status.startResolutionForResult(activity, Constants.RequestCode.LOCATION_SETTINGS);</span>
+<span class="nc" id="L1076">                                } catch (IntentSender.SendIntentException e) {</span>
+<span class="nc" id="L1077">                                    Timber.i(&quot;PendingIntent unable to execute request.&quot;);</span>
+<span class="nc" id="L1078">                                }</span>
+                            } else {
+                                // The user had already requested for permissions, so we should not request again
+                                // We should disable these two modes since they cannot be achieved in the current stage
+<span class="nc" id="L1082">                                setWarmGps(false);</span>
+<span class="nc" id="L1083">                                focusOnUserLocation(false);</span>
+                            }
+<span class="nc" id="L1085">                            break;</span>
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+<span class="nc" id="L1087">                            Timber.e(new Exception(&quot;Location settings are inadequate, and cannot be fixed here. Dialog cannot be created.&quot;));</span>
+<span class="nc" id="L1088">                            break;</span>
+
+                        default:
+<span class="nc" id="L1091">                            Timber.e(new Exception(&quot;Unknown status code returned after checking location settings&quot;));</span>
+                            break;
+                    }
+<span class="nc" id="L1094">                }</span>
+            });
+<span class="nc" id="L1096">        } else {</span>
+<span class="nc" id="L1097">            LogUtil.e(TAG, &quot;KujakuMapView is not started in an Activity and can therefore not start location services&quot;);</span>
+        }
+<span class="nc" id="L1099">    }</span>
+
+    @Override
+    public boolean onMapClick(@NonNull LatLng point) {
+<span class="nc" id="L1103">        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);</span>
+
+<span class="nc bnc" id="L1105" title="All 2 branches missed.">        if (onFeatureClickListener != null) {</span>
+<span class="nc" id="L1106">            List&lt;com.mapbox.geojson.Feature&gt; features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);</span>
+
+<span class="nc bnc" id="L1108" title="All 2 branches missed.">            if (features.size() &gt; 0) {</span>
+<span class="nc" id="L1109">                onFeatureClickListener.onFeatureClick(features);</span>
+            }
+        }
+
+<span class="nc bnc" id="L1113" title="All 2 branches missed.">        if (onKujakuLayerClickListener != null) {</span>
+<span class="nc" id="L1114">            KujakuLayer layer = KujakuLayer.getKujakuLayerSelected(pixel, kujakuLayers, mapboxMap);</span>
+<span class="nc bnc" id="L1115" title="All 2 branches missed.">            if (layer != null) {</span>
+<span class="nc" id="L1116">                onKujakuLayerClickListener.onKujakuLayerClick(layer);</span>
+            }
+        }
+
+<span class="nc" id="L1120">        return false;</span>
+    }
+
+    @Override
+    public boolean onMapLongClick(@NonNull LatLng point) {
+<span class="nc" id="L1125">        PointF pixel = mapboxMap.getProjection().toScreenLocation(point);</span>
+
+<span class="nc bnc" id="L1127" title="All 2 branches missed.">        if (onKujakuLayerLongClickListener != null) {</span>
+<span class="nc" id="L1128">            KujakuLayer layer = KujakuLayer.getKujakuLayerSelected(pixel, kujakuLayers, mapboxMap);</span>
+<span class="nc bnc" id="L1129" title="All 2 branches missed.">            if (layer != null) {</span>
+<span class="nc" id="L1130">                onKujakuLayerLongClickListener.onKujakuLayerLongClick(layer);</span>
+            }
+        }
+<span class="nc" id="L1133">        return false;</span>
+    }
+
+    public boolean isWarmGps() {
+<span class="nc" id="L1137">        return warmGps;</span>
+    }
+
+    public void setWarmGps(boolean warmGps) {
+<span class="nc" id="L1141">        setWarmGps(warmGps, null, null);</span>
+<span class="nc" id="L1142">    }</span>
+
+    public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage) {
+<span class="nc" id="L1145">        setWarmGps(warmGps, rejectionDialogTitle, rejectionDialogMessage, null);</span>
+<span class="nc" id="L1146">    }</span>
+
+    public void setWarmGps(boolean warmGps, @Nullable String rejectionDialogTitle, @Nullable String rejectionDialogMessage, OnLocationServicesEnabledCallBack onLocationServicesEnabledCallBack) {
+        // If it was not warming(started) the location services, do that now
+<span class="nc bnc" id="L1150" title="All 4 branches missed.">        boolean shouldStartNow = !this.warmGps &amp;&amp; warmGps;</span>
+<span class="nc" id="L1151">        this.warmGps = warmGps;</span>
+
+<span class="nc" id="L1153">        locationEnableRejectionDialogTitle = rejectionDialogTitle;</span>
+<span class="nc" id="L1154">        locationEnableRejectionDialogMessage = rejectionDialogMessage;</span>
+<span class="nc" id="L1155">        this.onLocationServicesEnabledCallBack = onLocationServicesEnabledCallBack;</span>
+<span class="nc bnc" id="L1156" title="All 2 branches missed.">        if (warmGps) {</span>
+            // Don't back-off from request location enable since this was an explicit call to enable location
+<span class="nc" id="L1158">            hasAlreadyRequestedEnableLocation = false;</span>
+            // In case the location settings were turned off while the warmGps is still true, it means that the LocationClient is also on
+            // We should just re-enable the location so that the LocationClient can reconnect to the location services
+<span class="nc" id="L1161">            checkLocationSettingsAndStartLocationServices(shouldStartNow, onLocationServicesEnabledCallBack);</span>
+        }
+<span class="nc" id="L1163">    }</span>
+
+    @Nullable
+    @Override
+    public ILocationClient getLocationClient() {
+<span class="nc" id="L1168">        return locationClient;</span>
+    }
+
+    public void setLocationBufferRadius(float locationBufferRadius) {
+<span class="nc" id="L1172">        this.locationBufferRadius = locationBufferRadius;</span>
+<span class="nc" id="L1173">    }</span>
+
+    @Override
+    public void getLocationClient(@Nullable LocationClientStartedCallback locationClientStartedCallback) {
+<span class="nc bnc" id="L1177" title="All 2 branches missed.">        if (getLocationClient() != null) {</span>
+<span class="nc" id="L1178">            locationClientStartedCallback.onStarted(getLocationClient());</span>
+        } else {
+<span class="nc bnc" id="L1180" title="All 2 branches missed.">            if (!locationClientCallbacks.contains(locationClientStartedCallback)) {</span>
+<span class="nc" id="L1181">                locationClientCallbacks.add(locationClientStartedCallback);</span>
+            }
+        }
+<span class="nc" id="L1184">    }</span>
+
+    @Override
+    public void addLayer(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc" id="L1188">        kujakuLayer.setRemoved(false);</span>
+<span class="nc bnc" id="L1189" title="All 2 branches missed.">        if (!kujakuLayers.contains(kujakuLayer)) {</span>
+<span class="nc" id="L1190">            kujakuLayers.add(kujakuLayer);</span>
+<span class="nc" id="L1191">            getMapAsync(new OnMapReadyCallback() {</span>
+                @Override
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L1194">                    mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+<span class="nc bnc" id="L1197" title="All 2 branches missed.">                            if (!kujakuLayer.isRemoved()) {</span>
+<span class="nc" id="L1198">                                kujakuLayer.addLayerToMap(mapboxMap);</span>
+                            }
+<span class="nc" id="L1200">                        }</span>
+                    });
+<span class="nc" id="L1202">                }</span>
+            });
+        } else {
+<span class="nc" id="L1205">            getMapAsync(new OnMapReadyCallback() {</span>
+                @Override
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L1208">                    mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+<span class="nc bnc" id="L1211" title="All 2 branches missed.">                            if (!kujakuLayer.isRemoved()) {</span>
+<span class="nc" id="L1212">                                kujakuLayer.enableLayerOnMap(mapboxMap);</span>
+                            }
+<span class="nc" id="L1214">                        }</span>
+                    });
+<span class="nc" id="L1216">                }</span>
+            });
+        }
+<span class="nc" id="L1219">    }</span>
+
+    @Override
+    public void disableLayer(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc bnc" id="L1223" title="All 2 branches missed.">        if (kujakuLayers.contains(kujakuLayer)) {</span>
+<span class="nc" id="L1224">            getMapAsync(new OnMapReadyCallback() {</span>
+                @Override
+                public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L1227">                    mapboxMap.getStyle(new Style.OnStyleLoaded() {</span>
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+<span class="nc" id="L1230">                            kujakuLayer.disableLayerOnMap(mapboxMap);</span>
+<span class="nc" id="L1231">                        }</span>
+                    });
+<span class="nc" id="L1233">                }</span>
+            });
+        }
+<span class="nc" id="L1236">    }</span>
+
+    @Override
+    public boolean changeLocationUpdates(long updateInterval, long fastestUpdateInterval, int accuracyLevel) {
+        //TODO: Update this to work for cases where the AndroidGpsLocationClient is in use and not the GoogleLocationClient
+<span class="nc" id="L1241">        ILocationClient locationClient = getLocationClient();</span>
+<span class="nc bnc" id="L1242" title="All 14 branches missed.">        if (updateInterval &gt; -1 &amp;&amp; fastestUpdateInterval &gt; -1 &amp;&amp; (accuracyLevel == LocationRequest.PRIORITY_HIGH_ACCURACY</span>
+                || accuracyLevel == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+                || accuracyLevel == LocationRequest.PRIORITY_LOW_POWER
+                || accuracyLevel == LocationRequest.PRIORITY_NO_POWER)
+                &amp;&amp; locationClient != null) {
+<span class="nc" id="L1247">            LocationRequest locationRequest = new LocationRequest();</span>
+<span class="nc" id="L1248">            locationRequest.setInterval(updateInterval);</span>
+<span class="nc" id="L1249">            locationRequest.setFastestInterval(fastestUpdateInterval);</span>
+<span class="nc" id="L1250">            locationRequest.setPriority(accuracyLevel);</span>
+
+<span class="nc bnc" id="L1252" title="All 2 branches missed.">            if (locationClient.getLocationListener() != null) {</span>
+<span class="nc" id="L1253">                ((GoogleLocationClient) locationClient)</span>
+<span class="nc" id="L1254">                        .requestLocationUpdates(locationClient.getLocationListener(), locationRequest);</span>
+<span class="nc" id="L1255">                return true;</span>
+            }
+        }
+
+<span class="nc" id="L1259">        return false;</span>
+    }
+
+    @Override
+    public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc" id="L1264">        String[] layerIds = kujakuLayer.getLayerIds();</span>
+<span class="nc bnc" id="L1265" title="All 6 branches missed.">        if (mapboxMap != null &amp;&amp; mapboxMap.getStyle() != null &amp;&amp; mapboxMap.getStyle().isFullyLoaded()) {</span>
+<span class="nc bnc" id="L1266" title="All 2 branches missed.">            for (String layerId : layerIds) {</span>
+<span class="nc bnc" id="L1267" title="All 2 branches missed.">                if (mapboxMap.getStyle().getLayer(layerId) == null) {</span>
+<span class="nc" id="L1268">                    return false;</span>
+                }
+            }
+
+<span class="nc" id="L1272">            return true;</span>
+        }
+
+<span class="nc" id="L1275">        return false;</span>
+    }
+
+    @Override
+    public void removeLayer(@NonNull KujakuLayer kujakuLayer) {
+<span class="nc bnc" id="L1280" title="All 2 branches missed.">        if (isKujakuLayerAdded(kujakuLayer)) {</span>
+<span class="nc" id="L1281">            kujakuLayer.removeLayerOnMap(mapboxMap);</span>
+        } else {
+<span class="nc" id="L1283">            kujakuLayer.setRemoved(true);</span>
+        }
+
+<span class="nc" id="L1286">        kujakuLayers.remove(kujakuLayer);</span>
+<span class="nc" id="L1287">    }</span>
+
+    private void resetRejectionDialogContent() {
+<span class="nc" id="L1290">        locationEnableRejectionDialogTitle = null;</span>
+<span class="nc" id="L1291">        locationEnableRejectionDialogMessage = null;</span>
+<span class="nc" id="L1292">    }</span>
+
+    public MapboxLocationComponentWrapper getMapboxLocationComponentWrapper() {
+<span class="nc" id="L1295">        return mapboxLocationComponentWrapper;</span>
+    }
+
+
+    /************** Tracking Service ***************/
+
+    /**
+     * Init TrackingService
+     *
+     * @param trackingServiceListener
+     * @param uiConfiguration
+     * @param options
+     */
+    public void initTrackingService(@NonNull TrackingServiceListener trackingServiceListener,
+                                    TrackingServiceUIConfiguration uiConfiguration,
+                                    TrackingServiceOptions options) {
+<span class="nc" id="L1311">        this.trackingServiceListener = trackingServiceListener;</span>
+<span class="nc bnc" id="L1312" title="All 2 branches missed.">        this.trackingServiceUIConfiguration = uiConfiguration != null ? uiConfiguration : new TrackingServiceDefaultUIConfiguration();</span>
+<span class="nc bnc" id="L1313" title="All 2 branches missed.">        this.trackingServiceOptions = options != null ? options : new TrackingServiceHighAccuracyOptions();</span>
+<span class="nc" id="L1314">        this.trackingServiceInitialized = true;</span>
+<span class="nc" id="L1315">    }</span>
+
+
+    /**
+     * Rebind to a running TrackingService instance
+     *
+     * @param context
+     * @return
+     */
+    public boolean resumeTrackingService(Context context) {
+        // TrackingService reconnection if connection was lost
+<span class="nc bnc" id="L1326" title="All 6 branches missed.">        if (!trackingServiceBound &amp;&amp; TrackingService.isRunning() &amp;&amp; trackingServiceInitialized) {</span>
+<span class="nc" id="L1327">            initTrackingServiceIcon();</span>
+<span class="nc" id="L1328">            return TrackingService.bindService(context, TrackingService.getIntent(context, null, null), connection);</span>
+        } else {
+<span class="nc" id="L1330">            return false;</span>
+        }
+    }
+
+    /**
+     * Start TrackingService
+     *
+     * @param context
+     * @param cls
+     */
+    public void startTrackingService(@NonNull Context context,
+                                     @NonNull Class&lt;?&gt; cls) throws TrackingServiceNotInitializedException {
+<span class="nc bnc" id="L1342" title="All 2 branches missed.">        if (!this.trackingServiceInitialized) {</span>
+<span class="nc" id="L1343">            throw new TrackingServiceNotInitializedException();</span>
+        }
+
+<span class="nc" id="L1346">        TrackingService.startAndBindService(context,</span>
+                cls,
+                connection,
+                this.trackingServiceOptions);
+
+<span class="nc" id="L1351">        initTrackingServiceIcon();</span>
+<span class="nc" id="L1352">    }</span>
+
+    /**
+     * Stop TrackingService
+     *
+     * @param context
+     * @return
+     */
+    public List&lt;KujakuLocation&gt; stopTrackingService(@NonNull Context context) {
+<span class="nc bnc" id="L1361" title="All 4 branches missed.">        if (trackingServiceBound &amp;&amp; trackingService != null) {</span>
+<span class="nc" id="L1362">            List&lt;KujakuLocation&gt; locations = trackingService.getRecordedKujakuLocations();</span>
+<span class="nc" id="L1363">            trackingService.unregisterTrackingServiceListener();</span>
+<span class="nc" id="L1364">            TrackingService.stopAndUnbindService(context, connection);</span>
+<span class="nc" id="L1365">            trackingServiceBound = false;</span>
+<span class="nc" id="L1366">            trackingService = null;</span>
+<span class="nc" id="L1367">            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());</span>
+<span class="nc" id="L1368">            return locations;</span>
+        } else {
+<span class="nc" id="L1370">            Timber.d(&quot;Tracking Service instance is null or not Tracking Service is not bounded&quot;);</span>
+        }
+
+<span class="nc" id="L1373">        return null;</span>
+    }
+
+    /**
+     * Unbind from TrackingService instance
+     *
+     * @param context
+     */
+    private void unBindTrackingService(@NonNull Context context) {
+<span class="nc bnc" id="L1382" title="All 4 branches missed.">        if (trackingServiceBound &amp;&amp; trackingService != null) {</span>
+<span class="nc" id="L1383">            trackingService.unregisterTrackingServiceListener();</span>
+<span class="nc" id="L1384">            TrackingService.unBindService(context, connection);</span>
+<span class="nc" id="L1385">            trackingServiceBound = false;</span>
+<span class="nc" id="L1386">            trackingService = null;</span>
+        } else {
+<span class="nc" id="L1388">            Timber.d(&quot;Tracking Service instance is null&quot;);</span>
+        }
+<span class="nc" id="L1390">    }</span>
+
+    /**
+     * Set Tag
+     *
+     * @param tag
+     * @return {@code true} if tag is set, {@code false} otherwise
+     */
+    public boolean setTag(long tag) {
+<span class="nc bnc" id="L1399" title="All 4 branches missed.">        if (trackingServiceBound &amp;&amp; trackingService != null) {</span>
+<span class="nc" id="L1400">            trackingService.setTag(tag);</span>
+<span class="nc" id="L1401">            return true;</span>
+        }
+
+<span class="nc" id="L1404">        return false;</span>
+    }
+
+    /**
+     * Take a location
+     */
+    public void trackingServiceTakeLocation(long tag) {
+<span class="nc bnc" id="L1411" title="All 4 branches missed.">        if (trackingServiceBound &amp;&amp; trackingService != null) {</span>
+<span class="nc" id="L1412">            trackingService.takeLocation(tag);</span>
+        } else {
+<span class="nc" id="L1414">            Timber.e(new Exception(), &quot;Tracking Service instance is null&quot;);</span>
+        }
+<span class="nc" id="L1416">    }</span>
+
+    /**
+     * Take a location
+     */
+    public void trackingServiceTakeLocation() {
+<span class="nc" id="L1422">        this.trackingServiceTakeLocation(TrackingService.NO_FORCED_TAG);</span>
+<span class="nc" id="L1423">    }</span>
+
+    /**
+     * Get the recorded locations
+     *
+     * @return
+     */
+    public List&lt;KujakuLocation&gt; getTrackingServiceRecordedKujakuLocations() {
+<span class="nc bnc" id="L1431" title="All 4 branches missed.">        if (trackingServiceBound &amp;&amp; trackingService != null) {</span>
+<span class="nc" id="L1432">            return trackingService.getRecordedKujakuLocations();</span>
+        }
+
+<span class="nc" id="L1435">        return new ArrayList&lt;KujakuLocation&gt;();</span>
+    }
+
+    /**
+     * Connection to bind to the TrackingService instance
+     */
+<span class="nc" id="L1441">    private ServiceConnection connection = new ServiceConnection() {</span>
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to TrackingService, cast the IBinder and get TrackingService instance
+<span class="nc" id="L1446">            TrackingService.LocalBinder binder = (TrackingService.LocalBinder) service;</span>
+<span class="nc" id="L1447">            trackingService = binder.getService();</span>
+<span class="nc" id="L1448">            trackingService.registerTrackingServiceListener(trackingServiceListener);</span>
+<span class="nc" id="L1449">            trackingServiceBound = true;</span>
+
+<span class="nc" id="L1451">            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getRecordingDrawable());</span>
+
+<span class="nc" id="L1453">            ((Activity) getContext()).runOnUiThread(new Runnable() {</span>
+                @Override
+                public void run() {
+<span class="nc" id="L1456">                    trackingServiceListener.onServiceConnected(trackingService);</span>
+<span class="nc" id="L1457">                }</span>
+            });
+<span class="nc" id="L1459">        }</span>
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+<span class="nc bnc" id="L1463" title="All 2 branches missed.">            if (trackingService != null) {</span>
+<span class="nc" id="L1464">                trackingService.unregisterTrackingServiceListener();</span>
+            }
+<span class="nc" id="L1466">            trackingServiceBound = false;</span>
+<span class="nc" id="L1467">            trackingService = null;</span>
+<span class="nc" id="L1468">            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());</span>
+
+<span class="nc" id="L1470">            ((Activity) getContext()).runOnUiThread(new Runnable() {</span>
+                @Override
+                public void run() {
+<span class="nc" id="L1473">                    trackingServiceListener.onServiceDisconnected();</span>
+<span class="nc" id="L1474">                }</span>
+            });
+<span class="nc" id="L1476">        }</span>
+    };
+
+    /**
+     * Init TrackingService icon
+     */
+    private void initTrackingServiceIcon() {
+<span class="nc bnc" id="L1483" title="All 4 branches missed.">        if (this.trackingServiceInitialized &amp;&amp; this.trackingServiceUIConfiguration != null) {</span>
+<span class="nc" id="L1484">            LayoutParams layoutParams = new LayoutParams((int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutWidth())</span>
+<span class="nc" id="L1485">                    , (int) getResources().getDimension(trackingServiceUIConfiguration.getLayoutHeight()));</span>
+<span class="nc" id="L1486">            layoutParams.gravity = trackingServiceUIConfiguration.getLayoutGravity();</span>
+
+<span class="nc" id="L1488">            layoutParams.setMargins((int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginLeft())),</span>
+<span class="nc" id="L1489">                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginTop())),</span>
+<span class="nc" id="L1490">                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginRight())),</span>
+<span class="nc" id="L1491">                    (int) (getResources().getDimension(trackingServiceUIConfiguration.getLayoutMarginBottom())));</span>
+
+<span class="nc" id="L1493">            trackingServiceStatusButton.setLayoutParams(layoutParams);</span>
+
+<span class="nc" id="L1495">            trackingServiceStatusButton.setPadding((int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),</span>
+<span class="nc" id="L1496">                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),</span>
+<span class="nc" id="L1497">                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()),</span>
+<span class="nc" id="L1498">                    (int) getResources().getDimension(trackingServiceUIConfiguration.getPadding()));</span>
+
+<span class="nc" id="L1500">            trackingServiceStatusButton.setBackgroundResource(trackingServiceUIConfiguration.getBackgroundDrawable());</span>
+<span class="nc" id="L1501">            trackingServiceStatusButton.setImageResource(trackingServiceUIConfiguration.getStoppedDrawable());</span>
+<span class="nc bnc" id="L1502" title="All 2 branches missed.">            trackingServiceStatusButton.setVisibility(trackingServiceUIConfiguration.displayIcons() ? VISIBLE : GONE);</span>
+        }
+<span class="nc" id="L1504">    }</span>
+
+    /************** End of Tracking Service ***************/
+
+    @Override
+    public void setDisableMyLocationOnMapMove(boolean disableMyLocationOnMapMove) {
+<span class="nc" id="L1510">        this.disableMyLocationOnMapMove = disableMyLocationOnMapMove;</span>
+<span class="nc" id="L1511">    }</span>
+
+    /**
+     * MBtiles support
+     **/
+
+    public MBTilesHelper getMbTilesHelper() {
+<span class="nc" id="L1518">        return mbTilesHelper;</span>
+    }
+
+    @Override
+    public void onDestroy() {
+<span class="nc bnc" id="L1523" title="All 2 branches missed.">        if (mbTilesHelper != null) {</span>
+<span class="nc" id="L1524">            mbTilesHelper.onDestroy();</span>
+        }
+<span class="nc" id="L1526">        super.onDestroy();</span>
+<span class="nc" id="L1527">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

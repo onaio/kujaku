@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.location.clients.AndroidGpsLocationClientTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:25:05" hostname="kigamba-ThinkPad-T580" time="11.732">
+  <properties/>
+  <testcase name="requestLocationUpdatesShouldCallLocationManagerRequestLocationUpdates" classname="io.ona.kujaku.location.clients.AndroidGpsLocationClientTest" time="11.7"/>
+  <testcase name="stopLocationUpdatesShouldSetListenerToNullWhenListenerIsCurrentlySet" classname="io.ona.kujaku.location.clients.AndroidGpsLocationClientTest" time="0.032"/>
+  <system-out><![CDATA[[MockitoHint] AndroidGpsLocationClientTest.requestLocationUpdatesShouldCallLocationManagerRequestLocationUpdates (see javadoc for MockitoHint):
+[MockitoHint] 1. Unused -> at io.ona.kujaku.location.clients.AndroidGpsLocationClientTest.requestLocationUpdatesShouldCallLocationManagerRequestLocationUpdates(AndroidGpsLocationClientTest.java:57)
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

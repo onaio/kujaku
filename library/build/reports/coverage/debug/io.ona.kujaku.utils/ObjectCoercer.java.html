@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectCoercer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils</a> &gt; <span class="el_source">ObjectCoercer.java</span></div><h1>ObjectCoercer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils;
+
+/**
+ * Provides helper methods to coerce and/or convert objects to certain types. This especially applies
+ * for Extras where documentation on the required type might not be available or vague.
+ * It also serves where the developer decides not to follow the documentation.
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 27/12/2017.
+ */
+<span class="nc" id="L10">public class ObjectCoercer {</span>
+
+    /**
+     *
+     * Coerces an {@link Integer}, {@code int}, {@link Double}, {@code double}, {@link Long},
+     * {@code long}, {@code float} &amp;&amp; {@link Float} to {@code double}
+     *
+     * @param numberObject
+     * @return
+     */
+    public static double coerceNumberObjectToDoublePrimitive(Object numberObject) {
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (numberObject == null) {</span>
+<span class="nc" id="L22">            return 0;</span>
+        }
+
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (numberObject instanceof Integer) {</span>
+<span class="nc" id="L26">            Integer number = (Integer) numberObject;</span>
+<span class="nc" id="L27">            return number.doubleValue();</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        } else if (numberObject instanceof Float) {</span>
+<span class="nc" id="L29">            Float number = (Float) numberObject;</span>
+<span class="nc" id="L30">            return number.doubleValue();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        } else if (numberObject instanceof Long) {</span>
+<span class="nc" id="L32">            Long number = (Long) numberObject;</span>
+<span class="nc" id="L33">            return number.doubleValue();</span>
+        } else {
+            double finalValue;
+            try {
+<span class="nc" id="L37">                finalValue = (double) numberObject;</span>
+<span class="nc" id="L38">            } catch (ClassCastException e) {</span>
+<span class="nc" id="L39">                finalValue = 0d;</span>
+<span class="nc" id="L40">            }</span>
+
+<span class="nc" id="L42">            return finalValue;</span>
+        }
+    }
+
+    /**
+     *
+     * Coerces an {@link Integer}, {@code int}, {@link Double}, {@code double}, {@link Long},
+     * {@code long}, {@code float} &amp;&amp; {@link Float} to {@code float}
+     *
+     * @param numberObject
+     * @return
+     */
+    public static float coerceNumberObjectToFloatPrimitive(Object numberObject) {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (numberObject == null) {</span>
+<span class="nc" id="L56">            return 0;</span>
+        }
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (numberObject instanceof Integer) {</span>
+<span class="nc" id="L60">            Integer number = (Integer) numberObject;</span>
+<span class="nc" id="L61">            return number.floatValue();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        } else if (numberObject instanceof Double) {</span>
+<span class="nc" id="L63">            Double number = (Double) numberObject;</span>
+<span class="nc" id="L64">            return number.floatValue();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        } else if (numberObject instanceof Long) {</span>
+<span class="nc" id="L66">            Long number = (Long) numberObject;</span>
+<span class="nc" id="L67">            return number.floatValue();</span>
+        } else {
+            float finalValue;
+            try {
+<span class="nc" id="L71">                finalValue = (float) numberObject;</span>
+<span class="nc" id="L72">            } catch (ClassCastException e) {</span>
+<span class="nc" id="L73">                finalValue = 0f;</span>
+<span class="nc" id="L74">            }</span>
+
+<span class="nc" id="L76">            return finalValue;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

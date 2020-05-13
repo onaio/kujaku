@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OfflineRegionsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">OfflineRegionsActivity.java</span></div><h1>OfflineRegionsActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.format.Formatter;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.offline.OfflineManager;
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
+import com.mapbox.mapboxsdk.offline.OfflineRegionError;
+import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import es.dmoral.toasty.Toasty;
+import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.LogUtil;
+import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
+
+import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
+import static io.ona.kujaku.utils.IOUtil.readInputStreamAsString;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 05/02/2018.
+ */
+
+<span class="nc" id="L45">public class OfflineRegionsActivity extends BaseNavigationDrawerActivity {</span>
+
+<span class="nc" id="L47">    private static final String TAG = OfflineRegionsActivity.class.getName();</span>
+    private boolean activated[];
+<span class="nc" id="L49">    private String currentText = &quot;&quot;;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L53">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L54">        setTitle(R.string.offline_regions_activity_title);</span>
+
+<span class="nc" id="L56">        ListView listView = findViewById(R.id.lv_offlineRegionsActivity_mapsList);</span>
+<span class="nc" id="L57">        getOfflineDownloadedRegions(listView);</span>
+<span class="nc" id="L58">    }</span>
+
+    private void getOfflineDownloadedRegions(final ListView listView) {
+<span class="nc" id="L61">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L63">        OfflineManager offlineManager = OfflineManager.getInstance(OfflineRegionsActivity.this);</span>
+<span class="nc" id="L64">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(final OfflineRegion[] offlineRegions) {
+<span class="nc bnc" id="L67" title="All 4 branches missed.">                if (offlineRegions == null || offlineRegions.length == 0) {</span>
+<span class="nc" id="L68">                    Toasty.info(OfflineRegionsActivity.this, getString(R.string.you_do_not_have_offline_regions), Toast.LENGTH_LONG)</span>
+<span class="nc" id="L69">                            .show();</span>
+                } else {
+<span class="nc" id="L71">                    String[] offlineRegionsNames = getOfflineRegionsInfo(offlineRegions);</span>
+<span class="nc" id="L72">                    String[] offlineRegionsInfo = new String[offlineRegionsNames.length];</span>
+<span class="nc" id="L73">                    renderOfflineRegions(listView, offlineRegionsNames, offlineRegionsInfo, offlineRegions);</span>
+                }
+<span class="nc" id="L75">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L79">                Log.e(TAG, &quot;ERROR :: &quot;  + error);</span>
+<span class="nc" id="L80">            }</span>
+        });
+<span class="nc" id="L82">    }</span>
+
+    @NonNull
+    private String[] getOfflineRegionsInfo(final OfflineRegion[] offlineRegions) {
+<span class="nc" id="L86">        String[] offlineRegionsInfoArray = new String[offlineRegions.length];</span>
+
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        for(int position = 0; position &lt; offlineRegions.length; position++) {</span>
+            //Add name
+            //Add percentage downloaded
+            //Add date &amp; other details
+            //Add unique id
+<span class="nc" id="L93">            StringBuilder offlineRegionInfo = new StringBuilder();</span>
+<span class="nc" id="L94">            byte[] metadataBytes = offlineRegions[position].getMetadata();</span>
+            try {
+<span class="nc" id="L96">                JSONObject jsonObject = new JSONObject(new String(metadataBytes));</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (jsonObject.has(&quot;FIELD_REGION_NAME&quot;)) {</span>
+<span class="nc" id="L98">                    offlineRegionInfo.append(&quot;REGION NAME: &quot;);</span>
+<span class="nc" id="L99">                    offlineRegionInfo.append(jsonObject.getString(&quot;FIELD_REGION_NAME&quot;));</span>
+                }
+
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                if (jsonObject.has(&quot;JSON_FIELD_REGION_NAME&quot;)) {</span>
+<span class="nc" id="L103">                    offlineRegionInfo.append(&quot;\nREGION NAME: &quot;);</span>
+<span class="nc" id="L104">                    offlineRegionInfo.append(jsonObject.getString(&quot;JSON_FIELD_REGION_NAME&quot;));</span>
+                }
+
+<span class="nc" id="L107">            } catch (JSONException e) {</span>
+<span class="nc" id="L108">                LogUtil.e(TAG, e);</span>
+<span class="nc" id="L109">            }</span>
+
+<span class="nc" id="L111">            offlineRegionInfo.append(&quot;\nID: &quot;);</span>
+<span class="nc" id="L112">            offlineRegionInfo.append(offlineRegions[position].getID());</span>
+<span class="nc" id="L113">            offlineRegionsInfoArray[position] = offlineRegionInfo.toString();</span>
+        }
+
+<span class="nc" id="L116">        return offlineRegionsInfoArray;</span>
+    }
+
+    private void renderOfflineRegions(@NonNull ListView listView, @NonNull String[] offlineRegionNames
+            , @NonNull String[] offlineRegionsInfo, OfflineRegion[] offlineRegions) {
+<span class="nc" id="L121">        activated = new boolean[offlineRegionNames.length];</span>
+<span class="nc" id="L122">        listView.setAdapter(new ArrayAdapter(OfflineRegionsActivity.this, R.layout.offline_region_item, offlineRegionNames){</span>
+            @NonNull
+            @Override
+            public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                if (convertView == null) {</span>
+<span class="nc" id="L127">                    convertView = getLayoutInflater().inflate(R.layout.offline_region_item, parent, false);</span>
+                }
+
+<span class="nc" id="L130">                final TextView textView = convertView.findViewById(R.id.tv_offlineRegionItem_text);</span>
+<span class="nc" id="L131">                final Button navigateToMapBtn = convertView.findViewById(R.id.btn_offlineRegionItem_navigateToMap);</span>
+
+<span class="nc" id="L133">                textView.setText(offlineRegionNames[position]);</span>
+<span class="nc" id="L134">                textView.setOnClickListener(new View.OnClickListener() {</span>
+                    @Override
+                    public void onClick(View v) {
+<span class="nc bnc" id="L137" title="All 2 branches missed.">                        if (!activated[position]) {</span>
+<span class="nc" id="L138">                            offlineRegions[position].setDownloadState(OfflineRegion.STATE_ACTIVE);</span>
+                        } else {
+<span class="nc" id="L140">                            offlineRegions[position].setDownloadState(OfflineRegion.STATE_INACTIVE);</span>
+                        }
+
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                        activated[position] = !activated[position];</span>
+<span class="nc" id="L144">                        offlineRegions[position].setObserver(new OfflineRegion.OfflineRegionObserver() {</span>
+                            @Override
+                            public void onStatusChanged(OfflineRegionStatus status) {
+<span class="nc" id="L147">                                double progress = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();</span>
+
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                                if (offlineRegionsInfo[position] != null) {</span>
+<span class="nc" id="L150">                                    textView.setText(String.format(&quot;%s\n%s\nPROGRESS: %.2f %%&quot;, offlineRegionNames[position]</span>
+<span class="nc" id="L151">                                            , offlineRegionsInfo[position], progress));</span>
+                                }
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">                                if (status.isComplete()) {</span>
+<span class="nc" id="L155">                                    navigateToMapBtn.setVisibility(View.VISIBLE);</span>
+                                }
+
+<span class="nc" id="L158">                            }</span>
+
+                            @Override
+                            public void onError(OfflineRegionError error) {
+<span class="nc" id="L162">                                textView.setText(offlineRegionNames[position] + &quot;\nError : &quot; + error.getReason() + &quot;\n&quot; + error.getMessage());</span>
+<span class="nc" id="L163">                            }</span>
+
+                            @Override
+                            public void mapboxTileCountLimitExceeded(long limit) {
+<span class="nc" id="L167">                                textView.setText(offlineRegionNames[position] + &quot;\nMapbox tile limit count exceeded&quot;);</span>
+<span class="nc" id="L168">                            }</span>
+                        });
+
+<span class="nc" id="L171">                    }</span>
+                });
+
+<span class="nc" id="L174">                navigateToMapBtn.setOnClickListener(new View.OnClickListener() {</span>
+                    @Override
+                    public void onClick(View v) {
+<span class="nc" id="L177">                        openOfflineRegionMap(offlineRegions[position].getDefinition().getBounds().getCenter());</span>
+<span class="nc" id="L178">                    }</span>
+                });
+
+<span class="nc" id="L181">                offlineRegions[position].getStatus(new OfflineRegion.OfflineRegionStatusCallback() {</span>
+                    @Override
+                    public void onStatus(OfflineRegionStatus status) {
+<span class="nc" id="L184">                        offlineRegionsInfo[position] = &quot;\nDOWNLOADED SIZE : &quot; + (Formatter.formatFileSize(OfflineRegionsActivity.this, status.getCompletedResourceSize()));</span>
+<span class="nc" id="L185">                        double percentageDownload = (100.0 * status.getCompletedResourceCount()) / status.getRequiredResourceCount();</span>
+
+<span class="nc" id="L187">                        offlineRegionsInfo[position] += &quot;\nDOWNLOADED %: &quot; + percentageDownload + &quot;%&quot;;</span>
+<span class="nc" id="L188">                        offlineRegionsInfo[position] += &quot;\nCOMPLETED RESOURCES : &quot; + status.getCompletedResourceCount();</span>
+<span class="nc" id="L189">                        offlineRegionsInfo[position] += &quot;\nREQUIRED RESOURCES : &quot; + status.getRequiredResourceCount();</span>
+<span class="nc" id="L190">                        offlineRegionsInfo[position] += &quot;\nCOMPLETED TILE COUNT: &quot; + status.getCompletedTileCount();</span>
+<span class="nc" id="L191">                        offlineRegionsInfo[position] += &quot;\n&quot;;</span>
+
+<span class="nc" id="L193">                        Log.i(TAG, offlineRegionsInfo[position]);</span>
+
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                        if (status.isComplete()) {</span>
+<span class="nc" id="L196">                            navigateToMapBtn.setVisibility(View.VISIBLE);</span>
+                        }
+
+<span class="nc" id="L199">                        textView.setText(offlineRegionNames[position] + &quot;\n&quot; + offlineRegionsInfo[position]);</span>
+<span class="nc" id="L200">                    }</span>
+
+                    @Override
+                    public void onError(String error) {
+<span class="nc" id="L204">                        offlineRegionNames[position] += &quot;\nDOWNLOADED STATUS: GET ERROR - &quot; + error;</span>
+<span class="nc" id="L205">                        Log.e(TAG, &quot;OFFLINE REGION STATUS : &quot; + error);</span>
+
+<span class="nc" id="L207">                        textView.setText(offlineRegionNames[position]);</span>
+<span class="nc" id="L208">                    }</span>
+                });
+
+<span class="nc" id="L211">                return convertView;</span>
+            }
+        });
+<span class="nc" id="L214">    }</span>
+
+    private void openOfflineRegionMap(@NonNull LatLng mapCenter) {
+        try {
+<span class="nc" id="L218">            String mapboxStyle = readInputStreamAsString(getAssets().open(&quot;download-style.json&quot;));</span>
+<span class="nc" id="L219">            JSONObject mapboxStyleJSON = new JSONObject(mapboxStyle);</span>
+<span class="nc" id="L220">            mapboxStyleJSON.put(MapBoxStyleHelper.KEY_ROOT_ZOOM, 16.76);</span>
+
+<span class="nc" id="L222">            JSONArray mapCenterCoordinates = new JSONArray();</span>
+<span class="nc" id="L223">            mapCenterCoordinates.put(mapCenter.getLongitude());</span>
+<span class="nc" id="L224">            mapCenterCoordinates.put(mapCenter.getLatitude());</span>
+
+<span class="nc" id="L226">            mapboxStyleJSON.put(MapBoxStyleHelper.KEY_MAP_CENTER, mapCenterCoordinates);</span>
+
+<span class="nc" id="L228">            Intent intent = new Intent(this, MapActivity.class);</span>
+<span class="nc" id="L229">            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_STYLES, new String[]{mapboxStyleJSON.toString()});</span>
+<span class="nc" id="L230">            intent.putExtra(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L232">            startActivityForResult(intent, MAP_ACTIVITY_REQUEST_CODE);</span>
+<span class="nc" id="L233">        } catch (IOException | JSONException e) {</span>
+<span class="nc" id="L234">            LogUtil.e(TAG, e);</span>
+<span class="nc" id="L235">            Toasty.error(this, getString(R.string.error_occurred_reading_mapbox_style))</span>
+<span class="nc" id="L236">                    .show();</span>
+<span class="nc" id="L237">        }</span>
+<span class="nc" id="L238">    }</span>
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L242">        return R.layout.offline_regions_activity;</span>
+    }
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L247">        return R.id.nav_offline_regions;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

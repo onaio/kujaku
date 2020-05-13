@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IOUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils</a> &gt; <span class="el_source">IOUtil.java</span></div><h1>IOUtil.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * @author Vincent Karuri
+ */
+<span class="nc" id="L11">public class IOUtil {</span>
+
+<span class="fc" id="L13">    public  static final String TAG = IOUtil.class.getName();</span>
+
+    public static String readInputStreamAsString(InputStream in)
+            throws IOException {
+
+<span class="fc" id="L18">        BufferedInputStream bis = new BufferedInputStream(in);</span>
+<span class="fc" id="L19">        ByteArrayOutputStream buf = new ByteArrayOutputStream();</span>
+<span class="fc" id="L20">        int result = bis.read();</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        while(result != -1) {</span>
+<span class="fc" id="L22">            byte b = (byte)result;</span>
+<span class="fc" id="L23">            buf.write(b);</span>
+<span class="fc" id="L24">            result = bis.read();</span>
+<span class="fc" id="L25">        }</span>
+<span class="fc" id="L26">        return buf.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

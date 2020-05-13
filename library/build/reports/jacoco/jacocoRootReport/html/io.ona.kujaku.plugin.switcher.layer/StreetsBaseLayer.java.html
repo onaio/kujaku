@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StreetsBaseLayer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.plugin.switcher.layer</a> &gt; <span class="el_source">StreetsBaseLayer.java</span></div><h1>StreetsBaseLayer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.plugin.switcher.layer;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.FillLayer;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.sources.Source;
+import com.mapbox.mapboxsdk.style.sources.VectorSource;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+
+import io.ona.kujaku.plugin.switcher.ExpressionArrayLiteral;
+import io.ona.kujaku.utils.IOUtil;
+import io.ona.kujaku.utils.LayerUtil;
+import timber.log.Timber;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-20
+ */
+
+public class StreetsBaseLayer extends BaseLayer {
+
+<span class="nc" id="L33">    private String streetSourceId = &quot;composite&quot;;</span>
+<span class="nc" id="L34">    private ArrayList&lt;Source&gt; sourcesList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L35">    private LinkedHashSet&lt;Layer&gt; layers = new LinkedHashSet&lt;&gt;();</span>
+
+<span class="nc" id="L37">    public StreetsBaseLayer(@NonNull Context context) {</span>
+<span class="nc" id="L38">        createLayersAndSources(context);</span>
+<span class="nc" id="L39">    }</span>
+
+    protected void createLayersAndSources(@NonNull Context context) {
+<span class="nc" id="L42">        VectorSource streetSource = new VectorSource(streetSourceId, &quot;mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2&quot;);</span>
+<span class="nc" id="L43">        sourcesList.add(streetSource);</span>
+
+<span class="nc" id="L45">        LayerUtil layerUtil = new LayerUtil();</span>
+
+        try {
+<span class="nc" id="L48">            JSONArray jsonArray = new JSONArray(</span>
+<span class="nc" id="L49">                    IOUtil.readInputStreamAsString(context.getAssets().open(&quot;streets-base-layers.json&quot;))</span>
+            );
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            for (int i = 0; i &lt; jsonArray.length(); i++) {</span>
+<span class="nc" id="L53">                JSONObject jsonObject = jsonArray.getJSONObject(i);</span>
+
+<span class="nc" id="L55">                Layer layer = layerUtil.getLayer(jsonObject.toString());</span>
+
+<span class="nc bnc" id="L57" title="All 6 branches missed.">                if (layer != null &amp;&amp; layer.getId().equals(&quot;hillshade&quot;) &amp;&amp; layer instanceof FillLayer) {</span>
+                    // Add the correct opacity
+<span class="nc" id="L59">                    Expression fillOpacityExpression = Expression.interpolate(Expression.Interpolator.linear()</span>
+<span class="nc" id="L60">                            , Expression.zoom()</span>
+<span class="nc" id="L61">                            , Expression.literal(14)</span>
+<span class="nc" id="L62">                            , Expression.match(</span>
+<span class="nc" id="L63">                                    Expression.get(&quot;level&quot;), Expression.literal(0.12),</span>
+<span class="nc" id="L64">                                    Expression.stop(new ExpressionArrayLiteral(new Object[]{67, 56}), 0.06),</span>
+<span class="nc" id="L65">                                    Expression.stop(new ExpressionArrayLiteral(new Object[]{89, 78}), 0.05)</span>
+<span class="nc" id="L66">                            ), Expression.literal(16), Expression.literal(0));</span>
+
+<span class="nc" id="L68">                    ((FillLayer) layer).withProperties(PropertyFactory.fillOpacity(fillOpacityExpression));</span>
+                }
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                if (layer != null) {</span>
+<span class="nc" id="L72">                    layers.add(layer);</span>
+                }
+            }
+<span class="nc" id="L75">        } catch (IOException | JSONException e) {</span>
+<span class="nc" id="L76">            Timber.e(e);</span>
+<span class="nc" id="L77">        }</span>
+<span class="nc" id="L78">    }</span>
+
+    @NonNull
+    @Override
+    public String getDisplayName() {
+<span class="nc" id="L83">        return &quot;Streets&quot;;</span>
+    }
+
+    @NonNull
+    @Override
+    public String[] getSourceIds() {
+<span class="nc" id="L89">        return new String[]{streetSourceId};</span>
+    }
+
+    @Override
+    public LinkedHashSet&lt;Layer&gt; getLayers() {
+<span class="nc" id="L94">        return layers;</span>
+    }
+
+    @Override
+    public List&lt;Source&gt; getSources() {
+<span class="nc" id="L99">        return sourcesList;</span>
+    }
+
+    @NonNull
+    @Override
+    public String getId() {
+<span class="nc" id="L105">        return &quot;street-base-layer&quot;;</span>
+    }
+
+    @NonNull
+    @Override
+    public String[] getLayerIds() {
+<span class="nc" id="L111">        String[] layerIds = new String[layers.size()];</span>
+
+<span class="nc" id="L113">        int counter = 0;</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (Layer layer: layers) {</span>
+<span class="nc" id="L115">            layerIds[counter] = layer.getId();</span>
+<span class="nc" id="L116">            counter++;</span>
+<span class="nc" id="L117">        }</span>
+
+<span class="nc" id="L119">        return layerIds;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

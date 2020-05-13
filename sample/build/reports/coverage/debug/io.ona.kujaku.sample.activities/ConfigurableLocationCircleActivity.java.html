@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfigurableLocationCircleActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.sample.activities</a> &gt; <span class="el_source">ConfigurableLocationCircleActivity.java</span></div><h1>ConfigurableLocationCircleActivity.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.sample.activities;
+
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.view.View;
+import android.widget.Button;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
+
+import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.sample.BuildConfig;
+import io.ona.kujaku.sample.R;
+import io.ona.kujaku.views.KujakuMapView;
+
+<span class="nc" id="L18">public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActivity {</span>
+
+    private KujakuMapView kujakuMapView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L24">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L25">        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);</span>
+
+<span class="nc" id="L27">        kujakuMapView = findViewById(R.id.configurable_circle_activity_map_view);</span>
+<span class="nc" id="L28">        kujakuMapView.showCurrentLocationBtn(true);</span>
+
+<span class="nc" id="L30">        Button btnIncreaseCircleRadius = findViewById(R.id.btn_increase_circle_radius);</span>
+<span class="nc" id="L31">        btnIncreaseCircleRadius.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L34">                kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {</span>
+                    @Override
+                    public void onSuccess() {
+<span class="nc" id="L37">                        kujakuMapView.focusOnUserLocation(true, 70f);</span>
+<span class="nc" id="L38">                    }</span>
+                });
+<span class="nc" id="L40">            }</span>
+        });
+
+<span class="nc" id="L43">        Button btnDecreaseCircleRadius = findViewById(R.id.btn_decrease_circle_radius);</span>
+<span class="nc" id="L44">        btnDecreaseCircleRadius.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L47">                kujakuMapView.setWarmGps(true, null, null, new OnLocationServicesEnabledCallBack() {</span>
+                    @Override
+                    public void onSuccess() {
+<span class="nc" id="L50">                        kujakuMapView.focusOnUserLocation(true, 10f);</span>
+<span class="nc" id="L51">                    }</span>
+                });
+<span class="nc" id="L53">            }</span>
+        });
+
+<span class="nc" id="L56">        kujakuMapView.getMapAsync(new OnMapReadyCallback() {</span>
+            @Override
+            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L59">                mapboxMap.setStyle(Style.MAPBOX_STREETS);</span>
+<span class="nc" id="L60">            }</span>
+        });
+<span class="nc" id="L62">    }</span>
+
+
+    @Override
+    protected int getContentView() {
+<span class="nc" id="L67">        return R.layout.activity_configurable_location_circle;</span>
+    }
+
+    @Override
+    protected void onResume() {
+<span class="nc" id="L72">        super.onResume();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onResume();</span>
+<span class="nc" id="L74">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L78">        super.onStart();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStart();</span>
+<span class="nc" id="L80">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L84">        super.onStop();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onStop();</span>
+<span class="nc" id="L86">    }</span>
+
+    @Override
+    protected void onPause() {
+<span class="nc" id="L90">        super.onPause();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onPause();</span>
+<span class="nc" id="L92">    }</span>
+
+    @Override
+    protected void onDestroy() {
+<span class="nc" id="L96">        super.onDestroy();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onDestroy();</span>
+<span class="nc" id="L98">    }</span>
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+<span class="nc" id="L102">        super.onSaveInstanceState(outState);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onSaveInstanceState(outState);</span>
+<span class="nc" id="L104">    }</span>
+
+    @Override
+    public void onLowMemory() {
+<span class="nc" id="L108">        super.onLowMemory();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (kujakuMapView != null) kujakuMapView.onLowMemory();</span>
+<span class="nc" id="L110">    }</span>
+
+    @Override
+    protected int getSelectedNavigationItem() {
+<span class="nc" id="L114">        return R.id.nav_configurable_circle;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

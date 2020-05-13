@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfoWindowLayoutManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.views</a> &gt; <span class="el_source">InfoWindowLayoutManager.java</span></div><h1>InfoWindowLayoutManager.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.views;
+
+import android.content.Context;
+import android.graphics.PointF;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
+import android.view.View;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2017.
+ */
+
+public class InfoWindowLayoutManager extends LinearLayoutManager {
+
+    private Context mContext;
+<span class="nc" id="L18">    private int screenWidth = 0;</span>
+    private OnScrollListener onScrollListener;
+
+    public InfoWindowLayoutManager(Context context, int screenWidth) {
+<span class="nc" id="L22">        super(context);</span>
+<span class="nc" id="L23">        mContext = context;</span>
+<span class="nc" id="L24">        this.screenWidth = screenWidth;</span>
+<span class="nc" id="L25">    }</span>
+
+    public InfoWindowLayoutManager(Context context, int orientation, boolean reverseLayout) {
+<span class="nc" id="L28">        super(context, orientation, reverseLayout);</span>
+<span class="nc" id="L29">        mContext = context;</span>
+<span class="nc" id="L30">    }</span>
+
+    public InfoWindowLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+<span class="nc" id="L33">        super(context, attrs, defStyleAttr, defStyleRes);</span>
+<span class="nc" id="L34">        mContext = context;</span>
+<span class="nc" id="L35">    }</span>
+
+    @Override
+    public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+        //super.smoothScrollToPosition(recyclerView, state, position);
+
+        /*Smooth scroll to the specified adapter position.
+
+        To support smooth scrolling,
+        1. Override this method,
+        2. Create your RecyclerView.SmoothScroller instance
+        3. Call startSmoothScroll(SmoothScroller).*/
+
+        //Create your RecyclerView.SmoothScroller instance? Check.
+<span class="nc" id="L49">        LinearSmoothScroller smoothScroller = new LinearSmoothScroller(mContext) {</span>
+
+            //Automatically implements this method on instantiation.
+            @Override
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+<span class="nc" id="L54">                return InfoWindowLayoutManager.this.computeScrollVectorForPosition</span>
+<span class="nc" id="L55">                        (targetPosition);</span>
+            }
+
+            @Override
+            public int calculateDxToMakeVisible(View view, int snapPreference) {
+<span class="nc" id="L60">                int initialDX = super.calculateDxToMakeVisible(view, snapPreference);</span>
+<span class="nc" id="L61">                return initialDX + (screenWidth/2);</span>
+            }
+
+            @Override
+            protected void onStop() {
+<span class="nc" id="L66">                super.onStop();</span>
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                if (onScrollListener != null) {</span>
+<span class="nc" id="L69">                    onScrollListener.onFinishedScrolling();</span>
+                }
+<span class="nc" id="L71">            }</span>
+        };
+
+        //Docs do not tell us anything about this,
+        //but we need to set the position we want to scroll to.
+<span class="nc" id="L76">        smoothScroller.setTargetPosition(position);</span>
+
+        //Call startSmoothScroll(SmoothScroller)? Check.
+<span class="nc" id="L79">        startSmoothScroll(smoothScroller);</span>
+<span class="nc" id="L80">    }</span>
+
+    public OnScrollListener getOnScrollListener() {
+<span class="nc" id="L83">        return onScrollListener;</span>
+    }
+
+    public void setOnScrollListener(OnScrollListener onScrollListener) {
+<span class="nc" id="L87">        this.onScrollListener = onScrollListener;</span>
+<span class="nc" id="L88">    }</span>
+
+    public void removeOnScrollListener() {
+<span class="nc" id="L91">        this.onScrollListener = null;</span>
+<span class="nc" id="L92">    }</span>
+
+    public static interface OnScrollListener {
+        void onFinishedScrolling();
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

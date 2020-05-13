@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.helpers.converters.GeoJSONPropertyTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.001">
+  <properties/>
+  <testcase name="constructorShouldCreatePropertyWithCorrectValue" classname="io.ona.kujaku.helpers.converters.GeoJSONPropertyTest" time="0.001"/>
+  <testcase name="constructorShouldCreatePropertyWithCorrectName" classname="io.ona.kujaku.helpers.converters.GeoJSONPropertyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoundaryLayer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debugAndroidTest</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.layers</a> &gt; <span class="el_source">BoundaryLayer.java</span></div><h1>BoundaryLayer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.layers;
+
+
+import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.PropertyValue;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
+import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
+
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+
+/**
+ * This layer enables one to add labelled foci boundaries to the {@link io.ona.kujaku.views.KujakuMapView}
+ * &lt;p&gt;
+ * Sample usage:
+ * &lt;code&gt;
+ * &lt;p&gt;
+ * BoundaryLayer.Builder builder = new BoundaryLayer.Builder(featureCollection)
+ * .setLabelProperty(&quot;name&quot;)
+ * .setLabelTextSize(20f)
+ * .setLabelColorInt(Color.RED)
+ * .setBoundaryColor(Color.RED)
+ * .setBoundaryWidth(6f);
+ * &lt;p&gt;
+ * kujakuMapView.addLayer(builder.build());
+ * &lt;/code&gt;
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 18/02/2019
+ */
+public class BoundaryLayer extends KujakuLayer {
+
+<span class="nc" id="L57">    private static final String TAG = BoundaryLayer.class.getName();</span>
+
+    protected KujakuLayer.Builder builder;
+
+<span class="nc" id="L61">    protected String BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();</span>
+<span class="nc" id="L62">    protected String BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();</span>
+<span class="nc" id="L63">    protected String BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();</span>
+<span class="nc" id="L64">    protected String BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();</span>
+
+    private GeoJsonSource boundarySource;
+    private GeoJsonSource boundaryLabelsSource;
+    private LineLayer boundaryLineLayer;
+
+    private SymbolLayer boundaryLabelLayer;
+
+<span class="nc" id="L72">    BoundaryLayer(@NonNull KujakuLayer.Builder builder) {</span>
+<span class="nc" id="L73">        this.builder = builder;</span>
+<span class="nc" id="L74">    }</span>
+
+    private void createBoundaryLabelLayer(@NonNull KujakuLayer.Builder builder) {
+<span class="nc" id="L77">        boundaryLabelLayer = new SymbolLayer(BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LABEL_SOURCE_ID)</span>
+<span class="nc" id="L78">                .withProperties(</span>
+<span class="nc" id="L79">                        PropertyFactory.textField(Expression.toString(Expression.get(builder.labelProperty))),</span>
+<span class="nc" id="L80">                        PropertyFactory.textPadding(35f),</span>
+<span class="nc" id="L81">                        PropertyFactory.textColor(builder.labelColorInt),</span>
+<span class="nc" id="L82">                        PropertyFactory.textAllowOverlap(true)</span>
+                );
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (builder.labelTextSize != 0f) {</span>
+<span class="nc" id="L86">            boundaryLabelLayer.setProperties(PropertyFactory.textSize(builder.labelTextSize));</span>
+        }
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (builder.labelTextSizeExpression != null) {</span>
+<span class="nc" id="L90">            boundaryLabelLayer.setProperties(PropertyFactory.textSize(builder.labelTextSizeExpression));</span>
+        }
+<span class="nc" id="L92">    }</span>
+
+    private void createBoundaryLineLayer(@NonNull KujakuLayer.Builder builder) {
+<span class="nc" id="L95">        boundaryLineLayer = new LineLayer(BOUNDARY_LINE_LAYER_ID, BOUNDARY_FEATURE_SOURCE_ID)</span>
+<span class="nc" id="L96">                .withProperties(</span>
+<span class="nc" id="L97">                        PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),</span>
+<span class="nc" id="L98">                        PropertyFactory.lineWidth(builder.boundaryWidth),</span>
+<span class="nc" id="L99">                        PropertyFactory.lineColor(builder.boundaryColor)</span>
+                );
+
+<span class="nc" id="L102">    }</span>
+
+    private void createBoundaryLabelSource() {
+<span class="nc" id="L105">        boundaryLabelsSource = new GeoJsonSource(BOUNDARY_LABEL_SOURCE_ID);</span>
+<span class="nc" id="L106">    }</span>
+
+    private void createBoundaryFeatureSource(@NonNull KujakuLayer.Builder builder) {
+<span class="nc" id="L109">        boundarySource = new GeoJsonSource(BOUNDARY_FEATURE_SOURCE_ID, builder.getFeatureCollection());</span>
+<span class="nc" id="L110">    }</span>
+
+    public void  updateLineLayerProperties(@NonNull PropertyValue&lt;?&gt;... properties) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (boundaryLineLayer != null) {</span>
+<span class="nc" id="L114">            boundaryLineLayer.setProperties(</span>
+                    properties
+            );
+        }
+<span class="nc" id="L118">    }</span>
+
+    @Override
+    public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
+
+<span class="nc" id="L123">        createLayers(mapboxMap);</span>
+
+<span class="nc" id="L125">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="nc" id="L128">                return new Object[]{calculateCenterPoints(builder.featureCollection)};</span>
+            }
+        });
+
+<span class="nc" id="L132">        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+<span class="nc" id="L135">                FeatureCollection boundaryCenterFeatures = (FeatureCollection) objects[0];</span>
+
+<span class="nc" id="L137">                boundaryLabelsSource.setGeoJson(boundaryCenterFeatures);</span>
+
+<span class="nc" id="L139">                mapboxMap.getStyle().addSource(boundaryLabelsSource);</span>
+<span class="nc" id="L140">                mapboxMap.getStyle().addSource(boundarySource);</span>
+
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                if (builder.belowLayerId != null) {</span>
+<span class="nc" id="L143">                    addLayersBelow(mapboxMap);</span>
+                } else {
+<span class="nc" id="L145">                    addLayers(mapboxMap);</span>
+                }
+
+<span class="nc" id="L148">                visible = true;</span>
+<span class="nc" id="L149">            }</span>
+
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L153">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L154">            }</span>
+        });
+
+<span class="nc" id="L157">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L158">    }</span>
+
+    protected void createLayers(@NonNull MapboxMap mapboxMap) {
+        // Create the sources
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (mapboxMap.getStyle().getSource(BOUNDARY_LABEL_SOURCE_ID) != null) {</span>
+<span class="nc" id="L163">            BOUNDARY_LABEL_SOURCE_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L165">        createBoundaryLabelSource();</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (mapboxMap.getStyle().getSource(BOUNDARY_FEATURE_SOURCE_ID) != null) {</span>
+<span class="nc" id="L168">            BOUNDARY_FEATURE_SOURCE_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L170">        createBoundaryFeatureSource(builder);</span>
+
+        // Create the layers
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        if (mapboxMap.getStyle().getLayer(BOUNDARY_LABEL_LAYER_ID) != null) {</span>
+<span class="nc" id="L174">            BOUNDARY_LABEL_LAYER_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L176">        createBoundaryLabelLayer(builder);</span>
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (mapboxMap.getStyle().getLayer(BOUNDARY_LINE_LAYER_ID) != null) {</span>
+<span class="nc" id="L179">            BOUNDARY_LINE_LAYER_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L181">        createBoundaryLineLayer(builder);</span>
+<span class="nc" id="L182">    }</span>
+
+    protected void addLayersBelow(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L185">        mapboxMap.getStyle().addLayerBelow(boundaryLineLayer, builder.belowLayerId);</span>
+<span class="nc" id="L186">        mapboxMap.getStyle().addLayerBelow(boundaryLabelLayer, builder.belowLayerId);</span>
+<span class="nc" id="L187">    }</span>
+
+    protected void addLayers(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L190">        mapboxMap.getStyle().addLayer(boundaryLineLayer);</span>
+<span class="nc" id="L191">        mapboxMap.getStyle().addLayer(boundaryLabelLayer);</span>
+<span class="nc" id="L192">    }</span>
+
+    private FeatureCollection calculateCenterPoints(@NonNull FeatureCollection featureCollection) {
+<span class="nc" id="L195">        ArrayList&lt;Feature&gt; centerPoints = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L197">        List&lt;Feature&gt; featureList = featureCollection.features();</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (featureList != null) {</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            for (Feature feature : featureList) {</span>
+<span class="nc" id="L200">                Geometry featureGeometry = feature.geometry();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">                if (featureGeometry != null) {</span>
+                    Point featurePoint;
+<span class="nc bnc" id="L203" title="All 2 branches missed.">                    if (featureGeometry instanceof Point) {</span>
+<span class="nc" id="L204">                        featurePoint = (Point) featureGeometry;</span>
+                    } else {
+<span class="nc" id="L206">                        featurePoint = getCenter(featureGeometry);</span>
+                    }
+
+<span class="nc" id="L209">                    centerPoints.add(Feature.fromGeometry(featurePoint, feature.properties()));</span>
+                }
+<span class="nc" id="L211">            }</span>
+        }
+
+<span class="nc" id="L214">        return FeatureCollection.fromFeatures(centerPoints);</span>
+    }
+
+    /**
+     * Generates the center from the {@link Geometry} of a given {@link Feature} for {@link Geometry}
+     * of types {@link com.mapbox.geojson.MultiPolygon}, {@link com.mapbox.geojson.Polygon} and
+     * {@link com.mapbox.geojson.MultiPoint}
+     *
+     * @param featureGeometry
+     * @return
+     */
+    private Point getCenter(@NonNull Geometry featureGeometry) {
+<span class="nc" id="L226">        double[] bbox = TurfMeasurement.bbox(featureGeometry);</span>
+
+<span class="nc" id="L228">        LatLng centerLatLng  = LatLngBounds.from(bbox[3], bbox[2], bbox[1], bbox[0]).getCenter();</span>
+<span class="nc" id="L229">        return Point.fromLngLat(centerLatLng.getLongitude(), centerLatLng.getLatitude());</span>
+    }
+
+    /**
+     * Return a list of Layers
+     * @param mapboxMap
+     * @return
+     */
+    protected ArrayList&lt;Layer&gt; getLayers(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L238">        ArrayList&lt;Layer&gt; layers = new ArrayList&lt;Layer&gt;();</span>
+<span class="nc" id="L239">        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LINE_LAYER_ID));</span>
+<span class="nc" id="L240">        layers.add(mapboxMap.getStyle().getLayerAs(BOUNDARY_LABEL_LAYER_ID));</span>
+
+<span class="nc" id="L242">        return layers;</span>
+    }
+
+    @Override
+    public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc bnc" id="L247" title="All 2 branches missed.">        for (Layer layer: getLayers(mapboxMap)) {</span>
+<span class="nc bnc" id="L248" title="All 4 branches missed.">            if (layer != null &amp;&amp; NONE.equals(layer.getVisibility().getValue())) {</span>
+<span class="nc" id="L249">                layer.setProperties(PropertyFactory.visibility(VISIBLE));</span>
+<span class="nc" id="L250">                visible = true;</span>
+            }
+<span class="nc" id="L252">        }</span>
+<span class="nc" id="L253">    }</span>
+
+    @Override
+    public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        for (Layer layer: getLayers(mapboxMap)) {</span>
+<span class="nc bnc" id="L258" title="All 4 branches missed.">            if (layer != null &amp;&amp; VISIBLE.equals(layer.getVisibility().getValue())) {</span>
+<span class="nc" id="L259">                layer.setProperties(PropertyFactory.visibility(NONE));</span>
+<span class="nc" id="L260">                visible = false;</span>
+            }
+<span class="nc" id="L262">        }</span>
+<span class="nc" id="L263">    }</span>
+
+    @Override @NonNull
+    public String[] getLayerIds() {
+<span class="nc" id="L267">        return new String[] {BOUNDARY_LABEL_LAYER_ID, BOUNDARY_LINE_LAYER_ID};</span>
+    }
+
+    @Override
+    public boolean removeLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L272">        setRemoved(true);</span>
+
+        // Remove the layers &amp; sources
+<span class="nc" id="L275">        Style style = mapboxMap.getStyle();</span>
+<span class="nc bnc" id="L276" title="All 4 branches missed.">        if (style != null &amp;&amp; style.isFullyLoaded()) {</span>
+<span class="nc" id="L277">            removeLayers(style) ;</span>
+<span class="nc" id="L278">            removeSources(style);</span>
+
+<span class="nc" id="L280">            return true;</span>
+        } else {
+<span class="nc" id="L282">            Log.e(TAG, &quot;Could not remove the layers &amp; source because the the style is null or not fully loaded&quot;);</span>
+<span class="nc" id="L283">            return false;</span>
+        }
+    }
+
+    protected void removeLayers(@NonNull Style style) {
+<span class="nc" id="L288">        style.removeLayer(boundaryLabelLayer);</span>
+<span class="nc" id="L289">        style.removeLayer(boundaryLineLayer);</span>
+<span class="nc" id="L290">    }</span>
+
+    protected void removeSources(@NonNull Style style) {
+<span class="nc" id="L293">        style.removeSource(boundarySource);</span>
+<span class="nc" id="L294">        style.removeSource(boundaryLabelsSource);</span>
+<span class="nc" id="L295">    }</span>
+
+    @Override
+    public void updateFeatures(@NonNull FeatureCollection featureCollection) {
+<span class="nc" id="L299">        this.builder.featureCollection = featureCollection;</span>
+
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (boundaryLabelLayer != null) {</span>
+<span class="nc" id="L302">            GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+                @Override
+                public Object[] call() throws Exception {
+<span class="nc" id="L305">                    return new Object[]{calculateCenterPoints(builder.featureCollection)};</span>
+                }
+            });
+
+<span class="nc" id="L309">            genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {</span>
+                @Override
+                public void onSuccess(Object[] objects) {
+<span class="nc" id="L312">                    FeatureCollection boundaryCenterFeatures = (FeatureCollection) objects[0];</span>
+
+<span class="nc" id="L314">                    boundaryLabelsSource.setGeoJson(boundaryCenterFeatures);</span>
+<span class="nc" id="L315">                    boundarySource.setGeoJson(featureCollection);</span>
+<span class="nc" id="L316">                }</span>
+
+                @Override
+                public void onError(Exception e) {
+<span class="nc" id="L320">                    Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L321">                }</span>
+            });
+
+<span class="nc" id="L324">            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+        }
+<span class="nc" id="L326">    }</span>
+
+    @Override
+    public FeatureCollection getFeatureCollection() {
+<span class="nc" id="L330">        return this.builder.getFeatureCollection();</span>
+    }
+
+    public static class Builder extends KujakuLayer.Builder&lt;BoundaryLayer, Builder&gt; {
+
+        public Builder(@NonNull FeatureCollection featureCollection) {
+<span class="nc" id="L336">           super(featureCollection);</span>
+<span class="nc" id="L337">        }</span>
+
+        /** The solution for the unchecked cast warning. */
+        public Builder getThis() {
+<span class="nc" id="L341">            return this;</span>
+        }
+
+        public BoundaryLayer build() {
+<span class="nc" id="L345">            return new BoundaryLayer(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Generated by the Android Gradle plugin 3.2.0</div></body></html>

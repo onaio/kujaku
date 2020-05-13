@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrowLineSortConfigComparator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">library</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.comparators</a> &gt; <span class="el_source">ArrowLineSortConfigComparator.java</span></div><h1>ArrowLineSortConfigComparator.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.comparators;
+
+import android.support.annotation.NonNull;
+
+import com.mapbox.geojson.Feature;
+
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+
+import java.util.Comparator;
+
+import io.ona.kujaku.layers.ArrowLineLayer;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/02/2019
+ */
+
+public class ArrowLineSortConfigComparator implements Comparator&lt;Feature&gt; {
+
+    private ArrowLineLayer.SortConfig sortConfig;
+
+<span class="fc" id="L22">    public ArrowLineSortConfigComparator(@NonNull ArrowLineLayer.SortConfig sortConfig) {</span>
+<span class="fc" id="L23">        this.sortConfig = sortConfig;</span>
+<span class="fc" id="L24">    }</span>
+
+    @Override
+    public int compare(Feature feature1, Feature feature2) {
+<span class="fc" id="L28">        String sortProperty = sortConfig.getSortProperty();</span>
+<span class="fc" id="L29">        int compareResult = 0;</span>
+
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (sortConfig.getPropertyType() == ArrowLineLayer.SortConfig.PropertyType.NUMBER) {</span>
+<span class="fc" id="L32">            Number number1 = feature1.getNumberProperty(sortProperty);</span>
+<span class="fc" id="L33">            Number number2 = feature2.getNumberProperty(sortProperty);</span>
+
+<span class="fc" id="L35">            compareResult = Double.compare(number1.doubleValue(), number2.doubleValue());</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        } else if (sortConfig.getPropertyType() == ArrowLineLayer.SortConfig.PropertyType.STRING) {</span>
+<span class="fc" id="L37">            String value1 = feature1.getStringProperty(sortProperty);</span>
+<span class="fc" id="L38">            String value2 = feature2.getStringProperty(sortProperty);</span>
+
+<span class="fc" id="L40">            compareResult = value1.compareTo(value2);</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        } else if (sortConfig.getPropertyType() == ArrowLineLayer.SortConfig.PropertyType.DATE_TIME) {</span>
+<span class="fc" id="L42">            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(sortConfig.getDateTimeFormat());</span>
+
+<span class="fc" id="L44">            LocalDateTime localDateTime1 = LocalDateTime.parse(feature1.getStringProperty(sortProperty), dateTimeFormatter);</span>
+<span class="fc" id="L45">            LocalDateTime localDateTime2 = LocalDateTime.parse(feature2.getStringProperty(sortProperty), dateTimeFormatter);</span>
+
+<span class="fc" id="L47">            compareResult = localDateTime1.compareTo(localDateTime2);</span>
+        }
+
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (sortConfig.getSortOrder() == ArrowLineLayer.SortConfig.SortOrder.DESC) {</span>
+<span class="fc" id="L51">            compareResult *= -1;</span>
+        }
+
+<span class="fc" id="L54">        return compareResult;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

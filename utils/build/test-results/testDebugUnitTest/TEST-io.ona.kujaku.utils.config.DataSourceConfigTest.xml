@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.ona.kujaku.utils.config.DataSourceConfigTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2020-05-13T07:27:30" hostname="kigamba-ThinkPad-T580" time="0.021">
+  <properties/>
+  <testcase name="testToJsonObject" classname="io.ona.kujaku.utils.config.DataSourceConfigTest" time="0.009"/>
+  <testcase name="testExtractDataSourceNames" classname="io.ona.kujaku.utils.config.DataSourceConfigTest" time="0.004"/>
+  <testcase name="testIsValid" classname="io.ona.kujaku.utils.config.DataSourceConfigTest" time="0.005"/>
+  <testcase name="testConstructor" classname="io.ona.kujaku.utils.config.DataSourceConfigTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
