@@ -3,7 +3,7 @@ language: android
 # Setting sudo to required prevents Travis from testing the project in a Docker container.
 sudo: required
 jdk: oraclejdk8
-dist: precise
+dist: trusty
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -71,7 +71,7 @@ script:
   - travis_wait ./gradlew build --stacktrace
   - travis_wait ./gradlew jacocoTestReport --stacktrace
   - travis_wait ./gradlew jacocoFullReport --stacktrace
-  - travis_wait ./gradlew coveralls --stacktrace
+  - ./gradlew coveralls --stacktrace
 
 after_failure:
  #- pandoc opensrp-app/build/reports/tests/index.html -t plain
