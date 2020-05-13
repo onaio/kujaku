@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KujakuConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils.config</a> &gt; <span class="el_source">KujakuConfig.java</span></div><h1>KujakuConfig.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils.config;
+
+import android.support.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+
+/**
+ * Holds configurations specific to Kujaku (not handled by MapBox style specification).
+ * &lt;p&gt;
+ * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
+ */
+public class KujakuConfig implements Config {
+    public static final String KEY_INFO_WINDOW = &quot;info_window&quot;;
+    public static final String KEY_SORT_FIELDS = &quot;sort_fields&quot;;
+    public static final String KEY_DATA_SOURCES = &quot;data_sources&quot;;
+    private final ArrayList&lt;SortFieldConfig&gt; sortFieldConfigs;
+    private final ArrayList&lt;DataSourceConfig&gt; dataSourceConfigs;
+    private final InfoWindowConfig infoWindowConfig;
+
+<span class="fc" id="L26">    public KujakuConfig() {</span>
+<span class="fc" id="L27">        sortFieldConfigs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L28">        dataSourceConfigs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L29">        infoWindowConfig = new InfoWindowConfig();</span>
+<span class="fc" id="L30">    }</span>
+
+<span class="fc" id="L32">    public KujakuConfig(JSONObject config) throws JSONException, InvalidMapBoxStyleException {</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (config.has(KEY_INFO_WINDOW)) {</span>
+<span class="fc" id="L34">            infoWindowConfig = new InfoWindowConfig(config.getJSONObject(KEY_INFO_WINDOW));</span>
+        } else {
+<span class="nc" id="L36">            infoWindowConfig = new InfoWindowConfig();</span>
+        }
+
+<span class="fc" id="L39">        sortFieldConfigs = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (config.has(KEY_SORT_FIELDS)) {</span>
+<span class="fc" id="L41">            JSONArray array = config.getJSONArray(KEY_SORT_FIELDS);</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            for (int i = 0; i &lt; array.length(); i++) {</span>
+<span class="fc" id="L43">                sortFieldConfigs.add(new SortFieldConfig(array.getJSONObject(i)));</span>
+            }
+        }
+
+<span class="fc" id="L47">        dataSourceConfigs = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (config.has(KEY_DATA_SOURCES)) {</span>
+<span class="fc" id="L49">            JSONArray array = config.getJSONArray(KEY_DATA_SOURCES);</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            for (int i = 0; i &lt; array.length(); i++) {</span>
+<span class="fc" id="L51">                dataSourceConfigs.add(new DataSourceConfig(array.getJSONObject(i)));</span>
+            }
+        }
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Add a GeoJson property in the GeoJson data sources that will be used to sort the data
+     *
+     * @param type      The data type to be used when sorting. Can be 'date', 'string', or 'int'
+     * @param dataField The id of the GeoJson property
+     * @throws JSONException
+     * @throws InvalidMapBoxStyleException
+     */
+    public void addSortFieldConfig(@NonNull String type, @NonNull String dataField)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="fc" id="L66">        SortFieldConfig sortField = new SortFieldConfig();</span>
+<span class="fc" id="L67">        sortField.setType(type);</span>
+<span class="fc" id="L68">        sortField.setDataField(dataField);</span>
+
+<span class="fc" id="L70">        sortFieldConfigs.add(sortField);</span>
+<span class="fc" id="L71">    }</span>
+
+    public void addSortFieldConfig(@NonNull SortFieldConfig sortFieldConfig) {
+<span class="fc" id="L74">        sortFieldConfigs.add(sortFieldConfig);</span>
+<span class="fc" id="L75">    }</span>
+
+    /**
+     * Adds the provided MapBox Style data-source to the list of data-sources to be considered
+     * when rendering data.
+     *
+     * @param dataSourceName The name (JSON key) of the MapBox Style data-source
+     */
+    public void addDataSourceConfig(@NonNull String dataSourceName) throws InvalidMapBoxStyleException {
+<span class="fc" id="L84">        dataSourceConfigs.add(new DataSourceConfig(dataSourceName));</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Checks whether all required configurations have been set
+     *
+     * @return @code{TRUE} if all required configurations have been set
+     */
+    public boolean isValid() {
+<span class="pc bpc" id="L93" title="1 of 4 branches missed.">        if (sortFieldConfigs == null || sortFieldConfigs.size() == 0) {</span>
+<span class="fc" id="L94">            return false;</span>
+        }
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        for (SortFieldConfig curConfig : sortFieldConfigs) {</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            if (!curConfig.isValid()) return false;</span>
+<span class="fc" id="L98">        }</span>
+
+<span class="pc bpc" id="L100" title="1 of 4 branches missed.">        if (dataSourceConfigs == null || dataSourceConfigs.size() == 0) {</span>
+<span class="fc" id="L101">            return false;</span>
+        }
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        for (DataSourceConfig curConfig : dataSourceConfigs) {</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">            if (!curConfig.isValid()) return false;</span>
+<span class="fc" id="L105">        }</span>
+
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (infoWindowConfig != null) {</span>
+<span class="fc" id="L108">            return infoWindowConfig.isValid();</span>
+        }
+
+<span class="nc" id="L111">        return false;</span>
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+<span class="fc" id="L116">        JSONObject config = new JSONObject();</span>
+<span class="fc" id="L117">        config.put(KEY_INFO_WINDOW, infoWindowConfig.toJsonObject());</span>
+<span class="fc" id="L118">        config.put(KEY_DATA_SOURCES, getDataSourceConfigJsonArray());</span>
+<span class="fc" id="L119">        config.put(KEY_SORT_FIELDS, getSortFieldsConfigJsonArray());</span>
+
+<span class="fc" id="L121">        return config;</span>
+    }
+
+    private JSONArray getSortFieldsConfigJsonArray() throws JSONException {
+<span class="fc" id="L125">        JSONArray array = new JSONArray();</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        for (SortFieldConfig curConfig : sortFieldConfigs) {</span>
+<span class="fc" id="L127">            array.put(curConfig.toJsonObject());</span>
+<span class="fc" id="L128">        }</span>
+
+<span class="fc" id="L130">        return array;</span>
+    }
+
+    private JSONArray getDataSourceConfigJsonArray() throws JSONException {
+<span class="fc" id="L134">        JSONArray array = new JSONArray();</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        for (DataSourceConfig curConfig : dataSourceConfigs) {</span>
+<span class="fc" id="L136">            array.put(curConfig.toJsonObject());</span>
+<span class="fc" id="L137">        }</span>
+
+<span class="fc" id="L139">        return array;</span>
+    }
+
+    public ArrayList&lt;SortFieldConfig&gt; getSortFieldConfigs() {
+<span class="fc" id="L143">        return sortFieldConfigs;</span>
+    }
+
+    public ArrayList&lt;DataSourceConfig&gt; getDataSourceConfigs() {
+<span class="nc" id="L147">        return dataSourceConfigs;</span>
+    }
+
+    public InfoWindowConfig getInfoWindowConfig() {
+<span class="fc" id="L151">        return infoWindowConfig;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

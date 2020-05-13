@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegexComparison.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.comparisons</a> &gt; <span class="el_source">RegexComparison.java</span></div><h1>RegexComparison.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.comparisons;
+
+import android.util.Log;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+<span class="fc" id="L9">public class RegexComparison implements Comparison {</span>
+<span class="fc" id="L10">    private final String TAG = this.getClass().getSimpleName();</span>
+    public static final String COMPARISON_NAME = &quot;regex&quot;;
+
+    @Override
+    public boolean compare(String a, String type, String b) {
+<span class="pc bpc" id="L15" title="2 of 4 branches missed.">        if (a != null &amp;&amp; b != null) {</span>
+            try {
+<span class="fc" id="L17">                Pattern pattern = Pattern.compile(b);</span>
+<span class="fc" id="L18">                Matcher matcher = pattern.matcher(a);</span>
+<span class="fc" id="L19">                return matcher.matches();</span>
+<span class="nc" id="L20">            } catch (PatternSyntaxException e) {</span>
+<span class="nc" id="L21">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L22">            }</span>
+        } else {
+<span class="nc" id="L24">            return false;</span>
+        }
+
+<span class="nc" id="L27">        return false;</span>
+    }
+
+    @Override
+    public String getFunctionName() {
+<span class="fc" id="L32">        return COMPARISON_NAME;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

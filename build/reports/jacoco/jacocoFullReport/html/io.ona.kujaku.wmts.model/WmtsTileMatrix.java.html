@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsTileMatrix.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.wmts.model</a> &gt; <span class="el_source">WmtsTileMatrix.java</span></div><h1>WmtsTileMatrix.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.wmts.model;
+
+import org.simpleframework.xml.Element;
+
+/**
+ * Describes a Wmts TileMatrix object from the WMTS Capabilities object
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 14/01/19.
+ */
+<span class="fc" id="L10">public class WmtsTileMatrix {</span>
+
+    @Element(name=&quot;Identifier&quot;)
+    private int identifier;
+
+    @Element(name=&quot;TileWidth&quot;)
+    private int tileWidth;
+
+    public int getIdentifier() {
+<span class="fc" id="L19">        return this.identifier;</span>
+    }
+
+    public int getTileWidth() {
+<span class="fc" id="L23">        return this.tileWidth;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

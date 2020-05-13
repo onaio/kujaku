@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapboxOfflineDownloaderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.services</a> &gt; <span class="el_source">MapboxOfflineDownloaderService.java</span></div><h1>MapboxOfflineDownloaderService.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.services;
+
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
+import android.text.format.Formatter;
+import android.util.Log;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
+import com.mapbox.mapboxsdk.offline.OfflineRegionError;
+import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+
+import org.json.JSONException;
+
+import io.ona.kujaku.BuildConfig;
+import io.ona.kujaku.R;
+import io.ona.kujaku.data.MapBoxDeleteTask;
+import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.RealmDatabase;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.ona.kujaku.downloaders.MapBoxOfflineResourcesDownloader;
+import io.ona.kujaku.listeners.OfflineRegionObserver;
+import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
+import io.ona.kujaku.listeners.OnDownloadMapListener;
+import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import io.ona.kujaku.notifications.CriticalDownloadErrorNotification;
+import io.ona.kujaku.notifications.DownloadCompleteNotification;
+import io.ona.kujaku.notifications.DownloadProgressNotification;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.ObjectCoercer;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
+
+/**
+ * Service performs Offline Map Download, Offline Map Deletion &amp; Offline Map Download Resumption
+ * &lt;p&gt;
+ * You need to pass the following in the Intent Extras:
+ * - {@link Constants#PARCELABLE_KEY_SERVICE_ACTION} - Required for all
+ * - Optional {@link Constants#PARCELABLE_KEY_NETWORK_STATE} - Required for {@link SERVICE_ACTION#NETWORK_RESUME}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - Required for {@link SERVICE_ACTION#DELETE_MAP} &amp; {@link SERVICE_ACTION#DOWNLOAD_MAP} &amp; {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN} - Required for {@link SERVICE_ACTION#DELETE_MAP} &amp; {@link SERVICE_ACTION#DOWNLOAD_MAP} &amp; {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * - Optional {@link Constants#PARCELABLE_KEY_STYLE_URL} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_MAX_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_MIN_ZOOM} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_TOP_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_TOP_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_RIGHT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * - Optional {@link Constants#PARCELABLE_KEY_BOTTOM_LEFT_BOUND} - Required for {@link SERVICE_ACTION#DOWNLOAD_MAP}
+ * &lt;p&gt;
+ * - Optional {@link Constants#PARCELABLE_KEY_DELETE_TASK_TYPE} - Required for {@link SERVICE_ACTION#STOP_CURRENT_DOWNLOAD}
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * The service posts updates through a Local Broadcast with action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}. The updates posted have:
+ * &lt;ol&gt;
+ * &lt;li&gt;{@code KEY_RESULT_STATUS} - {@code {@link SERVICE_ACTION_RESULT#SUCCESSFUL}} or {@code {@link SERVICE_ACTION_RESULT#FAILED}}&lt;/li&gt;
+ * &lt;li&gt;{@code KEY_RESULT_MESSAGE} - The simple message eg. download percentage, task failure message&lt;/li&gt;
+ * &lt;li&gt;{@code {@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME}} - The map name&lt;/li&gt;
+ * &lt;li&gt;{@code KEY_RESULTS_PARENT_ACTION} - {@code {@link SERVICE_ACTION }} being performed on the map&lt;/li&gt;
+ * &lt;/ol&gt;
+ * &lt;/p&gt;
+ * &lt;/li&gt;
+ * &lt;/ol&gt;
+ * Any broadcast has the:
+ * &lt;ul&gt;
+ * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Can be either a {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT#FAILED}&lt;/li&gt;
+ * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - The error or success message&lt;/li&gt;
+ * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - Can either be {@link MapboxOfflineDownloaderService.SERVICE_ACTION#DOWNLOAD_MAP} or {@link MapboxOfflineDownloaderService.SERVICE_ACTION#DELETE_MAP}&lt;/li&gt;
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * This services uses notification ids from 80 to 2080. The application should therefore use notification ids from 2081
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 13/11/2017.
+ */
+public class MapboxOfflineDownloaderService extends Service implements OfflineRegionObserver, OnDownloadMapListener {
+
+<span class="fc" id="L91">    public enum SERVICE_ACTION_RESULT {</span>
+<span class="fc" id="L92">        SUCCESSFUL,</span>
+<span class="fc" id="L93">        FAILED</span>
+    }
+
+<span class="fc" id="L96">    public enum SERVICE_ACTION {</span>
+<span class="fc" id="L97">        DOWNLOAD_MAP,</span>
+<span class="fc" id="L98">        DELETE_MAP,</span>
+<span class="fc" id="L99">        STOP_CURRENT_DOWNLOAD,</span>
+<span class="fc" id="L100">        NETWORK_RESUME</span>
+    }
+
+    public static final String KEY_RESULT_STATUS = &quot;RESULT STATUS&quot;;
+    public static final String KEY_RESULT_MESSAGE = &quot;RESULT MESSAGE&quot;;
+    public static final String KEY_RESULTS_PARENT_ACTION = &quot;RESULTS PARENT ACTION&quot;;
+<span class="fc" id="L106">    private static final String TAG = MapboxOfflineDownloaderService.class.getSimpleName();</span>
+
+    public static final String MY_PREFERENCES = &quot;KUJAKU PREFERENCES&quot;;
+    public static final String PREFERENCE_MAPBOX_ACCESS_TOKEN = &quot;MAPBOX ACCESS TOKEN&quot;;
+
+<span class="fc" id="L111">    private String mapBoxAccessToken = &quot;&quot;;</span>
+    private String currentMapDownloadName;
+    private SERVICE_ACTION currentServiceAction;
+    private MapBoxOfflineQueueTask currentMapBoxTask;
+    private long currentMapDownloadId;
+
+    private DownloadProgressNotification downloadProgressNotification;
+    public static final int PROGRESS_NOTIFICATION_ID = 80;
+    public static final int REQUEST_ID_STOP_MAP_DOWNLOAD = 1;
+
+    // Should persist across service instances but within the same app session
+<span class="fc" id="L122">    public static int LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID = 81;</span>
+<span class="fc" id="L123">    public static int LAST_DOWNLOAD_ERROR_NOTIFICATION_ID = 1081;</span>
+
+<span class="fc" id="L125">    private boolean isPerformingTask = false;</span>
+
+    private RealmDatabase realmDatabase;
+
+<span class="fc" id="L129">    @RestrictTo(RestrictTo.Scope.TESTS)</span>
+    public boolean onStartCommandCalled = false;
+<span class="fc" id="L131">    @RestrictTo(RestrictTo.Scope.TESTS)</span>
+    public boolean persistOfflineMapTaskCalled = false;
+<span class="fc" id="L133">    @RestrictTo(RestrictTo.Scope.TESTS)</span>
+    public boolean performNextTaskCalled = false;
+<span class="fc" id="L135">    @RestrictTo(RestrictTo.Scope.TESTS)</span>
+    public boolean observeOfflineRegionCalled = false;
+
+    /* FOR THE DOWNLOAD PROGRESS UPDATE THREAD */
+<span class="fc" id="L139">    private double mostRecentPercentageUpdate = 0;</span>
+<span class="fc" id="L140">    private String mostRecentMapNameUpdate = &quot;&quot;;</span>
+<span class="fc" id="L141">    private long timeBetweenUpdates = 800;</span>
+<span class="fc" id="L142">    private boolean hasUpdateToPost = false;</span>
+    private Thread progressUpdateThread;
+<span class="fc" id="L144">    private boolean shouldThreadDie = true;</span>
+    private Handler serviceHandler;
+
+<span class="fc" id="L147">    private boolean shownForegroundNotification = false;</span>
+
+    private long tileDownloadLimit;
+
+    public MapboxOfflineDownloaderService() {
+<span class="fc" id="L152">        super();</span>
+<span class="fc" id="L153">    }</span>
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+<span class="nc" id="L157">        serviceHandler = new Handler(Looper.myLooper());</span>
+<span class="nc" id="L158">        realmDatabase = RealmDatabase.init(this);</span>
+
+<span class="nc" id="L160">        super.onStartCommand(intent, flags, startId);</span>
+<span class="nc" id="L161">        onStartCommandCalled = true;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (intent != null) {</span>
+<span class="nc" id="L163">            tileDownloadLimit = intent.getLongExtra(Constants.PARCELABLE_KEY_MAPBOX_DOWNLOAD_TILE_LIMIT, 6000);</span>
+        }
+<span class="nc" id="L165">        persistOfflineMapTask(intent);</span>
+<span class="nc" id="L166">        performNextTask();</span>
+<span class="nc" id="L167">        return START_NOT_STICKY;</span>
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+<span class="nc" id="L173">        return null;</span>
+    }
+
+    /**
+     * @param intent Intent passed when the service was called {@link Context#startService(Intent)}
+     * @return {@code TRUE} if the OfflineMapTask was successfully saved, {@code FALSE} if the OfflineMapTask could not be saved
+     */
+    protected boolean persistOfflineMapTask(@Nullable Intent intent) {
+<span class="fc" id="L181">        persistOfflineMapTaskCalled = true;</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (intent == null) {</span>
+<span class="fc" id="L183">            return false;</span>
+        }
+
+<span class="fc" id="L186">        Bundle extras = intent.getExtras();</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (extras != null</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">                &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_SERVICE_ACTION)) {</span>
+<span class="fc" id="L189">            final SERVICE_ACTION serviceAction = (SERVICE_ACTION) extras.get(Constants.PARCELABLE_KEY_SERVICE_ACTION);</span>
+
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">            if (extras.containsKey(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME)</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">                    &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)) {</span>
+<span class="fc" id="L193">                final String mapUniqueName = extras.getString(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME);</span>
+<span class="fc" id="L194">                mapBoxAccessToken = extras.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);</span>
+
+<span class="fc" id="L196">                Mapbox.getInstance(this, mapBoxAccessToken);</span>
+
+<span class="fc" id="L198">                MapBoxDownloadTask downloadTask = new MapBoxDownloadTask();</span>
+<span class="fc" id="L199">                downloadTask.setMapName(mapUniqueName);</span>
+<span class="fc" id="L200">                downloadTask.setMapBoxAccessToken(mapBoxAccessToken);</span>
+
+<span class="fc bfc" id="L202" title="All 2 branches covered.">                if (serviceAction == SERVICE_ACTION.DOWNLOAD_MAP) {</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">                    if (extras.containsKey(Constants.PARCELABLE_KEY_STYLE_URL)</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_MAX_ZOOM)</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_MIN_ZOOM)</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND)</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND)</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND)</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">                            &amp;&amp; extras.containsKey(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND)) {</span>
+
+<span class="fc" id="L211">                        downloadTask.setPackageName(&quot;kl&quot;);</span>
+<span class="fc" id="L212">                        downloadTask.setMapBoxStyleUrl(extras.getString(Constants.PARCELABLE_KEY_STYLE_URL));</span>
+<span class="fc" id="L213">                        downloadTask.setMaxZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MAX_ZOOM)));</span>
+<span class="fc" id="L214">                        downloadTask.setMinZoom(ObjectCoercer.coerceNumberObjectToDoublePrimitive(extras.get(Constants.PARCELABLE_KEY_MIN_ZOOM)));</span>
+<span class="fc" id="L215">                        downloadTask.setTopLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_LEFT_BOUND));</span>
+<span class="fc" id="L216">                        downloadTask.setTopRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_TOP_RIGHT_BOUND));</span>
+<span class="fc" id="L217">                        downloadTask.setBottomRightBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_RIGHT_BOUND));</span>
+<span class="fc" id="L218">                        downloadTask.setBottomLeftBound((LatLng) extras.getParcelable(Constants.PARCELABLE_KEY_BOTTOM_LEFT_BOUND));</span>
+
+<span class="fc" id="L220">                        realmDatabase.deletePendingOfflineMapDownloadsWithSimilarNames(mapUniqueName);</span>
+
+<span class="fc" id="L222">                        MapBoxDownloadTask.constructMapBoxOfflineQueueTask(downloadTask);</span>
+<span class="fc" id="L223">                        return true;</span>
+                    }
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">                } else if (serviceAction == SERVICE_ACTION.DELETE_MAP) {</span>
+<span class="fc" id="L226">                    MapBoxDeleteTask deleteTask = new MapBoxDeleteTask();</span>
+<span class="fc" id="L227">                    deleteTask.setMapBoxAccessToken(mapBoxAccessToken);</span>
+<span class="fc" id="L228">                    deleteTask.setMapName(mapUniqueName);</span>
+
+<span class="fc" id="L230">                    MapBoxDeleteTask.constructMapBoxOfflineQueueTask(deleteTask);</span>
+
+<span class="fc" id="L232">                    return true;</span>
+                } else {
+<span class="nc" id="L234">                    final String taskType = extras.getString(Constants.PARCELABLE_KEY_DELETE_TASK_TYPE, &quot;&quot;);</span>
+
+<span class="nc bnc" id="L236" title="All 2 branches missed.">                    if (!TextUtils.isEmpty(taskType)) {</span>
+<span class="nc bnc" id="L237" title="All 4 branches missed.">                        if (taskType.equals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD) &amp;&amp; mostRecentMapNameUpdate.equals(mapUniqueName)) {</span>
+<span class="nc" id="L238">                            MapBoxOfflineResourcesDownloader mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken);</span>
+
+                            // Remove the STOP DOWNLOAD ACTION from the notification so that it cannot be pressed and cause the app to crash!
+<span class="nc" id="L241">                            showProgressNotification(mostRecentMapNameUpdate, mostRecentPercentageUpdate, false);</span>
+
+                            // Stop the download first
+<span class="nc" id="L244">                            mapBoxOfflineResourcesDownloader.pauseMapDownload(mapUniqueName, new OnPauseMapDownloadCallback() {</span>
+                                @Override
+                                public void onPauseSuccess() {
+<span class="nc" id="L247">                                    MapBoxOfflineResourcesDownloader</span>
+<span class="nc" id="L248">                                            .getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)</span>
+<span class="nc" id="L249">                                            .deleteMap(mapUniqueName, new OfflineRegion.OfflineRegionDeleteCallback() {</span>
+
+                                                @Override
+                                                public void onDelete() {
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                                                    if (deleteTaskFromRealmDatabase(taskType, mapUniqueName)) {</span>
+<span class="nc" id="L254">                                                        sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);</span>
+<span class="nc" id="L255">                                                        showDownloadCompleteNotification(String.format(getString(R.string.notification_stopped_download_title), mapUniqueName), getString(R.string.notification_stopped_download_content));</span>
+                                                    } else {
+<span class="nc" id="L257">                                                        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, getString(R.string.map_delete_task_error));</span>
+                                                    }
+<span class="nc" id="L259">                                                    releaseQueueToPerformOtherJobs();</span>
+
+<span class="nc" id="L261">                                                    performNextTask();</span>
+<span class="nc" id="L262">                                                }</span>
+
+                                                @Override
+                                                public void onError(String error) {
+<span class="nc" id="L266">                                                    sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, error);</span>
+<span class="nc" id="L267">                                                }</span>
+                                            });
+<span class="nc" id="L269">                                }</span>
+
+                                @Override
+                                public void onPauseError(String error) {
+<span class="nc" id="L273">                                    sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, String.format(getString(R.string.error_broadcast_for_download_pause), error));</span>
+<span class="nc" id="L274">                                }</span>
+                            });
+<span class="nc" id="L276">                        } else {</span>
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                            if (deleteTaskFromRealmDatabase(taskType, mapUniqueName)) {</span>
+                                // Communicate if the delete task was successful
+<span class="nc" id="L279">                                sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD);</span>
+                            } else {
+                                // Send a broadcast that the delete task was unsuccessful because the task could not be found
+<span class="nc" id="L282">                                sendBroadcast(SERVICE_ACTION_RESULT.FAILED, mapUniqueName, SERVICE_ACTION.STOP_CURRENT_DOWNLOAD, String.format(getString(R.string.error_broadcast_for_download_pause), &quot;Map could not be found&quot;));</span>
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+<span class="fc" id="L293">        return false;</span>
+    }
+
+    private boolean deleteTaskFromRealmDatabase(@NonNull String taskType, @NonNull String mapUniqueName) {
+<span class="nc" id="L297">        boolean isDownloadTask = taskType.equals(MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD);</span>
+<span class="nc" id="L298">        return realmDatabase.deleteTask(mapUniqueName, isDownloadTask);</span>
+    }
+
+    /**
+     * Offline Map tasks such as {@link MapBoxOfflineQueueTask#TASK_TYPE_DELETE} &amp;
+     * {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD} are performed here.
+     * &lt;p&gt;
+     * A {@link MapBoxOfflineQueueTask#TASK_TYPE_DELETE} will only be performed if the Offline
+     * Region with the given name exists.
+     * &lt;p&gt;
+     * A {@link MapBoxOfflineQueueTask#TASK_TYPE_DOWNLOAD} will either be RESUMED, OBSERVED if RUNNING
+     * , IGNORED(thus FAILING if it does) or DOWNLOADED.
+     */
+    private void performNextTask() {
+<span class="fc" id="L312">        performNextTaskCalled = true;</span>
+
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">        if (isPerformingTask) {</span>
+<span class="nc" id="L315">            return;</span>
+        }
+
+<span class="fc" id="L318">        final MapBoxOfflineQueueTask mapBoxOfflineQueueTask = realmDatabase.getNextTask();</span>
+
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">        if (mapBoxOfflineQueueTask != null) {</span>
+<span class="nc" id="L321">            placeQueueOnHold();</span>
+<span class="nc" id="L322">            currentMapBoxTask = mapBoxOfflineQueueTask;</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">            if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {</span>
+<span class="nc" id="L324">                currentServiceAction = SERVICE_ACTION.DELETE_MAP;</span>
+            } else {
+<span class="nc" id="L326">                currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;</span>
+
+<span class="nc bnc" id="L328" title="All 2 branches missed.">                if (mapBoxOfflineQueueTask.getTaskStatus() == MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED) {</span>
+<span class="nc" id="L329">                    realmDatabase.persistDownloadStartedStatus(mapBoxOfflineQueueTask);</span>
+                }
+            }
+
+<span class="nc" id="L333">            getTaskStatus(mapBoxOfflineQueueTask, mapBoxAccessToken, new OfflineRegionStatusCallback() {</span>
+                @Override
+                public void onStatus(OfflineRegionStatus status, OfflineRegion offlineRegion) {
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">                    if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(mapBoxOfflineQueueTask.getTaskType())) {</span>
+<span class="nc" id="L338">                        currentServiceAction = SERVICE_ACTION.DELETE_MAP;</span>
+<span class="nc" id="L339">                        MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)</span>
+<span class="nc" id="L340">                                .deleteMap(currentMapDownloadName, new OfflineRegion.OfflineRegionDeleteCallback() {</span>
+                                    @Override
+                                    public void onDelete() {
+<span class="nc" id="L343">                                        sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, SERVICE_ACTION.DELETE_MAP, &quot;Map deleted successfully!&quot;);</span>
+<span class="nc" id="L344">                                        releaseQueueToPerformOtherJobs();</span>
+<span class="nc" id="L345">                                        realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);</span>
+<span class="nc" id="L346">                                        performNextTask();</span>
+<span class="nc" id="L347">                                    }</span>
+
+                                    @Override
+                                    public void onError(String error) {
+<span class="nc" id="L351">                                        MapboxOfflineDownloaderService.this.onError(error, null);</span>
+                                        // An error means this cannot be solved even at a later time THUS persist the task as DONE
+<span class="nc" id="L353">                                        releaseQueueToPerformOtherJobs();</span>
+<span class="nc" id="L354">                                        realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);</span>
+<span class="nc" id="L355">                                        performNextTask();</span>
+<span class="nc" id="L356">                                    }</span>
+                                });
+<span class="nc" id="L358">                        return;</span>
+                    }
+
+<span class="nc bnc" id="L361" title="All 2 branches missed.">                    if (status.getDownloadState() == OfflineRegion.STATE_ACTIVE) {</span>
+                        // TASK IS RUNNING
+<span class="nc" id="L363">                        currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;</span>
+<span class="nc" id="L364">                        currentMapBoxTask = mapBoxOfflineQueueTask;</span>
+<span class="nc" id="L365">                        currentMapDownloadId = offlineRegion.getID();</span>
+<span class="nc" id="L366">                        startDownloadProgressUpdater();</span>
+<span class="nc" id="L367">                        observeOfflineRegion(offlineRegion);</span>
+                    } else {
+<span class="nc bnc" id="L369" title="All 2 branches missed.">                        if (!status.isComplete()) {</span>
+                            // TASK IS NOT RUNNING
+<span class="nc" id="L371">                            currentServiceAction = SERVICE_ACTION.DOWNLOAD_MAP;</span>
+<span class="nc" id="L372">                            currentMapBoxTask = mapBoxOfflineQueueTask;</span>
+<span class="nc" id="L373">                            currentMapDownloadId = offlineRegion.getID();</span>
+                            // Set the progress notification
+<span class="nc" id="L375">                            startDownloadProgressUpdater();</span>
+<span class="nc" id="L376">                            queueDownloadProgressUpdate(currentMapDownloadName, 0.0);</span>
+<span class="nc" id="L377">                            showProgressNotification(currentMapDownloadName, 0.0);</span>
+<span class="nc" id="L378">                            MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)</span>
+<span class="nc" id="L379">                                    .withTileDownloadLimit(tileDownloadLimit)</span>
+<span class="nc" id="L380">                                    .resumeMapDownload(offlineRegion, MapboxOfflineDownloaderService.this);</span>
+                        } else {
+                            // IGNORE IT AND SEND A BROADCAST HERE
+<span class="nc" id="L383">                            realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);</span>
+<span class="nc" id="L384">                            MapboxOfflineDownloaderService.this.onError(getString(R.string.error_similar_map_exists_and_downloaded), null);</span>
+<span class="nc" id="L385">                            releaseQueueToPerformOtherJobs();</span>
+                        }
+                    }
+<span class="nc" id="L388">                }</span>
+
+                @Override
+                public void onError(String error) {
+<span class="nc bnc" id="L392" title="All 2 branches missed.">                    if (error.contains(&quot;Map could not be found&quot;)) {</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">                        if (MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD.equals(mapBoxOfflineQueueTask.getTaskType())) {</span>
+
+                            try {
+<span class="nc" id="L396">                                startDownloadProgressUpdater();</span>
+<span class="nc" id="L397">                                MapBoxOfflineResourcesDownloader.getInstance(MapboxOfflineDownloaderService.this, mapBoxAccessToken)</span>
+<span class="nc" id="L398">                                        .withTileDownloadLimit(tileDownloadLimit)</span>
+<span class="nc" id="L399">                                        .downloadMap(new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask()), MapboxOfflineDownloaderService.this);</span>
+
+                                //Set the progress notification
+<span class="nc" id="L402">                                queueDownloadProgressUpdate(currentMapDownloadName, 0.0);</span>
+<span class="nc" id="L403">                                showProgressNotification(currentMapDownloadName, 0.0);</span>
+<span class="nc" id="L404">                            } catch (MalformedDataException | JSONException | OfflineMapDownloadException e) {</span>
+<span class="nc" id="L405">                                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L406">                                releaseQueueToPerformOtherJobs();</span>
+<span class="nc" id="L407">                            }</span>
+                        } else {
+                            // An error means this cannot be solved even at a later time THUS persist the task as DONE
+                            String message;
+<span class="nc" id="L411">                            String taskType = mapBoxOfflineQueueTask.getTaskType();</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">                            if (MapBoxOfflineQueueTask.TASK_TYPE_DOWNLOAD.equals(taskType)) {</span>
+<span class="nc" id="L413">                                message = getString(R.string.map_could_not_be_downloaded);</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">                            } else if (MapBoxOfflineQueueTask.TASK_TYPE_DELETE.equals(taskType)) {</span>
+<span class="nc" id="L415">                                message = getString(R.string.map_could_not_be_deleted);</span>
+                            } else {
+<span class="nc" id="L417">                                message = getString(R.string.map_download_could_not_be_stopped);</span>
+                            }
+
+<span class="nc" id="L420">                            MapboxOfflineDownloaderService.this.onError(error, message);</span>
+<span class="nc" id="L421">                            releaseQueueToPerformOtherJobs();</span>
+<span class="nc" id="L422">                            realmDatabase.persistCompletedStatus(mapBoxOfflineQueueTask);</span>
+<span class="nc" id="L423">                            performNextTask();</span>
+<span class="nc" id="L424">                        }</span>
+                    } else {
+<span class="nc" id="L426">                        MapboxOfflineDownloaderService.this.onError(error, null);</span>
+<span class="nc" id="L427">                        releaseQueueToPerformOtherJobs();</span>
+                    }
+<span class="nc" id="L429">                }</span>
+            });
+        } else {
+<span class="fc" id="L432">            cleanupAndExit();</span>
+        }
+<span class="fc" id="L434">    }</span>
+
+    private void cleanupAndExit() {
+<span class="fc" id="L437">        stopDownloadProgressUpdater();</span>
+<span class="fc" id="L438">        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);</span>
+<span class="fc" id="L439">        notificationManager.cancel(PROGRESS_NOTIFICATION_ID);</span>
+<span class="fc" id="L440">        stopSelf();</span>
+<span class="fc" id="L441">    }</span>
+
+    /**
+     * Sends a local broadcast with the result of a service operation &amp; mapName. To capture the
+     * local broadcast messages, you need to use the {@link LocalBroadcastManager} to register a
+     * {@link android.content.BroadcastReceiver} for action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}
+     * &lt;p&gt;
+     * The broadcast has the following extras:
+     * &lt;ol&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Either SUCCESSFUL or FAILED. Type {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}&lt;/li&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - User-friendly and/or descriptive message of the result. Type {@link String}&lt;/li&gt;
+     * &lt;li&gt;{@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - The Map's unique name. Type {@code {@link String}}&lt;/li&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - The action that was performed to produce this result {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}&lt;/li&gt;
+     * &lt;/ol&gt;
+     * &lt;p&gt;
+     * &lt;p&gt;
+     * &lt;h3&gt;Sample Usage&lt;/h3&gt;
+     * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
+     * &lt;/p&gt;
+     *
+     * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
+     * @param mapName             Unique name of the map
+     * @param message             Additional message/information about the result eg. For a {@link SERVICE_ACTION_RESULT#FAILED} result
+     */
+    private void sendBroadcast(@NonNull SERVICE_ACTION_RESULT serviceActionResult, @NonNull String mapName, SERVICE_ACTION serviceAction, @NonNull String message) {
+<span class="fc" id="L466">        Intent intent = new Intent();</span>
+<span class="fc" id="L467">        intent.setAction(Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES);</span>
+<span class="fc" id="L468">        intent.putExtra(KEY_RESULT_STATUS, serviceActionResult.name());</span>
+<span class="fc" id="L469">        intent.putExtra(KEY_RESULT_MESSAGE, message);</span>
+<span class="fc" id="L470">        intent.putExtra(Constants.PARCELABLE_KEY_MAP_UNIQUE_NAME, mapName);</span>
+<span class="fc" id="L471">        intent.putExtra(KEY_RESULTS_PARENT_ACTION, serviceAction);</span>
+
+<span class="fc" id="L473">        LocalBroadcastManager.getInstance(this)</span>
+<span class="fc" id="L474">                .sendBroadcast(intent);</span>
+<span class="fc" id="L475">    }</span>
+
+    /**
+     * Sends a local broadcast with the result of a service operation &amp; mapName. To capture the
+     * local broadcast messages, you need to use the {@link LocalBroadcastManager} to register a
+     * {@link android.content.BroadcastReceiver} for action {@link Constants#INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES}
+     * &lt;p&gt;
+     * The broadcast has the following extras:
+     * &lt;ol&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_STATUS} - Either SUCCESSFUL or FAILED. Type {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}&lt;/li&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULT_MESSAGE} - User-friendly and/or descriptive message of the result. Type {@link String}&lt;/li&gt;
+     * &lt;li&gt;{@link Constants#PARCELABLE_KEY_MAP_UNIQUE_NAME} - The Map's unique name. Type {@code {@link String}}&lt;/li&gt;
+     * &lt;li&gt;{@link MapboxOfflineDownloaderService#KEY_RESULTS_PARENT_ACTION} - The action that was performed to produce this result {@link MapboxOfflineDownloaderService.SERVICE_ACTION_RESULT}&lt;/li&gt;
+     * &lt;/ol&gt;
+     * &lt;p&gt;
+     * &lt;p&gt;
+     * &lt;h3&gt;Sample Usage&lt;/h3&gt;
+     * {@code LocalBroadcastManager.getInstance(context).registerReceiver(myBroadcastReceiver, new IntentFilter(utils.Constants.INTENT_ACTION_MAP_DOWNLOAD_SERVICE_STATUS_UPDATES)); }
+     * &lt;/p&gt;
+     *
+     * @param serviceActionResult {@link SERVICE_ACTION_RESULT#SUCCESSFUL} or {@link SERVICE_ACTION_RESULT#FAILED}
+     * @param mapName             Unique name of the map
+     * @see #sendBroadcast(SERVICE_ACTION_RESULT, String, SERVICE_ACTION)
+     */
+    private void sendBroadcast(@NonNull SERVICE_ACTION_RESULT serviceActionResult, @NonNull String mapName, @NonNull SERVICE_ACTION serviceAction) {
+<span class="nc" id="L500">        sendBroadcast(serviceActionResult, mapName, serviceAction, &quot;&quot;);</span>
+<span class="nc" id="L501">    }</span>
+
+    /**
+     * Asynchronously retrieves the referenced {@link OfflineRegion}'s {@link OfflineRegionStatus} which provides
+     * information about the download progress &amp; if currently downloading
+     *
+     * @param mapBoxOfflineQueueTask      the QueueTask with the {@link OfflineRegion} definition data
+     * @param mapBoxAccessToken           the MapBox Access Token with which to download the map OR the map was downloaded
+     * @param offlineRegionStatusCallback the callback to call once the {@link OfflineRegionStatus} is retrieved
+     */
+    private void getTaskStatus(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask, @NonNull String mapBoxAccessToken, OfflineRegionStatusCallback offlineRegionStatusCallback) {
+<span class="fc" id="L512">        String mapName = &quot;&quot;;</span>
+
+        try {
+<span class="fc bfc" id="L515" title="All 2 branches covered.">            if (mapBoxOfflineQueueTask.getTaskType().equals(MapBoxOfflineQueueTask.TASK_TYPE_DELETE)) {</span>
+<span class="fc" id="L516">                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapBoxOfflineQueueTask.getTask());</span>
+<span class="fc" id="L517">                mapName = mapBoxDeleteTask.getMapName();</span>
+<span class="fc" id="L518">            } else {</span>
+<span class="fc" id="L519">                MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask());</span>
+<span class="fc" id="L520">                mapName = mapBoxDownloadTask.getMapName();</span>
+            }
+
+<span class="fc" id="L523">            currentMapDownloadName = mapName;</span>
+<span class="fc" id="L524">            MapBoxOfflineResourcesDownloader.getInstance(this, mapBoxAccessToken)</span>
+<span class="fc" id="L525">                    .getMapStatus(mapName, offlineRegionStatusCallback);</span>
+<span class="nc" id="L526">        } catch (MalformedDataException | JSONException e) {</span>
+<span class="nc" id="L527">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc bnc" id="L528" title="All 2 branches missed.">            if (offlineRegionStatusCallback != null) {</span>
+<span class="nc" id="L529">                offlineRegionStatusCallback.onError(e.getMessage());</span>
+            }
+<span class="fc" id="L531">        }</span>
+<span class="fc" id="L532">    }</span>
+
+    /**
+     * Shows a non-removable progress notification with a default download icon, the Map Name &amp; percentage
+     * progress rounded of to 2 decimal places.
+     *
+     * @param mapName            the unique map name
+     * @param percentageProgress Download progress usually between 0-100%
+     */
+    private void showProgressNotification(@NonNull String mapName, double percentageProgress, boolean showAction) {
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">        if (downloadProgressNotification == null) {</span>
+<span class="fc" id="L543">            downloadProgressNotification = new DownloadProgressNotification(this);</span>
+<span class="fc" id="L544">            downloadProgressNotification.createInitialNotification(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);</span>
+        }
+
+<span class="fc" id="L547">        downloadProgressNotification.updateNotification(percentageProgress, mapName, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);</span>
+
+<span class="pc bpc" id="L549" title="1 of 2 branches missed.">        if (!shownForegroundNotification) {</span>
+<span class="fc" id="L550">            downloadProgressNotification.displayForegroundNotification(PROGRESS_NOTIFICATION_ID);</span>
+<span class="fc" id="L551">            shownForegroundNotification = true;</span>
+        } else {
+<span class="nc" id="L553">            downloadProgressNotification.displayNotification(PROGRESS_NOTIFICATION_ID);</span>
+        }
+<span class="fc" id="L555">    }</span>
+
+    private void showProgressNotification(@NonNull String mapName, double percentageProgress) {
+<span class="fc" id="L558">        showProgressNotification(mapName, percentageProgress, true);</span>
+<span class="fc" id="L559">    }</span>
+
+    /**
+     * Shows a customisable &amp; removable notification with a default download icon. The notification
+     * provides information for the download such as the Map Name &amp; Map Size.
+     * This is called when a map download is completed.
+     * &lt;br/&gt;&lt;br/&gt;
+     * &lt;p&gt;
+     * &lt;strong&gt;NOTE: &lt;/strong&gt; The Map Size is not the download size but what makes up the Offline Map.
+     * The download size might be smaller since already download tiles are not redownloaded&lt;br/&gt;
+     *
+     * @param title       title to be shown on the notification
+     * @param description description to be shown on the notification
+     */
+    private void showDownloadCompleteNotification(@NonNull String title, @NonNull String description) {
+<span class="fc" id="L574">        LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID++;</span>
+
+<span class="fc" id="L576">        DownloadCompleteNotification downloadCompleteNotification = new DownloadCompleteNotification(this);</span>
+<span class="fc" id="L577">        downloadCompleteNotification.displayNotification(title, description, LAST_DOWNLOAD_COMPLETE_NOTIFICATION_ID);</span>
+<span class="fc" id="L578">    }</span>
+
+    /**
+     * Provides periodic updates about an ongoing {@link OfflineRegion} download.
+     * &lt;p&gt;
+     * &lt;h3&gt;CAUTION::&lt;/h3&gt;
+     * &lt;strong&gt;Should only be called to observe an ongoing download. It will otherwise resume
+     * download of the {@link OfflineRegion}&lt;/strong&gt;
+     *
+     * @param offlineRegion The {@link OfflineRegion} to observe
+     */
+    private void observeOfflineRegion(@NonNull final OfflineRegion offlineRegion) {
+        //Do not remove the line below!!!
+<span class="fc" id="L591">        offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);</span>
+<span class="fc" id="L592">        observeOfflineRegionCalled = true;</span>
+<span class="fc" id="L593">        offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {</span>
+            @Override
+            public void onStatusChanged(OfflineRegionStatus status) {
+<span class="nc" id="L596">                MapboxOfflineDownloaderService.this.onStatusChanged(status, offlineRegion);</span>
+<span class="nc" id="L597">            }</span>
+
+            @Override
+            public void onError(OfflineRegionError error) {
+<span class="nc" id="L601">                MapboxOfflineDownloaderService.this.onError(error.getReason(), error.getMessage());</span>
+<span class="nc" id="L602">            }</span>
+
+            @Override
+            public void mapboxTileCountLimitExceeded(long limit) {
+<span class="nc" id="L606">                MapboxOfflineDownloaderService.this.mapboxTileCountLimitExceeded(limit);</span>
+<span class="nc" id="L607">            }</span>
+        });
+<span class="fc" id="L609">    }</span>
+
+    @Override
+    public void onStatusChanged(@NonNull OfflineRegionStatus status, @NonNull OfflineRegion offlineRegion) {
+<span class="pc bpc" id="L613" title="1 of 2 branches missed.">        double percentageDownload = (status.getRequiredResourceCount() &gt;= 0) ? 100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount() : 0.0;</span>
+<span class="fc" id="L614">        sendBroadcast(SERVICE_ACTION_RESULT.SUCCESSFUL, currentMapDownloadName, currentServiceAction, String.valueOf(percentageDownload));</span>
+
+<span class="fc bfc" id="L616" title="All 2 branches covered.">        if (status.isComplete()) {</span>
+<span class="fc" id="L617">            stopDownloadProgressUpdater();</span>
+<span class="fc" id="L618">            showDownloadCompleteNotification(String.format(getString(R.string.notification_download_complete_title), currentMapDownloadName), String.format(getString(R.string.notification_download_complete_content), getFriendlyFileSize(status.getCompletedResourceSize())));</span>
+
+<span class="fc" id="L620">            realmDatabase.persistCompletedStatus(currentMapBoxTask);</span>
+<span class="fc" id="L621">            releaseQueueToPerformOtherJobs();</span>
+<span class="fc" id="L622">            performNextTask();</span>
+        } else {
+<span class="fc" id="L624">            queueDownloadProgressUpdate(currentMapDownloadName, percentageDownload);</span>
+        }
+<span class="fc" id="L626">    }</span>
+
+    @Override
+    public void onError(String error) {
+<span class="fc" id="L630">        Log.e(TAG, error);</span>
+<span class="fc" id="L631">        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, currentServiceAction, error);</span>
+<span class="fc" id="L632">    }</span>
+
+    @Override
+    public void onError(@NonNull String reason, @Nullable String message) {
+<span class="fc" id="L636">        String finalMessage = String.format(getString(R.string.error_broadcast_message_format_part_reason), reason);</span>
+<span class="pc bpc" id="L637" title="1 of 4 branches missed.">        if (message != null &amp;&amp; !message.isEmpty()) {</span>
+<span class="fc" id="L638">            finalMessage += String.format(getString(R.string.error_broadcast_message_format_part_message), message);</span>
+        }
+<span class="fc" id="L640">        onError(finalMessage);</span>
+<span class="fc" id="L641">    }</span>
+
+    @Override
+    public void mapboxTileCountLimitExceeded(long limit) {
+<span class="fc" id="L645">        String finalMessage = String.format(getString(R.string.error_mapbox_tile_count_limit), limit, currentMapDownloadName);</span>
+<span class="fc" id="L646">        Log.e(TAG, finalMessage);</span>
+<span class="fc" id="L647">        sendBroadcast(SERVICE_ACTION_RESULT.FAILED, currentMapDownloadName, SERVICE_ACTION.DOWNLOAD_MAP, finalMessage);</span>
+
+        // Show download error notification
+<span class="fc" id="L650">        LAST_DOWNLOAD_ERROR_NOTIFICATION_ID++;</span>
+<span class="fc" id="L651">        CriticalDownloadErrorNotification criticalDownloadErrorNotification = new CriticalDownloadErrorNotification(this);</span>
+<span class="fc" id="L652">        criticalDownloadErrorNotification.displayNotification(String.format(getString(R.string.error_occurred_download_map), currentMapDownloadName)</span>
+<span class="fc" id="L653">                , String.format(getString(R.string.mapbox_tile_count_limit_of_exceeded), limit), LAST_DOWNLOAD_ERROR_NOTIFICATION_ID);</span>
+
+        // No other download can be performed and we should exit the service
+<span class="fc" id="L656">        cleanupAndExit();</span>
+<span class="fc" id="L657">    }</span>
+
+    private String getFriendlyFileSize(long bytes) {
+<span class="fc" id="L660">        return Formatter.formatFileSize(this, bytes);</span>
+    }
+
+    private void queueDownloadProgressUpdate(@NonNull String mapNameUpdate, @NonNull double progressUpdate) {
+<span class="fc" id="L664">        hasUpdateToPost = true;</span>
+<span class="fc" id="L665">        mostRecentPercentageUpdate = progressUpdate;</span>
+<span class="fc" id="L666">        mostRecentMapNameUpdate = mapNameUpdate;</span>
+<span class="fc" id="L667">        shouldThreadDie = false;</span>
+<span class="fc" id="L668">    }</span>
+
+    private void startDownloadProgressUpdater() {
+<span class="fc" id="L671">        shouldThreadDie = false;</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">        if (progressUpdateThread == null) {</span>
+<span class="fc" id="L673">            progressUpdateThread = new Thread(new Runnable() {</span>
+                @Override
+                public void run() {
+
+<span class="fc bfc" id="L677" title="All 2 branches covered.">                    while (!shouldThreadDie) {</span>
+                        try {
+<span class="fc" id="L679">                            Thread.sleep(timeBetweenUpdates);</span>
+
+<span class="pc bpc" id="L681" title="1 of 4 branches missed.">                            if (hasUpdateToPost &amp;&amp; !shouldThreadDie) {</span>
+<span class="pc bpc" id="L682" title="1 of 2 branches missed.">                                if (serviceHandler != null) {</span>
+<span class="fc" id="L683">                                    serviceHandler.post(new Runnable() {</span>
+                                        @Override
+                                        public void run() {
+<span class="fc" id="L686">                                            showProgressNotification(mostRecentMapNameUpdate, mostRecentPercentageUpdate);</span>
+<span class="fc" id="L687">                                        }</span>
+                                    });
+                                }
+<span class="fc" id="L690">                                hasUpdateToPost = false;</span>
+                            }
+
+<span class="nc" id="L693">                        } catch (InterruptedException e) {</span>
+<span class="nc" id="L694">                            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="pc" id="L695">                        }</span>
+                    }
+<span class="fc" id="L697">                }</span>
+            });
+
+<span class="fc" id="L700">            progressUpdateThread.start();</span>
+        }
+
+<span class="pc bpc" id="L703" title="1 of 2 branches missed.">        if (!progressUpdateThread.isAlive()) {</span>
+<span class="nc" id="L704">            progressUpdateThread.start();</span>
+        }
+<span class="fc" id="L706">    }</span>
+
+    private void placeQueueOnHold() {
+<span class="nc" id="L709">        isPerformingTask = true;</span>
+<span class="nc" id="L710">    }</span>
+
+    private void releaseQueueToPerformOtherJobs() {
+<span class="fc" id="L713">        isPerformingTask = false;</span>
+<span class="fc" id="L714">    }</span>
+
+    private void stopDownloadProgressUpdater() {
+<span class="fc" id="L717">        shouldThreadDie = true;</span>
+<span class="fc" id="L718">    }</span>
+
+    @Override
+    public void onDestroy() {
+<span class="nc" id="L722">        super.onDestroy();</span>
+<span class="nc" id="L723">        stopDownloadProgressUpdater();</span>
+
+<span class="nc" id="L725">        if (MapBoxOfflineResourcesDownloader.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN)</span>
+<span class="nc bnc" id="L726" title="All 2 branches missed.">                .getConnectivityReceiverActivationCounter() &gt; 0) {</span>
+<span class="nc" id="L727">            ConnectivityReceiver.instance(this)</span>
+<span class="nc" id="L728">                    .deactivate();</span>
+        }
+<span class="nc" id="L730">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

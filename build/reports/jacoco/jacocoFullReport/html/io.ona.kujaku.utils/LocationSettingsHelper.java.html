@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LocationSettingsHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils</a> &gt; <span class="el_source">LocationSettingsHelper.java</span></div><h1>LocationSettingsHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils;
+
+import android.app.Activity;
+import android.content.IntentSender;
+import android.util.Log;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 31/10/2018
+ */
+
+<span class="nc" id="L21">public class LocationSettingsHelper {</span>
+
+<span class="nc" id="L23">    private static final String TAG = LocationSettingsHelper.class.getName();</span>
+
+    /**
+     * Checks if location is currently enabled &amp; if the location settings are at high accuracy for
+     * use in {@link io.ona.kujaku.views.KujakuMapView}
+     *
+     * @param activity
+     */
+    public static void checkLocationEnabled(Activity activity, ResultCallback&lt;LocationSettingsResult&gt; resultCallback) {
+<span class="nc" id="L32">        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(activity)</span>
+<span class="nc" id="L33">                .addApi(LocationServices.API).build();</span>
+<span class="nc" id="L34">        googleApiClient.connect();</span>
+
+<span class="nc" id="L36">        LocationRequest locationRequest = LocationRequest.create();</span>
+<span class="nc" id="L37">        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);</span>
+<span class="nc" id="L38">        locationRequest.setInterval(10000);</span>
+<span class="nc" id="L39">        locationRequest.setFastestInterval(10000 / 2);</span>
+
+<span class="nc" id="L41">        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);</span>
+<span class="nc" id="L42">        builder.setAlwaysShow(true);</span>
+
+<span class="nc" id="L44">        PendingResult&lt;LocationSettingsResult&gt; result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());</span>
+<span class="nc" id="L45">        result.setResultCallback(resultCallback);</span>
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

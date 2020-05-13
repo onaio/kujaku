@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DownloadCompleteNotification.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.notifications</a> &gt; <span class="el_source">DownloadCompleteNotification.java</span></div><h1>DownloadCompleteNotification.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.notifications;
+
+import android.app.NotificationManager;
+import android.content.Context;
+import android.graphics.Color;
+import android.support.v4.app.NotificationCompat;
+
+import io.ona.kujaku.R;
+
+/**
+ * Creates a valid {@link android.app.NotificationChannel} for download complete notifications. It
+ * also displays download complete notifications.
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.
+ */
+
+public class DownloadCompleteNotification extends KujakuNotification {
+    public static final String CHANNEL_ID = &quot;KUJAKU_DOWNLOAD_COMPLETE_CHANNEL&quot;;
+    public static final int NOTIFICATION_COLOR = Color.BLUE;
+<span class="fc" id="L20">    public static final long[] VIBRATION_PATTERN = new long[]{200, 600, 300, 600};</span>
+
+<span class="fc" id="L22">    public DownloadCompleteNotification(Context context) {</span>
+<span class="fc" id="L23">        setContext(context);</span>
+<span class="fc" id="L24">        setSmallIcon(R.drawable.ic_stat_file_download);</span>
+
+<span class="fc" id="L26">        createNotificationChannel(NotificationManager.IMPORTANCE_DEFAULT, context.getString(R.string.download_complete_channel_name), CHANNEL_ID, context.getString(R.string.download_complete_channel_description), NOTIFICATION_COLOR, VIBRATION_PATTERN);</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Displays a download complete notification given the title, content and notificationId
+     *
+     * @param title
+     * @param content
+     * @param notificationId
+     */
+    public void displayNotification(String title, String content, int notificationId) {
+<span class="fc" id="L37">        NotificationCompat.Builder notificationBuilder = createNotification(title, content);</span>
+<span class="fc" id="L38">        displayNotification(notificationBuilder, notificationId);</span>
+<span class="fc" id="L39">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

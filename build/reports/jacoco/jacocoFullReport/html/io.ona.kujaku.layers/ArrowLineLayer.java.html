@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArrowLineLayer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.layers</a> &gt; <span class="el_source">ArrowLineLayer.java</span></div><h1>ArrowLineLayer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.layers;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
+import android.support.annotation.ColorInt;
+import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.MultiLineString;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.Property;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.turf.TurfMeasurement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.comparators.ArrowLineSortConfigComparator;
+import io.ona.kujaku.exceptions.InvalidArrowLineConfigException;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.utils.FeatureFilter;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.linear;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
+import static com.mapbox.mapboxsdk.style.layers.Property.ICON_ROTATION_ALIGNMENT_MAP;
+import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
+import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
+
+/**
+ * Enables one to show a 1-to-1 or 1-to-many relationship between features. It's limits enables it
+ * to show a many-to-many relationship by referencing the same child-case from multiple index-cases.
+ * &lt;p&gt;
+ * Sample code when creating a 1-to-1 relationship:
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * &lt;code&gt;
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq(&quot;testStatus&quot;, &quot;positive&quot;));
+ * &lt;p&gt;
+ * ArrowLineLayer.SortConfig sortConfig = new ArrowLineLayer.SortConfig(&quot;dateTime&quot;
+ * , ArrowLineLayer.SortConfig.SortOrder.ASC
+ * , ArrowLineLayer.SortConfig.PropertyType.DATE_TIME)
+ * .setDateTimeFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, sortConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId(&quot;sample-cases-symbol&quot;)
+ * .build();
+ * &lt;/code&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * Sample code when creating a 1-to-many relationship:
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * &lt;code&gt;
+ * ArrowLineLayer.FeatureConfig featureConfig = new ArrowLineLayer.FeatureConfig(
+ * new FeatureFilter.Builder(caseFeatureCollection1)
+ * .whereEq(&quot;testStatus&quot;, &quot;positive&quot;));
+ * &lt;p&gt;
+ * ArrowLineLayer.OneToManyConfig oneToManyConfig = new ArrowLineLayer.OneToManyConfig(&quot;childCases&quot;);
+ * arrowLineLayer = new ArrowLineLayer.Builder(this, featureConfig, oneToManyConfig)
+ * .setArrowLineColor(R.color.mapbox_blue)
+ * .setArrowLineWidth(3)
+ * .setAddBelowLayerId(&quot;sample-cases-symbol&quot;)
+ * .build();
+ * &lt;/code&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * For the 1-to-many relationship, you need to have a property on the index case feature that defines
+ * a string array of child cases. The string array is the id of each GeoJSON Feature that is a direct child
+ * case of this index case
+ * &lt;p&gt;&lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 08/02/2019
+ */
+
+public class ArrowLineLayer extends KujakuLayer {
+
+<span class="fc" id="L120">    private static final String TAG = ArrowLineLayer.class.getName();</span>
+    public static final String ARROW_HEAD_BEARING = &quot;arrow-head-bearing&quot;;
+
+    private Builder builder;
+
+<span class="fc" id="L125">    private String LINE_LAYER_SOURCE_ID = UUID.randomUUID().toString();</span>
+<span class="fc" id="L126">    private String LINE_LAYER_ID = UUID.randomUUID().toString();</span>
+
+<span class="fc" id="L128">    private String ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();</span>
+<span class="fc" id="L129">    private String ARROW_HEAD_LAYER_ID = UUID.randomUUID().toString();</span>
+
+    private static final String ARROW_HEAD_ICON = &quot;arrow-head-icon&quot;;
+
+    private GeoJsonSource lineLayerSource;
+    private LineLayer lineLayer;
+
+    private GeoJsonSource arrowHeadSource;
+    private SymbolLayer arrowHeadLayer;
+
+    public static final int MIN_ARROW_ZOOM = 10;
+    public static final int MAX_ARROW_ZOOM = 22;
+    public static final float MIN_ZOOM_ARROW_HEAD_SCALE = 0.5f;
+    public static final float MAX_ZOOM_ARROW_HEAD_SCALE = 1.0f;
+
+<span class="fc" id="L144">    private ArrowLineLayer(@NonNull Builder builder) throws InvalidArrowLineConfigException {</span>
+<span class="fc" id="L145">        this.builder = builder;</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (builder.sortConfig != null &amp;&amp;</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                builder.sortConfig.getPropertyType() == SortConfig.PropertyType.DATE_TIME</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">                &amp;&amp; TextUtils.isEmpty(builder.sortConfig.getDateTimeFormat())) {</span>
+<span class="fc" id="L149">            throw new InvalidArrowLineConfigException(&quot;Date time format for sort configuration on a DateTime property has not been set&quot;);</span>
+        }
+<span class="fc" id="L151">    }</span>
+
+    private void createLineLayerSource() {
+<span class="fc" id="L154">        lineLayerSource = new GeoJsonSource(LINE_LAYER_SOURCE_ID);</span>
+<span class="fc" id="L155">    }</span>
+
+    private void createArrowLineLayer(@NonNull Builder builder) {
+<span class="fc" id="L158">        lineLayer = new LineLayer(LINE_LAYER_ID, LINE_LAYER_SOURCE_ID);</span>
+<span class="fc" id="L159">        lineLayer.withProperties(</span>
+<span class="fc" id="L160">                lineCap(Property.LINE_CAP_ROUND),</span>
+<span class="fc" id="L161">                lineJoin(Property.LINE_JOIN_ROUND),</span>
+<span class="fc" id="L162">                lineColor(builder.arrowLineColor)</span>
+        );
+
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        if (builder.arrowLineWidth != 0f) {</span>
+<span class="fc" id="L166">            lineLayer.setProperties(lineWidth(builder.arrowLineWidth));</span>
+        }
+<span class="fc" id="L168">    }</span>
+
+    private void createArrowHeadLayer() {
+<span class="fc" id="L171">        arrowHeadLayer = new SymbolLayer(ARROW_HEAD_LAYER_ID, ARROW_HEAD_LAYER_SOURCE_ID);</span>
+<span class="fc" id="L172">        arrowHeadLayer.withProperties(</span>
+<span class="fc" id="L173">                PropertyFactory.iconImage(ARROW_HEAD_ICON),</span>
+<span class="fc" id="L174">                iconAllowOverlap(true),</span>
+<span class="fc" id="L175">                iconIgnorePlacement(true),</span>
+<span class="fc" id="L176">                PropertyFactory.iconSize(interpolate(linear(), zoom(),</span>
+<span class="fc" id="L177">                        stop(MIN_ARROW_ZOOM, MIN_ZOOM_ARROW_HEAD_SCALE),</span>
+<span class="fc" id="L178">                        stop(MAX_ARROW_ZOOM, MAX_ZOOM_ARROW_HEAD_SCALE)</span>
+                        )
+                ),
+<span class="fc" id="L181">                PropertyFactory.iconRotationAlignment(ICON_ROTATION_ALIGNMENT_MAP),</span>
+<span class="fc" id="L182">                PropertyFactory.iconRotate(get(ARROW_HEAD_BEARING)),</span>
+<span class="fc" id="L183">                PropertyFactory.iconOpacity(1f)</span>
+        );
+<span class="fc" id="L185">    }</span>
+
+    private void createArrowHeadSource() {
+<span class="fc" id="L188">        arrowHeadSource = new GeoJsonSource(ARROW_HEAD_LAYER_SOURCE_ID</span>
+<span class="fc" id="L189">                , new GeoJsonOptions().withMaxZoom(16));</span>
+<span class="fc" id="L190">    }</span>
+
+    public LineLayer getLineLayer() {
+<span class="fc" id="L193">        return lineLayer;</span>
+    }
+
+    public SymbolLayer getArrowHeadLayer() {
+<span class="nc" id="L197">        return arrowHeadLayer;</span>
+    }
+
+    /**
+     * Adds the layer to a {@link MapboxMap} after sorting the features, generating the
+     * {@link LineString} to draw the arrow line and {@link FeatureCollection} to draw the arrow heads.
+     *
+     * @param mapboxMap
+     */
+    @Override
+    public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
+        // Create arrow head source
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (mapboxMap.getStyle().getSource(ARROW_HEAD_LAYER_SOURCE_ID) != null) {</span>
+<span class="nc" id="L210">            ARROW_HEAD_LAYER_SOURCE_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L212">        createArrowHeadSource();</span>
+
+        // Create the arrow line source
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (mapboxMap.getStyle().getSource(LINE_LAYER_SOURCE_ID) != null) {</span>
+<span class="nc" id="L216">            LINE_LAYER_SOURCE_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L218">        createLineLayerSource();</span>
+
+        // Create the arrow head layer
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (mapboxMap.getStyle().getLayer(ARROW_HEAD_LAYER_ID) != null) {</span>
+<span class="nc" id="L222">            ARROW_HEAD_LAYER_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L224">        createArrowHeadLayer();</span>
+
+        //Create the arrow line laye
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (mapboxMap.getStyle().getLayer(LINE_LAYER_ID) != null) {</span>
+<span class="nc" id="L228">            LINE_LAYER_ID = UUID.randomUUID().toString();</span>
+        }
+<span class="nc" id="L230">        createArrowLineLayer(builder);</span>
+
+<span class="nc" id="L232">        GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="nc" id="L235">                FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);</span>
+                FeatureCollection arrowHeadFeatures;
+
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                if (builder.sortConfig != null) {</span>
+<span class="nc" id="L239">                    FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);</span>
+<span class="nc" id="L240">                    LineString arrowLine = calculateLineString(sortedFeatureCollection);</span>
+<span class="nc" id="L241">                    arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);</span>
+
+<span class="nc" id="L243">                    return new Object[]{arrowLine, arrowHeadFeatures};</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">                } else if (builder.oneToManyConfig != null) {</span>
+<span class="nc" id="L245">                    MultiLineString arrowLine = calculateMultiLineString(filteredFeatureCollection, builder.oneToManyConfig);</span>
+<span class="nc" id="L246">                    arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);</span>
+
+<span class="nc" id="L248">                    return new Object[]{arrowLine, arrowHeadFeatures};</span>
+                } else {
+<span class="nc" id="L250">                    throw new IllegalArgumentException(&quot;SortConfig &amp; OneToManyConfig not available to draw the line layer&quot;);</span>
+                }
+            }
+        });
+<span class="nc" id="L254">        genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+<span class="nc" id="L257">                Geometry arrowLine = (Geometry) objects[0];</span>
+<span class="nc" id="L258">                FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];</span>
+
+<span class="nc" id="L260">                arrowHeadSource.setGeoJson(arrowHeadFeatures);</span>
+<span class="nc" id="L261">                lineLayerSource.setGeoJson(arrowLine);</span>
+
+<span class="nc" id="L263">                Drawable arrowHead = AppCompatResources.getDrawable(builder.context, R.drawable.ic_arrow_head);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                if (arrowHead == null) {</span>
+<span class="nc" id="L265">                    return;</span>
+                }
+
+<span class="nc" id="L268">                Drawable head = DrawableCompat.wrap(arrowHead);</span>
+<span class="nc" id="L269">                DrawableCompat.setTint(head.mutate(), builder.arrowLineColor);</span>
+<span class="nc" id="L270">                Bitmap icon = getBitmapFromDrawable(head);</span>
+
+<span class="nc" id="L272">                mapboxMap.getStyle().addImage(ARROW_HEAD_ICON, icon);</span>
+
+<span class="nc" id="L274">                mapboxMap.getStyle().addSource(arrowHeadSource);</span>
+<span class="nc" id="L275">                mapboxMap.getStyle().addSource(lineLayerSource);</span>
+
+<span class="nc bnc" id="L277" title="All 4 branches missed.">                if (builder.addBelowLayerId != null &amp;&amp; mapboxMap.getStyle().getLayer(builder.addBelowLayerId) != null) {</span>
+<span class="nc" id="L278">                    mapboxMap.getStyle().addLayerBelow(lineLayer, builder.addBelowLayerId);</span>
+<span class="nc" id="L279">                    mapboxMap.getStyle().addLayerBelow(arrowHeadLayer, builder.addBelowLayerId);</span>
+                } else {
+<span class="nc" id="L281">                    mapboxMap.getStyle().addLayer(lineLayer);</span>
+<span class="nc" id="L282">                    mapboxMap.getStyle().addLayer(arrowHeadLayer);</span>
+                }
+
+<span class="nc" id="L285">                visible = true;</span>
+<span class="nc" id="L286">            }</span>
+
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L290">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L291">            }</span>
+        });
+
+<span class="nc" id="L294">        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L295">    }</span>
+
+    @Override
+    public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L299">        ArrayList&lt;Layer&gt; layers = new ArrayList&lt;Layer&gt;();</span>
+<span class="nc" id="L300">        layers.add(mapboxMap.getStyle().getLayerAs(LINE_LAYER_ID));</span>
+<span class="nc" id="L301">        layers.add(mapboxMap.getStyle().getLayerAs(ARROW_HEAD_LAYER_ID));</span>
+
+<span class="nc bnc" id="L303" title="All 2 branches missed.">        for (Layer layer: layers) {</span>
+<span class="nc bnc" id="L304" title="All 4 branches missed.">            if (layer != null &amp;&amp; NONE.equals(layer.getVisibility().getValue())) {</span>
+<span class="nc" id="L305">                layer.setProperties(visibility(VISIBLE));</span>
+<span class="nc" id="L306">                visible = true;</span>
+            }
+<span class="nc" id="L308">        }</span>
+<span class="nc" id="L309">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="nc" id="L316">        ArrayList&lt;Layer&gt; layers = new ArrayList&lt;Layer&gt;();</span>
+<span class="nc" id="L317">        layers.add(mapboxMap.getStyle().getLayerAs(LINE_LAYER_ID));</span>
+<span class="nc" id="L318">        layers.add(mapboxMap.getStyle().getLayerAs(ARROW_HEAD_LAYER_ID));</span>
+
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        for (Layer layer: layers) {</span>
+<span class="nc bnc" id="L321" title="All 4 branches missed.">            if (layer != null &amp;&amp; VISIBLE.equals(layer.getVisibility().getValue())) {</span>
+<span class="nc" id="L322">                layer.setProperties(visibility(NONE));</span>
+<span class="nc" id="L323">                visible = false;</span>
+            }
+<span class="nc" id="L325">        }</span>
+<span class="nc" id="L326">    }</span>
+
+
+    @Override @NonNull
+    public String[] getLayerIds() {
+<span class="fc" id="L331">        return new String[] {ARROW_HEAD_LAYER_ID, LINE_LAYER_ID};</span>
+    }
+
+    @Override
+    public boolean removeLayerOnMap(@NonNull MapboxMap mapboxMap) {
+<span class="fc" id="L336">        setRemoved(true);</span>
+
+        // Remove the layers &amp; sources
+<span class="fc" id="L339">        Style style = mapboxMap.getStyle();</span>
+<span class="pc bpc" id="L340" title="1 of 4 branches missed.">        if (style != null &amp;&amp; style.isFullyLoaded()) {</span>
+<span class="fc" id="L341">            style.removeLayer(arrowHeadLayer);</span>
+<span class="fc" id="L342">            style.removeLayer(lineLayer);</span>
+
+<span class="fc" id="L344">            style.removeSource(arrowHeadSource);</span>
+<span class="fc" id="L345">            style.removeSource(lineLayerSource);</span>
+
+<span class="fc" id="L347">            visible = false;</span>
+
+<span class="fc" id="L349">            return true;</span>
+        } else {
+<span class="fc" id="L351">            Log.e(TAG, &quot;Could not remove the layers &amp; source because the the style is null or not fully loaded&quot;);</span>
+<span class="fc" id="L352">            return false;</span>
+        }
+    }
+
+   @Override
+    public void updateFeatures(@NonNull FeatureCollection featureCollection) {
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">        if (this.builder.featureConfig.featureCollection != null) {</span>
+<span class="fc" id="L359">            this.builder.featureConfig.featureCollection = featureCollection;</span>
+        }
+
+<span class="fc bfc" id="L362" title="All 2 branches covered.">        if (this.builder.featureConfig.featureFilterBuilder != null) {</span>
+<span class="fc" id="L363">            this.builder.featureConfig.featureFilterBuilder.setFeatureCollection(featureCollection);</span>
+        }
+
+<span class="pc bpc" id="L366" title="1 of 2 branches missed.">        if (lineLayer != null) {</span>
+<span class="nc" id="L367">            GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+                @Override
+                public Object[] call() throws Exception {
+<span class="nc" id="L370">                    FeatureCollection filteredFeatureCollection = filterFeatures(builder.featureConfig, builder.sortConfig);</span>
+                    FeatureCollection arrowHeadFeatures;
+
+<span class="nc bnc" id="L373" title="All 2 branches missed.">                    if (builder.sortConfig != null) {</span>
+<span class="nc" id="L374">                        FeatureCollection sortedFeatureCollection = sortFeatures(filteredFeatureCollection, builder.sortConfig);</span>
+<span class="nc" id="L375">                        LineString arrowLine = calculateLineString(sortedFeatureCollection);</span>
+<span class="nc" id="L376">                        arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);</span>
+
+<span class="nc" id="L378">                        return new Object[]{arrowLine, arrowHeadFeatures};</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">                    } else if (builder.oneToManyConfig != null) {</span>
+<span class="nc" id="L380">                        MultiLineString arrowLine = calculateMultiLineString(filteredFeatureCollection, builder.oneToManyConfig);</span>
+<span class="nc" id="L381">                        arrowHeadFeatures = generateArrowHeadFeatureCollection(arrowLine);</span>
+
+<span class="nc" id="L383">                        return new Object[]{arrowLine, arrowHeadFeatures};</span>
+                    } else {
+<span class="nc" id="L385">                        throw new IllegalArgumentException(&quot;SortConfig &amp; OneToManyConfig not available to draw the line layer&quot;);</span>
+                    }
+                }
+            });
+<span class="nc" id="L389">            genericAsyncTask.setOnFinishedListener(new OnFinishedListener() {</span>
+                @Override
+                public void onSuccess(Object[] objects) {
+<span class="nc" id="L392">                    Geometry arrowLine = (Geometry) objects[0];</span>
+<span class="nc" id="L393">                    FeatureCollection arrowHeadFeatures = (FeatureCollection) objects[1];</span>
+
+<span class="nc" id="L395">                    arrowHeadSource.setGeoJson(arrowHeadFeatures);</span>
+<span class="nc" id="L396">                    lineLayerSource.setGeoJson(arrowLine);</span>
+<span class="nc" id="L397">                }</span>
+
+                @Override
+                public void onError(Exception e) {
+<span class="nc" id="L401">                    Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L402">                }</span>
+            });
+
+<span class="nc" id="L405">            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+        }
+<span class="fc" id="L407">    }</span>
+
+    private Bitmap getBitmapFromDrawable(Drawable drawable) {
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        if (drawable instanceof BitmapDrawable) {</span>
+<span class="nc" id="L411">            return ((BitmapDrawable) drawable).getBitmap();</span>
+        } else {
+<span class="nc" id="L413">            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),</span>
+                    Bitmap.Config.ARGB_8888);
+<span class="nc" id="L415">            Canvas canvas = new Canvas(bitmap);</span>
+<span class="nc" id="L416">            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());</span>
+<span class="nc" id="L417">            drawable.draw(canvas);</span>
+<span class="nc" id="L418">            return bitmap;</span>
+        }
+    }
+
+    /**
+     * Sorts the features using the {@link SortConfig} defined
+     *
+     * @param featureCollection
+     * @param sortConfig
+     * @return
+     */
+    private FeatureCollection sortFeatures(@NonNull FeatureCollection featureCollection, @NonNull SortConfig sortConfig) {
+<span class="fc" id="L430">        List&lt;Feature&gt; featuresList = featureCollection.features();</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">        if (featuresList != null) {</span>
+<span class="fc" id="L432">            Collections.sort(featuresList, new ArrowLineSortConfigComparator(sortConfig));</span>
+        }
+
+<span class="fc" id="L435">        return FeatureCollection.fromFeatures(featuresList);</span>
+    }
+
+    private FeatureCollection filterFeatures(@NonNull FeatureConfig featureConfig, @Nullable SortConfig sortConfig) {
+<span class="fc bfc" id="L439" title="All 2 branches covered.">        if (featureConfig.getFeatureFilterBuilder() != null) {</span>
+<span class="fc" id="L440">            FeatureFilter.Builder featureFilterBuilder = featureConfig.getFeatureFilterBuilder();</span>
+
+<span class="pc bpc" id="L442" title="1 of 2 branches missed.">            if (sortConfig != null) {</span>
+<span class="fc" id="L443">                featureFilterBuilder.setSortProperty(sortConfig.getSortProperty());</span>
+            }
+
+<span class="fc" id="L446">            return featureFilterBuilder.build().filter();</span>
+        } else {
+<span class="fc" id="L448">            return featureConfig.getFeatureCollection();</span>
+        }
+    }
+
+    /**
+     * Generates a {@link FeatureCollection} which is a list of {@link Feature}s that represent the
+     * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
+     * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
+     *
+     * @param lineString the line string for which to generate arrow head features
+     * @return a {@link FeatureCollection} which represents the locations of the arrow heads and bearing property
+     */
+    private FeatureCollection generateArrowHeadFeatureCollection(@NonNull LineString lineString) {
+<span class="fc" id="L461">        ArrayList&lt;Feature&gt; featureList = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L463">        List&lt;Point&gt; lineStringPoints = lineString.coordinates();</span>
+<span class="fc bfc" id="L464" title="All 2 branches covered.">        for (int i = 0; i &lt; lineStringPoints.size() - 1; i++) {</span>
+<span class="fc" id="L465">            Point startPoint = lineStringPoints.get(i);</span>
+<span class="fc" id="L466">            Point endPoint = lineStringPoints.get(i + 1);</span>
+
+<span class="fc" id="L468">            Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));</span>
+<span class="fc" id="L469">            arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));</span>
+
+<span class="fc" id="L471">            featureList.add(arrowHeadFeature);</span>
+        }
+
+<span class="fc" id="L474">        return FeatureCollection.fromFeatures(featureList);</span>
+    }
+
+
+    /**
+     * Generates a {@link FeatureCollection} which is a list of {@link Feature}s that represent the
+     * midpoint between every two vertices. Each of the {@link Feature}s has a bearing property that
+     * tells the bearing if one was moving from the first {@link Feature} to the second {@link Feature}.
+     *
+     * @param multiLineString the line string for which to generate arrow head features
+     * @return a {@link FeatureCollection} which represents the locations of the arrow heads and bearing property
+     */
+    private FeatureCollection generateArrowHeadFeatureCollection(@NonNull MultiLineString multiLineString) {
+<span class="nc" id="L487">        ArrayList&lt;Feature&gt; featureList = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L489">        List&lt;LineString&gt; lineStrings = multiLineString.lineStrings();</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">        for (int i = 0; i &lt; lineStrings.size(); i++) {</span>
+<span class="nc" id="L491">            LineString lineString = lineStrings.get(i);</span>
+
+<span class="nc" id="L493">            Point startPoint = lineString.coordinates().get(0);</span>
+<span class="nc" id="L494">            Point endPoint = lineString.coordinates().get(1);</span>
+
+<span class="nc" id="L496">            Feature arrowHeadFeature = Feature.fromGeometry(TurfMeasurement.midpoint(startPoint, endPoint));</span>
+<span class="nc" id="L497">            arrowHeadFeature.addNumberProperty(ARROW_HEAD_BEARING, TurfMeasurement.bearing(startPoint, endPoint));</span>
+
+<span class="nc" id="L499">            featureList.add(arrowHeadFeature);</span>
+        }
+
+<span class="nc" id="L502">        return FeatureCollection.fromFeatures(featureList);</span>
+    }
+
+    /**
+     * Calculates the center points from the polygons, multi-polygons and point features and generates
+     * a {@link LineString} which will be used on the {@link LineLayer}
+     *
+     * @param featureCollection including Polygons and Multi-Polygons to convert to {@link LineString}
+     * @return a {@link LineString} which can be used to draw a {@link LineLayer} on the map
+     */
+    private LineString calculateLineString(@NonNull FeatureCollection featureCollection) {
+<span class="fc" id="L513">        ArrayList&lt;Point&gt; centerPoints = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L515">        List&lt;Feature&gt; featureList = featureCollection.features();</span>
+<span class="pc bpc" id="L516" title="1 of 2 branches missed.">        if (featureList != null) {</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">            for (Feature feature : featureList) {</span>
+<span class="fc" id="L518">                Geometry featureGeometry = feature.geometry();</span>
+<span class="pc bpc" id="L519" title="1 of 2 branches missed.">                if (featureGeometry != null) {</span>
+<span class="fc bfc" id="L520" title="All 2 branches covered.">                    if (featureGeometry instanceof Point) {</span>
+<span class="fc" id="L521">                        Point featurePoint = (Point) featureGeometry;</span>
+<span class="fc" id="L522">                        centerPoints.add(Point.fromLngLat(featurePoint.longitude(), featurePoint.latitude()));</span>
+<span class="fc" id="L523">                    } else {</span>
+<span class="fc" id="L524">                        centerPoints.add(getCenter(featureGeometry));</span>
+                    }
+                }
+<span class="fc" id="L527">            }</span>
+        }
+
+<span class="fc" id="L530">        return LineString.fromLngLats(centerPoints);</span>
+    }
+
+    /**
+     * Calculates the center points from the polygons, multi-polygons and point features and generates
+     * a {@link MultiLineString} which will be used on the {@link LineLayer}
+     *
+     * @param featureCollection including Polygons and Multi-Polygons to convert to {@link MultiLineString}
+     * @return a {@link MultiLineString} which can be used to draw a {@link LineLayer} on the map
+     */
+    private MultiLineString calculateMultiLineString(@NonNull FeatureCollection featureCollection, @NonNull OneToManyConfig oneToManyConfig) {
+<span class="fc" id="L541">        ArrayList&lt;LineString&gt; centerPoints = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L543">        HashMap&lt;String, Feature&gt; featureMap = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L545">        List&lt;Feature&gt; featureList = featureCollection.features();</span>
+
+        // Generate the center points and read the feature into the search data structure
+<span class="pc bpc" id="L548" title="1 of 2 branches missed.">        if (featureList != null) {</span>
+<span class="fc bfc" id="L549" title="All 2 branches covered.">            for (Feature feature : featureList) {</span>
+<span class="fc" id="L550">                Geometry featureGeometry = feature.geometry();</span>
+<span class="pc bpc" id="L551" title="1 of 2 branches missed.">                if (featureGeometry != null) {</span>
+<span class="fc" id="L552">                    Point featurePoint = null;</span>
+<span class="fc bfc" id="L553" title="All 2 branches covered.">                    if (featureGeometry instanceof Point) {</span>
+<span class="fc" id="L554">                        Point originalFeaturePoint = (Point) featureGeometry;</span>
+
+                        // This prevents reference access problems
+<span class="fc" id="L557">                        featurePoint = Point.fromLngLat(originalFeaturePoint.longitude(), originalFeaturePoint.latitude());</span>
+<span class="fc" id="L558">                    } else {</span>
+<span class="fc" id="L559">                        featurePoint = getCenter(featureGeometry);</span>
+                    }
+
+<span class="pc bpc" id="L562" title="1 of 2 branches missed.">                    String featureId = feature.id() != null ? feature.id() : UUID.randomUUID().toString();</span>
+<span class="fc" id="L563">                    JsonObject featureProperties = feature.properties();</span>
+<span class="fc" id="L564">                    Feature pointFeature = Feature.fromGeometry(featurePoint, featureProperties, featureId);</span>
+
+<span class="fc" id="L566">                    featureMap.put(featureId, pointFeature);</span>
+                }
+<span class="fc" id="L568">            }</span>
+        }
+
+        // Create the multi-lines between center points
+<span class="fc bfc" id="L572" title="All 2 branches covered.">        for (Feature feature: featureMap.values()) {</span>
+<span class="fc" id="L573">            JsonElement childCasesElement = feature.getProperty(oneToManyConfig.getChildrenDefinitionProperty());</span>
+
+<span class="pc bpc" id="L575" title="1 of 4 branches missed.">            if (feature.hasProperty(oneToManyConfig.getChildrenDefinitionProperty()) &amp;&amp; childCasesElement instanceof JsonArray) {</span>
+<span class="fc" id="L576">                JsonArray childCases = (JsonArray) feature.getProperty(oneToManyConfig.getChildrenDefinitionProperty());</span>
+<span class="fc bfc" id="L577" title="All 2 branches covered.">                for (JsonElement childCase : childCases) {</span>
+<span class="pc bpc" id="L578" title="1 of 2 branches missed.">                    if (childCase.isJsonPrimitive()) {</span>
+<span class="fc" id="L579">                        Feature childFeature = featureMap.get(childCase.getAsString());</span>
+
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">                        if (childFeature != null) {</span>
+<span class="fc" id="L582">                            ArrayList&lt;Point&gt; points = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L583">                            points.add((Point) feature.geometry());</span>
+<span class="fc" id="L584">                            points.add((Point) childFeature.geometry());</span>
+
+<span class="fc" id="L586">                            centerPoints.add(LineString.fromLngLats(points));</span>
+                        }
+                    }
+<span class="fc" id="L589">                }</span>
+            }
+<span class="fc" id="L591">        }</span>
+
+<span class="fc" id="L593">        return MultiLineString.fromLineStrings(centerPoints);</span>
+    }
+
+    /**
+     * Generates the center from the {@link Geometry} of a given {@link Feature} for {@link Geometry}
+     * of types {@link com.mapbox.geojson.MultiPolygon}, {@link com.mapbox.geojson.Polygon} and
+     * {@link com.mapbox.geojson.MultiPoint}
+     *
+     * @param featureGeometry
+     * @return
+     */
+    public static Point getCenter(@NonNull Geometry featureGeometry) {
+<span class="fc" id="L605">        double[] bbox = TurfMeasurement.bbox(featureGeometry);</span>
+<span class="fc" id="L606">        return Point.fromLngLat((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);</span>
+    }
+
+    @Override
+    public FeatureCollection getFeatureCollection() {
+<span class="nc" id="L611">        return this.builder.featureConfig.getFeatureCollection();</span>
+    }
+
+    public static class Builder {
+
+        private FeatureConfig featureConfig;
+        @Nullable
+        private SortConfig sortConfig;
+        @Nullable
+        private OneToManyConfig oneToManyConfig;
+        private Context context;
+        private String addBelowLayerId;
+
+        @ColorInt
+        private int arrowLineColor;
+<span class="fc" id="L626">        private float arrowLineWidth = 3f;</span>
+<span class="fc" id="L627">        public Builder(@NonNull Context context, @NonNull FeatureConfig featureConfig, @NonNull SortConfig sortConfig) {</span>
+<span class="fc" id="L628">            this.featureConfig = featureConfig;</span>
+<span class="fc" id="L629">            this.sortConfig = sortConfig;</span>
+<span class="fc" id="L630">            this.context = context;</span>
+
+<span class="fc" id="L632">            setArrowLineColor(R.color.mapbox_blue);</span>
+<span class="fc" id="L633">        }</span>
+
+<span class="fc" id="L635">        public Builder(@NonNull Context context, @NonNull FeatureConfig featureConfig, @NonNull  OneToManyConfig oneToManyConfig) {</span>
+<span class="fc" id="L636">            this.featureConfig = featureConfig;</span>
+<span class="fc" id="L637">            this.oneToManyConfig = oneToManyConfig;</span>
+<span class="fc" id="L638">            this.context = context;</span>
+
+<span class="fc" id="L640">            setArrowLineColor(R.color.mapbox_blue);</span>
+<span class="fc" id="L641">        }</span>
+
+        public Builder setArrowLineColor(@ColorRes int colorInt) {
+<span class="fc" id="L644">            this.arrowLineColor = context.getResources().getColor(colorInt);</span>
+<span class="fc" id="L645">            return this;</span>
+        }
+
+        public Builder setArrowLineWidth(float arrowLineWidth) {
+<span class="fc" id="L649">            this.arrowLineWidth = arrowLineWidth;</span>
+<span class="fc" id="L650">            return this;</span>
+        }
+
+        public Builder setAddBelowLayerId(@NonNull String addBelowLayerId) {
+<span class="nc" id="L654">            this.addBelowLayerId = addBelowLayerId;</span>
+<span class="nc" id="L655">            return this;</span>
+        }
+
+        public ArrowLineLayer build() throws InvalidArrowLineConfigException {
+<span class="fc" id="L659">            return new ArrowLineLayer(this);</span>
+        }
+    }
+
+    /**
+     * It supports adding the {@link Feature}s for which a relationship is supposed to be shown.
+     * &lt;p&gt;
+     * This FeatureConfig class is supposed to support adding either adding:
+     * - a {@link FeatureCollection}
+     * - a list/array of layer-ids/source-ids from which the {@link Feature}s are supposed to be queried
+     * - a Mapbox {@link com.mapbox.mapboxsdk.style.expressions.Expression} which defines the properties
+     * of the features that we want.
+     * &lt;p&gt;
+     * but currently it only supports adding the {@link FeatureCollection}
+     */
+    public static class FeatureConfig {
+
+        private FeatureCollection featureCollection;
+
+        private FeatureFilter.Builder featureFilterBuilder;
+
+<span class="fc" id="L680">        public FeatureConfig(@NonNull FeatureCollection featureCollection) {</span>
+<span class="fc" id="L681">            this.featureCollection = featureCollection;</span>
+<span class="fc" id="L682">        }</span>
+
+<span class="fc" id="L684">        public FeatureConfig(@NonNull FeatureFilter.Builder featureFilterBuilder) {</span>
+<span class="fc" id="L685">            this.featureFilterBuilder = featureFilterBuilder;</span>
+<span class="fc" id="L686">            this.featureCollection = featureFilterBuilder.getFeatureCollection();</span>
+<span class="fc" id="L687">        }</span>
+
+        public FeatureCollection getFeatureCollection() {
+<span class="fc" id="L690">            return featureCollection;</span>
+        }
+
+        @Nullable
+        public FeatureFilter.Builder getFeatureFilterBuilder() {
+<span class="fc" id="L695">            return featureFilterBuilder;</span>
+        }
+    }
+
+    /**
+     * It supports adding the sorting configuration that is going to be used to link {@Link Feature}s
+     * for which we are drawing an arrow line. It enables for a one-to-one relationship between {@link Feature}s
+     */
+    public static class SortConfig {
+
+<span class="fc" id="L705">        public enum SortOrder {</span>
+<span class="fc" id="L706">            ASC,</span>
+<span class="fc" id="L707">            DESC</span>
+        }
+
+<span class="fc" id="L710">        public enum PropertyType {</span>
+<span class="fc" id="L711">            DATE_TIME,</span>
+<span class="fc" id="L712">            STRING,</span>
+<span class="fc" id="L713">            NUMBER</span>
+        }
+
+        private String sortProperty;
+        private SortOrder sortOrder;
+        private PropertyType propertyType;
+        private String dateTimeFormat;
+
+<span class="fc" id="L721">        public SortConfig(@NonNull String sortProperty, @NonNull SortOrder sortOrder, @NonNull PropertyType propertyType) {</span>
+<span class="fc" id="L722">            this.sortProperty = sortProperty;</span>
+<span class="fc" id="L723">            this.sortOrder = sortOrder;</span>
+<span class="fc" id="L724">            this.propertyType = propertyType;</span>
+<span class="fc" id="L725">        }</span>
+
+        /**
+         * The dateTimeFormat should use the patterns as described in
+         * &lt;a href=&quot;https://developer.android.com/reference/java/time/format/DateTimeFormatter#patterns&quot;&gt;this page&lt;/a&gt;
+         *
+         * @param dateTimeFormat
+         * @return
+         */
+        public SortConfig setDateTimeFormat(@NonNull String dateTimeFormat) {
+<span class="fc" id="L735">            this.dateTimeFormat = dateTimeFormat;</span>
+<span class="fc" id="L736">            return this;</span>
+        }
+
+        public String getSortProperty() {
+<span class="fc" id="L740">            return sortProperty;</span>
+        }
+
+        public SortOrder getSortOrder() {
+<span class="fc" id="L744">            return sortOrder;</span>
+        }
+
+        public PropertyType getPropertyType() {
+<span class="fc" id="L748">            return propertyType;</span>
+        }
+
+        public String getDateTimeFormat() {
+<span class="fc" id="L752">            return dateTimeFormat;</span>
+        }
+    }
+
+    /**
+     * It supports adding the one-to-many configuration that is going to be used to link {@Link Feature}s
+     * for which we are drawing an arrow line. It enables for a one-to-many relationship between {@link Feature}s. You
+     * define the property which contains the child-case IDs
+     */
+    public static class OneToManyConfig {
+
+        private String childrenDefinitionProperty;
+
+<span class="fc" id="L765">        public OneToManyConfig(@NonNull String childrenDefinitionProperty) {</span>
+<span class="fc" id="L766">            this.childrenDefinitionProperty = childrenDefinitionProperty;</span>
+<span class="fc" id="L767">        }</span>
+
+        public String getChildrenDefinitionProperty() {
+<span class="fc" id="L770">            return childrenDefinitionProperty;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxOfflineQueueTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.data.realm.objects</a> &gt; <span class="el_source">MapBoxOfflineQueueTask.java</span></div><h1>MapBoxOfflineQueueTask.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.data.realm.objects;
+
+import android.support.annotation.NonNull;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Date;
+import java.util.UUID;
+
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+/**
+ * Created by Jason Rogena - jrogena@ona.io on 11/17/17.
+ */
+
+<span class="fc" id="L18">public class MapBoxOfflineQueueTask extends RealmObject {</span>
+
+    public static final String TASK_TYPE_DOWNLOAD = &quot;TASK TYPE DOWNLOAD&quot;
+            , TASK_TYPE_DELETE = &quot;TASK TYPE DELETE&quot;;
+
+    public static final int TASK_STATUS_DONE = 1
+            , TASK_STATUS_NOT_STARTED = 2
+            , TASK_STATUS_STARTED = 3;
+
+<span class="fc" id="L27">    @PrimaryKey</span>
+<span class="fc" id="L28">    private String id = UUID.randomUUID().toString();</span>
+    private String taskType;
+    private int taskStatus;
+    private String task;
+    private Date dateCreated;
+    private Date dateUpdated;
+
+    public String getId() {
+<span class="fc" id="L36">        return id;</span>
+    }
+
+    public String getTaskType() {
+<span class="fc" id="L40">        return taskType;</span>
+    }
+
+    public void setTaskType(String taskType) {
+<span class="fc" id="L44">        this.taskType = taskType;</span>
+<span class="fc" id="L45">    }</span>
+
+    public int getTaskStatus() {
+<span class="fc" id="L48">        return taskStatus;</span>
+    }
+
+    public void setTaskStatus(int taskStatus) {
+<span class="fc" id="L52">        this.taskStatus = taskStatus;</span>
+<span class="fc" id="L53">    }</span>
+
+    public JSONObject getTask() throws JSONException {
+<span class="fc" id="L56">        return new JSONObject(task);</span>
+    }
+
+    public void setTask(@NonNull JSONObject task) {
+<span class="fc" id="L60">        this.task = task.toString();</span>
+<span class="fc" id="L61">    }</span>
+
+    public Date getDateCreated() {
+<span class="fc" id="L64">        return dateCreated;</span>
+    }
+
+    public void setDateCreated(Date dateCreated) {
+<span class="fc" id="L68">        this.dateCreated = dateCreated;</span>
+<span class="fc" id="L69">    }</span>
+
+    public Date getDateUpdated() {
+<span class="fc" id="L72">        return dateUpdated;</span>
+    }
+
+    public void setDateUpdated(Date dateUpdated) {
+<span class="fc" id="L76">        this.dateUpdated = dateUpdated;</span>
+<span class="fc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsLayer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.wmts.model</a> &gt; <span class="el_source">WmtsLayer.java</span></div><h1>WmtsLayer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.wmts.model;
+
+import android.support.annotation.NonNull;
+
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import io.ona.kujaku.wmts.model.common.ows.LanguageStringType;
+
+/**
+ * Describes a Wmts Layer object from the WMTS Capabilities object
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
+ */
+<span class="fc" id="L19">public class WmtsLayer {</span>
+
+    @ElementList(inline=true, entry=&quot;Title&quot;)
+    private List&lt;LanguageStringType&gt; titles;
+
+    @Element(name=&quot;Identifier&quot;)
+    private String identifier;
+
+    @ElementList(inline=true, entry=&quot;Style&quot;)
+    private List&lt;WmtsStyle&gt; styles;
+
+    @ElementList(inline=true, entry=&quot;TileMatrixSetLink&quot;)
+    private List&lt;WmtsTileMatrixSetLink&gt; tileMatrixSetLinks;
+
+    @ElementList(inline=true, entry=&quot;ResourceURL&quot;)
+    private List&lt;WmtsResourceUrl&gt; resourceURLs;
+
+    private String selectedStyleIdentifier;
+
+    private String selectedTileMatrixLinkIdentifier;
+
+    private int maximumZoom;
+
+    private int minimumZoom;
+  
+    private int tilesSize;
+
+    @NonNull
+    public List&lt;LanguageStringType&gt; getTitles() {
+<span class="nc" id="L48">        return this.titles;</span>
+    }
+
+    @NonNull
+    public String getIdentifier() {
+<span class="fc" id="L53">        return this.identifier;</span>
+    }
+
+    public void setSelectedStyleIdentifier(@NonNull String selectedStyleIdentifier) {
+<span class="nc" id="L57">        this.selectedStyleIdentifier = selectedStyleIdentifier;</span>
+<span class="nc" id="L58">    }</span>
+
+    public void setSelectedTileMatrixLinkIdentifier(@NonNull String selectedTileMatrixLinkIdentifier) {
+<span class="nc" id="L61">        this.selectedTileMatrixLinkIdentifier = selectedTileMatrixLinkIdentifier;</span>
+<span class="nc" id="L62">    }</span>
+
+    @Nullable
+    public WmtsStyle getStyle(@NonNull String styleIdentifier) {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        for (WmtsStyle style : this.styles) {</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            if (style.getIdentifier().equals(styleIdentifier)) {</span>
+<span class="fc" id="L68">                return style;</span>
+            }
+<span class="nc" id="L70">        }</span>
+
+<span class="nc" id="L72">        return null ;</span>
+    }
+
+    @Nullable
+    public WmtsTileMatrixSetLink getTileMatrixSetLink(@NonNull String tileMatrixLinkIdentifier) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        for (WmtsTileMatrixSetLink tileMatrixSetLink : this.tileMatrixSetLinks) {</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            if (tileMatrixSetLink.getTileMatrixSet().equals(tileMatrixLinkIdentifier)) {</span>
+<span class="fc" id="L79">                return tileMatrixSetLink;</span>
+            }
+<span class="nc" id="L81">        }</span>
+
+<span class="nc" id="L83">        return null ;</span>
+    }
+
+    @Nullable
+    public String getTemplateUrl(@NonNull String resourceType) {
+<span class="fc" id="L88">        WmtsResourceUrl url = this.getResourceUrl(resourceType);</span>
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (url == null) {</span>
+<span class="fc" id="L91">            return null;</span>
+        }
+
+<span class="pc bpc" id="L94" title="3 of 4 branches missed.">        if (this.selectedStyleIdentifier == null || this.selectedStyleIdentifier.isEmpty()) {</span>
+            // Search for default style
+<span class="fc" id="L96">            WmtsStyle style = this.getDefaultStyle();</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            if (style == null) {</span>
+               // search for the first available style
+<span class="nc" id="L99">                this.selectedStyleIdentifier = this.styles.get(0).getIdentifier();</span>
+            } else {
+<span class="fc" id="L101">                this.selectedStyleIdentifier = style.getIdentifier();</span>
+            }
+        }
+
+<span class="fc" id="L105">        return url.getTemplate(this.selectedStyleIdentifier, this.getSelectedTileMatrixLinkIdentifier());</span>
+    }
+
+    @NonNull
+    public String getSelectedTileMatrixLinkIdentifier() {
+<span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (this.selectedTileMatrixLinkIdentifier == null || this.selectedTileMatrixLinkIdentifier.isEmpty()) {</span>
+            // Get First one
+<span class="fc" id="L112">            this.selectedTileMatrixLinkIdentifier = this.tileMatrixSetLinks.get(0).getTileMatrixSet();</span>
+        }
+
+<span class="fc" id="L115">        return this.selectedTileMatrixLinkIdentifier;</span>
+    }
+
+    public int getMaximumZoom() {
+<span class="fc" id="L119">        return this.maximumZoom;</span>
+    }
+
+    public void setMaximumZoom(int maxZoom) {
+<span class="fc" id="L123">        this.maximumZoom = maxZoom;</span>
+<span class="fc" id="L124">    }</span>
+
+    public int getMinimumZoom() {
+<span class="fc" id="L127">        return this.minimumZoom;</span>
+    }
+
+    public void setMinimumZoom(int minZoom) {
+<span class="fc" id="L131">        this.minimumZoom = minZoom;</span>
+<span class="fc" id="L132">    }</span>
+
+    public int getTilesSize() {
+<span class="fc" id="L135">        return this.tilesSize;</span>
+    }
+
+    public void setTilesSize(int tilesSize) {
+<span class="fc" id="L139">        this.tilesSize = tilesSize;</span>
+<span class="fc" id="L140">    }</span>
+
+    @Nullable
+    private WmtsStyle getDefaultStyle() {
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        for (WmtsStyle style : this.styles) {</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">            if (style.isDefault()) {</span>
+<span class="fc" id="L146">                return style;</span>
+            }
+<span class="nc" id="L148">        }</span>
+
+<span class="nc" id="L150">        return null;</span>
+    }
+
+    @Nullable
+    private WmtsResourceUrl getResourceUrl(@NonNull String resourceType) {
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        for (WmtsResourceUrl url: this.resourceURLs) {</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            if (url.getResourceType().equals(resourceType) ){</span>
+<span class="fc" id="L157">                return url;</span>
+            }
+<span class="fc" id="L159">        }</span>
+
+<span class="fc" id="L161">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

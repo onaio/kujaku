@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KujakuCircleOptions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.manager</a> &gt; <span class="el_source">KujakuCircleOptions.java</span></div><h1>KujakuCircleOptions.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.manager;
+
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.plugins.annotation.CircleOptions;
+
+/**
+ * KujakuCircleOptions extends CircleOptions
+ * Add isMiddle Point functionality (Point between to real point)
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch on 19/06/2019
+ */
+<span class="fc" id="L13">public class KujakuCircleOptions extends CircleOptions {</span>
+
+<span class="fc" id="L15">    private boolean isMiddleCircle = false;</span>
+
+    /**
+     * Set is middle to initialise the circle with.
+     * &lt;p&gt;
+     * Circle isMiddle.
+     * &lt;/p&gt;
+     * @param middle
+     * @return this
+     */
+    public KujakuCircleOptions withMiddleCircle(boolean middle) {
+<span class="fc" id="L26">        this.isMiddleCircle =  middle;</span>
+<span class="fc" id="L27">        return this;</span>
+    }
+
+    /**
+     * Get the middle value
+     * &lt;p&gt;
+     * Circle isMiddle.
+     * &lt;/p&gt;
+     * @return isMiddle value
+     */
+    public boolean getMiddleCircle() {
+<span class="fc" id="L38">        return isMiddleCircle;</span>
+    }
+
+    public KujakuCircleOptions withCircleRadius(Float circleRadius) {
+<span class="fc" id="L42">        super.withCircleRadius(circleRadius);</span>
+<span class="fc" id="L43">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleColor(String circleColor) {
+<span class="fc" id="L47">        super.withCircleColor(circleColor);</span>
+<span class="fc" id="L48">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleBlur(Float circleBlur) {
+<span class="fc" id="L52">        super.withCircleBlur(circleBlur);</span>
+<span class="fc" id="L53">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleOpacity(Float circleOpacity) {
+<span class="fc" id="L57">        super.withCircleOpacity(circleOpacity);</span>
+<span class="fc" id="L58">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleStrokeWidth(Float circleStrokeWidth) {
+<span class="fc" id="L62">        super.withCircleStrokeWidth(circleStrokeWidth);</span>
+<span class="fc" id="L63">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleStrokeColor(String circleStrokeColor) {
+<span class="nc" id="L67">        super.withCircleStrokeColor(circleStrokeColor);</span>
+<span class="nc" id="L68">        return this;</span>
+    }
+
+    public KujakuCircleOptions withCircleStrokeOpacity(Float circleStrokeOpacity) {
+<span class="fc" id="L72">        super.withCircleStrokeOpacity(circleStrokeOpacity);</span>
+<span class="fc" id="L73">        return this;</span>
+    }
+
+    public KujakuCircleOptions withLatLng(LatLng latLng) {
+<span class="fc" id="L77">        super.withLatLng(latLng);</span>
+<span class="fc" id="L78">        return this;</span>
+    }
+
+    public KujakuCircleOptions withGeometry(Point geometry) {
+<span class="fc" id="L82">        super.withGeometry(geometry);</span>
+<span class="fc" id="L83">        return this;</span>
+    }
+
+    public KujakuCircleOptions withDraggable(boolean draggable) {
+<span class="fc" id="L87">        super.withDraggable(draggable);</span>
+<span class="fc" id="L88">        return this;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

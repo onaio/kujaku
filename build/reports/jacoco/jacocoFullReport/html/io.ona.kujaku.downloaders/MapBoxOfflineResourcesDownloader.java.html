@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxOfflineResourcesDownloader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.downloaders</a> &gt; <span class="el_source">MapBoxOfflineResourcesDownloader.java</span></div><h1>MapBoxOfflineResourcesDownloader.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.downloaders;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
+import com.mapbox.mapboxsdk.offline.OfflineManager;
+import com.mapbox.mapboxsdk.offline.OfflineRegion;
+import com.mapbox.mapboxsdk.offline.OfflineRegionError;
+import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+import com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+
+import io.ona.kujaku.data.MapBoxDownloadTask;
+import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
+import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
+import io.ona.kujaku.listeners.OfflineRegionStatusCallback;
+import io.ona.kujaku.listeners.OnDownloadMapListener;
+import io.ona.kujaku.listeners.OnPauseMapDownloadCallback;
+import io.ona.kujaku.utils.Constants;
+import io.ona.kujaku.utils.exceptions.MalformedDataException;
+import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
+
+/**
+ * This is a singleton
+ * &lt;p&gt;
+ * Basically wraps around the MapBox OfflineManager &amp; enables:
+ * - Downloading a map for offline
+ * - Pausing a download
+ * - Resuming download
+ * - Deleting an offline map
+ * - Getting the map status {@link com.mapbox.mapboxsdk.offline.OfflineRegionStatus}
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * &lt;p&gt;
+ * CAUTION: Make sure you call {@link ConnectivityReceiver#deactivate()} when done in the lifecycle aware component
+ * you are in so that that this does not cause a memory leak
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 10/11/2017.
+ */
+public class MapBoxOfflineResourcesDownloader {
+
+<span class="fc" id="L52">    protected static MapBoxOfflineResourcesDownloader instance = null;</span>
+    private Context context;
+    protected Mapbox mapbox;
+    protected OfflineManager offlineManager;
+<span class="fc" id="L56">    private static final String TAG = MapBoxOfflineResourcesDownloader.class.getSimpleName();</span>
+
+<span class="fc" id="L58">    private int connectivityReceiverActivationCounter = 0;</span>
+
+    // JSON encoding/decoding
+    public static final String JSON_CHARSET = &quot;UTF-8&quot;;
+    public static final String METADATA_JSON_FIELD_REGION_NAME = &quot;FIELD_REGION_NAME&quot;;
+
+
+    public static MapBoxOfflineResourcesDownloader getInstance(@NonNull Context context, String accessToken) {
+<span class="fc" id="L66">        return getInstance(context, Mapbox.getInstance(context, accessToken));</span>
+    }
+
+    public static MapBoxOfflineResourcesDownloader getInstance(Context context, Mapbox mapbox) {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L71">            instance = new MapBoxOfflineResourcesDownloader(context, mapbox);</span>
+        }
+
+<span class="fc" id="L74">        return instance;</span>
+    }
+
+<span class="fc" id="L77">    private MapBoxOfflineResourcesDownloader(Context context, Mapbox mapbox) {</span>
+<span class="fc" id="L78">        this.mapbox = mapbox;</span>
+
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (context != null) {</span>
+<span class="fc" id="L81">            this.context = context.getApplicationContext();</span>
+<span class="fc" id="L82">            offlineManager = OfflineManager.getInstance(context);</span>
+        }
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Basically downloads/queues the map for download
+     *
+     * @param mapBoxOfflineQueueTask The {@link MapBoxOfflineQueueTask} object holding info on the MapBox style to download
+     * @param onDownloadMapListener  {@link OnDownloadMapListener} to provide updates/errors during MapDownload
+     * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     */
+    public void downloadMap(@NonNull MapBoxOfflineQueueTask mapBoxOfflineQueueTask, OnDownloadMapListener onDownloadMapListener)
+            throws MalformedDataException
+            , JSONException
+            , OfflineMapDownloadException {
+<span class="nc" id="L100">        MapBoxDownloadTask mapBoxDownloadTask = new MapBoxDownloadTask(mapBoxOfflineQueueTask.getTask());</span>
+<span class="nc" id="L101">        downloadMap(mapBoxDownloadTask, onDownloadMapListener);</span>
+<span class="nc" id="L102">    }</span>
+
+    /**
+     * Basically downloads/queues the map for download
+     *
+     * @param mapBoxDownloadTask    The {@link MapBoxDownloadTask} object holding info on the MapBox style to download
+     * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
+     * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     */
+    public void downloadMap(@NonNull MapBoxDownloadTask mapBoxDownloadTask, OnDownloadMapListener onDownloadMapListener)
+            throws OfflineMapDownloadException {
+<span class="nc" id="L116">        downloadMap(mapBoxDownloadTask.getMapName(),</span>
+<span class="nc" id="L117">                mapBoxDownloadTask.getMapBoxStyleUrl(),</span>
+<span class="nc" id="L118">                mapBoxDownloadTask.getTopLeftBound(),</span>
+<span class="nc" id="L119">                mapBoxDownloadTask.getTopRightBound(),</span>
+<span class="nc" id="L120">                mapBoxDownloadTask.getBottomRightBound(),</span>
+<span class="nc" id="L121">                mapBoxDownloadTask.getBottomLeftBound(),</span>
+<span class="nc" id="L122">                mapBoxDownloadTask.getMinZoom(),</span>
+<span class="nc" id="L123">                mapBoxDownloadTask.getMaxZoom(),</span>
+                onDownloadMapListener);
+<span class="nc" id="L125">    }</span>
+
+    /**
+     * Basically downloads/queues the map for download
+     *
+     * @param name                  Unique name of the map
+     * @param styleUrl              The Style URL on MapBox
+     * @param topLeftBound          The top-left coordinate of the map
+     * @param topRightBound         The top-right coordinate of the map
+     * @param bottomRightBound      The bottom-right coordinate of the map
+     * @param bottomLeftBound       The bottom-left coordinate of the map
+     * @param minZoom               The min-zoom of the map i.e among 0-22
+     * @param maxZoom               The max-zoom of the map i.e. among 0-22. This should be greater than the {@code minZoom}
+     * @param onDownloadMapListener {@link OnDownloadMapListener} to provide updates/errors during MapDownload
+     * @throws OfflineMapDownloadException In case - {@code name} is {@code NULL} or empty, already used by another offline map (not unique)
+     *                                     - {@code styleUrl} is invalid - {@code NULL}, empty OR not a MapBox url i.e. in the form mapbox://
+     *                                     - {@code minZoom} is invalid - Greater than maxZoom, not among 0-22
+     *                                     - {@code maxZoom} is invalid - Lower than minZoom, not among 0-22
+     */
+    private void downloadMap(final String name, final String styleUrl, @NonNull final LatLng topLeftBound
+            , @NonNull final LatLng topRightBound, @NonNull final LatLng bottomRightBound
+            , @NonNull final LatLng bottomLeftBound, final double minZoom
+            , final double maxZoom, final OnDownloadMapListener onDownloadMapListener)
+            throws OfflineMapDownloadException {
+<span class="nc" id="L149">        checkDownloadMapParams(name, styleUrl, minZoom, maxZoom);</span>
+
+<span class="nc" id="L151">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+                // Download the map
+<span class="nc" id="L155">                byte[] metadata = new byte[0];</span>
+                try {
+<span class="nc" id="L157">                    JSONObject jsonObject = new JSONObject();</span>
+<span class="nc" id="L158">                    jsonObject.put(METADATA_JSON_FIELD_REGION_NAME, name);</span>
+<span class="nc" id="L159">                    metadata = jsonObject.toString().getBytes(JSON_CHARSET);</span>
+
+<span class="nc" id="L161">                    LatLngBounds latLngBounds = new LatLngBounds.Builder()</span>
+<span class="nc" id="L162">                            .include(topLeftBound)</span>
+<span class="nc" id="L163">                            .include(topRightBound)</span>
+<span class="nc" id="L164">                            .include(bottomRightBound)</span>
+<span class="nc" id="L165">                            .include(bottomLeftBound)</span>
+<span class="nc" id="L166">                            .build();</span>
+
+<span class="nc" id="L168">                    OfflineTilePyramidRegionDefinition offlineMapDefinition = new OfflineTilePyramidRegionDefinition(</span>
+                            styleUrl,
+                            latLngBounds,
+                            minZoom,
+                            maxZoom,
+<span class="nc" id="L173">                            context.getResources().getDisplayMetrics().density);</span>
+
+<span class="nc" id="L175">                    offlineManager.createOfflineRegion(offlineMapDefinition, metadata, new OfflineManager.CreateOfflineRegionCallback() {</span>
+                        @Override
+                        public void onCreate(OfflineRegion offlineRegion) {
+<span class="nc" id="L178">                            resumeMapDownload(offlineRegion, onDownloadMapListener);</span>
+<span class="nc" id="L179">                        }</span>
+
+                        @Override
+                        public void onError(String error) {
+<span class="nc" id="L183">                            Log.e(TAG, error);</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">                            if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L185">                                onDownloadMapListener.onError(error);</span>
+                            }
+<span class="nc" id="L187">                        }</span>
+                    });
+<span class="nc" id="L189">                } catch (UnsupportedEncodingException | JSONException e) {</span>
+<span class="nc" id="L190">                    Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">                    if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L192">                        onDownloadMapListener.onError(e.getMessage());</span>
+                    }
+<span class="nc" id="L194">                }</span>
+<span class="nc" id="L195">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L199">                Log.e(TAG, error);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L201">                    onDownloadMapListener.onError(error);</span>
+                }
+<span class="nc" id="L203">            }</span>
+        });
+
+<span class="nc" id="L206">    }</span>
+
+    private void checkDownloadMapParams(String name, String styleUrl, double minZoom, double maxZoom)
+            throws OfflineMapDownloadException {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="nc" id="L211">            throw new OfflineMapDownloadException(&quot;Context passed is null&quot;);</span>
+        }
+
+<span class="nc bnc" id="L214" title="All 2 branches missed.">        if (TextUtils.isEmpty(name)) {</span>
+<span class="nc" id="L215">            throw new OfflineMapDownloadException(&quot;Invalid map name&quot;);</span>
+        }
+
+<span class="nc bnc" id="L218" title="All 4 branches missed.">        if (TextUtils.isEmpty(styleUrl) || !(styleUrl.matches(Constants.MAP_BOX_URL_FORMAT) ||</span>
+<span class="nc bnc" id="L219" title="All 4 branches missed.">                styleUrl.startsWith(&quot;https://&quot;) || styleUrl.startsWith(&quot;http://&quot;))) {</span>
+<span class="nc" id="L220">            throw new OfflineMapDownloadException(&quot;Invalid Style URL&quot;);</span>
+        }
+
+<span class="nc" id="L223">        checkMapZoomParams(minZoom, maxZoom);</span>
+<span class="nc" id="L224">    }</span>
+
+    private void checkMapZoomParams(double minZoom, double maxZoom) throws OfflineMapDownloadException {
+<span class="nc bnc" id="L227" title="All 8 branches missed.">        if (minZoom &lt; 0 || minZoom &gt; 22 || maxZoom &lt; 0 || maxZoom &gt; 22) {</span>
+<span class="nc" id="L228">            throw new OfflineMapDownloadException(&quot;maxZoom &amp; minZoom should be among 0-22&quot;);</span>
+        }
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (minZoom &gt; maxZoom) {</span>
+<span class="nc" id="L232">            throw new OfflineMapDownloadException(&quot;minZoom should be lower than maxZoom&quot;);</span>
+        }
+<span class="nc" id="L234">    }</span>
+
+    /**
+     * Deletes a specific offline map given the name
+     *
+     * @param name                        Unique name of the map
+     * @param offlineRegionDeleteCallback Callback in case the operation is SUCCESS or FAILURE {@see com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionDeleteCallback}
+     *                                    Fails if the offline map with the give {@code name} does not exist
+     */
+    public void deleteMap(@NonNull final String name, final OfflineRegion.OfflineRegionDeleteCallback offlineRegionDeleteCallback) {
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (offlineRegionDeleteCallback != null) {</span>
+<span class="nc" id="L246">                Log.e(TAG, &quot;Context passed is null&quot;);</span>
+<span class="nc" id="L247">                offlineRegionDeleteCallback.onError(&quot;Context passed is null&quot;);</span>
+            }
+<span class="nc" id="L249">            return;</span>
+        }
+
+<span class="nc" id="L252">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc" id="L255">                OfflineRegion offlineRegion = getOfflineRegion(name, offlineRegions);</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                if (offlineRegion == null) {</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                    if (offlineRegionDeleteCallback != null) {</span>
+<span class="nc" id="L258">                        offlineRegionDeleteCallback.onError(&quot;Map could not be found&quot;);</span>
+                    }
+<span class="nc" id="L260">                    return;</span>
+                }
+
+                OfflineRegion.OfflineRegionDeleteCallback nonNullOfflineRegionCallback;
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                if (offlineRegionDeleteCallback == null) {</span>
+<span class="nc" id="L265">                    nonNullOfflineRegionCallback = new OfflineRegion.OfflineRegionDeleteCallback() {</span>
+                        @Override
+                        public void onDelete() {
+<span class="nc" id="L268">                            Log.i(TAG, &quot;ON DELETE MAP {&quot; + name + &quot;} SUCCESS&quot;);</span>
+<span class="nc" id="L269">                        }</span>
+
+                        @Override
+                        public void onError(String error) {
+<span class="nc" id="L273">                            Log.e(TAG, &quot;ON DELETE MAP : &quot; + name + &quot; --&gt; &quot; + error);</span>
+<span class="nc" id="L274">                        }</span>
+                    };
+                } else {
+<span class="nc" id="L277">                    nonNullOfflineRegionCallback = offlineRegionDeleteCallback;</span>
+                }
+<span class="nc" id="L279">                offlineRegion.delete(nonNullOfflineRegionCallback);</span>
+<span class="nc" id="L280">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L284">                Log.e(TAG, error);</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">                if (offlineRegionDeleteCallback != null) {</span>
+<span class="nc" id="L286">                    offlineRegionDeleteCallback.onError(error);</span>
+                }
+<span class="nc" id="L288">            }</span>
+        });
+<span class="nc" id="L290">    }</span>
+
+    /**
+     * Resumes download of an Offline map with the given name
+     *
+     * @param name                  Unique name of the map
+     * @param onDownloadMapListener Callback to give updates on download progress or errors
+     */
+    public void resumeMapDownload(@NonNull final String name, final OnDownloadMapListener onDownloadMapListener) {
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="nc" id="L300">            Log.e(TAG, &quot;Context passed is null&quot;);</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">            if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L302">                onDownloadMapListener.onError(&quot;Context passed is null&quot;);</span>
+            }
+
+<span class="nc" id="L305">            return;</span>
+        }
+
+<span class="nc" id="L308">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc" id="L311">                final OfflineRegion offlineRegion = getOfflineRegion(name, offlineRegions);</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                if (offlineRegion == null) {</span>
+<span class="nc" id="L313">                    Log.e(TAG, &quot;Map could not be found&quot;);</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">                    if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L315">                        onDownloadMapListener.onError(&quot;Map could not be found&quot;);</span>
+                    }
+<span class="nc" id="L317">                    return;</span>
+                }
+
+<span class="nc" id="L320">                offlineRegion.getStatus(new OfflineRegion.OfflineRegionStatusCallback() {</span>
+                    @Override
+                    public void onStatus(OfflineRegionStatus status) {
+<span class="nc bnc" id="L323" title="All 2 branches missed.">                        if (status.isComplete()) {</span>
+<span class="nc" id="L324">                            Log.e(TAG, &quot;Map download is already complete&quot;);</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">                            if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L326">                                onDownloadMapListener.onError(&quot;Map download is already complete&quot;);</span>
+                            }
+<span class="nc bnc" id="L328" title="All 2 branches missed.">                        } else if (status.getDownloadState() == OfflineRegion.STATE_ACTIVE) {</span>
+<span class="nc" id="L329">                            Log.e(TAG, &quot;Map is already downloading&quot;);</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">                            if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L331">                                onDownloadMapListener.onError(&quot;Map is already downloading&quot;);</span>
+                            }
+                        } else {
+                            // Resume map download here
+<span class="nc" id="L335">                            resumeMapDownload(offlineRegion, onDownloadMapListener);</span>
+                        }
+<span class="nc" id="L337">                    }</span>
+
+                    @Override
+                    public void onError(String error) {
+<span class="nc" id="L341">                        Log.e(TAG, error);</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                        if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L343">                            onDownloadMapListener.onError(error);</span>
+                        }
+<span class="nc" id="L345">                    }</span>
+                });
+<span class="nc" id="L347">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L351">                Log.e(TAG, error);</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">                if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L353">                    onDownloadMapListener.onError(error);</span>
+                }
+<span class="nc" id="L355">            }</span>
+        });
+<span class="nc" id="L357">    }</span>
+
+    /**
+     * Resumes download of an Offline map given the name
+     *
+     * @param offlineRegion         {@link OfflineRegion} to resume download
+     * @param onDownloadMapListener {@link OnDownloadMapListener} Callback to receive map download updates or error description
+     */
+    public void resumeMapDownload(@NonNull final OfflineRegion offlineRegion, final OnDownloadMapListener onDownloadMapListener) {
+<span class="nc" id="L366">        ConnectivityReceiver.instance(context)</span>
+<span class="nc" id="L367">                .activate();</span>
+<span class="nc" id="L368">        increaseConnectivityReceiverActivationCounter();</span>
+<span class="nc" id="L369">        offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE);</span>
+<span class="nc" id="L370">        offlineRegion.setObserver(new OfflineRegion.OfflineRegionObserver() {</span>
+            @Override
+            public void onStatusChanged(OfflineRegionStatus status) {
+<span class="nc bnc" id="L373" title="All 2 branches missed.">                if (status.isComplete()) {</span>
+<span class="nc" id="L374">                    ConnectivityReceiver.instance(context)</span>
+<span class="nc" id="L375">                            .deactivate();</span>
+<span class="nc" id="L376">                    decreaseConnectivityReceiverActivationCounter();</span>
+                }
+
+<span class="nc bnc" id="L379" title="All 2 branches missed.">                if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L380">                    onDownloadMapListener.onStatusChanged(status, offlineRegion);</span>
+                }
+<span class="nc" id="L382">            }</span>
+
+            @Override
+            public void onError(OfflineRegionError error) {
+<span class="nc" id="L386">                Log.e(TAG, &quot;Message: &quot; + error.getMessage() + &quot;\nREASON: &quot; + error.getReason());</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">                if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L388">                    onDownloadMapListener.onError(error.getReason() + &quot;: &quot; + error.getMessage());</span>
+                }
+<span class="nc" id="L390">            }</span>
+
+            @Override
+            public void mapboxTileCountLimitExceeded(long limit) {
+<span class="nc" id="L394">                ConnectivityReceiver.instance(context)</span>
+<span class="nc" id="L395">                        .deactivate();</span>
+<span class="nc" id="L396">                decreaseConnectivityReceiverActivationCounter();</span>
+<span class="nc" id="L397">                String errorMessage = &quot;MapBox Tile count &quot; + limit + &quot; limit exceeded: Checkout https://www.mapbox.com/help/mobile-offline/ for more&quot;;</span>
+<span class="nc" id="L398">                Log.e(TAG, errorMessage);</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">                if (onDownloadMapListener != null) {</span>
+<span class="nc" id="L400">                    onDownloadMapListener.mapboxTileCountLimitExceeded(limit);</span>
+                }
+<span class="nc" id="L402">            }</span>
+        });
+<span class="nc" id="L404">    }</span>
+
+    /**
+     * Retrieves all incomplete map downloads
+     *
+     * @param incompleteMapDownloadCallback Callback called when incomplete map downloads are found
+     */
+    public void getIncompleteMapDownloads(@NonNull final IncompleteMapDownloadCallback incompleteMapDownloadCallback) {
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="nc" id="L413">            Log.e(TAG, &quot;Context passed is null&quot;);</span>
+<span class="nc" id="L414">            incompleteMapDownloadCallback.onError(&quot;Context passed is null&quot;);</span>
+<span class="nc" id="L415">            return;</span>
+        }
+
+<span class="nc" id="L418">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc bnc" id="L421" title="All 2 branches missed.">                for (final OfflineRegion offlineRegion : offlineRegions) {</span>
+<span class="nc" id="L422">                    offlineRegion.getStatus(new OfflineRegion.OfflineRegionStatusCallback() {</span>
+                        @Override
+                        public void onStatus(OfflineRegionStatus status) {
+<span class="nc bnc" id="L425" title="All 2 branches missed.">                            if (!status.isComplete()) {</span>
+<span class="nc" id="L426">                                incompleteMapDownloadCallback.incompleteMap(offlineRegion, status);</span>
+                            }
+<span class="nc" id="L428">                        }</span>
+
+                        @Override
+                        public void onError(String error) {
+<span class="nc" id="L432">                            Log.e(TAG, error);</span>
+<span class="nc" id="L433">                            incompleteMapDownloadCallback.onError(error);</span>
+<span class="nc" id="L434">                        }</span>
+                    });
+                }
+<span class="nc" id="L437">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L441">                Log.e(TAG, error);</span>
+<span class="nc" id="L442">                incompleteMapDownloadCallback.onError(error);</span>
+<span class="nc" id="L443">            }</span>
+        });
+<span class="nc" id="L445">    }</span>
+
+    /**
+     * Pauses a map download
+     *
+     * @param name                       Unique name of the map
+     * @param onPauseMapDownloadCallback Callback which is called in case the operation is a SUCCESS or FAILURE
+     */
+    public void pauseMapDownload(@NonNull final String name, final OnPauseMapDownloadCallback onPauseMapDownloadCallback) {
+<span class="nc bnc" id="L454" title="All 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">            if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L456">                onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.CONTEXT_PASSED_IS_NULL);</span>
+            }
+<span class="nc" id="L458">            return;</span>
+        }
+
+<span class="nc" id="L461">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc" id="L464">                final OfflineRegion offlineRegion = getOfflineRegion(name, offlineRegions);</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">                if (offlineRegion == null) {</span>
+<span class="nc" id="L466">                    Log.e(TAG, &quot;Map could not be found&quot;);</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">                    if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L468">                        onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_COULD_NOT_BE_FOUND);</span>
+                    }
+<span class="nc" id="L470">                    return;</span>
+                }
+
+<span class="nc" id="L473">                offlineRegion.getStatus(new OfflineRegion.OfflineRegionStatusCallback() {</span>
+                    @Override
+                    public void onStatus(OfflineRegionStatus status) {
+<span class="nc bnc" id="L476" title="All 2 branches missed.">                        if (status.getDownloadState() == OfflineRegion.STATE_ACTIVE) {</span>
+<span class="nc" id="L477">                            offlineRegion.setDownloadState(OfflineRegion.STATE_INACTIVE);</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">                            if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L479">                                onPauseMapDownloadCallback.onPauseSuccess();</span>
+                            }
+                        } else {
+<span class="nc bnc" id="L482" title="All 2 branches missed.">                            if (status.isComplete()) {</span>
+<span class="nc" id="L483">                                Log.e(TAG, &quot;Map download is already complete&quot;);</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">                                if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L485">                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_DOWNLOAD_COMPLETE);</span>
+                                }
+                            } else {
+<span class="nc" id="L488">                                Log.e(TAG, &quot;Map was not downloading&quot;);</span>
+<span class="nc bnc" id="L489" title="All 2 branches missed.">                                if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L490">                                    onPauseMapDownloadCallback.onPauseError(OnPauseMapDownloadCallback.MAP_WAS_NOT_DOWNLOADING);</span>
+                                }
+                            }
+                        }
+<span class="nc" id="L494">                    }</span>
+
+                    @Override
+                    public void onError(String error) {
+<span class="nc" id="L498">                        Log.e(TAG, error);</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">                        if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L500">                            onPauseMapDownloadCallback.onPauseError(error);</span>
+                        }
+<span class="nc" id="L502">                    }</span>
+                });
+<span class="nc" id="L504">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L508">                Log.e(TAG, error);</span>
+<span class="nc bnc" id="L509" title="All 2 branches missed.">                if (onPauseMapDownloadCallback != null) {</span>
+<span class="nc" id="L510">                    onPauseMapDownloadCallback.onPauseError(error);</span>
+                }
+<span class="nc" id="L512">            }</span>
+        });
+<span class="nc" id="L514">    }</span>
+
+    /**
+     * Retrieves an Offline Map's status {@see OfflineRegionStatus}
+     *
+     * @param name                        Unique name of the map
+     * @param offlineRegionStatusCallback Callback called when map status is retrieved or the operation FAILS
+     */
+    public void getMapStatus(@NonNull final String name, final OfflineRegionStatusCallback offlineRegionStatusCallback) {
+<span class="pc bpc" id="L523" title="1 of 2 branches missed.">        if (offlineManager == null) {</span>
+<span class="fc" id="L524">            Log.e(TAG, &quot;Context passed is null&quot;);</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">            if (offlineRegionStatusCallback != null) {</span>
+<span class="nc" id="L526">                offlineRegionStatusCallback.onError(&quot;Context passed is null&quot;);</span>
+            }
+        } else {
+<span class="nc" id="L529">            offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+                @Override
+                public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc" id="L532">                    final OfflineRegion offlineRegion = getOfflineRegion(name, offlineRegions);</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">                    if (offlineRegion == null) {</span>
+<span class="nc" id="L534">                        Log.e(TAG, &quot;Map could not be found : &quot; + name);</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">                        if (offlineRegionStatusCallback != null) {</span>
+<span class="nc" id="L536">                            offlineRegionStatusCallback.onError(&quot;Map could not be found : &quot; + name);</span>
+                        }
+                    } else {
+<span class="nc" id="L539">                        offlineRegion.getStatus(new OfflineRegion.OfflineRegionStatusCallback() {</span>
+                            @Override
+                            public void onStatus(OfflineRegionStatus status) {
+<span class="nc bnc" id="L542" title="All 2 branches missed.">                                if (offlineRegionStatusCallback != null) {</span>
+<span class="nc" id="L543">                                    offlineRegionStatusCallback.onStatus(status, offlineRegion);</span>
+                                }
+<span class="nc" id="L545">                            }</span>
+
+                            @Override
+                            public void onError(String error) {
+<span class="nc" id="L549">                                Log.e(TAG, error);</span>
+<span class="nc bnc" id="L550" title="All 2 branches missed.">                                if (offlineRegionStatusCallback != null) {</span>
+<span class="nc" id="L551">                                    offlineRegionStatusCallback.onError(error);</span>
+                                }
+<span class="nc" id="L553">                            }</span>
+                        });
+                    }
+<span class="nc" id="L556">                }</span>
+
+                @Override
+                public void onError(String error) {
+<span class="nc" id="L560">                    Log.e(TAG, error);</span>
+<span class="nc" id="L561">                    offlineRegionStatusCallback.onError(error);</span>
+<span class="nc" id="L562">                }</span>
+            });
+        }
+<span class="fc" id="L565">    }</span>
+
+    /**
+     * Matches a given map name to an OfflineRegion given the OfflineRegions
+     *
+     * @param name           Unique name of the map
+     * @param offlineRegions OfflineRegions returned from {@link OfflineManager#listOfflineRegions(OfflineManager.ListOfflineRegionsCallback)}
+     * @return {@link OfflineRegion} with the given name
+     */
+    private OfflineRegion getOfflineRegion(@NonNull String name, @NonNull OfflineRegion[] offlineRegions) {
+<span class="nc bnc" id="L575" title="All 2 branches missed.">        for (OfflineRegion offlineRegion : offlineRegions) {</span>
+            try {
+<span class="nc" id="L577">                String json = new String(offlineRegion.getMetadata(), JSON_CHARSET);</span>
+<span class="nc" id="L578">                JSONObject jsonObject = new JSONObject(json);</span>
+<span class="nc bnc" id="L579" title="All 2 branches missed.">                if (jsonObject.has(METADATA_JSON_FIELD_REGION_NAME)) {</span>
+<span class="nc" id="L580">                    String regionName = jsonObject.getString(METADATA_JSON_FIELD_REGION_NAME);</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">                    if (name.equals(regionName)) {</span>
+<span class="nc" id="L582">                        return offlineRegion;</span>
+                    }
+                }
+
+<span class="nc" id="L586">            } catch (UnsupportedEncodingException | JSONException e) {</span>
+<span class="nc" id="L587">                Log.e(TAG, Log.getStackTraceString(e));</span>
+                // Just move to the next map
+<span class="nc" id="L589">            }</span>
+
+        }
+
+<span class="nc" id="L593">        return null;</span>
+    }
+
+    /**
+     * Deletes previously downloaded {@link OfflineRegion} with the given map name and excludes the one with the given ID
+     *
+     * @param mapName
+     * @param mapIdToExclude
+     */
+    public void deletePreviousOfflineMapDownloads(final String mapName, final long mapIdToExclude) {
+<span class="nc" id="L603">        offlineManager.listOfflineRegions(new OfflineManager.ListOfflineRegionsCallback() {</span>
+            @Override
+            public void onList(OfflineRegion[] offlineRegions) {
+<span class="nc bnc" id="L606" title="All 2 branches missed.">                for (OfflineRegion offlineRegion : offlineRegions) {</span>
+<span class="nc bnc" id="L607" title="All 2 branches missed.">                    if (offlineRegion.getID() != mapIdToExclude) {</span>
+                        try {
+<span class="nc" id="L609">                            String json = new String(offlineRegion.getMetadata(), MapBoxOfflineResourcesDownloader.JSON_CHARSET);</span>
+<span class="nc" id="L610">                            JSONObject jsonObject = new JSONObject(json);</span>
+<span class="nc bnc" id="L611" title="All 2 branches missed.">                            if (jsonObject.has(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME)) {</span>
+<span class="nc" id="L612">                                String regionName = jsonObject.getString(MapBoxOfflineResourcesDownloader.METADATA_JSON_FIELD_REGION_NAME);</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">                                if (mapName.equals(regionName)) {</span>
+<span class="nc" id="L614">                                    offlineRegion.delete(new OfflineRegion.OfflineRegionDeleteCallback() {</span>
+                                        @Override
+                                        public void onDelete() {
+<span class="nc" id="L617">                                            Log.i(TAG, &quot;Map deleted successfully!&quot;);</span>
+<span class="nc" id="L618">                                        }</span>
+
+                                        @Override
+                                        public void onError(String error) {
+<span class="nc" id="L622">                                            Log.e(TAG, error);</span>
+<span class="nc" id="L623">                                        }</span>
+                                    });
+                                }
+                            }
+
+<span class="nc" id="L628">                        } catch (UnsupportedEncodingException | JSONException e) {</span>
+<span class="nc" id="L629">                            Log.e(TAG, Log.getStackTraceString(e));</span>
+                            // Just move to the next map
+<span class="nc" id="L631">                        }</span>
+                    }
+                }
+<span class="nc" id="L634">            }</span>
+
+            @Override
+            public void onError(String error) {
+<span class="nc" id="L638">                Log.e(TAG, error);</span>
+<span class="nc" id="L639">            }</span>
+        });
+<span class="nc" id="L641">    }</span>
+
+    public void increaseConnectivityReceiverActivationCounter() {
+<span class="nc" id="L644">        connectivityReceiverActivationCounter++;</span>
+<span class="nc" id="L645">    }</span>
+
+    public void decreaseConnectivityReceiverActivationCounter() {
+<span class="nc" id="L648">        connectivityReceiverActivationCounter--;</span>
+<span class="nc" id="L649">    }</span>
+
+    public int getConnectivityReceiverActivationCounter() {
+<span class="nc" id="L652">        return connectivityReceiverActivationCounter;</span>
+    }
+
+    /**
+     * Sets the maximum number of Mapbox-hosted tiles that may be downloaded and stored on the current device. By default, the limit is set to 6,000.
+     * @param tileDownloadLimit maximum number of Mapbox-hosted tiles that may be downloaded
+     */
+    public MapBoxOfflineResourcesDownloader withTileDownloadLimit(long tileDownloadLimit) {
+<span class="nc bnc" id="L660" title="All 2 branches missed.">        if (offlineManager != null) {</span>
+<span class="nc" id="L661">            offlineManager.setOfflineMapboxTileCountLimit(tileDownloadLimit);</span>
+        }
+<span class="nc" id="L663">        return this;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

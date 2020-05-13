@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfoWindowAdapter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.adapters</a> &gt; <span class="el_source">InfoWindowAdapter.java</span></div><h1>InfoWindowAdapter.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.adapters;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.activities.MapActivity;
+import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
+import io.ona.kujaku.utils.config.KujakuConfig;
+
+/**
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 24/11/2017.
+ */
+
+public class InfoWindowAdapter extends RecyclerView.Adapter&lt;InfoWindowViewHolder&gt; {
+<span class="nc" id="L28">    private static final String TAG = InfoWindowAdapter.class.getSimpleName();</span>
+
+    private final Activity activity;
+    private final ArrayList&lt;InfoWindowObject&gt; items;
+    private final RecyclerView recyclerView;
+    private final KujakuConfig kujakuConfig;
+
+<span class="nc" id="L35">    private int lastSelectedPosition = -1;</span>
+
+    public InfoWindowAdapter(@NonNull Activity activity,
+                             @NonNull LinkedHashMap&lt;String, InfoWindowObject&gt; items,
+                             @NonNull RecyclerView recyclerView,
+                             @NonNull KujakuConfig kujakuConfig) {
+<span class="nc" id="L41">        this(activity, new ArrayList&lt;InfoWindowObject&gt;(items.values()), recyclerView, kujakuConfig);</span>
+<span class="nc" id="L42">    }</span>
+
+    public InfoWindowAdapter(@NonNull Activity activity, @NonNull ArrayList&lt;InfoWindowObject&gt; items,
+                             @NonNull RecyclerView recyclerView,
+<span class="nc" id="L46">                             @NonNull KujakuConfig kujakuConfig) {</span>
+<span class="nc" id="L47">        this.activity = activity;</span>
+<span class="nc" id="L48">        this.items = items;</span>
+<span class="nc" id="L49">        this.recyclerView = recyclerView;</span>
+<span class="nc" id="L50">        this.kujakuConfig = kujakuConfig;</span>
+<span class="nc" id="L51">    }</span>
+
+    @Override
+    public InfoWindowViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+<span class="nc" id="L55">        final CardView inflatedView = (CardView) LayoutInflater.from(parent.getContext())</span>
+<span class="nc" id="L56">                .inflate(R.layout.view_info_window, parent, false);</span>
+<span class="nc" id="L57">        InfoWindowViewHolder infoWindowViewHolder = new InfoWindowViewHolder(this, inflatedView);</span>
+        try {
+<span class="nc" id="L59">            infoWindowViewHolder.setInfoWindowConfig(kujakuConfig.getInfoWindowConfig());</span>
+<span class="nc" id="L60">        } catch (JSONException e) {</span>
+<span class="nc" id="L61">            Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (activity instanceof MapActivity) {</span>
+<span class="nc" id="L63">                ((MapActivity)activity).showAlertDialog(</span>
+                        R.string.error_kujaku_config,
+                        R.string.error_kujaku_config_description,
+                        R.string.ok,
+<span class="nc" id="L67">                        new DialogInterface.OnClickListener() {</span>
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+<span class="nc" id="L70">                                dialog.dismiss();</span>
+<span class="nc" id="L71">                            }</span>
+                        }, -1, null);
+            }
+<span class="nc" id="L74">        }</span>
+
+<span class="nc" id="L76">        return infoWindowViewHolder;</span>
+    }
+
+    @Override
+    public void onBindViewHolder(InfoWindowViewHolder holder, int position) {
+<span class="nc" id="L81">        InfoWindowObject infoWindowObject = items.get(position);</span>
+
+<span class="nc bnc" id="L83" title="All 4 branches missed.">        if (holder != null &amp;&amp; infoWindowObject.getPosition() == position) {</span>
+            try {
+<span class="nc" id="L85">                holder.setData(infoWindowObject);</span>
+<span class="nc" id="L86">            } catch (JSONException e) {</span>
+<span class="nc" id="L87">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc" id="L88">            }</span>
+        }
+<span class="nc" id="L90">    }</span>
+
+    public Context getContext() {
+<span class="nc" id="L93">        return this.activity;</span>
+    }
+
+    @Override
+    public int getItemCount() {
+<span class="nc" id="L98">        return items.size();</span>
+    }
+
+    public void focusOnPosition(int position, boolean informMapActivity) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (lastSelectedPosition != position) {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (lastSelectedPosition &gt; -1) {</span>
+<span class="nc" id="L104">                items.get(lastSelectedPosition).setFocused(false);</span>
+            }
+<span class="nc" id="L106">            lastSelectedPosition = position;</span>
+        }
+<span class="nc" id="L108">        items.get(position).setFocused(true);</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">        if (informMapActivity &amp;&amp; activity instanceof MapActivity) {</span>
+<span class="nc" id="L110">            ((MapActivity) activity).focusOnFeature(position);</span>
+        }
+<span class="nc" id="L112">    }</span>
+
+    public RecyclerView getRecyclerView() {
+<span class="nc" id="L115">        return recyclerView;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

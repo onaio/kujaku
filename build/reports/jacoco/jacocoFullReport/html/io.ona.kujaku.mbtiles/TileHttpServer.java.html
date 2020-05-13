@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TileHttpServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.mbtiles</a> &gt; <span class="el_source">TileHttpServer.java</span></div><h1>TileHttpServer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.mbtiles;
+
+import java.io.BufferedReader;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.BindException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import timber.log.Timber;
+
+/**
+ * A minimal HTTP server that serves tiles from a set of TileSources.
+ */
+public class TileHttpServer {
+    public static final int PORT_MIN = 8000;
+    public static final int PORT_MAX = 8999;
+
+<span class="fc" id="L24">    final Map&lt;String, TileSource&gt; sources = new HashMap&lt;&gt;();</span>
+    final ServerThread server;
+    final ServerSocket socket;
+
+<span class="fc" id="L28">    public TileHttpServer() throws IOException {</span>
+<span class="fc" id="L29">        socket = createBoundSocket(PORT_MIN, PORT_MAX);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (socket == null) {</span>
+<span class="nc" id="L31">            throw new IOException(&quot;Could not find an available port&quot;);</span>
+        }
+<span class="fc" id="L33">        server = new ServerThread(socket);</span>
+<span class="fc" id="L34">    }</span>
+
+    public void start() {
+<span class="fc" id="L37">        server.start();</span>
+<span class="fc" id="L38">    }</span>
+
+    public boolean isStarted() {
+<span class="fc" id="L41">        return server.isAlive();</span>
+    }
+
+    /**
+     * Finds an available port and binds a ServerSocket to it.
+     */
+    protected static ServerSocket createBoundSocket(int portMin, int portMax) throws IOException {
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        for (int port = portMin; port &lt;= portMax; port++) {</span>
+            try {
+<span class="fc" id="L50">                return new ServerSocket(port);</span>
+<span class="fc" id="L51">            } catch (BindException e) {</span>
+<span class="fc" id="L52">                continue;  // this port is in use; try another one</span>
+            }
+        }
+<span class="nc" id="L55">        Timber.e(&quot;No ports available from %d to %d&quot;, portMin, portMax);</span>
+<span class="nc" id="L56">        return null;</span>
+    }
+
+    /**
+     * Constructs a URL template for fetching tiles from this server for a given
+     * tileset, with placeholders {z} for zoom level and {x} and {y} for coordinates.
+     */
+    public String getUrlTemplate(String key) {
+<span class="fc" id="L64">        return String.format(</span>
+<span class="fc" id="L65">                Locale.US, &quot;http://localhost:%d/%s/{z}/{x}/{y}&quot;, socket.getLocalPort(), key);</span>
+    }
+
+    /**
+     * Adds a TileSource with a given key.  Tiles from this source will be served
+     * under the URL path /{key}/{zoom}/{x}/{y}.  If this TileSource implements
+     * Closeable, it will be closed when this server is finalized with destroy().
+     */
+    public void addSource(String key, TileSource source) {
+<span class="fc" id="L74">        sources.put(key, source);</span>
+<span class="fc" id="L75">    }</span>
+
+    /**
+     * Permanently closes all sockets and closeable TileSources.
+     */
+    public void destroy() {
+        try {
+<span class="fc" id="L82">            socket.close();</span>
+<span class="nc" id="L83">        } catch (IOException e) {</span>
+<span class="nc" id="L84">            Timber.w(e);</span>
+<span class="fc" id="L85">        }</span>
+<span class="fc" id="L86">        server.interrupt();</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (TileSource source : sources.values()) {</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if (source instanceof Closeable) {</span>
+                try {
+<span class="fc" id="L90">                    ((Closeable) source).close();</span>
+<span class="nc" id="L91">                } catch (IOException e) {</span>
+<span class="nc" id="L92">                    Timber.e(e);</span>
+<span class="fc" id="L93">                }</span>
+            }
+<span class="fc" id="L95">        }</span>
+<span class="fc" id="L96">    }</span>
+
+    class ServerThread extends Thread {
+        final ServerSocket socket;
+
+<span class="fc" id="L101">        ServerThread(ServerSocket socket) {</span>
+<span class="fc" id="L102">            this.socket = socket;</span>
+<span class="fc" id="L103">        }</span>
+
+        public void run() {
+            try {
+<span class="fc" id="L107">                socket.setReuseAddress(true);</span>
+<span class="fc" id="L108">                Timber.i(&quot;Ready for requests on port %d&quot;, socket.getLocalPort());</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">                while (!isInterrupted()) {</span>
+<span class="nc" id="L110">                    Socket connection = socket.accept();</span>
+<span class="nc" id="L111">                    Timber.i(&quot;Accepted a client connection&quot;);</span>
+<span class="nc" id="L112">                    new ResponseThread(connection).start();</span>
+<span class="nc" id="L113">                }</span>
+<span class="nc" id="L114">                Timber.i(&quot;Server thread interrupted&quot;);</span>
+<span class="fc" id="L115">            } catch (IOException e) {</span>
+<span class="fc" id="L116">                Timber.i(&quot;Server thread stopped: %s&quot;, e.getMessage());</span>
+<span class="nc" id="L117">            }</span>
+<span class="fc" id="L118">        }</span>
+    }
+
+    class ResponseThread extends Thread {
+        final Socket connection;
+
+<span class="nc" id="L124">        ResponseThread(Socket connection) {</span>
+<span class="nc" id="L125">            this.connection = connection;</span>
+<span class="nc" id="L126">        }</span>
+
+        public void run() {
+<span class="nc" id="L129">            try (Socket connection = this.connection) {</span>
+<span class="nc" id="L130">                InputStreamReader reader = new InputStreamReader(connection.getInputStream());</span>
+<span class="nc" id="L131">                String request = new BufferedReader(reader).readLine();</span>
+<span class="nc" id="L132">                Timber.i(&quot;Received request: %s&quot;, request);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                if (request == null) {</span>
+<span class="nc" id="L134">                    return;</span>
+                }
+<span class="nc" id="L136">                long start = System.currentTimeMillis();</span>
+<span class="nc" id="L137">                Response response = getResponse(request);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                if (response == null) {</span>
+<span class="nc" id="L139">                    Timber.i(&quot;%s: No tile at these coordinates&quot;, request);</span>
+<span class="nc" id="L140">                    return;</span>
+                }
+<span class="nc" id="L142">                sendResponse(connection, response);</span>
+<span class="nc" id="L143">                long finish = System.currentTimeMillis();</span>
+<span class="nc" id="L144">                Timber.i(&quot;%s: Served %d bytes in %d ms&quot;, request, response.data.length, finish - start);</span>
+<span class="nc" id="L145">            } catch (IOException e) {</span>
+<span class="nc" id="L146">                Timber.e(e, &quot;Unable to read request from socket&quot;);</span>
+<span class="nc" id="L147">            }</span>
+<span class="nc" id="L148">        }</span>
+
+        protected Response getResponse(String request) {
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (request.startsWith(&quot;GET /&quot;)) {</span>
+<span class="nc" id="L152">                String path = request.substring(5).split(&quot;[. ]&quot;, 2)[0];</span>
+<span class="nc" id="L153">                String[] parts = path.split(&quot;/&quot;);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">                if (parts.length == 4) {</span>
+                    try {
+<span class="nc" id="L156">                        String key = parts[0];</span>
+<span class="nc" id="L157">                        int zoom = Integer.parseInt(parts[1]);</span>
+<span class="nc" id="L158">                        int x = Integer.parseInt(parts[2]);</span>
+<span class="nc" id="L159">                        int y = Integer.parseInt(parts[3]);</span>
+<span class="nc" id="L160">                        TileSource source = sources.get(key);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                        if (source != null) {</span>
+<span class="nc" id="L162">                            return source.getTile(zoom, x, y);</span>
+                        }
+<span class="nc" id="L164">                    } catch (NumberFormatException e) { /* ignore */ }</span>
+                }
+            }
+<span class="nc" id="L167">            Timber.w(&quot;Ignoring request: %s&quot;, request);</span>
+<span class="nc" id="L168">            return null;</span>
+        }
+
+        protected void sendResponse(Socket connection, Response response) {
+<span class="nc" id="L172">            String headers = String.format(</span>
+                    Locale.US,
+                    &quot;HTTP/1.0 200\r\n&quot; +
+                            &quot;Content-Type: %s\r\n&quot; +
+                            &quot;Content-Encoding: %s\r\n&quot; +
+                            &quot;Content-Length: %d\r\n&quot; +
+                            &quot;\r\n&quot;,
+                    response.contentType,
+                    response.contentEncoding,
+<span class="nc" id="L181">                    response.data.length</span>
+            );
+
+<span class="nc" id="L184">            try (OutputStream output = connection.getOutputStream()) {</span>
+<span class="nc" id="L185">                output.write(headers.getBytes());</span>
+<span class="nc" id="L186">                output.write(response.data);</span>
+<span class="nc" id="L187">                output.flush();</span>
+<span class="nc" id="L188">            } catch (IOException e) {</span>
+<span class="nc" id="L189">                Timber.e(e, &quot;Unable to write response to socket&quot;);</span>
+<span class="nc" id="L190">            }</span>
+<span class="nc" id="L191">        }</span>
+    }
+
+    public static class Response {
+        byte[] data;
+        String contentType;
+        String contentEncoding;
+
+<span class="nc" id="L199">        public Response(byte[] data, String contentType, String contentEncoding) {</span>
+<span class="nc" id="L200">            this.data = data;</span>
+<span class="nc" id="L201">            this.contentType = contentType;</span>
+<span class="nc" id="L202">            this.contentEncoding = contentEncoding;</span>
+<span class="nc" id="L203">        }</span>
+    }
+
+    public interface TileSource {
+        Response getTile(int zoom, int x, int y);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

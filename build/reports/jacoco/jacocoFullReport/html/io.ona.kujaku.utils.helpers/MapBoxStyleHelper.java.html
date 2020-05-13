@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxStyleHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils.helpers</a> &gt; <span class="el_source">MapBoxStyleHelper.java</span></div><h1>MapBoxStyleHelper.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils.helpers;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+
+import io.ona.kujaku.utils.config.KujakuConfig;
+import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
+
+/**
+ * Helps manipulate the contents of a MapBox Style object.
+ * &lt;p&gt;
+ * See:
+ * https://www.mapbox.com/mapbox-gl-js/style-spec/
+ * &lt;p&gt;
+ * Created by Jason Rogena - jrogena@ona.io on 11/7/17.
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 11/7/17.
+ */
+
+public class MapBoxStyleHelper {
+
+<span class="fc" id="L32">    public static final String TAG = MapBoxStyleHelper.class.getName();</span>
+
+    public static final String KEY_KUJAKU = &quot;kujaku&quot;;
+    private final JSONObject styleObject;
+    private final KujakuConfig kujakuConfig;
+    public static final String KEY_MAP_CENTER = &quot;center&quot;;
+    public static final String KEY_ROOT_ZOOM = &quot;zoom&quot;;
+    public static final String KEY_METADATA = &quot;metadata&quot;;
+
+<span class="fc" id="L41">    public MapBoxStyleHelper(JSONObject styleObject) throws JSONException, InvalidMapBoxStyleException {</span>
+<span class="fc" id="L42">        this.styleObject = styleObject;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (this.styleObject.has(KEY_METADATA)</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">                &amp;&amp; this.styleObject.getJSONObject(KEY_METADATA).has(KEY_KUJAKU)) {</span>
+<span class="fc" id="L45">            this.kujakuConfig = new KujakuConfig(this.styleObject.getJSONObject(KEY_METADATA).getJSONObject(KEY_KUJAKU));</span>
+        }
+        else {
+<span class="fc" id="L48">            this.kujakuConfig = new KujakuConfig();</span>
+        }
+<span class="fc" id="L50">    }</span>
+
+    public JSONObject build() throws InvalidMapBoxStyleException, JSONException {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (kujakuConfig.isValid()) {</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">            if (!styleObject.has(KEY_METADATA)) {</span>
+<span class="fc" id="L55">                styleObject.put(KEY_METADATA, new JSONObject());</span>
+            }
+<span class="fc" id="L57">            styleObject.getJSONObject(KEY_METADATA).put(KEY_KUJAKU, kujakuConfig.toJsonObject());</span>
+        } else {
+<span class="fc" id="L59">            throw new InvalidMapBoxStyleException(&quot;The Kujaku configuraiton in the MapBox style is incomplete&quot;);</span>
+        }
+
+<span class="fc" id="L62">        return styleObject;</span>
+    }
+
+    public boolean insertGeoJsonDataSource(@NonNull String sourceName, JSONObject geoJson, @NonNull String layerId)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="pc bpc" id="L67" title="2 of 4 branches missed.">        if (styleObject != null &amp;&amp; !TextUtils.isEmpty(sourceName)) {</span>
+<span class="fc" id="L68">            JSONObject styleSources = new JSONObject();</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">            if (styleObject.has(&quot;sources&quot;)) {</span>
+<span class="nc" id="L70">                styleSources = styleObject.getJSONObject(&quot;sources&quot;);</span>
+            }
+<span class="fc" id="L72">            styleSources.put(sourceName, geoJson);</span>
+<span class="fc" id="L73">            styleObject.put(&quot;sources&quot;, styleSources);</span>
+
+<span class="fc" id="L75">            return linkDataSourceToLayer(sourceName, layerId, null);</span>
+        }
+
+<span class="nc" id="L78">        return false;</span>
+    }
+
+    public KujakuConfig getKujakuConfig() {
+<span class="fc" id="L82">        return kujakuConfig;</span>
+    }
+
+    public boolean isKujakuConfigPresent() throws JSONException {
+<span class="nc bnc" id="L86" title="All 4 branches missed.">        return this.styleObject.has(KEY_METADATA) &amp;&amp; this.styleObject.getJSONObject(KEY_METADATA).has(KEY_KUJAKU);</span>
+    }
+
+    /**
+     * Links MapBox data-source to a pre-existing MapBox layer
+     *
+     * @param sourceName  Name of the MapBox datasource
+     * @param layerId     Id of the MapBox layer
+     * @param sourceLayer Layer on the vector tile source to use
+     * @return {@code TRUE} if able to associate the data-source with the layer
+     * @throws JSONException               If unable to parse the style object
+     * @throws InvalidMapBoxStyleException If the style object is missing required components
+     */
+    public boolean linkDataSourceToLayer(@NonNull String sourceName, @NonNull String layerId, @Nullable String sourceLayer)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="pc bpc" id="L101" title="3 of 6 branches missed.">        if (!TextUtils.isEmpty(sourceName) &amp;&amp; !TextUtils.isEmpty(layerId) &amp;&amp; styleObject != null) {</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            if (styleObject.has(&quot;layers&quot;)) {</span>
+<span class="fc" id="L103">                JSONArray layers = styleObject.getJSONArray(&quot;layers&quot;);</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">                for (int i = 0; i &lt; layers.length(); i++) {</span>
+<span class="fc" id="L105">                    JSONObject currentLayer = layers.getJSONObject(i);</span>
+<span class="pc bpc" id="L106" title="2 of 4 branches missed.">                    if (currentLayer.has(&quot;id&quot;) &amp;&amp; !currentLayer.getString(&quot;id&quot;).isEmpty()) {</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">                        if (layerId.equals(currentLayer.getString(&quot;id&quot;))) {</span>
+<span class="fc" id="L108">                            currentLayer.put(&quot;source&quot;, sourceName);</span>
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">                            if (TextUtils.isEmpty(sourceLayer) &amp;&amp; currentLayer.has(&quot;source-layer&quot;)) {</span>
+<span class="nc" id="L110">                                currentLayer.remove(&quot;source-layer&quot;);</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                            } else if (!TextUtils.isEmpty(sourceLayer)) {</span>
+<span class="nc" id="L112">                                currentLayer.put(&quot;source-layer&quot;, sourceLayer);</span>
+                            }
+
+<span class="fc" id="L115">                            return true;</span>
+                        }
+                    } else {
+<span class="nc" id="L118">                        throw new InvalidMapBoxStyleException(&quot;Layer with no Id&quot;);</span>
+                    }
+                }
+<span class="nc" id="L121">            } else {</span>
+<span class="nc" id="L122">                throw new InvalidMapBoxStyleException(&quot;Provided style does not have layers&quot;);</span>
+            }
+        }
+
+<span class="nc" id="L126">        return false;</span>
+    }
+
+    /**
+     * Makes layers invisible by changing the visibility property of the layer. This is useful
+     * where layers in a style have dummy data which is not going to be replaced
+     *
+     * @param layerIds String array of &lt;a href=&quot;https://www.mapbox.com/mapbox-gl-js/style-spec/#layer-id&quot;&gt;layerIds&lt;/a&gt;
+     * @return
+     * @throws JSONException
+     * @throws InvalidMapBoxStyleException If the style object is missing required components
+     */
+    public boolean disableLayers(@Nullable String[] layerIds)
+            throws JSONException, InvalidMapBoxStyleException {
+<span class="nc bnc" id="L140" title="All 6 branches missed.">        if (layerIds == null || layerIds.length &lt; 1 || styleObject == null) {</span>
+<span class="nc" id="L141">            return false;</span>
+        }
+
+<span class="nc" id="L144">        ArrayList&lt;String&gt; layerIdsList = new ArrayList&lt;&gt;(Arrays.asList(layerIds));</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (styleObject.has(&quot;layers&quot;)) {</span>
+<span class="nc" id="L147">            JSONArray layers = styleObject.getJSONArray(&quot;layers&quot;);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">            for (int i = 0; i &lt; layers.length(); i++) {</span>
+<span class="nc" id="L149">                JSONObject currentLayer = layers.getJSONObject(i);</span>
+<span class="nc bnc" id="L150" title="All 4 branches missed.">                if (currentLayer.has(&quot;id&quot;) &amp;&amp; !currentLayer.getString(&quot;id&quot;).isEmpty()) {</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">                    for (Iterator&lt;String&gt; layerIdIterator = layerIdsList.iterator(); layerIdIterator.hasNext(); ) {</span>
+<span class="nc" id="L152">                        String layerId = layerIdIterator.next();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                        if (layerId.equals(currentLayer.getString(&quot;id&quot;))) {</span>
+<span class="nc" id="L154">                            JSONObject layout = new JSONObject();</span>
+<span class="nc" id="L155">                            layout.put(&quot;visibility&quot;, &quot;none&quot;);</span>
+<span class="nc" id="L156">                            currentLayer.put(&quot;layout&quot;, layout);</span>
+
+<span class="nc" id="L158">                            layerIdIterator.remove();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                            if (layerIdsList.isEmpty()) {</span>
+<span class="nc" id="L160">                                return true;</span>
+                            }
+                        }
+<span class="nc" id="L163">                    }</span>
+                } else {
+<span class="nc" id="L165">                    throw new InvalidMapBoxStyleException(&quot;Layer with no Id&quot;);</span>
+                }
+            }
+        }
+
+<span class="nc" id="L170">        return true;</span>
+    }
+
+    /**
+     * Sets the &lt;a href=&quot;https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center&quot;&gt;root center&lt;/a&gt;
+     * property of a map to the center of the bounds given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng)
+     *
+     * @param topLeft
+     * @param bottomRight
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng topLeft, @NonNull LatLng bottomRight) throws JSONException {
+<span class="fc" id="L184">        setMapCenter(getCenterFromBounds(topLeft, bottomRight));</span>
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Sets the &lt;a href=&quot;https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center&quot;&gt;root center&lt;/a&gt;
+     * property of a map to the center of the {@link LatLng} given
+     *
+     * @see MapBoxStyleHelper#setMapCenter(LatLng, LatLng)
+     *
+     * @param mapCenter
+     * @throws JSONException
+     */
+    public void setMapCenter(@NonNull LatLng mapCenter) throws JSONException {
+<span class="fc" id="L197">        JSONArray jsonArray = new JSONArray();</span>
+<span class="fc" id="L198">        jsonArray.put(mapCenter.getLongitude());</span>
+<span class="fc" id="L199">        jsonArray.put(mapCenter.getLatitude());</span>
+
+<span class="fc" id="L201">        styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * Removes the &lt;a href=&quot;https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center&quot;&gt;root center&lt;/a&gt;
+     * property of a map from the Mapbox Style JSON if it exists
+     */
+    public void removeMapCenter() {
+<span class="nc" id="L209">        styleObject.remove(KEY_MAP_CENTER);</span>
+<span class="nc" id="L210">    }</span>
+
+    /*
+     * Updates or adds the root zoom property to the Mapbox Style
+     *
+     * @param zoom
+     * @throws JSONException
+     */
+    public void setRootZoom(double zoom) throws JSONException {
+<span class="fc" id="L219">        styleObject.put(KEY_ROOT_ZOOM, zoom);</span>
+<span class="fc" id="L220">    }</span>
+
+    public JSONObject getStyleObject() {
+<span class="fc" id="L223">        return styleObject;</span>
+    }
+
+    public static LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
+<span class="fc" id="L227">        return new LatLng(</span>
+<span class="fc" id="L228">                (topLeft.getLatitude() + bottomRight.getLatitude())/2,</span>
+<span class="fc" id="L229">                (bottomRight.getLongitude() + topLeft.getLongitude())/2</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,979 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrackingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.services</a> &gt; <span class="el_source">TrackingService.java</span></div><h1>TrackingService.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.services;
+
+import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+
+import android.content.ServiceConnection;
+import android.graphics.Color;
+
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
+import android.os.Binder;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.PowerManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import io.ona.kujaku.R;
+import io.ona.kujaku.helpers.storage.TrackingStorage;
+import io.ona.kujaku.listeners.TrackingServiceListener;
+import io.ona.kujaku.location.KujakuLocation;
+import io.ona.kujaku.services.options.TrackingServiceOptions;
+import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
+
+
+/**
+ * Tracking Service used in Foreground to avoid any memory cleaning from Android
+ * /!\ The application need to be set on Mode &quot;No Battery optimization&quot; in any case
+ * &lt;p&gt;
+ * Created by Emmanuel Otin - eo@novel-t.ch 03/07/19.
+ */
+<span class="fc" id="L50">public class TrackingService extends Service {</span>
+<span class="fc" id="L51">    private final static String TAG = TrackingService.class.getSimpleName();</span>
+    private final static String PARTIAL_WAKE_LOCK_TAG = &quot;TrackingService:PartialWakeLock&quot;;
+
+    private final static String ACTIVITY_EXTRA_NAME = &quot;launch_activity_class&quot;;
+    private final static String OPTIONS_EXTRA_NAME = &quot;tracking_service_options&quot;;
+
+    // Wait time in milli sec to wait for the service thread to exit
+    private final static long WAIT_TIME_SERVICE_THREAD = 400;
+
+    private static volatile CountDownLatch serviceThreadRunningLatch;
+
+    // Service status
+<span class="fc" id="L63">    private static volatile int serviceStatus = TrackingServiceStatus.STOPPED;</span>
+
+    // Location Manager
+    private volatile LocationManager locationManager;
+
+    private volatile Handler gpsHandler;
+    private Handler uiHandler;
+
+    private volatile KujakuLocation lastRecordedKujakuLocation;
+    private volatile KujakuLocation pendingRecordingKujakuLocation;
+    private volatile KujakuLocation lastBestKujakuLocation;
+
+    // Store the recorded locations
+    private List&lt;KujakuLocation&gt; recordedKujakuLocations;
+
+<span class="fc" id="L78">    private volatile KujakuLocation firstKujakuLocationReceived = null;</span>
+
+    // Tracks Options parameters
+    private TrackingServiceOptions trackingServiceOptions;
+
+    // Used for notification
+    private PendingIntent notificationPendingIntent;
+
+    // Binder given to clients
+<span class="fc" id="L87">    private final IBinder binder = new LocalBinder();</span>
+
+    // Listener to register to some Tracking functions
+<span class="fc" id="L90">    private TrackingServiceListener trackingServiceListener = null;</span>
+
+    // To prevent device from sleeping
+    private PowerManager.WakeLock wakeLock;
+    private PowerManager powerManager;
+
+    //Physical Storage
+    private TrackingStorage storage;
+
+<span class="nc" id="L99">    public static class TrackingServiceStatus {</span>
+        // To record the service status
+        final public static int STOPPED = 0;
+        final public static int STOPPED_GPS = 1;
+        final public static int WAITING_FIRST_FIX = 2;
+        final public static int WAITING_FIRST_RECORD = 3;
+        final public static int RUNNING = 4;
+    }
+
+    // Take a location without forcing the tag
+<span class="fc" id="L109">    public static int NO_FORCED_TAG = -1;</span>
+
+
+    @Override
+    public void onCreate() {
+<span class="fc" id="L114">        super.onCreate();</span>
+
+<span class="fc" id="L116">        Log.d(TAG, &quot;Initializing tracking service.&quot;);</span>
+
+<span class="fc" id="L118">        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);</span>
+<span class="fc" id="L119">        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);</span>
+<span class="fc" id="L120">        storage = new TrackingStorage();</span>
+
+<span class="fc" id="L122">        recordedKujakuLocations = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Initialize service
+     */
+    private void initialize() {
+        // Variables
+<span class="fc" id="L130">        lastRecordedKujakuLocation = null;</span>
+<span class="fc" id="L131">        lastBestKujakuLocation = null;</span>
+<span class="fc" id="L132">        pendingRecordingKujakuLocation = null;</span>
+<span class="fc" id="L133">        firstKujakuLocationReceived = null;</span>
+
+        // Storage
+<span class="fc" id="L136">        storage.initKujakuLocationStorage();</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Get Tracking Service Options from the intent
+     *
+     * @param intent
+     */
+    private void getTrackingServiceOptions(Intent intent) {
+        // Get parameters for Parcelable TrackingServiceOptions
+<span class="fc" id="L146">        TrackingServiceOptions options = intent.getParcelableExtra(OPTIONS_EXTRA_NAME);</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (options == null) {</span>
+<span class="nc" id="L148">            trackingServiceOptions = new TrackingServiceSaveBatteryOptions();</span>
+        } else {
+<span class="fc" id="L150">            trackingServiceOptions = options;</span>
+        }
+<span class="fc" id="L152">    }</span>
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+<span class="fc" id="L157">        Log.d(TAG, &quot;Main ThreadID: &quot; + android.os.Process.myTid());</span>
+
+<span class="fc" id="L159">        createNotificationPendingIntent(intent);</span>
+
+<span class="fc" id="L161">        getTrackingServiceOptions(intent);</span>
+
+        // Make sure we start clean. The service instance still exists after
+        // stopping and so the variable are not re-initialized.
+<span class="fc" id="L165">        initialize();</span>
+
+        // Start the service in foreground to avoid as much as
+        // possible that the service is killed by OS.
+<span class="fc" id="L169">        startServiceForeground();</span>
+
+<span class="fc" id="L171">        Log.d(TAG, &quot;Min distance gps setting: &quot; + trackingServiceOptions.getMinDistance());</span>
+<span class="fc" id="L172">        Log.d(TAG, &quot;Tolerance interval distance setting: &quot; + trackingServiceOptions.getToleranceIntervalDistance());</span>
+<span class="fc" id="L173">        Log.d(TAG, &quot;Tag for location: &quot; + trackingServiceOptions.getTag());</span>
+
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        switch (TrackingService.serviceStatus) {</span>
+            case TrackingServiceStatus.RUNNING:
+            case TrackingServiceStatus.WAITING_FIRST_FIX:
+            case TrackingServiceStatus.WAITING_FIRST_RECORD:
+<span class="fc" id="L179">                Log.w(TAG, &quot;Service thread is already running.&quot;);</span>
+<span class="fc" id="L180">                return Service.START_STICKY;</span>
+
+            default:
+<span class="fc" id="L183">                Log.d(TAG, &quot;Service starting.&quot;);</span>
+
+                // Prevent the device from sleeping
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">                if (!this.getWakeLock().isHeld()) {</span>
+<span class="fc" id="L187">                    this.getWakeLock().acquire();</span>
+                }
+
+<span class="fc bfc" id="L190" title="All 2 branches covered.">                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {</span>
+<span class="fc" id="L191">                    Log.i(TAG, &quot;Start tracking service thread.&quot;);</span>
+
+                    try {
+                        // Set the latch that will be unset when the service thread exits
+<span class="fc" id="L195">                        serviceThreadRunningLatch = new CountDownLatch(1);</span>
+                        // Start the thread processing notifications
+<span class="fc" id="L197">                        serviceThread.start();</span>
+
+<span class="nc" id="L199">                    } catch (IllegalThreadStateException e) {</span>
+
+<span class="nc" id="L201">                        Log.e(TAG, &quot;Failed to start service thread.&quot;, e);</span>
+<span class="nc" id="L202">                        setServiceStatus(TrackingServiceStatus.STOPPED);</span>
+
+                        // Stop the service as there is something really
+                        // wrong
+<span class="nc" id="L206">                        stopSelf();</span>
+
+<span class="nc" id="L208">                        return Service.START_NOT_STICKY;</span>
+<span class="fc" id="L209">                    }</span>
+
+<span class="fc" id="L211">                    setServiceStatus(TrackingServiceStatus.WAITING_FIRST_FIX);</span>
+
+<span class="fc" id="L213">                    Log.i(TAG, &quot;Tracking service running.&quot;);</span>
+
+<span class="fc" id="L215">                    return Service.START_STICKY;</span>
+
+                } else {
+
+<span class="fc" id="L219">                    setServiceStatus(TrackingServiceStatus.STOPPED_GPS);</span>
+
+                    // Creation not successful because either GPS is not enabled or
+<span class="fc" id="L222">                    Log.w(TAG,</span>
+                            &quot;Abort service when starting because GPS not enabled.&quot;);
+
+                    // Stop the service
+<span class="fc" id="L226">                    stopSelf();</span>
+
+<span class="fc" id="L228">                    return Service.START_NOT_STICKY;</span>
+                }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+
+<span class="fc" id="L236">        Log.d(TAG, &quot;Tracking service stopping.&quot;);</span>
+
+        try {
+            // Remove listeners
+<span class="pc bpc" id="L240" title="1 of 4 branches missed.">            if (locationManager != null &amp;&amp; locationListener != null) {</span>
+<span class="fc" id="L241">                Log.d(TAG, &quot;Remove location manager updates.&quot;);</span>
+<span class="fc" id="L242">                locationManager.removeUpdates(locationListener);</span>
+            }
+
+            // Stop the service thread by posting a runnable in the loop.
+<span class="fc bfc" id="L246" title="All 2 branches covered.">            if (gpsHandler != null) {</span>
+<span class="fc" id="L247">                Log.d(TAG, &quot;Quitting looper&quot;);</span>
+<span class="fc" id="L248">                gpsHandler.post(stopServiceThread);</span>
+            }
+
+<span class="fc bfc" id="L251" title="All 4 branches covered.">            if (wakeLock != null &amp;&amp; wakeLock.isHeld()) {</span>
+<span class="fc" id="L252">                Log.d(TAG, &quot;Release wake lock.&quot;);</span>
+<span class="fc" id="L253">                wakeLock.release();</span>
+            }
+
+<span class="nc" id="L256">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L257">            Log.e(TAG, &quot;Failed to stop service properly.&quot;, e);</span>
+<span class="fc" id="L258">        }</span>
+
+<span class="fc" id="L260">        Log.d(TAG, &quot;Wait for the threads to exit.&quot;);</span>
+
+        // Wait for the threads to die. This is required to implement an async stop. See Utils.
+        try {
+<span class="fc bfc" id="L264" title="All 2 branches covered.">            if (serviceThreadRunningLatch != null) {</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">                if (!serviceThreadRunningLatch.await(WAIT_TIME_SERVICE_THREAD, TimeUnit.MILLISECONDS)) {</span>
+<span class="fc" id="L266">                    Log.w(TAG, &quot;Time out waiting for service thread to exit.&quot;);</span>
+                }
+<span class="fc" id="L268">                Log.d(TAG, &quot;Service thread has stopped.&quot;);</span>
+            }
+
+<span class="nc" id="L271">        } catch (InterruptedException ie) {</span>
+<span class="nc" id="L272">            Log.e(TAG, &quot;Main application thread was interrupted.&quot;, ie);</span>
+<span class="fc" id="L273">        }</span>
+
+<span class="fc" id="L275">        setServiceStatus(TrackingServiceStatus.STOPPED);</span>
+
+<span class="fc" id="L277">        super.onDestroy();</span>
+
+<span class="fc" id="L279">        Log.i(TAG, &quot;Tracking service stopped.&quot;);</span>
+<span class="fc" id="L280">    }</span>
+
+    @Override
+    public IBinder onBind(Intent intent) {
+<span class="nc" id="L284">        return binder;</span>
+    }
+
+    /**
+     * @param intent
+     */
+    private void createNotificationPendingIntent(Intent intent) {
+<span class="fc" id="L291">        Class&lt;?&gt; cls = getActivityClassFromCanonicalName(intent);</span>
+
+        // The stack builder object will contain an artificial back stack for the started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        // ALL THIS is required to start the service in the foreground!
+<span class="fc" id="L297">        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);</span>
+
+        // Adds the back stack for the Intent (but not the Intent itself)
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">        if (cls != null) {</span>
+            // Creates an explicit intent for an Activity
+<span class="fc" id="L302">            Intent startActivityIntent = new Intent(this, cls);</span>
+
+<span class="fc" id="L304">            stackBuilder.addParentStack(cls);</span>
+            // Adds the Intent that starts the Activity to the top of the stack
+<span class="fc" id="L306">            stackBuilder.addNextIntent(startActivityIntent);</span>
+        }
+
+<span class="fc" id="L309">        notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);</span>
+<span class="fc" id="L310">    }</span>
+
+    /**
+     * Get the launching Activity class name from the intent
+     *
+     * @param intent
+     * @return
+     */
+    private Class&lt;?&gt; getActivityClassFromCanonicalName(Intent intent) {
+<span class="fc" id="L319">        Bundle extras = intent.getExtras();</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">        if (extras == null) {</span>
+<span class="nc" id="L321">            return null;</span>
+        }
+
+<span class="fc" id="L324">        String classname = extras.getString(ACTIVITY_EXTRA_NAME);</span>
+<span class="fc" id="L325">        Class&lt;?&gt; cls = null;</span>
+        try {
+<span class="fc" id="L327">            cls = Class.forName(classname);</span>
+<span class="nc" id="L328">        } catch (ClassNotFoundException ex) {</span>
+<span class="nc" id="L329">            Log.e(TAG, &quot;Launch activity class not found&quot;, ex);</span>
+<span class="fc" id="L330">        }</span>
+
+<span class="fc" id="L332">        return cls;</span>
+    }
+
+    /***
+     * Register LocationManager request locations updates
+     */
+    @SuppressWarnings({&quot;MissingPermission&quot;})
+    private void registerLocationListener() {
+<span class="fc" id="L340">        Log.d(TAG, &quot;Register location update listener.&quot;);</span>
+        // https://stackoverflow.com/questions/33022662/android-locationmanager-vs-google-play-services
+        // FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+<span class="fc" id="L343">        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,</span>
+<span class="fc" id="L344">                trackingServiceOptions.getMinTime(),</span>
+<span class="fc" id="L345">                trackingServiceOptions.getGpsMinDistance(),</span>
+<span class="fc" id="L346">                locationListener, Looper.myLooper());</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * Set TrackingService Status
+     *
+     * @param status
+     */
+    private void setServiceStatus(int status) {
+<span class="fc" id="L355">        serviceStatus = status;</span>
+<span class="fc" id="L356">    }</span>
+
+    /**
+     * Process a new kujakuLocation
+     *
+     * @param kujakuLocation
+     */
+    private synchronized void processLocation(KujakuLocation kujakuLocation) {
+        double distanceBetweenLocations;
+
+<span class="fc bfc" id="L366" title="All 2 branches covered.">        if (lastRecordedKujakuLocation == null) {</span>
+<span class="fc" id="L367">            Log.d(TAG, &quot;First kujakuLocation since service started or GPS was lost&quot;);</span>
+
+            // Create pending
+<span class="fc" id="L370">            overwritePendingLocation(kujakuLocation);</span>
+
+            // Create a fake last recorded kujakuLocation to have a fix
+            // reference point to compare new tracks to.
+            // We cannot compare new tracks always to the pending
+            // one using toleranceInterval as the
+            // pending kujakuLocation can be updated for ever theoretically
+            // if the accuracy keeps being better
+<span class="fc" id="L378">            lastRecordedKujakuLocation = kujakuLocation;</span>
+
+<span class="fc" id="L380">            return;</span>
+        }
+
+        // lastRecordedKujakuLocation is not null
+<span class="fc" id="L384">        distanceBetweenLocations = kujakuLocation.distanceTo(lastRecordedKujakuLocation);</span>
+
+<span class="fc" id="L386">        Log.d(TAG, &quot;Distance to last recorded kujakuLocation (m) = &quot; + distanceBetweenLocations);</span>
+
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">        if ((distanceBetweenLocations &lt; (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {</span>
+<span class="nc" id="L389">            Log.d(TAG, &quot;New kujakuLocation too close from last recorded kujakuLocation.&quot;);</span>
+<span class="nc" id="L390">            return;</span>
+        }
+
+<span class="fc bfc" id="L393" title="All 2 branches covered.">        if (distanceBetweenLocations &lt; (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {</span>
+<span class="fc" id="L394">            Log.d(TAG, &quot;New kujakuLocation within distance tolerance from last recorded kujakuLocation.&quot;);</span>
+
+            // Check if there is a pending kujakuLocation
+<span class="fc bfc" id="L397" title="All 2 branches covered.">            if (pendingRecordingKujakuLocation == null) {</span>
+<span class="fc" id="L398">                Log.d(TAG, &quot;No pending kujakuLocation.&quot;);</span>
+<span class="fc" id="L399">                overwritePendingLocation(kujakuLocation);</span>
+<span class="fc" id="L400">                return;</span>
+            } else {
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">                if (selectLocation(kujakuLocation, pendingRecordingKujakuLocation)) {</span>
+<span class="fc" id="L403">                    overwritePendingLocation(kujakuLocation);</span>
+<span class="fc" id="L404">                    Log.d(TAG, &quot;New kujakuLocation is better than pending kujakuLocation.&quot;);</span>
+
+<span class="fc" id="L406">                    return;</span>
+
+                } else {
+<span class="nc" id="L409">                    Log.d(TAG,</span>
+                            &quot;New kujakuLocation has worse accuracy than pending one.&quot;);
+<span class="nc" id="L411">                    return;</span>
+
+                } // end test on better kujakuLocation
+
+            } // end test if pending
+
+        } else {
+<span class="fc" id="L418">            Log.d(TAG, &quot;New kujakuLocation out of distance tolerance.&quot;);</span>
+<span class="fc bfc" id="L419" title="All 2 branches covered.">            if (pendingRecordingKujakuLocation == null) {</span>
+                // As this kujakuLocation is out of tolerance, the next one will also be.
+                // So we record it now. We cannot wait for better accuracy.
+<span class="fc" id="L422">                overwritePendingLocation(kujakuLocation);</span>
+<span class="fc" id="L423">                recordPendingLocation();</span>
+<span class="fc" id="L424">                return;</span>
+
+            } else {
+                // Record pending which becomes the last kujakuLocation
+<span class="fc" id="L428">                recordPendingLocation();</span>
+                // Recursive call as we have a new lastRecordedKujakuLocation
+<span class="fc" id="L430">                processLocation(kujakuLocation);</span>
+<span class="fc" id="L431">                return;</span>
+            }
+
+        } // End test new kujakuLocation within time tolerance
+    }
+
+    /**
+     * Compare two track accuracy. Return true if new better than old
+     *
+     * @param newKujakuLocation
+     * @param oldKujakuLocation
+     * @return
+     */
+    private boolean selectLocation(KujakuLocation newKujakuLocation, KujakuLocation oldKujakuLocation) {
+<span class="fc" id="L445">        double newDist = newKujakuLocation.distanceTo(lastRecordedKujakuLocation);</span>
+<span class="fc" id="L446">        double oldDist = oldKujakuLocation.distanceTo(lastRecordedKujakuLocation);</span>
+
+        // Old track real, new track real =&gt; keep best accuracy
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">        if (newKujakuLocation.getAccuracy() &lt; oldKujakuLocation.getAccuracy()) {</span>
+<span class="fc" id="L450">            return true;</span>
+        } else {
+<span class="nc bnc" id="L452" title="All 2 branches missed.">            if (newKujakuLocation.getAccuracy() == oldKujakuLocation.getAccuracy()) {</span>
+                // Check if closer to targeted distance
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                return newDist &lt; oldDist;</span>
+            } else {
+<span class="nc" id="L456">                return false;</span>
+            }
+        }
+    }
+
+    /**
+     * Overwrite pending with a new kujakuLocation
+     *
+     * @param kujakuLocation
+     */
+    private void overwritePendingLocation(KujakuLocation kujakuLocation) {
+<span class="fc" id="L467">        Log.d(TAG, &quot;Overwrite pending kujakuLocation.&quot;);</span>
+
+<span class="fc" id="L469">        pendingRecordingKujakuLocation = kujakuLocation;</span>
+
+        // Remember the last real Location. pendingRecordingKujakuLocation can be null but
+        // lastBestKujakuLocation cannot be.
+        // Each pending kujakuLocation will be recorded at some point and become the new
+        // reference to compare to
+<span class="fc" id="L475">        lastBestKujakuLocation = kujakuLocation;</span>
+<span class="fc" id="L476">    }</span>
+
+    /**
+     * Register Location
+     */
+    private synchronized void recordPendingLocation() {
+<span class="pc bpc" id="L482" title="1 of 2 branches missed.">        if (pendingRecordingKujakuLocation != null) {</span>
+<span class="fc" id="L483">            Log.d(TAG, &quot;Record pending location.&quot;);</span>
+
+            // We store the location in our list
+<span class="fc" id="L486">            recordedKujakuLocations.add(pendingRecordingKujakuLocation);</span>
+
+<span class="fc" id="L488">            informNewTrackReceivedListener(pendingRecordingKujakuLocation);</span>
+<span class="fc" id="L489">            informCloseToDepartureLocationListener(pendingRecordingKujakuLocation);</span>
+
+<span class="fc" id="L491">            storage.writeLocation(pendingRecordingKujakuLocation, recordedKujakuLocations.size());</span>
+        } else {
+<span class="nc" id="L493">            Log.d(TAG, &quot;Service is not recording.&quot;);</span>
+        }
+
+<span class="fc" id="L496">        lastRecordedKujakuLocation = pendingRecordingKujakuLocation;</span>
+<span class="fc" id="L497">        pendingRecordingKujakuLocation = null;</span>
+<span class="fc" id="L498">    }</span>
+
+    /**
+     * Volatile because different methods are called from the main thread and serviceThread
+     */
+<span class="fc" id="L503">    private volatile LocationListener locationListener = new LocationListener() {</span>
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+<span class="nc bnc" id="L507" title="All 4 branches missed.">            switch (status) {</span>
+                case LocationProvider.AVAILABLE:
+<span class="nc" id="L509">                    Log.d(TAG, &quot;GPS available.&quot;);</span>
+<span class="nc" id="L510">                    break;</span>
+
+                case LocationProvider.TEMPORARILY_UNAVAILABLE:
+<span class="nc" id="L513">                    Log.d(TAG, &quot;GPS temporary unavailable.&quot;);</span>
+<span class="nc" id="L514">                    break;</span>
+
+                case LocationProvider.OUT_OF_SERVICE:
+<span class="nc" id="L517">                    Log.d(TAG, &quot;GPS out of service.&quot;);</span>
+<span class="nc" id="L518">                    break;</span>
+
+                default:
+                    break;
+            }
+<span class="nc" id="L523">        }</span>
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            // See GPS Broadcast receiver
+<span class="nc" id="L528">        }</span>
+
+        @Override
+        public void onProviderDisabled(String provider) {
+<span class="nc" id="L532">            Log.i(TAG, &quot;GPS Provider has been disabled.&quot;);</span>
+<span class="nc" id="L533">            Log.i(TAG, &quot;Stopping tracking service.&quot;);</span>
+            // Stop the service
+<span class="nc" id="L535">            TrackingService.this.stopSelf();</span>
+<span class="nc" id="L536">        }</span>
+
+        @Override
+        public void onLocationChanged(Location location) {
+<span class="fc" id="L540">            Log.d(TAG, &quot;GPS position received&quot;);</span>
+<span class="fc" id="L541">            Log.d(TAG, &quot;GPS Location ThreadID: &quot; + android.os.Process.myTid());</span>
+
+            // This should never happen, but just in case (we really don't
+            // want the service to crash):
+<span class="pc bpc" id="L545" title="1 of 2 branches missed.">            if (location == null) {</span>
+<span class="nc" id="L546">                Log.d(TAG, &quot;No location available.&quot;);</span>
+<span class="nc" id="L547">                return;</span>
+            }
+
+<span class="fc" id="L550">            KujakuLocation kujakuLocation = new KujakuLocation(location, trackingServiceOptions.getTag());</span>
+
+            // First Location received
+<span class="fc" id="L553">            informFirstLocationReceivedListener(kujakuLocation);</span>
+
+            // Ignore if the accuracy is too bad:
+<span class="pc bpc" id="L556" title="1 of 2 branches missed.">            if (kujakuLocation.getAccuracy() &gt; trackingServiceOptions.getMinAccuracy()) {</span>
+<span class="nc" id="L557">                Log.d(TAG, &quot;Track ignored because of accuracy.&quot;);</span>
+<span class="nc" id="L558">                return;</span>
+            }
+
+<span class="fc bfc" id="L561" title="All 2 branches covered.">            if (lastBestKujakuLocation == null) {</span>
+<span class="fc" id="L562">                lastBestKujakuLocation = kujakuLocation;</span>
+            } else {
+<span class="fc bfc" id="L564" title="All 2 branches covered.">                if (kujakuLocation.getAccuracy() &lt;= lastBestKujakuLocation.getAccuracy()) {</span>
+                    // Remember this location is better than the previous one.
+                    // lastBestKujakuLocation is rebased in overwritePendingLocation but an
+                    // ignored location can have better accuracy
+                    // even if not recorded
+
+<span class="fc" id="L570">                    Log.d(TAG,</span>
+                            &quot;New location is used as latest best accuracy location.&quot;);
+<span class="fc" id="L572">                    lastBestKujakuLocation = kujakuLocation;</span>
+                }
+            }
+
+            // process location received from GPS
+<span class="fc" id="L577">            processLocation(kujakuLocation);</span>
+<span class="fc" id="L578">        }</span>
+    };
+
+    /**
+     * Service thread with looper to handle GPS notification Thread to process all notifications
+     */
+<span class="fc" id="L584">    private volatile Thread serviceThread = new Thread(&quot;TrackingService&quot;) {</span>
+        public void run() {
+<span class="fc" id="L586">            Log.d(TAG, &quot;Tracking thread started.&quot;);</span>
+            // preparing a looper on current thread
+            // the current thread is being detected implicitly
+<span class="fc" id="L589">            Looper.prepare();</span>
+
+<span class="fc" id="L591">            Log.d(TAG, &quot;Register GPS status listener.&quot;);</span>
+
+            // No need to do it in thread as the listener only logs
+            // which is fast
+            // locationManager.addGpsStatusListener(gpsListener);
+
+            // now, the handler will automatically bind to the
+            // Looper that is attached to the current thread
+            // You don't need to specify the Looper explicitly
+<span class="fc" id="L600">            gpsHandler = new Handler();</span>
+
+            // Ui Handler
+<span class="fc" id="L603">            uiHandler = new Handler(Looper.getMainLooper());</span>
+
+            // Register the Location listener
+<span class="fc" id="L606">            registerLocationListener();</span>
+
+            // After the following line the thread will start
+            // running the message loop and will not normally
+            // exit the loop unless a problem happens or you
+            // quit() the looper (see below)
+<span class="fc" id="L612">            Looper.loop();</span>
+
+<span class="fc" id="L614">            Log.d(TAG, &quot;Exiting looper.&quot;);</span>
+
+<span class="pc bpc" id="L616" title="1 of 2 branches missed.">            if (pendingRecordingKujakuLocation != null) {</span>
+
+<span class="nc" id="L618">                Log.d(TAG, &quot;Record last pending location.&quot;);</span>
+<span class="nc" id="L619">                recordPendingLocation();</span>
+            }
+
+            // Mark to notify thread is exiting
+<span class="fc" id="L623">            serviceThreadRunningLatch.countDown();</span>
+<span class="fc" id="L624">        }</span>
+    };
+
+    /**
+     * Call by service Thread to stop itself
+     */
+<span class="fc" id="L630">    private Runnable stopServiceThread = new Runnable() {</span>
+        @Override
+        public void run() {
+<span class="nc" id="L633">            Looper looper = Looper.myLooper();</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">            if (looper != null) {</span>
+<span class="nc" id="L635">                looper.quit();</span>
+            } else {
+<span class="nc" id="L637">                Log.e(TAG, &quot;Cannot stop service thread.&quot;);</span>
+            }
+<span class="nc" id="L639">        }</span>
+    };
+
+    /**
+     * Get Wake Lock
+     *
+     * @return
+     */
+    private PowerManager.WakeLock getWakeLock() {
+<span class="fc bfc" id="L648" title="All 2 branches covered.">        if (this.wakeLock == null) {</span>
+            // Create the wakeLock to prevent the device from sleeping
+<span class="fc" id="L650">            this.wakeLock = this.powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,</span>
+                    PARTIAL_WAKE_LOCK_TAG);
+        }
+
+<span class="fc" id="L654">        return this.wakeLock;</span>
+    }
+
+    /**
+     * To ensure the service is not killed too easily
+     */
+    protected void startServiceForeground() {
+<span class="fc" id="L661">        String channel = &quot;&quot;;</span>
+
+<span class="pc bpc" id="L663" title="1 of 2 branches missed.">        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {</span>
+<span class="fc" id="L664">            channel = createChannel();</span>
+        }
+
+<span class="fc" id="L667">        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)</span>
+<span class="fc" id="L668">                .setSmallIcon(android.R.drawable.ic_menu_mylocation)</span>
+<span class="fc" id="L669">                .setContentTitle(String.format(&quot;%1$s %2$s&quot;, getString(R.string.app_name), getString(R.string.tracking_service_name)))</span>
+<span class="fc" id="L670">                .setOngoing(true)</span>
+<span class="fc" id="L671">                .setWhen(System.currentTimeMillis());</span>
+
+<span class="fc" id="L673">        Notification notification = mBuilder</span>
+<span class="fc" id="L674">                .setPriority(NotificationCompat.PRIORITY_HIGH)</span>
+<span class="fc" id="L675">                .setContentIntent(notificationPendingIntent)</span>
+<span class="fc" id="L676">                .build();</span>
+
+<span class="fc" id="L678">        startForeground(1, notification);</span>
+<span class="fc" id="L679">    }</span>
+
+    /**
+     * Create new channel for the Tracking Service
+     *
+     * @return
+     */
+    @NonNull
+    @TargetApi(26)
+    private synchronized String createChannel() {
+<span class="fc" id="L689">        String channelId = getString(R.string.tracking_service_channel_id);</span>
+<span class="fc" id="L690">        String channelName = getString(R.string.tracking_service_channel_name);</span>
+
+<span class="fc" id="L692">        NotificationManager mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);</span>
+<span class="fc" id="L693">        NotificationChannel mChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);</span>
+
+<span class="fc" id="L695">        mChannel.enableLights(true);</span>
+<span class="fc" id="L696">        mChannel.setLightColor(Color.BLUE);</span>
+<span class="fc" id="L697">        mChannel.enableVibration(true);</span>
+<span class="pc bpc" id="L698" title="1 of 2 branches missed.">        if (mNotificationManager != null) {</span>
+<span class="fc" id="L699">            mNotificationManager.createNotificationChannel(mChannel);</span>
+        } else {
+<span class="nc" id="L701">            stopSelf();</span>
+        }
+<span class="fc" id="L703">        return channelId;</span>
+    }
+
+    /** TrackingService Listener methods **/
+
+    /**
+     * Register listener
+     *
+     * @param listener
+     */
+    public void registerTrackingServiceListener(@NonNull TrackingServiceListener listener) {
+<span class="fc" id="L714">        this.trackingServiceListener = listener;</span>
+<span class="fc" id="L715">    }</span>
+
+    /**
+     * Unregister listener
+     */
+    public void unregisterTrackingServiceListener() {
+<span class="nc" id="L721">        this.trackingServiceListener = null;</span>
+<span class="nc" id="L722">    }</span>
+
+    /**
+     * Inform listener that first kujakuLocation is received
+     *
+     * @param kujakuLocation
+     */
+    private void informFirstLocationReceivedListener(KujakuLocation kujakuLocation) {
+<span class="fc bfc" id="L730" title="All 4 branches covered.">        if (this.trackingServiceListener != null &amp;&amp; this.firstKujakuLocationReceived == null) {</span>
+<span class="fc" id="L731">            uiHandler.post(new Runnable() {</span>
+                @Override
+                public void run() {
+<span class="fc" id="L734">                    trackingServiceListener.onFirstLocationReceived(kujakuLocation);</span>
+<span class="fc" id="L735">                }</span>
+            });
+<span class="fc" id="L737">            this.firstKujakuLocationReceived = kujakuLocation;</span>
+        }
+<span class="fc" id="L739">        this.setServiceStatus(TrackingServiceStatus.WAITING_FIRST_RECORD);</span>
+<span class="fc" id="L740">    }</span>
+
+    /**
+     * Inform listener that a new track is registered
+     *
+     * @param kujakuLocation
+     */
+    private void informNewTrackReceivedListener(KujakuLocation kujakuLocation) {
+<span class="pc bpc" id="L748" title="1 of 4 branches missed.">        if (this.trackingServiceListener != null &amp;&amp; kujakuLocation != null) {</span>
+<span class="fc" id="L749">            uiHandler.post(new Runnable() {</span>
+                @Override
+                public void run() {
+<span class="fc" id="L752">                    trackingServiceListener.onNewLocationReceived(kujakuLocation);</span>
+<span class="fc" id="L753">                }</span>
+            });
+        }
+<span class="fc" id="L756">        this.setServiceStatus(TrackingServiceStatus.RUNNING);</span>
+<span class="fc" id="L757">    }</span>
+
+    /**
+     * Inform listener that kujakuLocation registered is close to the departure kujakuLocation
+     *
+     * @param kujakuLocation
+     */
+    private void informCloseToDepartureLocationListener(KujakuLocation kujakuLocation) {
+<span class="pc bpc" id="L765" title="1 of 4 branches missed.">        if (this.trackingServiceListener != null &amp;&amp; kujakuLocation != null) {</span>
+<span class="fc bfc" id="L766" title="All 2 branches covered.">            if (this.getNumberOfLocationsRecorded() == 1) {</span>
+<span class="fc" id="L767">                return;</span>
+            }
+
+<span class="fc" id="L770">            Location departure = this.getFirstLocationRecorded();</span>
+
+<span class="pc bpc" id="L772" title="1 of 4 branches missed.">            if (departure != null &amp;&amp; departure.distanceTo(kujakuLocation) &lt;= trackingServiceOptions.getDistanceFromDeparture()) {</span>
+<span class="fc" id="L773">                uiHandler.post(new Runnable() {</span>
+                    @Override
+                    public void run() {
+<span class="fc" id="L776">                        trackingServiceListener.onCloseToDepartureLocation(kujakuLocation);</span>
+<span class="fc" id="L777">                    }</span>
+                });
+            }
+        }
+<span class="fc" id="L781">    }</span>
+
+    /**
+     * Get First Location recorded
+     *
+     * @return
+     */
+    private Location getFirstLocationRecorded() {
+<span class="pc bpc" id="L789" title="2 of 4 branches missed.">        if (this.recordedKujakuLocations != null &amp;&amp; this.recordedKujakuLocations.size() &gt; 0) {</span>
+<span class="fc" id="L790">            return this.recordedKujakuLocations.get(0);</span>
+        }
+
+<span class="nc" id="L793">        return null;</span>
+    }
+
+    /**
+     * Get number of locations recorded
+     *
+     * @return
+     */
+    private int getNumberOfLocationsRecorded() {
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">        if (this.recordedKujakuLocations != null) {</span>
+<span class="fc" id="L803">            return this.recordedKujakuLocations.size();</span>
+        }
+
+<span class="nc" id="L806">        return 0;</span>
+    }
+
+
+    /**** Public methods that can be used after bind ***/
+
+    /**
+     * Return all locations recorded
+     *
+     * @return
+     */
+    public List&lt;KujakuLocation&gt; getRecordedKujakuLocations() {
+<span class="fc" id="L818">        return this.recordedKujakuLocations;</span>
+    }
+
+    /**
+     * Set Tag for next points
+     *
+     * @param tag
+     */
+    public void setTag(long tag) {
+<span class="fc" id="L827">        this.trackingServiceOptions.setTag(tag);</span>
+<span class="fc" id="L828">    }</span>
+
+    /**
+     * Record pending Location
+     *
+     * @param tag
+     */
+    public void takeLocation(long tag) {
+<span class="pc bpc" id="L836" title="1 of 4 branches missed.">        if (pendingRecordingKujakuLocation == null &amp;&amp; lastBestKujakuLocation != null) {</span>
+<span class="fc" id="L837">            pendingRecordingKujakuLocation = new KujakuLocation(lastBestKujakuLocation, lastBestKujakuLocation.getTag());</span>
+        }
+
+<span class="pc bpc" id="L840" title="1 of 2 branches missed.">        if (pendingRecordingKujakuLocation != null) {</span>
+<span class="pc bpc" id="L841" title="1 of 2 branches missed.">            if (tag != NO_FORCED_TAG) {</span>
+<span class="fc" id="L842">                pendingRecordingKujakuLocation.setTag(tag);</span>
+            }
+<span class="fc" id="L844">            recordPendingLocation();</span>
+        }
+<span class="fc" id="L846">    }</span>
+
+    /**
+     * Class used for the client Binder.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with IPC.
+     */
+<span class="fc" id="L852">    public class LocalBinder extends Binder {</span>
+        public TrackingService getService() {
+            // Return this instance of LocalService so clients can call public methods
+<span class="nc" id="L855">            return TrackingService.this;</span>
+        }
+    }
+
+    /*** static methods ***/
+
+    /**
+     * Start Service and bind it
+     *
+     * @param context
+     * @param cls
+     * @param connection
+     * @param options
+     */
+    public static void startAndBindService(Context context, Class&lt;?&gt; cls, ServiceConnection connection, TrackingServiceOptions options) {
+<span class="fc" id="L870">        Intent mIntent = TrackingService.getIntent(context, cls, options);</span>
+<span class="fc" id="L871">        TrackingService.bindService(context, mIntent, connection);</span>
+
+<span class="pc bpc" id="L873" title="1 of 2 branches missed.">        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.O) {</span>
+<span class="fc" id="L874">            context.startForegroundService(mIntent);</span>
+        } else {
+<span class="nc" id="L876">            context.startService(mIntent);</span>
+        }
+<span class="fc" id="L878">    }</span>
+
+    /***
+     * Bind service
+     *
+     * @param context
+     * @param intent
+     * @param connection
+     */
+    public static boolean bindService(Context context, Intent intent, ServiceConnection connection) {
+<span class="fc" id="L888">        return context.bindService(intent, connection, BIND_AUTO_CREATE);</span>
+    }
+
+    /**
+     * Create TrackingService intent
+     *
+     * @param context
+     * @param cls
+     * @param options
+     * @return
+     */
+    public static Intent getIntent(Context context, Class&lt;?&gt; cls, TrackingServiceOptions options) {
+<span class="fc" id="L900">        Intent mIntent = new Intent(context, TrackingService.class);</span>
+
+<span class="pc bpc" id="L902" title="1 of 2 branches missed.">        if (cls != null) {</span>
+<span class="fc" id="L903">            mIntent.putExtra(ACTIVITY_EXTRA_NAME, cls.getCanonicalName());</span>
+        }
+
+<span class="pc bpc" id="L906" title="1 of 2 branches missed.">        if (options != null) {</span>
+<span class="fc" id="L907">            mIntent.putExtra(OPTIONS_EXTRA_NAME, options);</span>
+        }
+
+<span class="fc" id="L910">        return mIntent;</span>
+    }
+
+    /**
+     * Stop Service and unbind it
+     *
+     * @param context
+     * @param connection
+     */
+    public static void stopAndUnbindService(Context context, ServiceConnection connection) {
+<span class="fc" id="L920">        Intent mIntent = new Intent(context, TrackingService.class);</span>
+<span class="fc" id="L921">        context.stopService(mIntent);</span>
+<span class="fc" id="L922">        TrackingService.unBindService(context, connection);</span>
+<span class="fc" id="L923">    }</span>
+
+    /**
+     * Unbind service from the activity
+     *
+     * @param context
+     * @param connection
+     */
+    public static void unBindService(Context context, ServiceConnection connection) {
+        try {
+<span class="fc" id="L933">            context.unbindService(connection);</span>
+<span class="nc" id="L934">        } catch (IllegalArgumentException ex) {</span>
+<span class="nc" id="L935">            Log.e(TAG, &quot;UnBindService failed&quot;, ex);</span>
+<span class="fc" id="L936">        }</span>
+<span class="fc" id="L937">    }</span>
+
+    /**
+     * Return {@code TRUE} if tracking service is running {@code FALSE} otherwise
+     *
+     * @return
+     */
+    public static boolean isRunning() {
+<span class="pc bpc" id="L945" title="2 of 6 branches missed.">        return TrackingService.serviceStatus == TrackingService.TrackingServiceStatus.RUNNING ||</span>
+                TrackingService.serviceStatus == TrackingService.TrackingServiceStatus.WAITING_FIRST_FIX ||
+                TrackingService.serviceStatus == TrackingService.TrackingServiceStatus.WAITING_FIRST_RECORD;
+    }
+
+    /**
+     * Return service status
+     *
+     * @return
+     */
+    public static int getTrackingServiceStatus() {
+<span class="fc" id="L956">        return TrackingService.serviceStatus;</span>
+    }
+
+    /**
+     * Return Recorded Locations
+     *
+     * @return
+     */
+    public static List&lt;KujakuLocation&gt; getCurrentRecordedKujakuLocations() {
+<span class="fc" id="L965">        TrackingStorage storage = new TrackingStorage();</span>
+<span class="fc" id="L966">        return storage.getCurrentRecordedKujakuLocations();</span>
+    }
+
+    /**
+     * Return Previous Recorded Locations
+     *
+     * @return
+     */
+    public static List&lt;KujakuLocation&gt; getPreviousRecordedKujakuLocations() {
+<span class="fc" id="L975">        TrackingStorage storage = new TrackingStorage();</span>
+<span class="fc" id="L976">        return storage.getPreviousRecordedKujakuLocations();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsCapabilitiesService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.services</a> &gt; <span class="el_source">WmtsCapabilitiesService.java</span></div><h1>WmtsCapabilitiesService.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.services;
+
+import android.os.AsyncTask;
+import android.util.Log;
+
+import java.io.InputStreamReader;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import io.ona.kujaku.callables.AsyncTaskCallable;
+import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
+import io.ona.kujaku.listeners.OnFinishedListener;
+import io.ona.kujaku.listeners.WmtsCapabilitiesListener;
+import io.ona.kujaku.tasks.GenericAsyncTask;
+import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
+import io.ona.kujaku.wmts.model.WmtsCapabilities;
+
+/**
+ * Service performs the retrieval of the WMTS Capabilities file describing all accessible layers
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/28/18.
+ */
+public class WmtsCapabilitiesService {
+
+<span class="nc" id="L26">    public static final String TAG = WmtsCapabilitiesService.class.getName();</span>
+
+    private String url;
+
+    private WmtsCapabilities capabilities;
+
+    private WmtsCapabilitiesListener listener;
+
+<span class="nc" id="L34">    public WmtsCapabilitiesService(String url) {</span>
+<span class="nc" id="L35">        this.url = url;</span>
+<span class="nc" id="L36">    }</span>
+
+    public void setListener(WmtsCapabilitiesListener listener) {
+<span class="nc" id="L39">        this.listener = listener;</span>
+<span class="nc" id="L40">    }</span>
+
+    public void setCapabilitiesUrl(String url) {
+<span class="nc" id="L43">        this.url = url;</span>
+<span class="nc" id="L44">    }</span>
+
+    public void requestData() {
+
+<span class="nc" id="L48">        GenericAsyncTask task = new GenericAsyncTask(new AsyncTaskCallable() {</span>
+            @Override
+            public Object[] call() throws Exception {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                if (url == null) {</span>
+<span class="nc" id="L52">                    throw new WmtsCapabilitiesException(&quot;The Url of the WmtsCapabilitiesService is not defined&quot;);</span>
+                }
+
+<span class="nc" id="L55">                URL  myUrl = new URL(url);</span>
+<span class="nc" id="L56">                HttpURLConnection connection =(HttpURLConnection) myUrl.openConnection();</span>
+<span class="nc" id="L57">                connection.setRequestMethod(&quot;GET&quot;);</span>
+<span class="nc" id="L58">                connection.setReadTimeout(15000);</span>
+<span class="nc" id="L59">                connection.setConnectTimeout(15000);</span>
+
+                //Connect to our url
+<span class="nc" id="L62">                connection.connect();</span>
+
+<span class="nc" id="L64">                InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());</span>
+
+<span class="nc" id="L66">                WmtsCapabilitiesSerializer serializer = new WmtsCapabilitiesSerializer();</span>
+<span class="nc" id="L67">                capabilities = serializer.read(WmtsCapabilities.class, streamReader, false);</span>
+
+<span class="nc" id="L69">                return new Object[]{capabilities};</span>
+            }
+        });
+
+<span class="nc" id="L73">        task.setOnFinishedListener(new OnFinishedListener() {</span>
+            @Override
+            public void onSuccess(Object[] objects) {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                if (listener != null) {</span>
+<span class="nc" id="L77">                    listener.onCapabilitiesReceived(capabilities);</span>
+                }
+<span class="nc" id="L79">            }</span>
+
+            @Override
+            public void onError(Exception e) {
+<span class="nc" id="L83">                Log.e(TAG, Log.getStackTraceString(e));</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                if (listener != null) {</span>
+<span class="nc" id="L85">                    listener.onCapabilitiesError(e);</span>
+                }
+<span class="nc" id="L87">            }</span>
+        });
+
+<span class="nc" id="L90">        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</span>
+<span class="nc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

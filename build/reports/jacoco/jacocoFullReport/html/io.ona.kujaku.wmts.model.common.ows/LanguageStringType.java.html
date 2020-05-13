@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LanguageStringType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.wmts.model.common.ows</a> &gt; <span class="el_source">LanguageStringType.java</span></div><h1>LanguageStringType.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.wmts.model.common.ows;
+
+import android.support.annotation.NonNull;
+
+import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Text;
+
+import javax.annotation.Nullable;
+
+/**
+ * Describes a ows:LanguageStringType element
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 16/01/18
+ */
+<span class="fc" id="L15">public class LanguageStringType {</span>
+
+    @Text
+    private String value;
+
+    @Attribute(name=&quot;lang&quot;, required=false)
+    private String lang;
+
+    @NonNull
+    public String getValue() {
+<span class="fc" id="L25">        return this.value;</span>
+    }
+
+    @Nullable
+    public String getLang() {
+<span class="fc" id="L30">        return this.lang;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

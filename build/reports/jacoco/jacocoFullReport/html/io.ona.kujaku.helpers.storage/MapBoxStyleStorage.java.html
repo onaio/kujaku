@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapBoxStyleStorage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.helpers.storage</a> &gt; <span class="el_source">MapBoxStyleStorage.java</span></div><h1>MapBoxStyleStorage.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.helpers.storage;
+
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import java.io.File;
+import java.util.UUID;
+
+import io.ona.kujaku.utils.Constants;
+
+/**
+ * Helps add the MapBox Style to the MapBox MapView when provided as string since the MapBox API only allows
+ * urls i.e. assets, network &amp; storage. Mapbox style should follow the &lt;a href=&quot;&quot;&gt;Mapbox Style Spec&lt;/a&gt;&lt;br/&gt;&lt;br/&gt;
+ * &lt;p&gt;
+ * Basically stores the style on shared External Storage&lt;br/&gt;&lt;br/&gt;
+ * &lt;p&gt;
+ * HOW TO USE&lt;br/&gt;
+ * ----------&lt;br/&gt;
+ * &lt;p&gt;
+ * {@code MapBoxStyleStorage mapboxStyleStorage = new MapBoxStyleStorage()}
+ * {@code mapboxStyleStorage.getStyleURL(&quot;file:///storage/Downloads/style.json&quot;)}
+ * {@code mapboxStyleStorage.getStyleURL(&quot;asset://town_style.json&quot;)}
+ * {@code mapboxStyleStorage.getStyleURL(&quot;https://companysite.com/style/style.json&quot;)}
+ * {@code mapboxStyleStorage.getStyleURL(&quot;{ 'version': 8, 'name': 'kujaku-map', 'metadata': {}, }&quot;)}&lt;br/&gt;&lt;br/&gt;
+ * {@code mapboxStyleStorage.deleteFile(&quot;json.style&quot;, false, false)}
+ * {@code mapboxStyleStorage.deleteFile(&quot;/sdcard/Downloads/json.style&quot;, true, false)}
+ * {@code mapboxStyleStorage.deleteFile(&quot;/sdcard/Downloads/json.style&quot;)}
+ * &lt;p&gt;
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 09/11/2017.
+ */
+
+<span class="fc" id="L32">public class MapBoxStyleStorage extends BaseStorage {</span>
+    public static final String BASE_DIRECTORY = &quot;.KujakuStyles&quot;;
+
+    /**
+     * Converts the Mapbox style supplied to a usable resource by the Mapbox API by ensuring that the
+     * Mapbox style passed is either a file, network url or android asset file. It then provides an
+     * appropriate resource link where one is not provided
+     *
+     * @param stylePathOrJSON Mapbox Style Path or Mapbox Style JSON String
+     * @return Path to the MapBox Style in the format {@code file://[Path_to_file] }
+     */
+    public String getStyleURL(@NonNull String stylePathOrJSON) {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (stylePathOrJSON.startsWith(&quot;file:&quot;)</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                || stylePathOrJSON.startsWith(&quot;asset:&quot;)</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                || stylePathOrJSON.startsWith(&quot;http:&quot;)</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                || stylePathOrJSON.startsWith(&quot;https:&quot;)</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">                || stylePathOrJSON.matches(Constants.MAP_BOX_URL_FORMAT)) {</span>
+<span class="fc" id="L49">            return stylePathOrJSON;</span>
+        }
+
+<span class="fc" id="L52">        String fileName = &quot;&quot;;</span>
+<span class="fc" id="L53">        boolean fileCreated = false;</span>
+
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        while (!fileCreated) {</span>
+<span class="fc" id="L56">            fileName = UUID.randomUUID().toString() + &quot;.json&quot;;</span>
+<span class="fc" id="L57">            fileName = writeToFile(BASE_DIRECTORY, fileName, stylePathOrJSON);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">            fileCreated = !TextUtils.isEmpty(fileName);</span>
+        }
+
+<span class="fc" id="L61">        return &quot;file://&quot; + fileName;</span>
+    }
+
+    /**
+     * Caches Mapbox styles in Folder: {@value BASE_DIRECTORY} as user/stylename eg. mapbox://style/edwin/9iowdcjsd
+     * will be saved in &lt;strong&gt;{@value BASE_DIRECTORY}/edwin/9iowdcjsd&lt;/strong&gt;
+     *
+     * @param mapBoxUrl
+     * @param mapBoxStyleJSON
+     * @return &lt;p&gt;- {@code TRUE} if the style is cached successfully&lt;br/&gt;
+     * - {@code FALSE} if the style is not cached successfully&lt;/p&gt;
+     */
+    public boolean cacheStyle(@NonNull String mapBoxUrl, @NonNull String mapBoxStyleJSON) {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {</span>
+<span class="nc" id="L75">            String[] mapBoxPaths = mapBoxUrl.replace(&quot;mapbox://styles/&quot;, &quot;&quot;).split(&quot;/&quot;);</span>
+<span class="nc" id="L76">            String folder = mapBoxPaths[0];</span>
+<span class="nc" id="L77">            String filename = mapBoxPaths[1];</span>
+
+<span class="nc" id="L79">            String fileAbsolutePath = writeToFile(BASE_DIRECTORY + File.separator + folder, filename, mapBoxStyleJSON);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            return !TextUtils.isEmpty(fileAbsolutePath);</span>
+        }
+
+<span class="nc" id="L83">        return false;</span>
+    }
+
+    /**
+     * Retrieves the cached style if one exists
+     *
+     * @param mapBoxUrl
+     * @return &lt;p&gt;- The cached style JSON String, if it exists on local storage&lt;br&gt;
+     * - Empty String(&quot;&quot;) if the style is not cached&lt;/p&gt;
+     */
+    public String getCachedStyle(String mapBoxUrl) {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (mapBoxUrl.matches(Constants.MAP_BOX_URL_FORMAT)) {</span>
+<span class="nc" id="L95">            String[] mapBoxPaths = mapBoxUrl.replace(&quot;mapbox://styles/&quot;, &quot;&quot;).split(&quot;/&quot;);</span>
+<span class="nc" id="L96">            String folder = mapBoxPaths[0];</span>
+<span class="nc" id="L97">            String filename = mapBoxPaths[1];</span>
+
+<span class="nc" id="L99">            return readFile(folder, filename);</span>
+        }
+<span class="nc" id="L101">        return null;</span>
+    }
+
+    /**
+     * Reads a style on local storage given the path using the format {@literal file://{file_path}}
+     *
+     * @param protocolledFilePath
+     * @return &lt;p&gt;- NULL if the file does not exist&lt;br/&gt;
+     * - The style's JSON String if the file exists&lt;/p&gt;
+     */
+    public String readStyle(@NonNull String protocolledFilePath) {
+<span class="nc" id="L112">        String fileProtocolOrSth = &quot;file://&quot;;</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        if (protocolledFilePath.isEmpty() || !protocolledFilePath.startsWith(fileProtocolOrSth)) {</span>
+<span class="nc" id="L114">            return null;</span>
+        }
+<span class="nc" id="L116">        String folders = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (protocolledFilePath.lastIndexOf(File.separator) &gt; 6) {</span>
+<span class="nc" id="L119">            folders = protocolledFilePath.substring(</span>
+<span class="nc" id="L120">                    fileProtocolOrSth.length(),</span>
+<span class="nc" id="L121">                    protocolledFilePath.lastIndexOf(File.separator));</span>
+        }
+
+<span class="nc" id="L124">        String fileName = protocolledFilePath.substring(</span>
+<span class="nc" id="L125">                protocolledFilePath.lastIndexOf(File.separator) + 1</span>
+        );
+
+<span class="nc" id="L128">        return readFile(folders, fileName, true);</span>
+    }
+
+    @Override
+    protected String getDirectory() {
+<span class="nc" id="L133">        return BASE_DIRECTORY;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

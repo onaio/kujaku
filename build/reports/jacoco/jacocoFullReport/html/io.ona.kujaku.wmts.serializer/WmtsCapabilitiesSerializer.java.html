@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WmtsCapabilitiesSerializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.wmts.serializer</a> &gt; <span class="el_source">WmtsCapabilitiesSerializer.java</span></div><h1>WmtsCapabilitiesSerializer.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.wmts.serializer;
+
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
+
+import java.io.Reader;
+
+/**
+ * Class used to deserialize an Xml document into an object.
+ *
+ * Created by Emmanuel Otin - eo@novel-t.ch 11/29/18.
+ */
+<span class="fc" id="L13">public class WmtsCapabilitiesSerializer {</span>
+
+    /**
+     * This &lt;code&gt;read&lt;/code&gt; method will read the contents of the XML
+     * document from the provided source and convert it into an object
+     * of the specified type. If the XML source cannot be deserialized
+     * or there is a problem building the object graph an exception
+     * is thrown. The instance deserialized is returned.
+     *
+     * @param type this is the class type to be deserialized from XML
+     * @param source this provides the source of the XML document
+     * @param strict this determines whether to read in strict mode
+     *
+     * @return the object deserialized from the XML document
+     *
+     * @throws Exception if the object cannot be fully deserialized
+     */
+    public &lt;T&gt; T read(Class&lt;? extends T&gt; type, Reader source, boolean strict) throws Exception {
+<span class="fc" id="L31">        Serializer serializer = new Persister();</span>
+<span class="fc" id="L32">        return serializer.read(type, source, strict);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GeoJSONFeature.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kujaku</a> &gt; <a href="index.source.html" class="el_package">io.ona.kujaku.utils.helpers.converters</a> &gt; <span class="el_source">GeoJSONFeature.java</span></div><h1>GeoJSONFeature.java</h1><pre class="source lang-java linenums">package io.ona.kujaku.utils.helpers.converters;
+
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This is an ambiguous GeoJSON feature. Depending on the feature points
+ *
+ * Created by Ephraim Kigamba - ekigamba@ona.io on 06/11/2017.
+ */
+public class GeoJSONFeature {
+
+    private String id;
+<span class="fc" id="L16">    private List&lt;LatLng&gt; featurePoints = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L17">    private List&lt;Property&gt; featureProperties = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L18">    public static enum Type {</span>
+<span class="fc" id="L19">        POINT,</span>
+<span class="fc" id="L20">        MULTI_POINT,</span>
+<span class="fc" id="L21">        LINE_STRING,</span>
+<span class="fc" id="L22">        MULTI_LINE_STRING,</span>
+<span class="fc" id="L23">        POLYGON,</span>
+<span class="fc" id="L24">        MULTI_POLYGON,</span>
+<span class="fc" id="L25">        GEOMETRY_COLLECTION</span>
+    }
+<span class="fc" id="L27">    private Type featureType = Type.POINT;</span>
+
+<span class="fc" id="L29">    public GeoJSONFeature() {}</span>
+
+<span class="fc" id="L31">    public GeoJSONFeature(List&lt;LatLng&gt; featurePoints, List&lt;Property&gt; featureProperties) {</span>
+<span class="fc" id="L32">        this.featurePoints = featurePoints;</span>
+<span class="fc" id="L33">        this.featureProperties = featureProperties;</span>
+
+<span class="pc bpc" id="L35" title="1 of 4 branches missed.">        if (featurePoints != null &amp;&amp; featurePoints.size() &gt; 1) {</span>
+<span class="fc" id="L36">            featureType = Type.MULTI_POINT;</span>
+        }
+<span class="fc" id="L38">    }</span>
+
+    public GeoJSONFeature(List&lt;LatLng&gt; featurePoints) {
+<span class="fc" id="L41">        this(featurePoints, new ArrayList&lt;Property&gt;());</span>
+<span class="fc" id="L42">    }</span>
+
+    public GeoJSONFeature addPoint(LatLng latLng) {
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">        if (featurePoints == null) {</span>
+<span class="nc" id="L46">            featurePoints = new ArrayList&lt;&gt;();</span>
+        }
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (featurePoints.size() &gt; 0) {</span>
+<span class="fc" id="L50">            featureType = Type.MULTI_POINT;</span>
+        }
+
+<span class="fc" id="L53">        featurePoints.add(latLng);</span>
+<span class="fc" id="L54">        return this;</span>
+    }
+
+    public GeoJSONFeature addProperty(String name, Object value) {
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (featureProperties == null) {</span>
+<span class="nc" id="L59">            featureProperties = new ArrayList&lt;&gt;();</span>
+        }
+<span class="fc" id="L61">        featureProperties.add(new Property(name, value));</span>
+<span class="fc" id="L62">        return this;</span>
+    }
+
+    public List&lt;LatLng&gt; getFeaturePoints() {
+<span class="fc" id="L66">        return featurePoints;</span>
+    }
+
+    public List&lt;Property&gt; getFeatureProperties() {
+<span class="fc" id="L70">        return featureProperties;</span>
+    }
+
+    public Type getFeatureType() {
+<span class="fc" id="L74">        return featureType;</span>
+    }
+
+    public String getId() {
+<span class="fc" id="L78">        return id;</span>
+    }
+
+    public void setId(String id) {
+<span class="fc" id="L82">        this.id = id;</span>
+<span class="fc" id="L83">    }</span>
+
+    public boolean hasId() {
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">        return (id != null &amp;&amp; !id.isEmpty());</span>
+    }
+
+    public static class Property {
+        private String name;
+        private Object value;
+
+<span class="fc" id="L93">        public Property(String name, Object value) {</span>
+<span class="fc" id="L94">            this.name = name;</span>
+<span class="fc" id="L95">            this.value = value;</span>
+<span class="fc" id="L96">        }</span>
+
+        public String getName() {
+<span class="fc" id="L99">            return name;</span>
+        }
+
+        public void setName(String name) {
+<span class="nc" id="L103">            this.name = name;</span>
+<span class="nc" id="L104">        }</span>
+
+        public Object getValue() {
+<span class="fc" id="L107">            return value;</span>
+        }
+
+        public void setValue(Object value) {
+<span class="nc" id="L111">            this.value = value;</span>
+<span class="nc" id="L112">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>
