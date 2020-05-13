@@ -63,7 +63,8 @@ script:
   - echo "Travis branch is $TRAVIS_BRANCH"
   - echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"
   - chmod 755 gradlew
-  - ls -la
+  - ls -lah 
+  - ls -lah $HOME/.gradle/wrapper/
   # This is supposed to run the normal project build
   # jacocoTestReport is supposed to run both local and instrumented tests on all the modules
   # Gradle issue running composite tasks in order https://github.com/gradle/gradle/issues/3300
@@ -71,7 +72,7 @@ script:
   - echo "org.gradle.caching=true
     org.gradle.parallel=true" >> gradle.properties
   - travis_wait ./gradlew clean --stacktrace
-  - travis_wait ./gradlew build --stacktrace
+  - travis_wait ./gradlew build -x test --stacktrace
   - travis_wait ./gradlew jacocoTestReport --stacktrace
   - travis_wait ./gradlew jacocoFullReport --stacktrace
   - ./gradlew coveralls --stacktrace
