@@ -3,7 +3,7 @@ language: android
 # Setting sudo to required prevents Travis from testing the project in a Docker container.
 sudo: required
 jdk: oraclejdk8
-dist: precise
+dist: trusty
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -63,15 +63,19 @@ script:
   - echo "Travis branch is $TRAVIS_BRANCH"
   - echo "Travis branch is in pull request $TRAVIS_PULL+REQUEST"
   - chmod 755 gradlew
-  - ls -la
+  - ls -lah 
+  - ls -lah $HOME/.gradle/wrapper/
   # This is supposed to run the normal project build
   # jacocoTestReport is supposed to run both local and instrumented tests on all the modules
   # Gradle issue running composite tasks in order https://github.com/gradle/gradle/issues/3300
+  # Cache and make gradle run paralle
+  - echo "org.gradle.caching=true
+    org.gradle.parallel=true" >> gradle.properties
   - travis_wait ./gradlew clean --stacktrace
-  - travis_wait ./gradlew build --stacktrace
+  - travis_wait ./gradlew build -x test --stacktrace
   - travis_wait ./gradlew jacocoTestReport --stacktrace
   - travis_wait ./gradlew jacocoFullReport --stacktrace
-  - travis_wait ./gradlew coveralls --stacktrace
+  - ./gradlew coveralls --stacktrace
 
 after_failure:
  #- pandoc opensrp-app/build/reports/tests/index.html -t plain
