@@ -22,6 +22,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 version '0.8.5'
+
 project.version = this.version
 
 task sourceJar(type: Jar) {
