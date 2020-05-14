@@ -63,7 +63,6 @@ public class DrawingManager {
      * @param mapView
      * @param mapboxMap
      * @param style
-     * @param drawOnClick Whether to draw Circle on clicking Map
      */
     public DrawingManager(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         this.kujakuMapView = mapView;
@@ -119,9 +118,9 @@ public class DrawingManager {
                     } else {
                         drawCircle(point);
                     }
-                     if (onDrawingCircleClickListener != null) {
-                         onDrawingCircleClickListener.onCircleNotClick(point);
-                     }
+                    if (onDrawingCircleClickListener != null) {
+                        onDrawingCircleClickListener.onCircleNotClick(point);
+                    }
                 }
 
                 return false;
