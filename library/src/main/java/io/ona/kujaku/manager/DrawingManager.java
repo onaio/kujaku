@@ -278,6 +278,20 @@ public class DrawingManager {
         setDrawing(false);
         setCurrentCircle(null);
 
+        Polygon polygon = getCurrentPolygon();
+
+        // Delete annotations
+        this.deleteAll();
+        // Refresh
+        this.refresh(false);
+
+        return polygon;
+    }
+
+    /**
+     * @return Returns the up to date drawn polygon at any point in time
+     */
+    public Polygon getCurrentPolygon(){
         // convert into polygon
         List<Point> points = new ArrayList<>();
         List<List<Point>> lists = new ArrayList<>();
@@ -290,11 +304,6 @@ public class DrawingManager {
         }
 
         lists.add(points);
-        // Delete annotations
-        this.deleteAll();
-        // Refresh
-        this.refresh(false);
-
         return Polygon.fromLngLats(lists);
     }
 
@@ -510,6 +519,14 @@ public class DrawingManager {
     }
 
     /**
+     * Clears the canvas by removing all the drawn annotations,
+     * should be called before {@code stopDrawingAndDisplayLayer} is called
+     */
+    public void clearDrawing() {
+        deleteAll();
+    }
+
+    /**
      * Delete a Circle and the middles circles before and after
      *
      * @param kujakuCircle
@@ -610,7 +627,7 @@ public class DrawingManager {
      * Unset the draggable property to the current selected circle
      */
     public void unsetCurrentCircleDraggable() {
-        if(this.getCurrentKujakuCircle() != null) {
+        if (this.getCurrentKujakuCircle() != null) {
             this.setDraggable(false, this.getCurrentKujakuCircle().getCircle());
         }
     }

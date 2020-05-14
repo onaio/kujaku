@@ -820,7 +820,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable String... layerIds) {
-        this.setOnFeatureClickListener(onFeatureClickListener, null, featureClickLayerIdFilters);
+        this.setOnFeatureClickListener(onFeatureClickListener, null, layerIds);
     }
 
     @Override
