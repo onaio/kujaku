@@ -519,10 +519,10 @@ public class DrawingManager {
     }
 
     /**
-     * Resets the canvas by removing all the drawn annotations,
+     * Clears the canvas by removing all the drawn annotations,
      * should be called before {@code stopDrawingAndDisplayLayer} is called
      */
-    public void resetDrawing() {
+    public void clearDrawing() {
         deleteAll();
     }
 
