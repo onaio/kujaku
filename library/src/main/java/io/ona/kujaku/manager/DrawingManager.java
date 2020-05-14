@@ -110,7 +110,7 @@ public class DrawingManager {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
                 final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression)null, CircleManager.ID_GEOJSON_LAYER);
+                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
                 if (features.size() == 0 && drawingEnabled) {
                     if (getCurrentKujakuCircle() != null) {
@@ -118,6 +118,7 @@ public class DrawingManager {
                     } else {
                         drawCircle(point);
                     }
+
                     if (onDrawingCircleClickListener != null) {
                         onDrawingCircleClickListener.onCircleNotClick(point);
                     }
