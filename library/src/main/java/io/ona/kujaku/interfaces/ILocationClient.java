@@ -27,6 +27,8 @@ public interface ILocationClient {
 
     ArrayList<LocationListener> getLocationListeners();
 
+    void clearLocationListeners();
+
     @Nullable Location getLastLocation();
 
     void requestLocationUpdates(@NonNull LocationListener locationListener);

@@ -53,7 +53,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
             lastLocation = null;
-            getLocationListeners().clear();
+            clearLocationListeners();
             fusedLocationClient.removeLocationUpdates(googleLocationCallback);
         }
 

@@ -45,7 +45,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
             for (LocationListener locationListener : getLocationListeners()) {
                 locationManager.removeUpdates(locationListener);
             }
-            getLocationListeners().clear();
+            clearLocationListeners();
         }
 
         unregisterForGpsStoppedEvent();

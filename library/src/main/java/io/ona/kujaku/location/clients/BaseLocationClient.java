@@ -118,6 +118,11 @@ public abstract class BaseLocationClient implements ILocationClient {
         return getLocationListeners().size() > 0;
     }
 
+    @Override
+    public void clearLocationListeners() {
+        getLocationListeners().clear();
+    }
+
     /**
      * Checks whether two providers are the same
      */
