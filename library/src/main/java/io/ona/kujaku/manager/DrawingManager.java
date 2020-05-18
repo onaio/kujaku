@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.MultiPolygon;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -216,6 +217,16 @@ public class DrawingManager {
                 Polygon polygon = (Polygon) geometry;
                 List<Point> points = polygon.coordinates().get(0);
                 this.startDrawingPoints(points);
+                return true;
+            } else if (geometry instanceof MultiPolygon) {
+                // hide layer
+                fillBoundaryLayer.disableLayerOnMap(mapboxMap);
+
+                MultiPolygon multiPolygon = (MultiPolygon) geometry;
+                for (List<List<Point>> polygonCoordinates : multiPolygon.coordinates()) {
+                    List<Point> points = polygonCoordinates.get(0);
+                    this.startDrawingPoints(points);
+                }
                 return true;
             }
         }
