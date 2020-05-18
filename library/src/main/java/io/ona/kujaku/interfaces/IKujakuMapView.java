@@ -27,6 +27,7 @@ import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnFeatureLongClickListener;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.configurations.TrackingServiceUIConfiguration;
@@ -187,6 +188,25 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param layerIds
      */
     void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds);
+
+    /**
+     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * is long touched/clicked
+     *
+     * @param onFeatureLongClickListener
+     * @param layerIds
+     */
+    void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable String... layerIds);
+
+    /**
+     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * is long touched/clicked and/or fulfilling the filter defined in {@code filter}
+     *
+     * @param onFeatureLongClickListener
+     * @param expressionFilter
+     * @param layerIds
+     */
+    void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds);
 
     /**
      * Checks if the map warms GPS(this just means the location service that is going to be used).
