@@ -192,12 +192,12 @@ public class KujakuMapViewTest extends BaseTest {
     @Test
     public void setOnFeatureLongClickListener() {
         assertNull(ReflectionHelpers.getField(kujakuMapView,"onFeatureLongClickListener"));
-        assertNull(ReflectionHelpers.getField(kujakuMapView,"featureClickLayerIdFilters"));
+        assertNull(ReflectionHelpers.getField(kujakuMapView,"featureLongClickLayerIdFilters"));
         OnFeatureLongClickListener onFeatureLongClickListenerMock = Mockito.mock(OnFeatureLongClickListener.class);
         String[] layerIds =  {"id1"};
 
         kujakuMapView.setOnFeatureLongClickListener(onFeatureLongClickListenerMock, layerIds);
         assertEquals(onFeatureLongClickListenerMock, ReflectionHelpers.getField(kujakuMapView,"onFeatureLongClickListener"));
-        assertEquals(layerIds, ReflectionHelpers.getField(kujakuMapView,"featureClickLayerIdFilters"));
+        assertEquals(layerIds, ReflectionHelpers.getField(kujakuMapView,"featureLongClickLayerIdFilters"));
     }
 }
