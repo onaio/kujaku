@@ -169,6 +169,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
 
+    private String[] featureLongClickLayerIdFilters;
+    private Expression featureLongClickExpressionFilter;
+
     private OnKujakuLayerClickListener onKujakuLayerClickListener;
     private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
 
@@ -839,8 +842,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds) {
         this.onFeatureLongClickListener = onFeatureLongClickListener;
-        this.featureClickLayerIdFilters = layerIds;
-        this.featureClickExpressionFilter = expressionFilter;
+        this.featureLongClickLayerIdFilters = layerIds;
+        this.featureLongClickExpressionFilter = expressionFilter;
     }
 
     /**
@@ -1139,7 +1142,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onFeatureLongClickListener != null) {
-            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureClickExpressionFilter, featureClickLayerIdFilters);
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureLongClickExpressionFilter, featureLongClickLayerIdFilters);
 
             if (features.size() > 0) {
                 onFeatureLongClickListener.onFeatureLongClick(features);

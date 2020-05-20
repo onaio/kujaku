@@ -1,5 +1,7 @@
 package io.ona.kujaku.listeners;
 
+import android.support.annotation.NonNull;
+
 import com.mapbox.geojson.Feature;
 
 import java.util.List;
@@ -12,10 +14,10 @@ public interface OnFeatureLongClickListener {
 
     /**
      * Called when a features(s) is long clicked on the map and adheres to params passed in
-     * {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureClickListener(OnFeatureClickListener, String...)}
-     * or {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureClickListener(OnFeatureClickListener, com.mapbox.mapboxsdk.style.expressions.Expression, String...)}
+     * {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureLongClickListener(OnFeatureLongClickListener, String...)}
+     * or {@link io.ona.kujaku.views.KujakuMapView#setOnFeatureLongClickListener(OnFeatureLongClickListener, com.mapbox.mapboxsdk.style.expressions.Expression, String...)}
      *
      * @param features
      */
-    void onFeatureLongClick(List<Feature> features);
+    void onFeatureLongClick(@NonNull List<Feature> features);
 }

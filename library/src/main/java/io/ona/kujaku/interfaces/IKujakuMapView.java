@@ -190,7 +190,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     void setOnFeatureClickListener(@NonNull OnFeatureClickListener onFeatureClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds);
 
     /**
-     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * Sets an {@link OnFeatureLongClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
      * is long touched/clicked
      *
      * @param onFeatureLongClickListener
@@ -199,7 +199,7 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable String... layerIds);
 
     /**
-     * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
+     * Sets an {@link OnFeatureLongClickListener} which will be fired when a feature on the map in either of the {@code layerIds}
      * is long touched/clicked and/or fulfilling the filter defined in {@code filter}
      *
      * @param onFeatureLongClickListener
