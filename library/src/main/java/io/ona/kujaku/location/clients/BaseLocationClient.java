@@ -37,10 +37,23 @@ public abstract class BaseLocationClient implements ILocationClient {
     }
 
     @Override
-    public void addLocationListener(@NonNull LocationListener locationListener) {
+    public void setLocationListener(@NonNull LocationListener locationListener) {
         if(!locationListeners.contains(locationListener)) {
             locationListeners.add(locationListener);
         }
+    }
+
+    /**
+     * @deprecated use {@code getLocationListeners} instead
+     */
+    @Deprecated
+    @Nullable
+    @Override
+    public LocationListener getLocationListener() {
+        if(locationListeners.size() > 0){
+            return locationListeners.get(0);
+        }
+        return null;
     }
 
     @Override

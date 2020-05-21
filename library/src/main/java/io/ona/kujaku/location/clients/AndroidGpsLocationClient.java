@@ -122,7 +122,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
 
     @Override
     public void requestLocationUpdates(@NonNull LocationListener locationListener) {
-        addLocationListener(locationListener);
+        setLocationListener(locationListener);
         if (isProviderEnabled()) {
             try {
                 Location location = locationManager.getLastKnownLocation(getProvider());
