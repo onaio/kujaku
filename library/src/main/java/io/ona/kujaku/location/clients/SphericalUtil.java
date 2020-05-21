@@ -31,7 +31,7 @@ import static java.lang.Math.tan;
 import static java.lang.Math.toRadians;
 
 /**
- * Mapbox Port of https://github.com/commonsguy/cw-omnibus/blob/master/external/android-map-utils/src/com/google/maps/android/SphericalUtil.java
+ * Mapbox Port of https://github.com/googlemaps/android-maps-utils/blob/master/library/src/main/java/com/google/maps/android/SphericalUtil.java
  * Used to calculate area or perimeter for a Polygon
  */
 public class SphericalUtil {
