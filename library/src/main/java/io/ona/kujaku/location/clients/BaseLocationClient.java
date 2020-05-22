@@ -36,11 +36,13 @@ public abstract class BaseLocationClient implements ILocationClient {
         return locationClientListener;
     }
 
+    /**
+     * @deprecated use {@code addLocationListener} instead
+     */
+    @Deprecated
     @Override
-    public void setLocationListener(@NonNull LocationListener locationListener) {
-        if(!locationListeners.contains(locationListener)) {
-            locationListeners.add(locationListener);
-        }
+    public void setLocationListener(@Nullable LocationListener locationListener) {
+        locationListeners.add(0, locationListener);
     }
 
     /**
@@ -50,20 +52,28 @@ public abstract class BaseLocationClient implements ILocationClient {
     @Nullable
     @Override
     public LocationListener getLocationListener() {
-        if(locationListeners.size() > 0){
+        if (locationListeners.size() > 0) {
             return locationListeners.get(0);
         }
         return null;
     }
 
     @Override
-    public boolean removeLocationListener(@NonNull LocationListener locationListener) {
-        return getLocationListeners().remove(locationListener);
+    public void addLocationListener(@NonNull LocationListener locationListener) {
+        if (!locationListeners.contains(locationListener)) {
+            locationListeners.add(locationListener);
+        }
     }
 
     @Override
     public ArrayList<LocationListener> getLocationListeners() {
         return locationListeners;
+    }
+
+
+    @Override
+    public boolean removeLocationListener(@NonNull LocationListener locationListener) {
+        return getLocationListeners().remove(locationListener);
     }
 
     @Override
@@ -105,7 +115,7 @@ public abstract class BaseLocationClient implements ILocationClient {
         }
 
         // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        int accuracyDelta = (int)(location.getAccuracy() - currentBestLocation.getAccuracy());
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
         boolean isSignificantlyLessAccurate = accuracyDelta > 200;

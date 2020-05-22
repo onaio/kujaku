@@ -86,7 +86,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener
             , @NonNull LocationRequest locationRequest) {
-        setLocationListener(locationListener);
+        addLocationListener(locationListener);
         if (isProviderEnabled()) {
             try {
                 fusedLocationClient.getLastLocation()

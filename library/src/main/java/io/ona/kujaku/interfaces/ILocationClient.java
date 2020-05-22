@@ -21,7 +21,12 @@ public interface ILocationClient {
 
     @Nullable LocationClientListener getListener();
 
+    /**
+     * @deprecated use {@code addLocationListener} instead
+     */
     void setLocationListener(@NonNull LocationListener locationListener);
+
+    void addLocationListener(@NonNull LocationListener locationListener);
 
     /**
      * @deprecated use {@code getLocationListeners} instead
