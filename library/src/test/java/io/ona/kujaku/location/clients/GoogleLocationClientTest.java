@@ -43,6 +43,14 @@ public class GoogleLocationClientTest extends BaseTest {
         googleLocationClient.stopLocationUpdates();
 
         Assert.assertEquals(0, googleLocationClient.getLocationListeners().size());
+
+        // do the same test using the deprecated setLocationListener and getLocationListener
+        googleLocationClient.setLocationListener(locationListener);
+
+        Assert.assertNotNull(googleLocationClient.getLocationListener());
+        googleLocationClient.stopLocationUpdates();
+
+        Assert.assertNull(googleLocationClient.getLocationListener());
     }
 
     @Test
