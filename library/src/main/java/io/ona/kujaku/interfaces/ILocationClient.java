@@ -5,6 +5,8 @@ import android.location.LocationListener;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
+
 import io.ona.kujaku.listeners.LocationClientListener;
 
 /**
@@ -19,9 +21,30 @@ public interface ILocationClient {
 
     @Nullable LocationClientListener getListener();
 
+    /**
+     * @deprecated use {@code addLocationListener} instead
+     */
+    @Deprecated
     void setLocationListener(@NonNull LocationListener locationListener);
 
+    /**
+     *
+     * @param locationListener required listener which needs to receive the location updates
+     * @return <tt>true</tt> if {@param locationListener} was added as a result of this call
+     */
+    boolean addLocationListener(@NonNull LocationListener locationListener);
+
+    /**
+     * @deprecated use {@code getLocationListeners} instead
+     */
+    @Deprecated
     @Nullable LocationListener getLocationListener();
+
+    boolean removeLocationListener(@NonNull LocationListener locationListener);
+
+    ArrayList<LocationListener> getLocationListeners();
+
+    void clearLocationListeners();
 
     @Nullable Location getLastLocation();
 

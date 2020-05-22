@@ -36,6 +36,15 @@ public class GoogleLocationClientTest extends BaseTest {
     public void stopLocationUpdatesShouldSetListenerToNullWhenListenerIsCurrentlySet() {
         LocationListener locationListener = Mockito.mock(LocationListener.class);
 
+        googleLocationClient.addLocationListener(locationListener);
+
+
+        Assert.assertTrue(googleLocationClient.getLocationListeners().size() > 0);
+        googleLocationClient.stopLocationUpdates();
+
+        Assert.assertEquals(0, googleLocationClient.getLocationListeners().size());
+
+        // do the same test using the deprecated setLocationListener and getLocationListener
         googleLocationClient.setLocationListener(locationListener);
 
         Assert.assertNotNull(googleLocationClient.getLocationListener());

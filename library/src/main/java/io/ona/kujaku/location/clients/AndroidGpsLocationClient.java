@@ -42,8 +42,10 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
             lastLocation = null;
-            locationManager.removeUpdates(getLocationListener());
-            setLocationListener(null);
+            for (LocationListener locationListener : getLocationListeners()) {
+                locationManager.removeUpdates(locationListener);
+            }
+            clearLocationListeners();
         }
 
         unregisterForGpsStoppedEvent();
@@ -120,7 +122,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
 
     @Override
     public void requestLocationUpdates(@NonNull LocationListener locationListener) {
-        setLocationListener(locationListener);
+        addLocationListener(locationListener);
         if (isProviderEnabled()) {
             try {
                 Location location = locationManager.getLastKnownLocation(getProvider());
@@ -146,7 +148,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
                         .show();
             }
         } else {
-            setLocationListener(null);
+            removeLocationListener(locationListener);
             Timber.e(new Exception(), "The provider (" + getProvider() + ") is not enabled");
         }
 
@@ -156,11 +158,6 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     public void setUpdateIntervals(long updateInterval, long fastestUpdateInterval) {
         this.updateInterval = updateInterval;
         this.fastestUpdateInterval = fastestUpdateInterval;
-    }
-
-    @Override
-    public boolean isMonitoringLocation() {
-        return getLocationListener() != null;
     }
 
     @NonNull
