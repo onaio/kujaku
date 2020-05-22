@@ -59,10 +59,11 @@ public abstract class BaseLocationClient implements ILocationClient {
     }
 
     @Override
-    public void addLocationListener(@NonNull LocationListener locationListener) {
+    public boolean addLocationListener(@NonNull LocationListener locationListener) {
         if (!locationListeners.contains(locationListener)) {
-            locationListeners.add(locationListener);
+            return locationListeners.add(locationListener);
         }
+        return false;
     }
 
     @Override

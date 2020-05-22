@@ -24,9 +24,15 @@ public interface ILocationClient {
     /**
      * @deprecated use {@code addLocationListener} instead
      */
+    @Deprecated
     void setLocationListener(@NonNull LocationListener locationListener);
 
-    void addLocationListener(@NonNull LocationListener locationListener);
+    /**
+     *
+     * @param locationListener required listener which needs to receive the location updates
+     * @return <tt>true</tt> if {@param locationListener} was added as a result of this call
+     */
+    boolean addLocationListener(@NonNull LocationListener locationListener);
 
     /**
      * @deprecated use {@code getLocationListeners} instead
