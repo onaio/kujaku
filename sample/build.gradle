@@ -3,7 +3,6 @@ allprojects {
         maven { url "https://dl.google.com/dl/android/maven2/" }
         maven { url "http://dl.bintray.com/ona/kujaku" }
         maven { url "https://jitpack.io" }
-        maven { url 'https://maven.fabric.io/public' }
         maven { url 'http://nexus.terraframe.com/content/groups/allrepos' }
         mavenLocal()
     }
@@ -11,7 +10,7 @@ allprojects {
 
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
-apply plugin: 'io.fabric'
+apply plugin: 'com.google.firebase.crashlytics'
 
 
 ant.condition(property: 'os', value: 'windows') {

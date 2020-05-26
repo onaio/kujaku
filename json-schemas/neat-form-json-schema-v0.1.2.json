@@ -1,0 +1,215 @@
+{
+    "$schema": "http://github.com/ellykits/neat-form/form",
+    "type": "object",
+    "title": "Neat form JSON Schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "required": [
+        "form",
+        "steps"
+    ],
+    "properties": {
+        "form": {
+            "$id": "#/properties/form",
+            "type": "string",
+            "title": "The Form Schema",
+            "description": "An explanation about the purpose of this instance."
+        },
+        "rules_file": {
+            "$id": "#/properties/rules_file",
+            "type": "string",
+            "title": "The Rules_file Schema",
+            "description": "An explanation about the purpose of this instance."
+        },
+        "steps": {
+            "$id": "#/properties/steps",
+            "type": "array",
+            "title": "The Steps Schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "items": {
+                "$id": "#/properties/steps/items",
+                "type": "object",
+                "title": "The Items Schema",
+                "description": "An explanation about the purpose of this instance.",
+                "default": {},
+                "required": [
+                    "title",
+                    "fields"
+                ],
+                "properties": {
+                    "title": {
+                        "$id": "#/properties/steps/items/properties/title",
+                        "type": "string",
+                        "title": "The title of the step",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": ""
+                    },
+                    "fields": {
+                        "$id": "#/properties/steps/items/properties/fields",
+                        "type": "array",
+                        "title": "The Fields Schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": [],
+                        "items": {
+                            "$id": "#/properties/steps/items/properties/fields/items",
+                            "type": "object",
+                            "title": "The Items Schema",
+                            "description": "An explanation about the purpose of this instance.",
+                            "default": {},
+                            "required": [
+                                "name",
+                                "type"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/name",
+                                    "type": "string",
+                                    "title": "The Name Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": ""
+                                },
+                                "type": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/type",
+                                    "type": "string",
+                                    "title": "The Type Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": ""
+                                },
+                                "properties": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/properties",
+                                    "type": "object",
+                                    "title": "The Properties Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": {},
+                                    "properties": {
+                                        "hint": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/properties/properties/hint",
+                                            "type": "string",
+                                            "title": "The Hint Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        },
+                                        "type": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/properties/properties/type",
+                                            "type": "string",
+                                            "title": "The Type Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        },
+                                        "text": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/properties/properties/text",
+                                            "type": "string",
+                                            "title": "The Text Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        },
+                                        "padding": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/properties/properties/padding",
+                                            "type": "string",
+                                            "title": "The Padding Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        }
+                                    },
+                                    "patternProperties": {
+                                      "^[a-z]+[a-z0-9_]*$": { "type": ["string", "number", "boolean"] }
+                                    },
+                                    "additionalProperties":false
+                                },
+                                "meta_data": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/meta_data",
+                                    "type": "object",
+                                    "title": "The Meta_data Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": {},
+                                    "properties": {
+                                        "openmrs_entity": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/meta_data/properties/openmrs_entity",
+                                            "type": "string",
+                                            "title": "The Openmrs_entity Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        },
+                                        "openmrs_entity_id": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/meta_data/properties/openmrs_entity_id",
+                                            "type": "string",
+                                            "title": "The Openmrs_entity_id Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        },
+                                        "openmrs_entity_parent": {
+                                            "$id": "#/properties/steps/items/properties/fields/items/properties/meta_data/properties/openmrs_entity_parent",
+                                            "type": "string",
+                                            "title": "The Openmrs_entity_parent Schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": ""
+                                        }
+                                    }
+                                },
+                                "validation": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/validation",
+                                    "type": "array",
+                                    "title": "The Validation Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": [],
+                                    "items": {
+                                        "$id": "#/properties/steps/items/properties/fields/items/properties/validation/items",
+                                        "type": "object",
+                                        "title": "The Items Schema",
+                                        "description": "An explanation about the purpose of this instance.",
+                                        "default": {},
+                                        "required": [
+                                            "condition",
+                                        ],
+                                        "properties": {
+                                            "validation_name": {
+                                                "$id": "#/properties/steps/items/properties/fields/items/properties/validation/items/properties/validation_name",
+                                                "type": "string",
+                                                "title": "The Validation_name Schema",
+                                                "description": "An explanation about the purpose of this instance.",
+                                                "default": ""
+                                            },
+                                            "condition": {
+                                                "$id": "#/properties/steps/items/properties/fields/items/properties/validation/items/properties/condition",
+                                                "type": "string",
+                                                "title": "The Condition Schema",
+                                                "description": "An explanation about the purpose of this instance.",
+                                                "default": ""
+                                            },
+                                            "error_message": {
+                                                "$id": "#/properties/steps/items/properties/fields/items/properties/validation/items/properties/error_message",
+                                                "type": "string",
+                                                "title": "The Error_message Schema",
+                                                "description": "An explanation about the purpose of this instance."
+                                            },
+                                            "message": {
+                                                "$id": "#/properties/steps/items/properties/fields/items/properties/validation/items/properties/message",
+                                                "type": "string",
+                                                "title": "The Error_message Schema",
+                                                "description": "An explanation about the purpose of this instance."
+                                            }
+                                        }
+                                    }
+                                },
+                                "subjects": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/subjects",
+                                    "type": "string",
+                                    "title": "The Subjects Schema",
+                                    "description": "An explanation about the purpose of this instance.",
+                                    "default": "",
+                                    "pattern": "^[a-z]+[a-z0-9_]*:[a-z]+(,[ ]{0,1}[a-z]+[a-z0-9_]*:[a-z]+)*$"
+                                },
+                                "required_status": {
+                                    "$id": "#/properties/steps/items/properties/fields/items/properties/required_status",
+                                    "type": "string",
+                                    "title": "The Required_status Schema",
+                                    "description": "An explanation about the purpose of this instance."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

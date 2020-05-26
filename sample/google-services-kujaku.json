@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "216345922513",
+    "firebase_url": "https://kujaku-20d50.firebaseio.com",
+    "project_id": "kujaku-20d50",
+    "storage_bucket": "kujaku-20d50.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216345922513:android:550ace58ae02684db22ef0",
+        "android_client_info": {
+          "package_name": "io.ona.kujaku.sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216345922513-us3u6f7naggna3lm583bafdd7sgfbs6o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYxuAxLrS54m2lg14IvKaw2QKbPASoAgs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216345922513-us3u6f7naggna3lm583bafdd7sgfbs6o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
