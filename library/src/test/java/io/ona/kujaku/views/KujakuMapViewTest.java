@@ -124,7 +124,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         GoogleLocationClient googleLocationClient = Mockito.mock(GoogleLocationClient.class);
 
-        Mockito.doReturn(Mockito.mock(LocationListener.class)).when(googleLocationClient).getLocationListener();
+        Mockito.doReturn(mockLocationListeners()).when(googleLocationClient).getLocationListeners();
         Mockito.doReturn(googleLocationClient)
                 .when(spiedKujakuMapView)
                 .getLocationClient();
@@ -144,15 +144,22 @@ public class KujakuMapViewTest extends BaseTest {
         KujakuMapView spiedKujakuMapView = Mockito.spy(kujakuMapView);
         GoogleLocationClient googleLocationClient = Mockito.mock(GoogleLocationClient.class);
 
-        LocationListener mockLocationListener = Mockito.mock(LocationListener.class);
-        Mockito.doReturn(mockLocationListener).when(googleLocationClient).getLocationListener();
+        ArrayList<LocationListener> mockLocationListeners = mockLocationListeners();
+        Mockito.doReturn(mockLocationListeners).when(googleLocationClient).getLocationListeners();
         Mockito.doReturn(googleLocationClient).when(spiedKujakuMapView).getLocationClient();
 
         spiedKujakuMapView.changeLocationUpdates(5000
                 , 2000
                 , LocationRequest.PRIORITY_HIGH_ACCURACY);
         Mockito.verify(googleLocationClient, Mockito.times(1))
-                .requestLocationUpdates(Mockito.eq(mockLocationListener), Mockito.any(LocationRequest.class));
+                .requestLocationUpdates(Mockito.eq(mockLocationListeners.get(0)), Mockito.any(LocationRequest.class));
+    }
+
+    private ArrayList<LocationListener> mockLocationListeners() {
+        LocationListener mockLocationListener = Mockito.mock(LocationListener.class);
+        ArrayList<LocationListener> mockLocationListeners = new ArrayList<>();
+        mockLocationListeners.add(mockLocationListener);
+        return mockLocationListeners;
     }
 
     @Test

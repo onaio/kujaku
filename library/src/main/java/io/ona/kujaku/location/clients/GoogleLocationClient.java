@@ -53,7 +53,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
             lastLocation = null;
-            setLocationListener(null);
+            clearLocationListeners();
             fusedLocationClient.removeLocationUpdates(googleLocationCallback);
         }
 
@@ -70,8 +70,8 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     public void onLocationChanged(Location location) {
         lastLocation = location;
 
-        if (getLocationListener() != null) {
-            getLocationListener().onLocationChanged(location);
+        for (android.location.LocationListener locationListener : getLocationListeners()) {
+            locationListener.onLocationChanged(location);
         }
     }
 
@@ -86,7 +86,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
     public void requestLocationUpdates(@NonNull android.location.LocationListener locationListener
             , @NonNull LocationRequest locationRequest) {
-        setLocationListener(locationListener);
+        addLocationListener(locationListener);
         if (isProviderEnabled()) {
             try {
                 fusedLocationClient.getLastLocation()
@@ -109,7 +109,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
                         .show();
             }
         } else {
-            setLocationListener(null);
+            removeLocationListener(locationListener);
             Timber.e(new Exception(), "The provider (" + getProvider() + ") is not enabled");
         }
     }
@@ -183,11 +183,6 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
         this.fastestUpdateInterval = fastestUpdateInterval;
     }
 
-    @Override
-    public boolean isMonitoringLocation() {
-        return getLocationListener() != null;
-    }
-
     @NonNull
     @Override
     public String getProvider() {
@@ -225,8 +220,8 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
 
             if (latestLocation != null) {
                 lastLocation = latestLocation;
-                if (getLocationListener() != null) {
-                    getLocationListener().onLocationChanged(lastLocation);
+                for (android.location.LocationListener locationListener : getLocationListeners()) {
+                    locationListener.onLocationChanged(lastLocation);
                 }
             }
         }

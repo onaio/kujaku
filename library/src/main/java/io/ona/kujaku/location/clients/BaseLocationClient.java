@@ -4,7 +4,10 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import java.util.ArrayList;
 
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.LocationClientListener;
@@ -16,7 +19,7 @@ import io.ona.kujaku.listeners.LocationClientListener;
 public abstract class BaseLocationClient implements ILocationClient {
 
     private LocationClientListener locationClientListener;
-    private LocationListener locationListener;
+    private ArrayList<LocationListener> locationListeners = new ArrayList<>();
     protected LocationManager locationManager;
     protected Context context;
 
@@ -33,15 +36,45 @@ public abstract class BaseLocationClient implements ILocationClient {
         return locationClientListener;
     }
 
+    /**
+     * @deprecated use {@code addLocationListener} instead
+     */
+    @Deprecated
     @Override
     public void setLocationListener(@Nullable LocationListener locationListener) {
-        this.locationListener = locationListener;
+        locationListeners.add(0, locationListener);
     }
 
+    /**
+     * @deprecated use {@code getLocationListeners} instead
+     */
+    @Deprecated
     @Nullable
     @Override
     public LocationListener getLocationListener() {
-        return locationListener;
+        if (locationListeners.size() > 0) {
+            return locationListeners.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean addLocationListener(@NonNull LocationListener locationListener) {
+        if (!locationListeners.contains(locationListener)) {
+            return locationListeners.add(locationListener);
+        }
+        return false;
+    }
+
+    @Override
+    public ArrayList<LocationListener> getLocationListeners() {
+        return locationListeners;
+    }
+
+
+    @Override
+    public boolean removeLocationListener(@NonNull LocationListener locationListener) {
+        return getLocationListeners().remove(locationListener);
     }
 
     @Override
@@ -83,7 +116,7 @@ public abstract class BaseLocationClient implements ILocationClient {
         }
 
         // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        int accuracyDelta = (int)(location.getAccuracy() - currentBestLocation.getAccuracy());
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
         boolean isSignificantlyLessAccurate = accuracyDelta > 200;
@@ -102,6 +135,16 @@ public abstract class BaseLocationClient implements ILocationClient {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean isMonitoringLocation() {
+        return getLocationListeners().size() > 0;
+    }
+
+    @Override
+    public void clearLocationListeners() {
+        getLocationListeners().clear();
     }
 
     /**

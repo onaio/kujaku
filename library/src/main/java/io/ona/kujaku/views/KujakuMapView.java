@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -1275,11 +1276,11 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             locationRequest.setFastestInterval(fastestUpdateInterval);
             locationRequest.setPriority(accuracyLevel);
 
-            if (locationClient.getLocationListener() != null) {
-                ((GoogleLocationClient) locationClient)
-                        .requestLocationUpdates(locationClient.getLocationListener(), locationRequest);
-                return true;
+            for (LocationListener locationListener : locationClient.getLocationListeners()) {
+                ((GoogleLocationClient)locationClient)
+                        .requestLocationUpdates(locationListener, locationRequest);
             }
+            return locationClient.getLocationListeners().size() > 0;
         }
 
         return false;
