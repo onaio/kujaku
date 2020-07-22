@@ -21,7 +21,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.8.7'
+version '0.8.8'
 
 project.version = this.version
 

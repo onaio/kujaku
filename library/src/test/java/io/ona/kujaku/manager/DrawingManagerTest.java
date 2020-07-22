@@ -2,6 +2,7 @@ package io.ona.kujaku.manager;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.MultiPolygon;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -78,7 +79,26 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
 
     @Test
     public void startDrawingWithExistingLayer() {
-        manager.startDrawing(getFillBoundaryLayer());
+        manager.startDrawing(getFillBoundaryLayer(true));
+
+        Assert.assertTrue(manager.isDrawingEnabled());
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+        // Middle Circles created between each point
+        Assert.assertEquals(8, manager.getKujakuCircles().size());
+
+        Assert.assertFalse(manager.getKujakuCircles().get(0).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(1).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(2).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(3).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(4).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(5).isMiddleCircle());
+        Assert.assertFalse(manager.getKujakuCircles().get(6).isMiddleCircle());
+        Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
+    }
+
+    @Test
+    public void startDrawingWithExistingMultipolygonLayer() {
+        manager.startDrawing(getFillBoundaryLayer(false));
 
         Assert.assertTrue(manager.isDrawingEnabled());
         Assert.assertNull(manager.getCurrentKujakuCircle());
@@ -206,10 +226,23 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
     }
 
-    private FillBoundaryLayer getFillBoundaryLayer() {
+    @Test
+    public void unSetCurrentCircleDraggable() {
+        manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(1,1)));
+        Circle circle = manager.getKujakuCircles().get(0).getCircle();
+        manager.setDraggable(true, circle);
+
+        Assert.assertTrue(manager.getCurrentKujakuCircle().getCircle().isDraggable());
+        manager.unsetCurrentCircleDraggable();
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+    }
+
+
+    private FillBoundaryLayer getFillBoundaryLayer(boolean isPolygon) {
         List<Feature> features = new ArrayList<Feature>();
         List<List<Point>> lists = new ArrayList<>();
         List<Point> points = new ArrayList<>();
+        Polygon polygon = null;
 
         points.add(Point.fromLngLat(-11,15));
         points.add(Point.fromLngLat(-5,15));
@@ -217,7 +250,12 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         points.add(Point.fromLngLat(-11,11));
         lists.add(points);
 
-        features.add(Feature.fromGeometry(Polygon.fromLngLats(lists)));
+        polygon = Polygon.fromLngLats(lists);
+        if (!isPolygon) {
+            features.add(Feature.fromGeometry(polygon));
+        } else {
+            features.add(Feature.fromGeometry(MultiPolygon.fromPolygon(polygon)));
+        }
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(features);
         FillBoundaryLayer.Builder builder = new FillBoundaryLayer.Builder(featureCollection);

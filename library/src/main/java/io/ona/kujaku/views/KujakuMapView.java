@@ -75,6 +75,7 @@ import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.listeners.BoundsChangeListener;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.listeners.OnFeatureLongClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerClickListener;
 import io.ona.kujaku.listeners.OnKujakuLayerLongClickListener;
 import io.ona.kujaku.listeners.OnLocationChanged;
@@ -165,8 +166,12 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private BoundsChangeListener boundsChangeListener;
 
     private OnFeatureClickListener onFeatureClickListener;
+    private OnFeatureLongClickListener onFeatureLongClickListener;
     private String[] featureClickLayerIdFilters;
     private Expression featureClickExpressionFilter;
+
+    private String[] featureLongClickLayerIdFilters;
+    private Expression featureLongClickExpressionFilter;
 
     private OnKujakuLayerClickListener onKujakuLayerClickListener;
     private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
@@ -830,6 +835,18 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         this.featureClickExpressionFilter = expressionFilter;
     }
 
+    @Override
+    public void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable String... layerIds) {
+        this.setOnFeatureLongClickListener(onFeatureLongClickListener, null, layerIds);
+    }
+
+    @Override
+    public void setOnFeatureLongClickListener(@NonNull OnFeatureLongClickListener onFeatureLongClickListener, @Nullable Expression expressionFilter, @Nullable String... layerIds) {
+        this.onFeatureLongClickListener = onFeatureLongClickListener;
+        this.featureLongClickLayerIdFilters = layerIds;
+        this.featureLongClickExpressionFilter = expressionFilter;
+    }
+
     /**
      * Set listener when pressing a KujakuLayer
      *
@@ -1124,6 +1141,15 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public boolean onMapLongClick(@NonNull LatLng point) {
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+
+        if (onFeatureLongClickListener != null) {
+            List<com.mapbox.geojson.Feature> features = mapboxMap.queryRenderedFeatures(pixel, featureLongClickExpressionFilter, featureLongClickLayerIdFilters);
+
+            if (features.size() > 0) {
+                onFeatureLongClickListener.onFeatureLongClick(features);
+            }
+        }
+
 
         if (onKujakuLayerLongClickListener != null) {
             KujakuLayer layer = KujakuLayer.getKujakuLayerSelected(pixel, kujakuLayers, mapboxMap);

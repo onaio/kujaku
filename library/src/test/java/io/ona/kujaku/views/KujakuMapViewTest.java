@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import io.ona.kujaku.BaseTest;
 import io.ona.kujaku.interfaces.ILocationClient;
 import io.ona.kujaku.listeners.LocationClientStartedCallback;
+import io.ona.kujaku.listeners.OnFeatureLongClickListener;
 import io.ona.kujaku.location.clients.GoogleLocationClient;
 import io.ona.kujaku.test.shadows.ShadowKujakuMapView;
 import io.ona.kujaku.test.shadows.ShadowMapView;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -192,5 +194,17 @@ public class KujakuMapViewTest extends BaseTest {
         Mockito.verify(locationClientStartedCallback, Mockito.times(1))
                 .onStarted(Mockito.any(ILocationClient.class));
         assertEquals(0, callbacks.size());
+    }
+
+    @Test
+    public void setOnFeatureLongClickListener() {
+        assertNull(ReflectionHelpers.getField(kujakuMapView,"onFeatureLongClickListener"));
+        assertNull(ReflectionHelpers.getField(kujakuMapView,"featureLongClickLayerIdFilters"));
+        OnFeatureLongClickListener onFeatureLongClickListenerMock = Mockito.mock(OnFeatureLongClickListener.class);
+        String[] layerIds =  {"id1"};
+
+        kujakuMapView.setOnFeatureLongClickListener(onFeatureLongClickListenerMock, layerIds);
+        assertEquals(onFeatureLongClickListenerMock, ReflectionHelpers.getField(kujakuMapView,"onFeatureLongClickListener"));
+        assertEquals(layerIds, ReflectionHelpers.getField(kujakuMapView,"featureLongClickLayerIdFilters"));
     }
 }
