@@ -226,6 +226,18 @@ public class DrawingManagerTest extends BaseKujakuLayerTest {
         Assert.assertTrue(manager.getKujakuCircles().get(7).isMiddleCircle());
     }
 
+    @Test
+    public void unSetCurrentCircleDraggable() {
+        manager.create(DrawingManager.getKujakuCircleOptions().withLatLng(new LatLng(1,1)));
+        Circle circle = manager.getKujakuCircles().get(0).getCircle();
+        manager.setDraggable(true, circle);
+
+        Assert.assertTrue(manager.getCurrentKujakuCircle().getCircle().isDraggable());
+        manager.unsetCurrentCircleDraggable();
+        Assert.assertNull(manager.getCurrentKujakuCircle());
+    }
+
+
     private FillBoundaryLayer getFillBoundaryLayer(boolean isPolygon) {
         List<Feature> features = new ArrayList<Feature>();
         List<List<Point>> lists = new ArrayList<>();
