@@ -1,5 +1,6 @@
 package io.ona.kujaku.location.clients;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.location.GnssStatus;
@@ -123,10 +124,12 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Nullable
     @Override
     public Location getLastLocation() {
-        return lastLocation;
+        Location lastLocationFromProvider = locationManager.getLastKnownLocation(getProvider());
+        return lastLocationFromProvider != null ? lastLocationFromProvider : lastLocation;
     }
 
     @Override

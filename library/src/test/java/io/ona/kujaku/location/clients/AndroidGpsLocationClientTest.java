@@ -101,6 +101,7 @@ public class AndroidGpsLocationClientTest extends BaseTest {
 
     @Test
     public void androidGpsLocationClientOnLocationChangedShouldCallRegisteredLocationListenerAndUpdateLastLocation() {
+        androidGpsLocationClient = new AndroidGpsLocationClient(RuntimeEnvironment.application);
         LocationListener locationListener = Mockito.mock(LocationListener.class);
         LocationListener locationListener2 = Mockito.mock(LocationListener.class);
 
@@ -128,6 +129,27 @@ public class AndroidGpsLocationClientTest extends BaseTest {
 
         Mockito.verify(locationListener).onLocationChanged(location);
         Mockito.verify(locationListener2).onLocationChanged(location);
+        Assert.assertEquals(location, androidGpsLocationClient.getLastLocation());
+    }
+
+
+    @Test
+    public void getLastLocationShouldRequestLastLocationFromLocationManager() {
+        LocationManager locationManager = Mockito.spy((LocationManager) ReflectionHelpers.getField(androidGpsLocationClient, "locationManager"));
+        ReflectionHelpers.setField(androidGpsLocationClient, "locationManager", locationManager);
+
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setAccuracy(4f);
+        location.setAltitude(23f);
+        location.setLatitude(3d);
+        location.setLongitude(1d);
+
+        Mockito.doReturn(location).when(locationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        Location lastLocation = androidGpsLocationClient.getLastLocation();
+
+        Assert.assertEquals(location, lastLocation);
+        Mockito.verify(locationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
 
 
