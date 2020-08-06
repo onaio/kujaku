@@ -153,4 +153,33 @@ public class AndroidGpsLocationClientTest extends BaseTest {
     }
 
 
+    @Test
+    public void getLastLocationShouldReturnLatestLocationWhenCachedLocationAndLocatioManagerProvideLocations() {
+        LocationManager locationManager = Mockito.spy((LocationManager) ReflectionHelpers.getField(androidGpsLocationClient, "locationManager"));
+        ReflectionHelpers.setField(androidGpsLocationClient, "locationManager", locationManager);
+
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setAccuracy(4f);
+        location.setAltitude(23f);
+        location.setLatitude(3d);
+        location.setLongitude(1d);
+        location.setTime(900);
+
+
+        Location locationFromLocationManager = new Location(LocationManager.GPS_PROVIDER);
+        locationFromLocationManager.setAccuracy(4f);
+        locationFromLocationManager.setAltitude(23f);
+        locationFromLocationManager.setLatitude(3d);
+        locationFromLocationManager.setLongitude(1d);
+        locationFromLocationManager.setTime(1000);
+
+        Mockito.doReturn(locationFromLocationManager).when(locationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        ReflectionHelpers.setField(androidGpsLocationClient, "lastLocation", location);
+
+        Location lastLocation = androidGpsLocationClient.getLastLocation();
+
+        Assert.assertEquals(locationFromLocationManager, lastLocation);
+        Mockito.verify(locationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    }
+
 }
