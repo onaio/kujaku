@@ -48,6 +48,13 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
             lastLocation = null;
+
+            locationManager.removeUpdates(androidGpsLocationListener);
+
+            if (getLocationListener() != null) {
+                locationManager.removeUpdates(getLocationListener());
+            }
+
             for (LocationListener locationListener : getLocationListeners()) {
                 locationManager.removeUpdates(locationListener);
             }
