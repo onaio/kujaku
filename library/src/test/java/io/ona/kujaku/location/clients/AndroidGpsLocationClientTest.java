@@ -5,6 +5,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,6 +35,11 @@ public class AndroidGpsLocationClientTest extends BaseTest {
         androidGpsLocationClient = Mockito.spy(new AndroidGpsLocationClient(RuntimeEnvironment.application));
     }
 
+    @After
+    public void tearDown() throws Exception {
+        ReflectionHelpers.setStaticField(KujakuLibrary.class, "library", null);
+    }
+
     @Test
     public void stopLocationUpdatesShouldSetListenerToNullWhenListenerIsCurrentlySet() {
         LocationListener locationListener = Mockito.mock(LocationListener.class);
@@ -49,6 +55,21 @@ public class AndroidGpsLocationClientTest extends BaseTest {
         Assert.assertNotNull(androidGpsLocationClient.getLocationListener());
         androidGpsLocationClient.stopLocationUpdates();
         Assert.assertNull(androidGpsLocationClient.getLocationListener());
+    }
+
+
+    @Test
+    public void stopLocationUpdatesShouldCallLocationManagerRemoveUpdates() {
+        LocationListener locationListener = Mockito.mock(LocationListener.class);
+        LocationManager locationManager = Mockito.spy((LocationManager) ReflectionHelpers.getField(androidGpsLocationClient, "locationManager"));
+        ReflectionHelpers.setField(androidGpsLocationClient, "locationManager", locationManager);
+        androidGpsLocationClient.addLocationListener(locationListener);
+
+        Assert.assertEquals(1, androidGpsLocationClient.getLocationListeners().size());
+        androidGpsLocationClient.stopLocationUpdates();
+
+        // Verify that the AndroidGPSLocationListener was also called
+        Mockito.verify(locationManager, Mockito.times(2)).removeUpdates(Mockito.any(LocationListener.class));
     }
 
     @Test
@@ -76,7 +97,37 @@ public class AndroidGpsLocationClientTest extends BaseTest {
 
         Mockito.verify(locationManager, Mockito.times(1))
                 .requestLocationUpdates(Mockito.eq(LocationManager.GPS_PROVIDER), Mockito.eq(1000L), Mockito.eq(0f), Mockito.any(LocationListener.class));
-        ReflectionHelpers.setStaticField(KujakuLibrary.class, "library", null);
+    }
+
+    @Test
+    public void androidGpsLocationClientOnLocationChangedShouldCallRegisteredLocationListenerAndUpdateLastLocation() {
+        LocationListener locationListener = Mockito.mock(LocationListener.class);
+        LocationListener locationListener2 = Mockito.mock(LocationListener.class);
+
+        // Mock call to KujakuLibrary.showToast
+        KujakuLibrary kujakuLibrary = Mockito.mock(KujakuLibrary.class);
+        ReflectionHelpers.setStaticField(KujakuLibrary.class, "library", kujakuLibrary);
+        Mockito.doNothing().when(kujakuLibrary).showToast(Mockito.anyString());
+
+        // Create a mock location
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setAccuracy(4f);
+        location.setAltitude(23f);
+        location.setLatitude(3d);
+        location.setLongitude(1d);
+
+        // Set the location listeners supposed to receive updates
+        androidGpsLocationClient.addLocationListener(locationListener);
+        androidGpsLocationClient.setLocationListener(locationListener2);
+
+        // Retrieve the androidGpsLocationListener from the AndroidGpsLocationClient
+        AndroidGpsLocationClient.AndroidGpsLocationListener androidGpsLocationListener = ReflectionHelpers.getField(androidGpsLocationClient, "androidGpsLocationListener");
+
+        // Call onLocationChanged on the androidGpsLocationListener
+        androidGpsLocationListener.onLocationChanged(location);
+
+        Mockito.verify(locationListener).onLocationChanged(location);
+        Mockito.verify(locationListener2).onLocationChanged(location);
     }
 
 

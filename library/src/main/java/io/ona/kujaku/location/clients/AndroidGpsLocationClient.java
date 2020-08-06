@@ -51,10 +51,6 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
 
             locationManager.removeUpdates(androidGpsLocationListener);
 
-            if (getLocationListener() != null) {
-                locationManager.removeUpdates(getLocationListener());
-            }
-
             for (LocationListener locationListener : getLocationListeners()) {
                 locationManager.removeUpdates(locationListener);
             }
@@ -191,10 +187,6 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
         @Override
         public void onLocationChanged(Location location) {
             lastLocation = location;
-
-            if (getLocationListener() != null) {
-                getLocationListener().onLocationChanged(location);
-            }
 
             ArrayList<LocationListener> locationListeners = getLocationListeners();
             if (locationListeners != null) {
