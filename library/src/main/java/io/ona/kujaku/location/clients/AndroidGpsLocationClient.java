@@ -1,5 +1,6 @@
 package io.ona.kujaku.location.clients;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.location.GnssStatus;
@@ -10,13 +11,17 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
+import java.util.ArrayList;
+
 import io.ona.kujaku.R;
+import io.ona.kujaku.listeners.BaseLocationListener;
 import io.ona.kujaku.utils.LocationSettingsHelper;
 import timber.log.Timber;
 
@@ -31,17 +36,22 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     private long updateInterval = 5000;
     private long fastestUpdateInterval = 1000;
     private Object gpsStatusCallback;
+    private AndroidGpsLocationListener androidGpsLocationListener;
 
 
     public AndroidGpsLocationClient(@NonNull Context context) {
         this.context = context;
         locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        androidGpsLocationListener = new AndroidGpsLocationListener();
     }
 
     @Override
     public void stopLocationUpdates() {
         if (isMonitoringLocation()) {
             lastLocation = null;
+
+            locationManager.removeUpdates(androidGpsLocationListener);
+
             for (LocationListener locationListener : getLocationListeners()) {
                 locationManager.removeUpdates(locationListener);
             }
@@ -114,10 +124,12 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Nullable
     @Override
     public Location getLastLocation() {
-        return lastLocation;
+        Location lastLocationFromProvider = locationManager.getLastKnownLocation(getProvider());
+        return lastLocationFromProvider != null && (lastLocation == null || lastLocationFromProvider.getTime() > lastLocation.getTime()) ? lastLocationFromProvider : lastLocation;
     }
 
     @Override
@@ -138,7 +150,7 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
                         LocationManager.GPS_PROVIDER
                         , fastestUpdateInterval
                         , 0f
-                        , locationListener);
+                        , androidGpsLocationListener);
 
                 // This method protects itself from multiple calls
                 registerForGpsStoppedEvent();
@@ -170,5 +182,22 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     public void close() {
         stopLocationUpdates();
         super.close();
+    }
+
+    @VisibleForTesting
+    protected class AndroidGpsLocationListener extends BaseLocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            lastLocation = location;
+
+            ArrayList<LocationListener> locationListeners = getLocationListeners();
+            if (locationListeners != null) {
+                for(LocationListener locationListener: locationListeners) {
+                    locationListener.onLocationChanged(location);
+                }
+            }
+        }
+
     }
 }
