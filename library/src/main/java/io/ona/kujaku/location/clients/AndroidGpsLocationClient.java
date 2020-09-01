@@ -128,6 +128,9 @@ public class AndroidGpsLocationClient extends BaseLocationClient {
     @Nullable
     @Override
     public Location getLastLocation() {
+        if (locationManager == null) {
+            locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
         Location lastLocationFromProvider = locationManager.getLastKnownLocation(getProvider());
         return lastLocationFromProvider != null && (lastLocation == null || lastLocationFromProvider.getTime() > lastLocation.getTime()) ? lastLocationFromProvider : lastLocation;
     }
