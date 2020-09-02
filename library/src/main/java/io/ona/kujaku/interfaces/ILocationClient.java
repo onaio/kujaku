@@ -66,5 +66,5 @@ public interface ILocationClient {
      */
     void close();
 
-    LocationManager locationManager();
+    void locationManager();
 }

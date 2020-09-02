@@ -203,7 +203,7 @@ public class GoogleLocationClient extends BaseLocationClient implements Location
     }
 
     @Override
-    public LocationManager locationManager() {
+    public void locationManager() {
         if (locationManager == null) {
             locationManager = (LocationManager) context.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
