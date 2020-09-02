@@ -131,5 +131,10 @@ public class BaseLocationClientTest extends BaseTest {
         public String getProvider() {
             return "test_provider";
         }
+
+        @Override
+        public void locationManager() {
+            // Do nothing
+        }
     }
 }
