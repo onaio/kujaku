@@ -2,6 +2,7 @@ package io.ona.kujaku.interfaces;
 
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -64,4 +65,6 @@ public interface ILocationClient {
      *
      */
     void close();
+
+    LocationManager locationManager();
 }
