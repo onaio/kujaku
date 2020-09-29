@@ -57,6 +57,7 @@ public class DrawingManager {
     private boolean drawingEnabled;
 
     private FillBoundaryLayer currentFillBoundaryLayer;
+    private boolean editBoundaryMode;
 
     /**
      * Constructor
@@ -110,18 +111,21 @@ public class DrawingManager {
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
-                final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
-                if (features.size() == 0 && drawingEnabled) {
-                    if (getCurrentKujakuCircle() != null) {
-                        unsetCurrentCircleDraggable();
-                    } else {
-                        drawCircle(point);
-                    }
+                if (!editBoundaryMode) {
+                    final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
+                    List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
 
-                    if (onDrawingCircleClickListener != null) {
-                        onDrawingCircleClickListener.onCircleNotClick(point);
+                    if (features.size() == 0 && drawingEnabled) {
+                        if (getCurrentKujakuCircle() != null) {
+                            unsetCurrentCircleDraggable();
+                        } else {
+                            drawCircle(point);
+                        }
+
+                        if (onDrawingCircleClickListener != null) {
+                            onDrawingCircleClickListener.onCircleNotClick(point);
+                        }
                     }
                 }
 
@@ -232,6 +236,11 @@ public class DrawingManager {
         }
 
         return false;
+    }
+
+    public boolean editBoundary(@NonNull FillBoundaryLayer fillBoundaryLayer) {
+        editBoundaryMode = true;
+        return startDrawing(fillBoundaryLayer);
     }
 
     /**
