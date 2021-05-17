@@ -13,7 +13,8 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://dl.google.com/dl/android/maven2/" }
-        maven { url "http://dl.bintray.com/ona/kujaku" }
+        //maven { url "http://dl.bintray.com/ona/kujaku" }
+        mavenLocal()
     }
 }
 
@@ -54,6 +55,25 @@ publishing {
                     dependencyNode.appendNode('artifactId', it.name)
                     dependencyNode.appendNode('version', it.version)
                 }
+            }
+        }
+    }
+
+repositories {
+        maven {
+            name = "GitHubPackages"
+            /** Configure path of your package repository on Github
+             *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
+             * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
+             */
+            url = uri("https://maven.pkg.github.com/onaio/kujaku")
+            credentials {
+                /** Create github.properties in root project folder file with
+                 * gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
+                 * Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file
+                 */
+                username = "ekigamba"
+                password = "token"
             }
         }
     }
