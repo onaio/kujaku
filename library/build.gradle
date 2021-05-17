@@ -31,15 +31,16 @@ task sourceJar(type: Jar) {
     classifier "sources"
 }
 
-artifacts {
-    archives sourceJar
-}
-
+/**
+ * Run ./gradlew :library:clean && ./gradlew :library:assembleRelease && ./gradlew :library:publish
+ * This publishes to all production artefact repositories
+ */
 publishing {
     publications {
         Production(MavenPublication) {
             artifact("$buildDir/outputs/aar/library-release.aar")
             artifact(sourceJar)
+            artifact(javadocJar)
             groupId 'io.ona.kujaku'
             artifactId 'library'
             version this.version
@@ -270,4 +271,22 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     executionData = fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ])
+}
+
+task javaDoc(type: Javadoc) {
+    failOnError false
+    def mainSrc = "$project.projectDir/src/main/java"
+    source = files([mainSrc])
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: javaDoc) {
+    classifier = 'javadoc'
+    from javaDoc.destinationDir
+}
+
+artifacts {
+    archives sourceJar
+    archives javadocJar
 }
