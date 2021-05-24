@@ -541,8 +541,8 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
     private void showProgressNotification(@NonNull String mapName, double percentageProgress, boolean showAction) {
         if (downloadProgressNotification == null) {
             downloadProgressNotification = new DownloadProgressNotification(this);
-            downloadProgressNotification.createInitialNotification(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
         }
+        downloadProgressNotification.createInitialNotification(mapName, Mapbox.getAccessToken(), REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
 
         downloadProgressNotification.updateNotification(percentageProgress, mapName, REQUEST_ID_STOP_MAP_DOWNLOAD, showAction);
 
@@ -722,7 +722,7 @@ public class MapboxOfflineDownloaderService extends Service implements OfflineRe
         super.onDestroy();
         stopDownloadProgressUpdater();
 
-        if (MapBoxOfflineResourcesDownloader.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN)
+        if (MapBoxOfflineResourcesDownloader.getInstance(this, Mapbox.getAccessToken())
                 .getConnectivityReceiverActivationCounter() > 0) {
             ConnectivityReceiver.instance(this)
                     .deactivate();

@@ -3,6 +3,8 @@ package io.ona.kujaku.library;
 import android.app.Activity;
 import android.content.Intent;
 
+import com.mapbox.mapboxsdk.Mapbox;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +47,7 @@ public class KujakuLibraryTest {
 
     @Test
     public void testMethodLaunchMapActivityShouldSuccessfullyLaunchMapActivity() throws InterruptedException {
-            ActivityLauncherHelper.launchMapActivity(activity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, new ArrayList<>(), true);
+            ActivityLauncherHelper.launchMapActivity(activity, Mapbox.getAccessToken(), new ArrayList<>(), true);
             Thread.sleep(5000l);
 
             Robolectric.getForegroundThreadScheduler().runOneTask(); // flush foreground job to allow AsyncTask's onPostExecute to run

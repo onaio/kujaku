@@ -13,7 +13,8 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://dl.google.com/dl/android/maven2/" }
-        maven { url "http://dl.bintray.com/ona/kujaku" }
+        //maven { url "http://dl.bintray.com/ona/kujaku" }
+        mavenLocal()
     }
 }
 
@@ -24,64 +25,6 @@ apply plugin: 'maven-publish'
 version '0.9.0'
 
 project.version = this.version
-
-task sourceJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier "sources"
-}
-
-artifacts {
-    archives sourceJar
-}
-
-publishing {
-    publications {
-        Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/library-release.aar")
-            artifact(sourceJar)
-            groupId 'io.ona.kujaku'
-            artifactId 'library'
-            version this.version
-
-            //The publication doesn't know about our dependencies, so we have to manually add them to the pom
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.implementation.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
-                }
-            }
-        }
-    }
-}
-
-bintray {
-    // Get Bintray credential from environment variable
-    user = System.getenv('BINTRAY_USER') // Get bintray User
-    key = System.getenv('BINTRAY_KEY') // Get bintray Secret Key
-    configurations = ['archives']
-    pkg {
-        repo = 'kujaku'
-        name = project.name
-        userOrg = 'ona'
-        licenses = ['Apache-2.0']
-        desc = 'Kujaku library'
-        websiteUrl = "https://ona.io"
-        publish = true
-        vcsUrl = "https://github.com/onaio/kujaku.git"
-        version {
-            name = this.version
-            desc = "Kujaku library version ${this.version}"
-            released = new Date()
-            vcsTag = this.version
-        }
-    }
-    publications = ['Production']
-}
 
 jacoco {
     toolVersion = jacocoVersion
@@ -251,3 +194,6 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ])
 }
+
+// Add github packages, maven-central and sonatype publishing
+apply from: '../publish.gradle'
