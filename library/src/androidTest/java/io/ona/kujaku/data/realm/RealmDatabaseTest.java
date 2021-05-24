@@ -88,7 +88,7 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
                 MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask(packageName, mapName, sampleMapBoxStyleURL);
                 mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
             } else {
-                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapName, Mapbox.getAccessToken());
+                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapName, "sample-token");
                 mapBoxOfflineQueueTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
             }
 
