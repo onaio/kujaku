@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.offline.OfflineManager;
 import com.mapbox.mapboxsdk.offline.OfflineRegion;
@@ -91,7 +92,7 @@ public class MapboxOfflineDownloaderServiceTest {
     private MapboxOfflineDownloaderService mapboxOfflineDownloaderService;
 
     private String sampleValidMapboxStyleURL = "mapbox://styles/ona/90kiosdcIJ3d";
-    private String mapboxAccessToken = BuildConfig.MAPBOX_SDK_ACCESS_TOKEN;
+    private String mapboxAccessToken = Mapbox.getAccessToken();
     private float minZoom = 22;
     private float maxZoom = 10;
     private LatLng topLeftBound = new LatLng(9.1, 9.1);
@@ -391,7 +392,7 @@ public class MapboxOfflineDownloaderServiceTest {
 
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+        method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, Mapbox.getAccessToken(), null);
 
         insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
@@ -415,7 +416,7 @@ public class MapboxOfflineDownloaderServiceTest {
 
         Method method = mapboxOfflineDownloaderService.getClass().getDeclaredMethod("getTaskStatus", MapBoxOfflineQueueTask.class, String.class, OfflineRegionStatusCallback.class);
         method.setAccessible(true);
-        method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, null);
+        method.invoke(mapboxOfflineDownloaderService, mapBoxOfflineQueueTask, Mapbox.getAccessToken(), null);
 
         insertValueInPrivateField(mapBoxOfflineResourcesDownloader, "offlineManager", offlineManager);
 
@@ -719,7 +720,7 @@ public class MapboxOfflineDownloaderServiceTest {
                         -17.875469,
                         25.854782
                 ),
-                BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
+                Mapbox.getAccessToken()
         );
     }
 

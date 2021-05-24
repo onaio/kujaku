@@ -1,5 +1,6 @@
 package io.ona.kujaku.data.realm;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONException;
@@ -87,7 +88,7 @@ public class RealmDatabaseTest extends RealmRelatedInstrumentedTest {
                 MapBoxDownloadTask mapBoxDownloadTask = createSampleDownloadTask(packageName, mapName, sampleMapBoxStyleURL);
                 mapBoxOfflineQueueTask = MapBoxDownloadTask.constructMapBoxOfflineQueueTask(mapBoxDownloadTask);
             } else {
-                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapName, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+                MapBoxDeleteTask mapBoxDeleteTask = new MapBoxDeleteTask(mapName, Mapbox.getAccessToken());
                 mapBoxOfflineQueueTask = MapBoxDeleteTask.constructMapBoxOfflineQueueTask(mapBoxDeleteTask);
             }
 
