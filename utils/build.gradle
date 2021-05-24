@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
+apply plugin: 'signing'
 
 version '0.8.0'
 project.version = this.version
@@ -11,13 +12,33 @@ task sourceJar(type: Jar) {
     classifier "sources"
 }
 
+def getOSSRHRepositoryPassword() {
+    return hasProperty('ossrhPassword') ? ossrhPassword : ""
+}
+
+def getOSSRHRepositoryUsername() {
+    return hasProperty('ossrhUsername') ? ossrhUsername : ""
+}
+
+def getGithubPublishUsername() {
+    return hasProperty('githubUsername') ? githubUsername: ""
+}
+
+def getGithubPackagesAccessToken() {
+    return hasProperty('githubAccessToken') ? githubAccessToken: ""
+}
+
+def getDate() {
+    return new Date().format('yyyy-MM-dd HH:mm:ss')
+}
+
 /**
  * Run ./gradlew :utils:clean && ./gradlew :utils:assembleRelease && ./gradlew :utils:publish
  * This publishes to all production artefact repositories
  */
 publishing {
     publications {
-        Production(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifact("$buildDir/outputs/aar/utils-release.aar")
             artifact(sourceJar)
             artifact(javadocJar)
@@ -37,6 +58,35 @@ publishing {
                     dependencyNode.appendNode('version', it.version)
                 }
             }
+
+            pom {
+                name = 'Kujaku Utils'
+                description = 'Utilities for Mapping and check-in library for Android using MapBox SDK'
+                url = 'http://github.com/onaio/kujaku'
+                packaging = 'aar'
+                licenses {
+                    license {
+                        name = 'BSD 2-Clause "Simplified" License'
+                        url = 'https://raw.githubusercontent.com/onaio/kujaku/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'ekigamba'
+                        name = 'Ephraim Kigamba'
+                    }
+
+                    developer {
+                        id = 'onaio'
+                        name = 'Onaio'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/onaio/kujaku.git'
+                    developerConnection = 'scm:git:ssh://github.com/onaio/kujaku.git'
+                    url = 'http://github.com/onaio/kujaku'
+                }
+            }
         }
     }
 
@@ -53,8 +103,37 @@ publishing {
                  * gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
                  * Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file
                  */
-                username = "ekigamba"
-                password = "token"
+                username = getGithubPublishUsername()
+                password = getGithubPackagesAccessToken()
+            }
+        }
+
+        maven {
+            name = "MavenCentral"
+            /** Configure path of your package repository on Github
+             *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
+             * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
+             */
+
+            def repositoryURL
+            def timestampMsg = " at " + getDate()
+            if (!version.contains("SNAPSHOT")) {
+                println 'PROCESSING MAVEN RELEASE BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
+                repositoryURL = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+                        : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            } else {
+                println 'PROCESSING MAVEN REMOTE SNAPSHOT BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
+                repositoryURL = hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+                        : "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+
+            }
+            url = uri(repositoryURL)
+            credentials {
+                /** Create gradle.properties in root project folder file with
+                 * ossrhUsername=GITHUB_USER_ID & ossrhPassword=PERSONAL_ACCESS_TOKEN
+                 */
+                username = getOSSRHRepositoryUsername()
+                password = getOSSRHRepositoryPassword()
             }
         }
     }
@@ -181,4 +260,8 @@ task javadocJar(type: Jar, dependsOn: javaDoc) {
 artifacts {
     archives sourceJar
     archives javadocJar
+}
+
+signing {
+    sign(publishing.publications['mavenJava'])
 }
