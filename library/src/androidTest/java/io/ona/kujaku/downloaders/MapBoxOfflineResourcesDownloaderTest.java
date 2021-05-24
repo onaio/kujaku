@@ -64,10 +64,11 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
-    public void setup() {
+    public void setup() throws Throwable {
         context = InstrumentationRegistry.getTargetContext();
         MapBoxOfflineResourcesDownloader.instance = null;
-        Mapbox.getInstance(context, "sample-token");
+
+        uiThreadTestRule.runOnUiThread(() -> Mapbox.getInstance(context, "sample-token"));
     }
 
     @Test
