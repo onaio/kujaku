@@ -79,7 +79,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
             }
         });
         mapBoxOfflineResourcesDownloader.downloadMap(invalidDownloadTask, null);
@@ -206,7 +206,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getAccessToken());
             }
         });
     }
@@ -327,7 +327,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
             }
         });
         mapBoxOfflineResourcesDownloader.deleteMap("Sample Map name", offlineRegionDeleteCallback);
@@ -345,7 +345,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, Mapbox.getAccessToken()));
             }
         });
 
@@ -490,7 +490,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
                 mapBoxOfflineResourcesDownloader.deleteMap(invalidDownloadTask.getMapName(), offlineRegionDeleteCallback);
             }
         });
@@ -523,7 +523,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         uiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN));
+                mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
             }
         });
         mapBoxOfflineResourcesDownloader.getIncompleteMapDownloads(incompleteMapDownloadCallback);
@@ -712,7 +712,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
                         -17.875469,
                         25.854782
                 ),
-                BuildConfig.MAPBOX_SDK_ACCESS_TOKEN
+                Mapbox.getAccessToken()
         );
     }
 
