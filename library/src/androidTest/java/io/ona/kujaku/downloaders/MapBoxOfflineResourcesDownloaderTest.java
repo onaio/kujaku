@@ -67,6 +67,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
     public void setup() {
         context = InstrumentationRegistry.getTargetContext();
         MapBoxOfflineResourcesDownloader.instance = null;
+        Mapbox.getInstance(context, "sample-token");
     }
 
     @Test
