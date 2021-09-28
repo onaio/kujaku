@@ -29,10 +29,10 @@ jobs:
       - name: Build project skipping tests
         run: ./gradlew build -x test --stacktrace
       - name: Run jacocoTestReport for each module
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            api-level: 22
-            script: ./gradlew jacocoTestReport --stacktrace
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 22
+          script: ./gradlew jacocoTestReport --stacktrace
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
