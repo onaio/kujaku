@@ -92,7 +92,7 @@ public class MapboxOfflineDownloaderServiceTest {
     private MapboxOfflineDownloaderService mapboxOfflineDownloaderService;
 
     private String sampleValidMapboxStyleURL = "mapbox://styles/ona/90kiosdcIJ3d";
-    private String mapboxAccessToken = Mapbox.getAccessToken();
+    private String mapboxAccessToken;
     private float minZoom = 22;
     private float maxZoom = 10;
     private LatLng topLeftBound = new LatLng(9.1, 9.1);
@@ -106,11 +106,14 @@ public class MapboxOfflineDownloaderServiceTest {
     @Before
     public void setUp() throws Exception {
         context = RuntimeEnvironment.application;
+        Mapbox.getInstance(context, "some-access-token");
+
         RealmDbTestImplementation.resetDb();
         mapboxOfflineDownloaderService = Robolectric.buildService(MapboxOfflineDownloaderService.class)
                 .get();
 
         resultsToCheck.clear();
+        mapboxAccessToken = Mapbox.getAccessToken();
     }
 
     @After
