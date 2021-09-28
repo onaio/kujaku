@@ -19,6 +19,7 @@ import com.mapbox.mapboxsdk.style.layers.PropertyValue;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.utils.ColorUtils;
+import com.mapbox.mapboxsdk.utils.ThreadUtils;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +56,7 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
     @Before
     public void setUp() {
         context = RuntimeEnvironment.application;
+        ThreadUtils.init(context);
     }
 
     @Test
