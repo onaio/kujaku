@@ -22,6 +22,7 @@ import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.TestApplication;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.ActivityLauncherHelper;
+import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
 
 import static junit.framework.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
@@ -32,7 +33,8 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class
         , manifest = Config.NONE
-        , application = TestApplication.class)
+        , application = TestApplication.class,
+        shadows = {ShadowConnectivityReceiver.class})
 public class KujakuLibraryTest {
 
     @Rule
@@ -42,6 +44,7 @@ public class KujakuLibraryTest {
 
     @Before
     public void setupBeforeTest() {
+        Mapbox.getInstance(RuntimeEnvironment.application, "some-access-token");
         activity = Robolectric.buildActivity(Activity.class).create().get();
     }
 
