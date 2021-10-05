@@ -13,10 +13,6 @@ jobs:
   unit_tests:
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      CI_NAME: github
-      CI_BUILD_NUMBER: $GITHUB_RUN_ID
-      CI_GIT_COMMIT: $GITHUB_SHA
-      CI_BRANCH: $GITHUB_REF
 
     runs-on: ubuntu-latest
 
@@ -28,11 +24,6 @@ jobs:
           java-version: 1.8
       - name: Print Java version
         run: java -version
-      - name: Start SSH session
-        uses: luchihoratiu/debug-via-ssh@main
-        with:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          SSH_PASS: ${{ secrets.SSH_PASS }}
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Clean project
@@ -43,7 +34,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 22
-          script: ./gradlew jacocoTestReport --stacktrace || true
+          script: ./gradlew jacocoTestReport --stacktrace
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
