@@ -1,6 +1,6 @@
-# Kujaku (Peacock) [![Build Status](https://travis-ci.org/onaio/kujaku.svg?branch=master)](https://travis-ci.org/onaio/kujaku) [ ![Download](https://api.bintray.com/packages/ona/kujaku/library/images/download.svg) ](https://bintray.com/ona/kujaku/library/_latestVersion) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
+# Kujaku (Peacock) [Build Status](https://github.com/onaio/kujaku/actions/workflows/ci.yml/badge.svg) [Download](https://badgen.net/maven/v/maven-central/io.ona.kujaku/library) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
 
-A mapping and check-in library for Android using **MapBox SDK (Version 7.2.0)** 
+A mapping and check-in library for Android using **MapBox SDK (Version 8.3.3)** 
 
 # Table of Contents
 
@@ -54,7 +54,7 @@ To import the library:
 
 allprojects {
     repositories {
-        maven { url "http://dl.bintray.com/ona/kujaku" }
+        mavenCentral()
     }
 }
 
@@ -72,7 +72,7 @@ android {
 dependencies {
     ...
     // Kujaku dependencies
-    implementation 'io.ona.kujaku:library:0.7.2'
+    implementation 'io.ona.kujaku:library:0.9.0'
     ...
 }
 ```
