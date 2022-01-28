@@ -1,6 +1,5 @@
 package io.ona.kujaku.data.realm;
 
-import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import org.json.JSONException;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
