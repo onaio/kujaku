@@ -13,7 +13,6 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://dl.google.com/dl/android/maven2/" }
-        //maven { url "http://dl.bintray.com/ona/kujaku" }
         mavenLocal()
     }
 }
