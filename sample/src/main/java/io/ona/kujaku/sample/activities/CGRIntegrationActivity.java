@@ -1,5 +1,8 @@
 package io.ona.kujaku.sample.activities;
 
+import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
+
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -47,9 +50,6 @@ import io.ona.kujaku.sample.R;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.views.KujakuMapView;
 import timber.log.Timber;
-
-import static com.mapbox.mapboxsdk.style.expressions.Expression.eq;
-import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
 
 public class CGRIntegrationActivity extends BaseNavigationDrawerActivity implements OnFeatureClickListener {
 
