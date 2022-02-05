@@ -1,11 +1,13 @@
 allprojects {
     repositories {
         maven { url "https://dl.google.com/dl/android/maven2/" }
-        maven { url "http://dl.bintray.com/ona/kujaku" }
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.fabric.io/public' }
-        maven { url 'http://nexus.terraframe.com/content/groups/allrepos' }
+        maven {
+            url "https://dl.cloudsmith.io/public/terraframe/geoprism-registry/maven/"
+        }
         mavenLocal()
+        //mavenCentral()
     }
 }
 
@@ -184,7 +186,7 @@ dependencies { configuration ->
 
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
-    implementation ("com.cgr.adapter:cgradapter-android:0.3.3") {
+    implementation ('com.cgr.adapter:cgradapter-android:0.18.1') {
         exclude group: "com.android.support", module: "appcompat-v7"
     }
 
