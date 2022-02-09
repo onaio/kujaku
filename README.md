@@ -24,23 +24,7 @@ For instructions on how to run the sample app see [these instructions](./sample/
 
 ### How to publish artifacts
 
-To publish new versions to the **Bintray/JFrog** account, run:
-
-```
-export BINTRAY_USER=johndoe
-export BINTRAY_KEY=98sdfkmykeyhere90sdckl
-./gradlew :utils:clean :utils:assembleRelease :utils:bintrayUpload
-./gradlew :library:clean :library:assembleRelease :library:bintrayUpload
-
-```
-
-To publish locally:
-
-```
-./gradlew :utils:clean :utils:assembleRelease :utils:publishToMavenLocal
-./gradlew :library:clean :library:assembleRelease :library:publishToMavenLocal
-
-```
+Due to the sunsetting of JFrog Bintray, Kujaku artefacts/release are no longer available on bintray and all publishing is done to Maven Central. Some of the packages are also published to Github packages.
 
 ## How to import the library
 
