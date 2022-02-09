@@ -2,6 +2,11 @@
 
 A mapping and check-in library for Android using **MapBox SDK (Version 8.3.3)** 
 
+# IMPORTANT UPDATE
+
+**Kujaku library and utils artefacts are no longer available on bintray and any builds using these dependencies will fail. Kindly update to use `mavenCentral()` repository in your `build.gradle` and the `library` version `0.9.0` for a successful build. Kindly [create an issue](https://github.com/onaio/kujaku/issues/new) in case you face any problems.**
+
+
 # Table of Contents
 
 * [Setup Instructions](#setup-instructions)
