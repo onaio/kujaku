@@ -1,8 +1,8 @@
-# Kujaku (Peacock) [Build Status](https://github.com/onaio/kujaku/actions/workflows/ci.yml/badge.svg) [Download](https://badgen.net/maven/v/maven-central/io.ona.kujaku/library) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
+# Kujaku (Peacock) ![Build Status](https://github.com/onaio/kujaku/actions/workflows/ci.yml/badge.svg) ![Download](https://badgen.net/maven/v/maven-central/io.ona.kujaku/library) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
 
 A mapping and check-in library for Android using **MapBox SDK (Version 8.3.3)** 
 
-# IMPORTANT UPDATE
+## IMPORTANT UPDATE
 
 **Kujaku library and utils artefacts are no longer available on bintray and any builds using these dependencies will fail. Kindly update to use `mavenCentral()` repository in your `build.gradle` and the `library` version `0.9.0` for a successful build. Kindly [create an issue](https://github.com/onaio/kujaku/issues/new) in case you face any problems.**
 
