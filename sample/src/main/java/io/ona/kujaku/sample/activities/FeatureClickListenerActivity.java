@@ -1,8 +1,8 @@
 package io.ona.kujaku.sample.activities;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.util.Log;
+import androidx.annotation.NonNull;
+
 import android.widget.Toast;
 
 import com.mapbox.geojson.Feature;
@@ -15,7 +15,6 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
-import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 

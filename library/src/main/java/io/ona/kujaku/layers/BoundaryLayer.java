@@ -2,7 +2,7 @@ package io.ona.kujaku.layers;
 
 
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.mapbox.geojson.Feature;

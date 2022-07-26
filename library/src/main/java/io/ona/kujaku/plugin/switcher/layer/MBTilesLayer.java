@@ -1,7 +1,7 @@
 package io.ona.kujaku.plugin.switcher.layer;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Pair;
 
 import com.mapbox.mapboxsdk.style.layers.Layer;

@@ -2,7 +2,7 @@ package io.ona.kujaku.layers;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.utils.ThreadUtils;

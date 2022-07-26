@@ -3,7 +3,7 @@ package io.ona.kujaku.notifications;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import io.ona.kujaku.R;
 

@@ -378,10 +378,10 @@ public class ArrowLineLayerTest extends BaseKujakuLayerTest {
 
         ArrowLineLayer.Builder builder = new ArrowLineLayer.Builder(context, featureConfig, sortConfig);
 
-        int colorRes = android.support.v7.appcompat.R.color.abc_btn_colored_text_material;
+        int colorRes = androidx.appcompat.R.color.abc_btn_colored_text_material;
         int colorInt = context
                 .getResources()
-                .getColor(android.support.v7.appcompat.R.color.abc_btn_colored_text_material);
+                .getColor(androidx.appcompat.R.color.abc_btn_colored_text_material);
         float lineWidth = 67f;
 
         builder.setArrowLineColor(colorRes);

@@ -2,7 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 

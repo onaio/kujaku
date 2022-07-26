@@ -1,7 +1,7 @@
 package io.ona.kujaku.tasks;
 
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.exceptions.AsyncTaskCancelledException;

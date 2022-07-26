@@ -6,15 +6,16 @@ import static com.mapbox.mapboxsdk.style.expressions.Expression.geometryType;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;

@@ -1,6 +1,6 @@
 package io.ona.kujaku.plugin.switcher.layer;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.mapboxsdk.maps.MapboxMap;

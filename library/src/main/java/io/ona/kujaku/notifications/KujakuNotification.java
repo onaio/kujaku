@@ -4,10 +4,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.

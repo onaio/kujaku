@@ -2,9 +2,10 @@ package io.ona.kujaku.adapters.holders;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;

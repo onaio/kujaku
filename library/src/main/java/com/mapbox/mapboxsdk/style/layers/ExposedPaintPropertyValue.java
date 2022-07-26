@@ -1,6 +1,6 @@
 package com.mapbox.mapboxsdk.style.layers;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-20

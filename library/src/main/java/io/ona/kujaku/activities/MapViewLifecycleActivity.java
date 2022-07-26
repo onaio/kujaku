@@ -1,7 +1,8 @@
 package io.ona.kujaku.activities;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import io.ona.kujaku.views.KujakuMapView;
 

@@ -2,8 +2,8 @@ package io.ona.kujaku.sample.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;

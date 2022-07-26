@@ -2,11 +2,12 @@ package io.ona.kujaku.views;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 29/11/2017.

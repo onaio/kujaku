@@ -1,6 +1,6 @@
 package io.ona.kujaku.comparators;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mapbox.geojson.Feature;
 

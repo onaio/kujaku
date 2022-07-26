@@ -26,7 +26,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
@@ -46,16 +46,21 @@ android {
 }
 
 dependencies {
-    androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation ('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation "com.android.support:appcompat-v7:${supportVersion}"
+    implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
     implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}") {
         transitive = true
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
     }
+
+    // The local build has an issue fetching this library for some reason which
+    // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
+    // a runtime dependency
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.5.1'
@@ -80,11 +85,11 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
-    sourceDirectories = files([mainSrc])
-    classDirectories = files([debugTree])
-    executionData = fileTree(dir: project.buildDir, includes: [
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
-    ])
+    ]))
 }
 
 // Add github packages, maven-central and sonatype publishing
