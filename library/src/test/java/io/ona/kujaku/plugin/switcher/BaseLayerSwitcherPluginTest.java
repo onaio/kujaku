@@ -2,10 +2,10 @@ package io.ona.kujaku.plugin.switcher;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.support.design.widget.FloatingActionButton;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.utils.ThreadUtils;
 

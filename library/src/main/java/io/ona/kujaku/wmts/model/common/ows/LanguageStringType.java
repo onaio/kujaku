@@ -1,6 +1,6 @@
 package io.ona.kujaku.wmts.model.common.ows;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Text;

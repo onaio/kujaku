@@ -3,7 +3,7 @@ package io.ona.kujaku.mbtiles;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Environment;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Pair;
 

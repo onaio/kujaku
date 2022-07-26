@@ -2,7 +2,7 @@ package io.ona.kujaku.notifications;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import io.ona.kujaku.R;
 

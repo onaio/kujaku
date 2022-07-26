@@ -44,7 +44,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
     }
 
@@ -103,13 +103,18 @@ android {
 }
 
 dependencies { configuration ->
-    implementation "com.android.support:support-v4:${supportVersion}"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}") {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
     }
+
+    // The local build has an issue fetching this library for some reason which
+    // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
+    // a runtime dependency
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
 
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${mapboxAnnotationPluginVersion}"
 
@@ -120,11 +125,10 @@ dependencies { configuration ->
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
-        exclude group: 'com.android.support', module: 'appcompat-v7'
     }
 
-    implementation "com.android.support:appcompat-v7:${supportVersion}"
-    implementation "com.android.support:design:${supportVersion}"
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
     implementation 'org.simpleframework:simple-xml:2.7.1'
     implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
     implementation 'com.jakewharton.timber:timber:4.7.1'
@@ -150,8 +154,8 @@ private static void testDependencies(configuration) {
 }
 
 private static void infoWindowDependencies(instance, configuration) {
-    configuration.implementation "com.android.support:cardview-v7:${instance.supportVersion}"
-    configuration.implementation "com.android.support:recyclerview-v7:${instance.supportVersion}"
+    configuration.implementation "androidx.cardview:cardview:${instance.supportVersion}"
+    configuration.implementation "androidx.recyclerview:recyclerview:${instance.supportVersion}"
 }
 
 private static void customDependencies(instance, configuration) {
@@ -187,11 +191,11 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
-    sourceDirectories = files([mainSrc])
-    classDirectories = files([debugTree])
-    executionData = fileTree(dir: project.buildDir, includes: [
+    sourceDirectories.setFrom([mainSrc])
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
-    ])
+    ]))
 }
 
 // Add github packages, maven-central and sonatype publishing

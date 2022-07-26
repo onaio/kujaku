@@ -1,6 +1,6 @@
 package io.ona.kujaku.listeners;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 

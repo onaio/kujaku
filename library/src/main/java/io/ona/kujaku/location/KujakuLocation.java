@@ -1,7 +1,7 @@
 package io.ona.kujaku.location;
 
 import android.location.Location;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * KujakuLocation to extends the default Android Location by adding some attributes

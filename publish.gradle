@@ -1,4 +1,4 @@
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 task sourceJar(type: Jar) {
@@ -11,7 +11,7 @@ task javaDoc(type: Javadoc) {
     def mainSrc = "$project.projectDir/src/main/java"
     source = files([mainSrc])
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
+    //classpath += configurations.compile
 }
 
 task javadocJar(type: Jar, dependsOn: javaDoc) {

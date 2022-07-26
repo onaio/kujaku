@@ -2,7 +2,7 @@ package io.ona.kujaku.sample.activities;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +19,6 @@ import org.json.JSONObject;
 import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
 import io.ona.kujaku.listeners.OnLocationChanged;
-import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 

@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.listener.multi.BaseMultiplePermissionsListener;

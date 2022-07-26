@@ -1,6 +1,6 @@
 package io.ona.kujaku.test.shadows;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.style.sources.Source;
 
