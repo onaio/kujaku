@@ -190,7 +190,7 @@ dependencies { configuration ->
     implementation 'androidx.multidex:multidex:2.0.0'
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:3.5.1'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
 }
 
 // This is used for normal develoment of Kujaku
