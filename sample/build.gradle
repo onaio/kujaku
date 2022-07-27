@@ -32,7 +32,7 @@ def getMasterCommitCount = { ->
                     commandLine 'cmd', '/c', 'git', 'rev-list', '--first-parent', '--count', 'master'
                     break
                 case 'unix':
-                    commandLine 'git', 'rev-list', '--first-parent', '--count', 'master'
+                    commandLine 'git', 'rev-list', '--first-parent', '--count', 'origin/master'
                     break
             }
             standardOutput = stdout
