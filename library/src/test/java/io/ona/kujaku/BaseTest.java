@@ -29,8 +29,7 @@ import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
  *
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        manifest = Config.NONE)
+@Config(manifest = Config.NONE)
 public abstract class BaseTest {
 
     protected Feature generateRandomFeatureWithProperties(GeoJSONFeature.Property... properties) {

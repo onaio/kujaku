@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/12/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,manifest=Config.NONE)
+@Config(manifest=Config.NONE)
 public class MapBoxDownloadTaskTest {
 
     @Test

@@ -20,7 +20,7 @@ import io.ona.kujaku.wmts.serializer.WmtsCapabilitiesSerializer;
  * Created by Emmanuel Otin - eo@novel-t.ch 12/04/18.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, manifest = Config.NONE)
+@Config(manifest = Config.NONE)
 public class WmtsCapabilitiesSerializerTest {
 
     private WmtsCapabilities getCapabilities() throws Exception {

@@ -143,11 +143,11 @@ dependencies { configuration ->
 private static void testDependencies(configuration) {
     configuration.testImplementation 'junit:junit:4.12'
     configuration.testImplementation 'org.robolectric:robolectric:4.3.1'
-    configuration.testImplementation 'org.robolectric:shadows-support-v4:3.4-rc2'
+    configuration.testImplementation 'org.robolectric:shadows-multidex:4.3.1'
 
     configuration.testImplementation 'org.mockito:mockito-inline:2.25.0'
 
-    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
+    configuration.androidTestImplementation 'org.mockito:mockito-android:3.3.3'
     configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

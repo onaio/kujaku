@@ -16,7 +16,7 @@ import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
  * Created by Jason Rogena - jrogena@ona.io on 1/3/18.
  */
 @RunWith(RobolectricTestRunner.class)
-@org.robolectric.annotation.Config(constants = BuildConfig.class, manifest = org.robolectric.annotation.Config.NONE)
+@org.robolectric.annotation.Config(manifest = org.robolectric.annotation.Config.NONE)
 public class SortFieldConfigTest {
     @Test
     public void testConstructor() throws JSONException, InvalidMapBoxStyleException {

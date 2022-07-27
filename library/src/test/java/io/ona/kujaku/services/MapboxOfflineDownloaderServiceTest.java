@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import androidx.core.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -72,8 +72,7 @@ import static org.mockito.Mockito.mock;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/12/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        manifest = Config.NONE,
+@Config(manifest = Config.NONE,
         shadows = {
                 ShadowMapBoxDeleteTask.class,
                 ShadowMapBoxDownloadTask.class,

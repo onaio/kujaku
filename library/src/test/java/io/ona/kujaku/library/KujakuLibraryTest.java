@@ -31,8 +31,7 @@ import static org.robolectric.Shadows.shadowOf;
  * @author Vincent Karuri
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class
-        , manifest = Config.NONE
+@Config(manifest = Config.NONE
         , application = TestApplication.class,
         shadows = {ShadowConnectivityReceiver.class})
 public class KujakuLibraryTest {

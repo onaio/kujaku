@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
+@Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
 public abstract class BaseNotificationTest extends BaseTest {
 
     protected Context context;

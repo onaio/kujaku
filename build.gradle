@@ -54,7 +54,7 @@ ext {
     compileSdkVersion = 28
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
-    jacocoVersion = "0.7.9"
+    jacocoVersion = "0.8.5"
     mapboxSdkVersion = "8.3.3"
     mapboxAnnotationPluginVersion = "0.6.0"
 }
