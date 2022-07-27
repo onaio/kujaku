@@ -19,7 +19,7 @@ import static android.location.LocationManager.GPS_PROVIDER;
  */
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, manifest = Config.NONE)
+@Config(manifest = Config.NONE)
 public class TrackingStorageTest {
 
     @Test

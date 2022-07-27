@@ -1,9 +1,7 @@
 package io.ona.kujaku.downloaders;
 
+import android.app.Instrumentation;
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.UiThreadTestRule;
-import android.support.test.runner.AndroidJUnit4;
 
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -40,6 +38,9 @@ import io.ona.kujaku.utils.exceptions.OfflineMapDownloadException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 07/12/2017.
  */
@@ -58,9 +59,6 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
     private long lastId = 0;
 
     @Rule
-    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
-
-    @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Before
@@ -68,7 +66,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         context = InstrumentationRegistry.getTargetContext();
         MapBoxOfflineResourcesDownloader.instance = null;
 
-        uiThreadTestRule.runOnUiThread(() -> Mapbox.getInstance(context, "sample-token"));
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> Mapbox.getInstance(context, "sample-token"));
     }
 
     @Test
@@ -78,7 +76,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
@@ -205,7 +203,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
     }
 
     private void createMapboxOfflineResourcesDownloaderInstanceOnUIThread() throws Throwable {
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getAccessToken());
@@ -326,7 +324,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
             }
         };
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
@@ -344,7 +342,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
         downLatch = new CountDownLatch(1);
         resetTestVariables();
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(context, Mapbox.getInstance(context, Mapbox.getAccessToken()));
@@ -489,7 +487,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
 
         MapBoxDownloadTask invalidDownloadTask = createSampleDownloadTask();
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));
@@ -522,7 +520,7 @@ public class MapBoxOfflineResourcesDownloaderTest extends BaseTest {
             }
         };
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 mapBoxOfflineResourcesDownloader = MapBoxOfflineResourcesDownloader.getInstance(null, Mapbox.getInstance(context, Mapbox.getAccessToken()));

@@ -25,8 +25,7 @@ import static org.junit.Assert.*;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 27/12/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class
-        , manifest = Config.NONE
+@Config(manifest = Config.NONE
         , qualifiers = "en-port"
         , application = TestApplication.class)
 public class MainActivityTest {

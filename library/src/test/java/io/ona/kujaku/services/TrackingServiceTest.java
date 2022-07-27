@@ -46,8 +46,7 @@ import static org.robolectric.Shadows.shadowOf;
  * Created by Emmanuel Otin - eo@novel-t.ch 03/20/19.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        manifest = Config.NONE)
+@Config(manifest = Config.NONE)
 public class TrackingServiceTest {
 
     private Context context;

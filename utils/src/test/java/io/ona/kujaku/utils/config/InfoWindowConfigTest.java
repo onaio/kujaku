@@ -17,7 +17,7 @@ import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
  */
 
 @RunWith(RobolectricTestRunner.class)
-@org.robolectric.annotation.Config(constants = BuildConfig.class, manifest = org.robolectric.annotation.Config.NONE)
+@org.robolectric.annotation.Config(manifest = org.robolectric.annotation.Config.NONE)
 public class InfoWindowConfigTest {
 
     @Test
