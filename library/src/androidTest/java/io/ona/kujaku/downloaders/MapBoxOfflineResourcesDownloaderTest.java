@@ -1,6 +1,5 @@
 package io.ona.kujaku.downloaders;
 
-import android.app.Instrumentation;
 import android.content.Context;
 
 import com.mapbox.mapboxsdk.Mapbox;
