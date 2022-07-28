@@ -13,7 +13,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.0.4'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
-        classpath 'gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.10.2'
+        classpath 'gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
         //classpath 'com.palantir:jacoco-coverage:0.4.0'
         // NOTE: Do not place your application dependencies here; they belong
@@ -23,6 +23,7 @@ buildscript {
 
 //apply plugin: 'com.palantir.jacoco-full-report'
 apply plugin: 'com.github.kt3k.coveralls'
+
 
 allprojects {
     repositories {
@@ -43,10 +44,13 @@ allprojects {
         }*/
     }
 }
-
+/*
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+ */
+
+apply plugin: 'java'
 
 ext {
     supportVersion = '1.0.0'
@@ -59,7 +63,6 @@ ext {
     mapboxAnnotationPluginVersion = "0.6.0"
 }
 
-/*
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoFullReport/jacocoFullReport.xml"
     sourceDirs += ["utils/src/main/java"
@@ -67,14 +70,30 @@ coveralls {
                    , "sample/src/main/java"
                    , "wrapper/src/main/java"]
 }
-*/
 
-subprojects {
-    project.configurations.all {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'com.getkeepsafe.relinker') {
-                details.useVersion "1.2.2"
+task jacocoFullReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+
+    additionalSourceDirs.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories.from = files(subprojects.sourceSets.main.output)
+
+    List<File> executionDataPaths = new ArrayList<>()
+    for (subModule in subprojects) {
+        def jacocoTestReportTask = subModule.getTasksByName("jacocoTestReport", false)
+        jacocoTestReportTask.forEach({task ->
+            if (task instanceof JacocoReport) {
+                System.out.println("This is a JacocoReport task: " + task.name)
+                executionDataPaths.addAll((task as JacocoReport).executionData.getFiles())
             }
-        }
+        })
+    }
+
+    executionData.from = executionDataPaths
+
+    reports {
+        html.enabled true
+        xml.enabled true
     }
 }
+
