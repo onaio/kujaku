@@ -3,9 +3,6 @@ package io.ona.kujaku.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.UiThreadTestRule;
-import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -51,6 +48,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 05/11/2018
  */
@@ -59,14 +59,13 @@ import static org.junit.Assert.assertTrue;
 public class KujakuMapViewTest extends BaseTest {
 
     private KujakuMapTestView kujakuMapView;
-    @Rule
-    public UiThreadTestRule uiThreadTestRule = new UiThreadTestRule();
+
 
     @Before
     public void setUp() throws Throwable {
         Context context = InstrumentationRegistry.getTargetContext();
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 Mapbox.getInstance(context, "sample_token");
@@ -156,7 +155,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         LatLng latLng = new LatLng(14d, 23d);
         insertValueInPrivateField(KujakuMapView.class, kujakuMapView, "latestLocationCoordinates", latLng);
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 kujakuMapView.enableAddPoint(true, onLocationChanged);
@@ -402,7 +401,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         FeatureCollection featureCollection = FeatureCollection.fromFeatures(new ArrayList<Feature>());
 
-        uiThreadTestRule.runOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 accessedFromInnerClassObjects.add(new BoundaryLayer.Builder(featureCollection)
