@@ -58,7 +58,7 @@ ext {
     compileSdkVersion = 28
     volleyVersion = "1.1.0"
     targetSdkVersion = 27
-    jacocoVersion = "0.8.5"
+    jacocoVersion = "0.8.7"
     mapboxSdkVersion = "8.3.3"
     mapboxAnnotationPluginVersion = "0.6.0"
 }
@@ -78,6 +78,21 @@ task jacocoFullReport(type: JacocoReport, group: 'Coverage reports') {
     sourceDirectories.from = files(subprojects.sourceSets.main.allSource.srcDirs)
     classDirectories.from = files(subprojects.sourceSets.main.output)
 
+    def index = 0
+    for (dir in additionalSourceDirs) {
+        System.out.println( (index + 1) + ". " + dir.path)
+    }
+
+    index = 0
+    for (dir in sourceDirectories) {
+        System.out.println( (index + 1) + ". " + dir.path)
+    }
+
+    index = 0
+    for (dir in classDirectories) {
+        System.out.println( (index + 1) + ". " + dir.path)
+    }
+
     List<File> executionDataPaths = new ArrayList<>()
     for (subModule in subprojects) {
         def jacocoTestReportTask = subModule.getTasksByName("jacocoTestReport", false)
@@ -90,6 +105,9 @@ task jacocoFullReport(type: JacocoReport, group: 'Coverage reports') {
     }
 
     executionData.from = executionDataPaths
+
+    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoFullReport/merged.xml"))
+    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoFullReport/html"))
 
     reports {
         html.enabled true
