@@ -36,7 +36,8 @@ android {
         }
 
         debug {
-            testCoverageEnabled true
+            // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
+            testCoverageEnabled false
         }
     }
 
@@ -68,9 +69,11 @@ dependencies {
 
 tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
 }
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+// createDebugCoverageReport is not available when android.buildTypes.debug.testCoverageEnabled is false
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) { //, 'createDebugCoverageReport']) {
 
     reports {
         xml.enabled = true
@@ -82,7 +85,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
                       , 'android/**/*.*', "io/realm/*.*"]
-    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
     sourceDirectories.setFrom(files([mainSrc]))
@@ -90,6 +93,10 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ]))
+}
+
+task printTasks {
+    System.out.println("Jacoco version ${jacoco.toolVersion}")
 }
 
 // Add github packages, maven-central and sonatype publishing

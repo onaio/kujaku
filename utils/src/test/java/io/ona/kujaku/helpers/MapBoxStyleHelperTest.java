@@ -22,7 +22,6 @@ import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
  */
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
 public class MapBoxStyleHelperTest {
 
     /**
