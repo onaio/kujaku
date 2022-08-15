@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -17,6 +18,7 @@ import com.mapbox.mapboxsdk.maps.Style;
 import java.io.IOException;
 
 import io.ona.kujaku.layers.BoundaryLayer;
+import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.utils.IOUtil;
 import io.ona.kujaku.views.KujakuMapView;
@@ -39,6 +41,7 @@ public class FociBoundaryActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_fociBoundary_mapView);
         kujakuMapView.onCreate(savedInstanceState);

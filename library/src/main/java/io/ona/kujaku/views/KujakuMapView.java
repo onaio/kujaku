@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -213,25 +214,29 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     // private DrawingManager drawingManager = null ;
     public KujakuMapView(@NonNull Context context) {
         super(context);
-        init(null);
+        init(context, null);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(attrs);
+        init(context, attrs);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(attrs);
+        init(context, attrs);
     }
 
     public KujakuMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
         super(context, options);
-        init(null);
+        init(context, null);
     }
 
-    private void init(@Nullable AttributeSet attributeSet) {
+    private void init(@NonNull Context context, @Nullable AttributeSet attributeSet) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater.inflate(R.layout.mapbox_mapview_internal, this, true);
+
         PermissionsHelper.checkPermissions(TAG, getContext());
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);

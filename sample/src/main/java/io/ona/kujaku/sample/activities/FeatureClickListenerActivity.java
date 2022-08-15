@@ -15,6 +15,7 @@ import java.util.List;
 
 import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.listeners.OnFeatureClickListener;
+import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
@@ -30,8 +31,10 @@ public class FeatureClickListenerActivity extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_featureClickListenerActivity_mapView);
+        kujakuMapView.onCreate(savedInstanceState);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(@NonNull MapboxMap mapboxMap) {

@@ -1,0 +1,139 @@
+
+ant.condition(property: 'os', value: 'windows') {
+    os(family: 'windows')
+}
+ant.condition(property: 'os', value: 'unix') {
+    os(family: 'unix')
+}
+
+// Based on http://stackoverflow.com/questions/17097263#24121734
+def getMasterCommitCount = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            switch (ant.properties.os) {
+                case 'windows':
+                    commandLine 'cmd', '/c', 'git', 'rev-list', '--first-parent', '--count', 'master'
+                    break
+                case 'unix':
+                    commandLine 'git', 'rev-list', '--first-parent', '--count', 'origin/master'
+                    break
+            }
+            standardOutput = stdout
+        }
+        return Integer.parseInt(stdout.toString().trim())
+    } catch (ignored) {
+        return -1
+    }
+}
+
+def getVersionName = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            switch (ant.properties.os) {
+                case 'windows':
+                    commandLine 'cmd', '/c', 'git', 'describe', '--tags', '--dirty', '--always'
+                    break
+                case 'unix':
+                    commandLine 'git', 'describe', '--tags', '--dirty', '--always'
+                    break
+            }
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    } catch (ignored) {
+        return null
+    }
+}
+
+ext.getMasterCommitCount = getMasterCommitCount
+ext.getVersionName = getVersionName
+
+
+// LOAD PROPERTIES FILE
+Properties properties = new Properties()
+String[] propertyKeys = ["cgr.username", "cgr.password", "cgr.url", "mapbox.sdk.token", "mapbox.repo.token"]
+
+
+if (project.rootProject.file("local.properties").exists()) {
+    properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
+    if (properties != null) {
+        boolean containsAllKeys = true
+        ArrayList<String> missingKeys = new ArrayList<>()
+
+        for (String propertyKey: propertyKeys) {
+            if (!properties.containsKey(propertyKey)) {
+                missingKeys.add(propertyKey)
+                containsAllKeys = false
+            }
+        }
+
+        if (!containsAllKeys) {
+            println(("One of the required config variables is not set in your local.properties. Make sure you have " + missingKeys.join(", ")))
+        }
+    } else {
+        println("Properties was null!! The file does not exist or contains nothing")
+    }
+} else {
+    println("local.properties does not exist")
+}
+
+if (properties == null) {
+    properties = new Properties()
+}
+
+for (String propertyKey: propertyKeys) {
+    if (!properties.containsKey(propertyKey)) {
+        properties.put(propertyKey, "\"\"")
+    }
+}
+
+ext.localProperties = properties
+
+
+/**
+
+ Dependencies
+
+
+ */
+
+ext {
+    supportVersion = '1.0.0'
+    buildToolsVersion = "30.0.2"
+    compileSdkVersion = 28
+    volleyVersion = "1.2.0"
+    targetSdkVersion = 27
+    jacocoVersion = "0.8.8"
+    mapboxSdkVersion = "9.7.1"
+    mapboxAnnotationPluginVersion = "0.6.0"
+
+    mapboxSDK = "com.mapbox.mapboxsdk:mapbox-android-sdk:$mapboxSdkVersion"
+    mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0"
+    mapboxAnnotationPlugin = "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:$mapboxAnnotationPluginVersion"
+}
+
+
+//ext.mapboxSDK = "com.mapbox.maps:android:10.7.0"
+
+ext.mapboxDependencies = { instance, configuration ->
+
+    configuration.implementation("com.mapbox.maps:android:$mapboxSdkVersion") {
+        transitive = true;
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.android.support', module: 'support-fragment'
+    }
+
+
+    // The local build has an issue fetching this library for some reason which
+    // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
+    // a runtime dependency
+    configuration.implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
+    configuration.implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${instance.mapboxAnnotationPluginVersion}"
+
+}
+
+//ext.mapboxDependencies = mapboxDependencies

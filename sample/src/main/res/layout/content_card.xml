@@ -20,6 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".activities.CardActivity">
+
             <io.ona.kujaku.views.KujakuMapView
                 android:id="@+id/card_activity_map_view"
                 android:layout_marginEnd="8dp"
@@ -37,6 +38,7 @@
                 app:mapbox_uiLogoGravity="right|bottom"
                 app:mapbox_uiLogoMarginRight="30dp"
                 app:mapbox_uiAttributionGravity="right|end|bottom"/>
+
             <ImageButton
                 android:id="@+id/map_view_hamburger_menu"
                 app:layout_constraintTop_toTopOf="parent"

@@ -13,6 +13,7 @@ import com.mapbox.mapboxsdk.maps.Style;
 
 import org.json.JSONObject;
 
+import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
@@ -24,6 +25,7 @@ public class LowLevelManualAddPointMapView extends BaseNavigationDrawerActivity 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_lowLevelManualAddPointMapView_mapView);
         kujakuMapView.onCreate(savedInstanceState);

@@ -25,6 +25,7 @@ public class ConfigurableLocationCircleActivity extends BaseNavigationDrawerActi
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.configurable_circle_activity_map_view);
+        kujakuMapView.onCreate(savedInstanceState);
         kujakuMapView.showCurrentLocationBtn(true);
 
         Button btnIncreaseCircleRadius = findViewById(R.id.btn_increase_circle_radius);

@@ -31,6 +31,7 @@ public class WmtsActivity extends BaseNavigationDrawerActivity {
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.wmts_mapView);
+        kujakuMapView.onCreate(savedInstanceState);
 
         WmtsCapabilitiesService wmtsService = new WmtsCapabilitiesService(getString(R.string.wmts_capabilities_url));
         wmtsService.requestData();

@@ -3,7 +3,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 
-version '0.8.0'
+version '0.9.0'
 project.version = this.version
 
 
@@ -52,7 +52,7 @@ dependencies {
     })
     implementation 'androidx.appcompat:appcompat:1.0.0'
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
-    implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}") {
+    implementation (mapboxSDK) {
         transitive = true
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
@@ -61,7 +61,8 @@ dependencies {
     // The local build has an issue fetching this library for some reason which
     // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
     // a runtime dependency
-    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
+    implementation mapboxSDKTurf
+    //implementation mapboxAnnotationPlugin
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:4.3.1'
