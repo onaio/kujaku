@@ -183,7 +183,7 @@ public class KujakuMapViewTest extends BaseTest {
         assertEquals(View.GONE, addBtn.getVisibility());
         kujakuMapView.addPoint(false, new AddPointCallback() {
             @Override
-            public void onPointAdd(JSONObject jsonObject) {
+            public void onPointAdd(JSONObject featureGeoJSON) {
                 // Do nothing
             }
 
@@ -210,7 +210,7 @@ public class KujakuMapViewTest extends BaseTest {
 
         kujakuMapView.addPoint(false, new AddPointCallback() {
             @Override
-            public void onPointAdd(JSONObject jsonObject) {
+            public void onPointAdd(JSONObject featureGeoJSON) {
                 states.put(isPointAddCalled, true);
             }
 

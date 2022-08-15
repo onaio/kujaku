@@ -12,6 +12,7 @@ import com.mapbox.mapboxsdk.maps.Style;
 import org.json.JSONObject;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
+import io.ona.kujaku.sample.BuildConfig;
 import io.ona.kujaku.sample.R;
 import io.ona.kujaku.views.KujakuMapView;
 
@@ -25,13 +26,14 @@ public class HighLevelMapView extends BaseNavigationDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.kmv_highLevelMapView_mapView);
         kujakuMapView.onCreate(savedInstanceState);
         kujakuMapView.addPoint(false, new AddPointCallback() {
             @Override
-            public void onPointAdd(JSONObject jsonObject) {
-                Log.d(TAG, jsonObject.toString());
+            public void onPointAdd(JSONObject featureGeoJSON) {
+                Log.d(TAG, featureGeoJSON.toString());
             }
 
             @Override

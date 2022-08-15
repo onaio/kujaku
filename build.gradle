@@ -22,13 +22,18 @@ buildscript {
 }
 
 apply plugin: 'com.github.kt3k.coveralls'
-
+apply from: 'configs.gradle'
 
 allprojects {
     repositories {
         google()
         jcenter()
-        /*maven {
+        mavenLocal()
+        maven { url "https://jitpack.io" }
+        maven {
+            url "https://dl.cloudsmith.io/public/terraframe/geoprism-registry/maven/"
+        }
+        maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {
                 basic(BasicAuthentication)
@@ -38,10 +43,11 @@ allprojects {
                 // This should always be `mapbox` (not your username).
                 username = "mapbox"
                 // Use the secret token you stored in gradle.properties as the password
-                password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+                password = localProperties['mapbox.repo.token'] ?: ""
             }
-        }*/
+        }
     }
+
 }
 /*
 task clean(type: Delete) {
@@ -50,17 +56,6 @@ task clean(type: Delete) {
  */
 
 apply plugin: 'java'
-
-ext {
-    supportVersion = '1.0.0'
-    buildToolsVersion = "30.0.2"
-    compileSdkVersion = 28
-    volleyVersion = "1.1.0"
-    targetSdkVersion = 27
-    jacocoVersion = "0.8.8"
-    mapboxSdkVersion = "8.3.3"
-    mapboxAnnotationPluginVersion = "0.6.0"
-}
 
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoFullReport/jacocoFullReport.xml"

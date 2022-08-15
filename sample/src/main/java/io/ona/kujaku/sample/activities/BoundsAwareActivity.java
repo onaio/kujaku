@@ -44,6 +44,8 @@ public class BoundsAwareActivity extends BaseNavigationDrawerActivity {
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
 
         kujakuMapView = findViewById(R.id.bounds_aware_activity_map_view);
+        kujakuMapView.onCreate(savedInstanceState);
+
         kujakuMapView.setBoundsChangeListener(new BoundsChangeListener() {
             @Override
             public void onBoundsChanged(LatLng topLeft, LatLng topRight, LatLng bottomRight, LatLng bottomLeft) {

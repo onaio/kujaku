@@ -9,11 +9,12 @@ import org.json.JSONObject;
 public interface AddPointCallback {
 
     /**
-     * Called when the user selects a specific point on the UI.
+     * Called when the user selects a specific point on the UI. A JSONObject of the Feature
+     * is returned to the application
      *
-     * @param jsonObject
+     * @param featureGeoJSON
      */
-    void onPointAdd(JSONObject jsonObject);
+    void onPointAdd(JSONObject featureGeoJSON);
 
     /**
      * This method is called if & when the user cancels the <strong>Add Point</strong> operation.

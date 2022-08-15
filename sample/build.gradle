@@ -1,105 +1,6 @@
-allprojects {
-    repositories {
-        maven { url "https://dl.google.com/dl/android/maven2/" }
-        maven { url "https://jitpack.io" }
-        maven {
-            url "https://dl.cloudsmith.io/public/terraframe/geoprism-registry/maven/"
-        }
-        mavenLocal()
-        //mavenCentral()
-    }
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
 apply plugin: 'com.google.firebase.crashlytics'
-
-
-ant.condition(property: 'os', value: 'windows') {
-    os(family: 'windows')
-}
-ant.condition(property: 'os', value: 'unix') {
-    os(family: 'unix')
-}
-
-// Based on http://stackoverflow.com/questions/17097263#24121734
-def getMasterCommitCount = { ->
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            switch (ant.properties.os) {
-                case 'windows':
-                    commandLine 'cmd', '/c', 'git', 'rev-list', '--first-parent', '--count', 'master'
-                    break
-                case 'unix':
-                    commandLine 'git', 'rev-list', '--first-parent', '--count', 'origin/master'
-                    break
-            }
-            standardOutput = stdout
-        }
-        return Integer.parseInt(stdout.toString().trim())
-    } catch (ignored) {
-        return -1
-    }
-}
-
-def getVersionName = { ->
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            switch (ant.properties.os) {
-                case 'windows':
-                    commandLine 'cmd', '/c', 'git', 'describe', '--tags', '--dirty', '--always'
-                    break
-                case 'unix':
-                    commandLine 'git', 'describe', '--tags', '--dirty', '--always'
-                    break
-            }
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    } catch (ignored) {
-        return null
-    }
-}
-
-// LOAD PROPERTIES FILE
-Properties properties = new Properties()
-String[] propertyKeys = ["cgr.username", "cgr.password", "cgr.url", "mapbox.sdk.token"]
-
-if (project.rootProject.file("local.properties").exists()) {
-    properties.load(project.rootProject.file("local.properties").newDataInputStream())
-
-    if (properties != null) {
-        boolean containsAllKeys = true
-
-        for (String propertyKey: propertyKeys) {
-            if (!properties.containsKey(propertyKey)) {
-                containsAllKeys = false;
-                break
-            }
-        }
-
-        if (!containsAllKeys) {
-            println(("One of the required config variables is not set in your local.properties. Make sure you have " + propertyKeys.join(", ")))
-        }
-    } else {
-        println("Properties was null!! The file does not exist or contains nothing")
-    }
-} else {
-    println("local.properties does not exist")
-}
-
-if (properties == null) {
-    properties = new Properties();
-}
-
-for (String propertyKey: propertyKeys) {
-    if (!properties.containsKey(propertyKey)) {
-        properties.put(propertyKey, "\"\"")
-    }
-}
-
 
 jacoco {
     toolVersion = jacocoVersion
@@ -131,20 +32,20 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
-            buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
-            buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
-            buildConfigField "String", "CGR_URL", properties["cgr.url"]
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+            buildConfigField "String", "CGR_USERNAME", localProperties["cgr.username"]
+            buildConfigField "String", "CGR_PASSWORD", localProperties["cgr.password"]
+            buildConfigField "String", "CGR_URL", localProperties["cgr.url"]
             buildConfigField "long", "MAPBOX_DOWNLOAD_TILE_LIMIT", "6001"
         }
 
         debug {
             // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
             testCoverageEnabled false
-            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", properties["mapbox.sdk.token"]
-            buildConfigField "String", "CGR_USERNAME", properties["cgr.username"]
-            buildConfigField "String", "CGR_PASSWORD", properties["cgr.password"]
-            buildConfigField "String", "CGR_URL", properties["cgr.url"]
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+            buildConfigField "String", "CGR_USERNAME", localProperties["cgr.username"]
+            buildConfigField "String", "CGR_PASSWORD", localProperties["cgr.password"]
+            buildConfigField "String", "CGR_URL", localProperties["cgr.url"]
             buildConfigField "long", "MAPBOX_DOWNLOAD_TILE_LIMIT", "6001"
         }
     }
@@ -211,16 +112,16 @@ private static void libraryModuleDevelopment(instance, configuration) {
         exclude group: 'org.jacoco'
     }
 
-    configuration.implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:${instance.mapboxSdkVersion}") {
+    configuration.implementation(instance.mapboxSDK) {
         transitive = true;
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'
     }
 
-    configuration.implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
+    configuration.implementation instance.mapboxSDKTurf
 
-    configuration.implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${instance.mapboxAnnotationPluginVersion}"
+    configuration.implementation instance.mapboxAnnotationPlugin
 }
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK

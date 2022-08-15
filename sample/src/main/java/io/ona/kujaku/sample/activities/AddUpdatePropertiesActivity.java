@@ -52,7 +52,9 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN);
+
         kujakuMapView = findViewById(R.id.add_update_activity_map_view);
+        kujakuMapView.onCreate(savedInstanceState);
 
         // initializeFromGenericLayer(); // Uncomment this to use a generic layer
         // setListeners(false); // Uncomment this to use a generic layer
