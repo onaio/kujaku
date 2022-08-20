@@ -22,6 +22,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Create local.properties file
+        run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
       - name: Print Java version
         run: java -version
       - name: Grant execute permission for gradlew
@@ -38,7 +40,7 @@ jobs:
           api-level: 22
           script: ./gradlew connectedDebug --stacktrace
       - name: Run jacocoTestReport for each module
-        run: ./gradlew jacocoTestReport --stacktrace
+        run: ./gradlew jacocoTestReport --stacktrace --info
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle

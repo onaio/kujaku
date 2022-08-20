@@ -46,6 +46,7 @@ import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
+import timber.log.Timber;
 
 import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
 import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
@@ -190,8 +191,17 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 }
             }
         });
+
+        recursive(1);
     }
 
+    private void recursive(int count) {
+        if ((count % 100) == 0) {
+            Timber.i("This is call " + count);
+        }
+
+        recursive(count + 1);
+    }
 
     private void fetchDroppedPoints(OnFinishedListener onFinishedListener) {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
