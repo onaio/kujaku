@@ -145,11 +145,11 @@ private static void testDependencies(instance, configuration) {
     configuration.testImplementation instance.robolectric
     configuration.testImplementation instance.robolectricShadowsMultidex
 
-    configuration.testImplementation 'org.mockito:mockito-inline:4.6.1'
+    configuration.testImplementation 'org.mockito:mockito-inline:2.25.0'
 
     configuration.testImplementation instance.androidxTestCore
     configuration.androidTestImplementation instance.junit
-    configuration.androidTestImplementation 'org.mockito:mockito-android:4.6.1'
+    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
     configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'net.sf.kxml', module: 'kxml2'

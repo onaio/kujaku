@@ -8,7 +8,6 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.annotation.Config;
 
