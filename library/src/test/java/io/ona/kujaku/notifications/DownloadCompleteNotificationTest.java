@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import androidx.annotation.RequiresApi;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowNotification;
