@@ -14,7 +14,7 @@ jobs:
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -30,6 +30,8 @@ jobs:
         run: chmod +x gradlew
       - name: Git show commit count
         run: git fetch origin master && git rev-list --first-parent --count origin/master
+      - name: Download Robolectric deps
+        run: chmod +x download-robolectric-deps.sh && ./download-robolectric-deps.sh
       - name: Clean project
         run: ./gradlew clean --stacktrace
       - name: Build project skipping tests

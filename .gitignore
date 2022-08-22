@@ -12,3 +12,7 @@
 
 **/jacoco.exec
 **/*-journal
+
+# Robolectric dependencies
+robolectric-deps/
+**/robolectric-deps.properties

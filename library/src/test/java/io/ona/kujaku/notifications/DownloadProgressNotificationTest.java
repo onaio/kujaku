@@ -7,6 +7,7 @@ import android.content.Intent;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
