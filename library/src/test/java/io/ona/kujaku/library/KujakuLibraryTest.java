@@ -1,6 +1,7 @@
 package io.ona.kujaku.library;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -13,19 +14,21 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowContextWrapper;
 
 import java.util.ArrayList;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.TestApplication;
 import io.ona.kujaku.activities.MapActivity;
 import io.ona.kujaku.helpers.ActivityLauncherHelper;
 import io.ona.kujaku.test.shadows.ShadowConnectivityReceiver;
 
 import static junit.framework.Assert.assertEquals;
-import static org.robolectric.Shadows.shadowOf;
+import androidx.test.core.app.ApplicationProvider;
 
 /**
  * @author Vincent Karuri
@@ -43,19 +46,20 @@ public class KujakuLibraryTest {
 
     @Before
     public void setupBeforeTest() {
-        Mapbox.getInstance(RuntimeEnvironment.application, "some-access-token");
+        Mapbox.getInstance(ApplicationProvider.getApplicationContext(), "some-access-token");
         activity = Robolectric.buildActivity(Activity.class).create().get();
     }
 
     @Test
     public void testMethodLaunchMapActivityShouldSuccessfullyLaunchMapActivity() throws InterruptedException {
             ActivityLauncherHelper.launchMapActivity(activity, Mapbox.getAccessToken(), new ArrayList<>(), true);
-            Thread.sleep(5000l);
+            Thread.sleep(5000L);
 
             Robolectric.getForegroundThreadScheduler().runOneTask(); // flush foreground job to allow AsyncTask's onPostExecute to run
 
             Intent expectedIntent = new Intent(activity, MapActivity.class);
-            Intent actualIntent = shadowOf(RuntimeEnvironment.application).getNextStartedActivity();
+
+            Intent actualIntent = Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext()).getNextStartedActivity();
             assertEquals(expectedIntent.getComponent(), actualIntent.getComponent());
     }
 }

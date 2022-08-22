@@ -79,7 +79,7 @@ public class DrawingManager {
 
         circleManager.addClickListener(new OnCircleClickListener() {
             @Override
-            public void onAnnotationClick(Circle circle) {
+            public boolean onAnnotationClick(Circle circle) {
                 if (drawingEnabled) {
                     unsetCurrentCircleDraggable();
                     setDraggable(!circle.isDraggable(), circle);
@@ -88,6 +88,8 @@ public class DrawingManager {
                         onDrawingCircleClickListener.onCircleClick(circle);
                     }
                 }
+
+                return false;
             }
         });
 
@@ -114,7 +116,7 @@ public class DrawingManager {
 
                 if (!editBoundaryMode) {
                     final PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
-                    List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, CircleManager.ID_GEOJSON_LAYER);
+                    List<Feature> features = mapboxMap.queryRenderedFeatures(pixel, (Expression) null, circleManager.getLayerId());
 
                     if (features.size() == 0 && drawingEnabled) {
                         if (getCurrentKujakuCircle() != null) {

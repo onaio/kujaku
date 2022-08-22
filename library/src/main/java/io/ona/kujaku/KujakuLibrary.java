@@ -24,6 +24,7 @@ import io.ona.kujaku.utils.Constants;
 import timber.log.Timber;
 
 import static android.content.Context.ALARM_SERVICE;
+import static timber.log.Timber.DebugTree;
 
 /**
  * @author Vincent Karuri
@@ -62,7 +63,7 @@ public class KujakuLibrary {
         AndroidThreeTen.init(context);
 
         if (Timber.treeCount() < 1) {
-            Timber.plant(new Timber.DebugTree());
+            timber.log.Timber.plant(new DebugTree());
         }
     }
 

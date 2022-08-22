@@ -64,8 +64,8 @@ dependencies {
     implementation mapboxSDKTurf
     //implementation mapboxAnnotationPlugin
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation junit
+    testImplementation robolectric
 }
 
 tasks.withType(Test) {
