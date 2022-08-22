@@ -72,7 +72,7 @@ The library offers a view `KujakuMapView` that provides more functionality than 
 - For Mapbox related functionality, [go here](https://docs.mapbox.com/android/maps/overview/)
 - For extra features provided by this library [go here](./SPECIFICATION.md)
 
-#### `Unable to resolve artifact: Missing` while running tests
+## `Unable to resolve artifact: Missing` while running tests
 
 This is encountered when Robolectric has problems downloading the jars it needs for different Android SDK levels. If you keep running into this you can download the JARs locally and point Robolectric to them by doing:
 

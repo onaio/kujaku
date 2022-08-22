@@ -1,3 +1,4 @@
+#!/bin/sh
 mkdir robolectric-deps
 wget -nc https://repo1.maven.org/maven2/org/robolectric/android-all/10-robolectric-5803371/android-all-10-robolectric-5803371.jar -P robolectric-deps
 wget -nc https://repo1.maven.org/maven2/org/robolectric/android-all/8.1.0-robolectric-4611349/android-all-8.1.0-robolectric-4611349.jar -P robolectric-deps

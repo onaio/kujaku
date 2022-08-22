@@ -28,7 +28,6 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import io.ona.kujaku.BaseTest;
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.listeners.IncompleteMapDownloadCallback;
 import io.ona.kujaku.listeners.OnDownloadMapListener;

@@ -63,7 +63,7 @@ public class KujakuLibrary {
         AndroidThreeTen.init(context);
 
         if (Timber.treeCount() < 1) {
-            timber.log.Timber.plant(new DebugTree());
+            Timber.plant(new DebugTree());
         }
     }
 
