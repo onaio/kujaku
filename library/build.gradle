@@ -64,7 +64,7 @@ android {
 
         debug {
             // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
-            testCoverageEnabled false
+            testCoverageEnabled true
 
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
@@ -200,7 +200,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) { //
     sourceDirectories.setFrom([mainSrc])
     classDirectories.setFrom(files([debugTree]))
     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec', 'outputs/code_coverage/**/connected/**/*coverage.ec'
     ]))
 }
 
