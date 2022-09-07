@@ -36,11 +36,15 @@ jobs:
         run: ./gradlew clean --stacktrace
       - name: Build project skipping tests
         run: ./gradlew build -x test --stacktrace
+      - name: Enable test coverage for all modules for instrumentation tests
+        run: sed -i '' 's/testCoverageEnabled false/testCoverageEnabled true/g' library/build.gradle && sed -i '' 's/testCoverageEnabled false/testCoverageEnabled true/g' utils/build.gradle && sed -i '' 's/testCoverageEnabled false/testCoverageEnabled true/g' sample/build.gradle && sed -i '' 's/testCoverageEnabled false/testCoverageEnabled true/g' wrapper/build.gradle
       - name: Run Instrumented Tests manually
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 22
+          api-level: 24
           script: ./gradlew connectedDebug --stacktrace
+      - name: Disable test coverage for all modules
+        run: sed -i '' 's/testCoverageEnabled true/testCoverageEnabled false/g' library/build.gradle && sed -i '' 's/testCoverageEnabled true/testCoverageEnabled false/g' utils/build.gradle && sed -i '' 's/testCoverageEnabled true/testCoverageEnabled false/g' sample/build.gradle && sed -i '' 's/testCoverageEnabled true/testCoverageEnabled false/g' wrapper/build.gradle
       - name: Run jacocoTestReport for each module
         run: ./gradlew jacocoTestReport --stacktrace --info
       - name: Merge jacoco reports from all modules

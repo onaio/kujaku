@@ -78,6 +78,7 @@ This is encountered when Robolectric has problems downloading the jars it needs 
 
 ```
 ./download-robolectric-deps.sh
+```
 
 ## License
 
