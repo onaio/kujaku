@@ -1,0 +1,47 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Library Snapshot Release
+
+on:
+  push:
+    tags:
+      - library v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT
+      - library v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-SNAPSHOT
+      - library v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+-SNAPSHOT
+env:
+  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }} 
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Run unit tests with Gradle
+        run: ./gradlew :utils:clean :utils:testDebugUnitTest --stacktrace
+ 
+      - name: Generate & upload library snapshot artifact AAR (Android Archive) file
+        run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
+
+      - name: Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}

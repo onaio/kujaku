@@ -24,7 +24,7 @@ task javadocJar(type: Jar, dependsOn: javaDoc) {
  * @return
  */
 def getOSSRHRepositoryPassword() {
-    return hasProperty('ossrhPassword') ? ossrhPassword : ""
+    return hasProperty('ossrhPassword') ? ossrhPassword : System.getenv("OSSRH_PASSWORD") != null ? System.getenv("OSSRH_PASSWORD") : ""
 }
 
 /**
@@ -32,7 +32,7 @@ def getOSSRHRepositoryPassword() {
  * @return
  */
 def getOSSRHRepositoryUsername() {
-    return hasProperty('ossrhUsername') ? ossrhUsername : ""
+    return hasProperty('ossrhUsername') ? ossrhUsername : System.getenv("OSSRH_USERNAME") != null ? System.getenv("OSSRH_USERNAME") : ""
 }
 
 def getGithubPublishUsername() {
