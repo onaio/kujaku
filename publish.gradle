@@ -36,11 +36,11 @@ def getOSSRHRepositoryUsername() {
 }
 
 def getGithubPublishUsername() {
-    return hasProperty('githubUsername') ? githubUsername: ""
+    return hasProperty('githubUsername') ? githubUsername : System.getenv("GITHUB_USERNAME") != null ? System.getenv("GITHUB_USERNAME") : ""
 }
 
 def getGithubPackagesAccessToken() {
-    return hasProperty('githubAccessToken') ? githubAccessToken: ""
+    return hasProperty('githubAccessToken') ? githubAccessToken : System.getenv("GITHUB_ACCESS_TOKEN") != null ? System.getenv("GITHUB_ACCESS_TOKEN") : ""
 }
 
 def getDate() {
@@ -163,6 +163,7 @@ publishing {
 }
 
 signing {
+    required !version.contains("SNAPSHOT")
     sign(publishing.publications['mavenJava'])
 }
 

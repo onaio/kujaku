@@ -6,12 +6,14 @@ name: Library Snapshot Release
 on:
   push:
     tags:
-      - library v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT
-      - library v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-SNAPSHOT
-      - library v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+-SNAPSHOT
+      - library-v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT
+      - library-v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-SNAPSHOT
+      - library-v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+-SNAPSHOT
 env:
   OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
   OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  GITHUB_USERNAME: ${{ github.actor }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   release:
@@ -40,6 +42,9 @@ jobs:
  
       - name: Generate & upload library snapshot artifact AAR (Android Archive) file
         run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
+
+      - name: Generate & upload library snapshot artifact AAR (Android Archive) file to Github Packages
+        run: ./gradlew :library:publishMavenJavaPublicationToGithubPackagesRepository --stacktrace
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
