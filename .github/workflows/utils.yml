@@ -1,17 +1,19 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Library Snapshot Release
+name: Utils Snapshot Release
 
 on:
   push:
     tags:
-      - utils v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT
-      - utils v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-SNAPSHOT
-      - utils v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+-SNAPSHOT
+      - utils-v[0-9]+.[0-9]+.[0-9]+-SNAPSHOT
+      - utils-v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-SNAPSHOT
+      - utils-v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+-SNAPSHOT
 env:
   OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
   OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  GITHUB_USERNAME: ${{ github.actor }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   release:
@@ -31,15 +33,39 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      
+
+      - name: Create local.properties file
+        run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
+
+      - name: Print Java version
+        run: java -version
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
-      - name: Run unit tests with Gradle
-        run: ./gradlew :utils:clean :utils:testDebugUnitTest --stacktrace
 
-      - name: Generate & upload library snapshot artifact AAR (Android Archive) file
+      - name: Git show commit count
+        run: git fetch origin master && git rev-list --first-parent --count origin/master
+
+      - name: Download Robolectric deps
+        run: chmod +x download-robolectric-deps.sh && ./download-robolectric-deps.sh
+
+      - name: Clean project
+        run: ./gradlew clean --stacktrace
+
+      - name: Build project skipping tests
+        run: ./gradlew build -x test --stacktrace
+
+      - name: Run Instrumented Tests manually
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 22
+          script: ./gradlew :utils:connectedDebug --stacktrace
+
+      - name: Generate & upload utils snapshot artifact AAR (Android Archive) file to Sonatype
         run: ./gradlew :utils:clean --stacktrace && ./gradlew :utils:assembleRelease --stacktrace && ./gradlew :utils:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
+
+      - name: Generate & upload utils snapshot artifact AAR (Android Archive) file to Github Packages
+        run: ./gradlew :utils:publishMavenJavaPublicationToGithubPackagesRepository --stacktrace
 
       - name: Github Release
         uses: softprops/action-gh-release@v1
