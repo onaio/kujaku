@@ -59,7 +59,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 22
-          script: ./gradlew :library:connectedDebug --stacktrace
+          script: ./gradlew :library:connectedDebug --stacktrace --info
       
       - name: Run unit tests with Gradle
         run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
