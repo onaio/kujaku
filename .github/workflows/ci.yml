@@ -40,7 +40,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 22
-          script: ./gradlew connectedDebug --stacktrace
+          script: ./gradlew connectedDebug --stacktrace --info
       - name: Run jacocoTestReport for each module
         run: ./gradlew jacocoTestReport --stacktrace --info
       - name: Merge jacoco reports from all modules
