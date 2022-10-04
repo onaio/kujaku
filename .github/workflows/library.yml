@@ -33,12 +33,36 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      
+
+      - name: Create local.properties file
+        run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
+
+      - name: Print Java version
+        run: java -version
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Git show commit count
+        run: git fetch origin master && git rev-list --first-parent --count origin/master
+
+      - name: Download Robolectric deps
+        run: chmod +x download-robolectric-deps.sh && ./download-robolectric-deps.sh
+
+      - name: Clean project
+        run: ./gradlew clean --stacktrace
+
+      - name: Build project skipping tests
+        run: ./gradlew build -x test --stacktrace
+
+      - name: Run Instrumented Tests manually
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 22
+          script: ./gradlew :library:connectedDebug --stacktrace
       
       - name: Run unit tests with Gradle
-        run: ./gradlew :utils:clean :utils:testDebugUnitTest --stacktrace
+        run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
  
       - name: Generate & upload library snapshot artifact AAR (Android Archive) file
         run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
