@@ -25,25 +25,23 @@ A mapping and check-in library for Android using **MapBox SDK (Version 8.3.3)**
 
 For instructions on how to run the sample app see [these instructions](./sample/README.md).
 
-### Importing the Library
-
 ### How to publish artifacts
 
 You can easily publish a snapshot artefact by creating a tag for the library or util module. Follow the steps below:
 
 #### To publish the utils module
-1. Update the `utils` version in this file `utils\build.gradle` in the format `X.Y.Z-SNAPSHOT` where X, Y and Z should be replaced with the version numbers of the major vesion, minor version and build versions respectively. 
-2. Create a PR with the change and have it merged
-3. Generate a tag with the title `utils-vX.Y.X-SNAPSHOT` and push it. This will trigger a publish of the artefact snapshot version to Sonatype and Github packages
+1.  Update the `utils` version in this file `utils\build.gradle` in the format `X.Y.Z-SNAPSHOT` where X, Y and Z should be replaced with the version numbers of the major vesion, minor version and build versions respectively. 
+2.  Create a PR with the change and have it merged
+3.  Generate a tag with the title `utils-vX.Y.X-SNAPSHOT` and push it. This will trigger a publish of the artefact snapshot version to Sonatype and Github packages
 
 #### To publish the library module
 
-1. Follow the steps above to get the latest version of `utils` as a dependency in your library snapshot
-2. Update the `library` version in this file `library\build.gradle` in the format `X.Y.Z-SNAPSHOT` where X, Y and Z should be replaced with the version numbers of the major vesion, minor version and build versions respectively. 
-2. Create a PR with the change and have it merged
-3. Generate a tag with the title `library-vX.Y.X-SNAPSHOT` and push it. This will trigger a publish of the artefact snapshot version to Sonatype and Github packages
+1.  Follow the steps above to get the latest version of `utils` as a dependency in your library snapshot
+2.  Update the `library` version in this file `library\build.gradle` in the format `X.Y.Z-SNAPSHOT` where X, Y and Z should be replaced with the version numbers of the major vesion, minor version and build versions respectively. 
+3.  Create a PR with the change and have it merged
+4.  Generate a tag with the title `library-vX.Y.X-SNAPSHOT` and push it. This will trigger a publish of the artefact snapshot version to Sonatype and Github packages
 
-- Due to the sunsetting of JFrog Bintray, Kujaku artefacts/release are no longer available on bintray and all publishing is done to Maven Central. Some of the packages are also published to Github packages.
+Due to the sunsetting of JFrog Bintray, Kujaku artefacts/release are no longer available on bintray and all publishing is done to Maven Central. Some of the packages are also published to Github packages.
 
 ## How to import the library
 
@@ -80,11 +78,29 @@ dependencies {
 }
 ```
 
+3.  Initialise the library
+
+This can be done in the Application class
+
+```
+KujakuLibrary.init(this);
+```
+
+4.  Set the Mapbox key
+
+This is required before any use of the library such as offline map downloads or viewing a map
+
+```
+Mapbox.getInstance(context, "ACCESS-TOKEN");
+```
+
 ## How to use the library
 
 The library offers a view `KujakuMapView` that provides more functionality than Mapbox. 
-- For Mapbox related functionality, [go here](https://docs.mapbox.com/android/maps/overview/)
-- For setup information and extra features provided by this library [go here](./SPECIFICATION.md)
+*   For Mapbox related functionality, [go here](https://docs.mapbox.com/android/maps/overview/)
+*   For setup information and extra features provided by this library [go here](./SPECIFICATION.md)
+
+
 
 ## `Unable to resolve artifact: Missing` while running tests
 
@@ -92,6 +108,7 @@ This is encountered when Robolectric has problems downloading the jars it needs 
 
 ```
 ./download-robolectric-deps.sh
+```
 
 ## License
 
