@@ -191,16 +191,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                 }
             }
         });
-
-        recursive(1);
-    }
-
-    private void recursive(int count) {
-        if ((count % 100) == 0) {
-            Timber.i("This is call " + count);
-        }
-
-        recursive(count + 1);
     }
 
     private void fetchDroppedPoints(OnFinishedListener onFinishedListener) {
