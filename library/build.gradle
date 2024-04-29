@@ -173,7 +173,7 @@ private static void appPermissionsDependencies(configuration) {
 }
 
 private static void locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-location:19.0.1'
+    configuration.implementation 'com.google.android.gms:play-services-location:21.2.0'
 }
 
 tasks.withType(Test) {
