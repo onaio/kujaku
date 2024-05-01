@@ -13,4 +13,3 @@ wget -nc https://repo1.maven.org/maven2/org/robolectric/android-all/11-robolectr
 cp robolectric-deps.properties library/src/test/resources
 cp robolectric-deps.properties utils/src/test/resources
 cp robolectric-deps.properties sample/src/test/resources
-cp robolectric-deps.properties wrapper/src/test/resources
