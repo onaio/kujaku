@@ -3,6 +3,7 @@ apply plugin: 'jacoco'
 
 buildscript {
     repositories {
+        mavenCentral()
         jcenter()
     }
     dependencies {
@@ -14,7 +15,7 @@ apply plugin: 'realm-android'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-version '0.10.0'
+version '0.10.2-SNAPSHOT'
 
 project.version = this.version
 
@@ -33,7 +34,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
@@ -118,7 +119,7 @@ dependencies { configuration ->
     // Comment the line below when creating releases - The line is for development of the library & utils
     implementation (project(":utils")) {
     // Uncomment the line below when creating releases
-    //implementation('io.ona.kujaku:utils:0.9.0') {
+    //implementation('io.ona.kujaku:utils:0.10.2-SNAPSHOT') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
@@ -173,7 +174,7 @@ private static void appPermissionsDependencies(configuration) {
 }
 
 private static void locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-location:19.0.1'
+    configuration.implementation 'com.google.android.gms:play-services-location:21.2.0'
 }
 
 tasks.withType(Test) {

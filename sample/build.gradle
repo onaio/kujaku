@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId "io.ona.kujaku.sample"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode getMasterCommitCount()
         versionName getVersionName()
