@@ -38,8 +38,7 @@ jobs:
         run: ./gradlew build -x test --stacktrace
       - name: Run Instrumented Tests manually
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
-          working-directory: android
+        with:
           api-level: 22
           arch: x86_64
           force-avd-creation: true
