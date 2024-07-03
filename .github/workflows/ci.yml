@@ -38,8 +38,13 @@ jobs:
         run: ./gradlew build -x test --stacktrace
       - name: Run Instrumented Tests manually
         uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
+        with: 
+          working-directory: android
+          api-level: 22
+          arch: x86_64
+          force-avd-creation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           script: ./gradlew connectedDebug --stacktrace --info
       - name: Run jacocoTestReport for each module
         run: ./gradlew jacocoTestReport --stacktrace --info
