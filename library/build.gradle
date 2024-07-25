@@ -25,8 +25,7 @@ jacoco {
 
 android {
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -146,12 +145,15 @@ private static void testDependencies(instance, configuration) {
     configuration.testImplementation instance.robolectric
     configuration.testImplementation instance.robolectricShadowsMultidex
 
-    configuration.testImplementation 'org.mockito:mockito-inline:2.25.0'
+    configuration.testImplementation 'org.mockito:mockito-inline:5.2.0'
 
     configuration.testImplementation instance.androidxTestCore
     configuration.androidTestImplementation instance.junit
-    configuration.androidTestImplementation 'org.mockito:mockito-android:2.7.22'
-    configuration.androidTestImplementation 'org.mockito:mockito-core:2.7.22'
+
+    def mockitoVersion = '5.12.0'
+
+    configuration.androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
+    configuration.androidTestImplementation "org.mockito:mockito-core:$mockitoVersion"
     configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'net.sf.kxml', module: 'kxml2'
