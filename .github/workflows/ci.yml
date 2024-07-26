@@ -17,35 +17,50 @@ jobs:
     runs-on: macos-13
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
+          distribution: temurin
           java-version: 17
+
       - name: Create local.properties file
         run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
+
       - name: Print Java version
         run: java -version
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Git show commit count
         run: git fetch origin master && git rev-list --first-parent --count origin/master
-      - name: Clean project
-        run: ./gradlew clean --stacktrace
-      - name: Build project skipping tests
-        run: ./gradlew build -x test --stacktrace
-      - name: Run Instrumented Tests manually
+
+      - name: Clean & Build project skipping tests
+        run: ./gradlew clean build -x test --stacktrace
+
+      - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 22
+          api-level: 34
           arch: x86_64
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew connectedDebug --stacktrace --info
+
       - name: Run jacocoTestReport for each module
         run: ./gradlew jacocoTestReport --stacktrace --info
+
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
+
       - name: Upload coverage to Coveralls with Gradle
         run: ./gradlew coveralls --stacktrace
