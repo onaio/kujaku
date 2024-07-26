@@ -1,51 +1,52 @@
 package io.ona.kujaku.tasks;
 
-import android.os.AsyncTask;
 import androidx.annotation.NonNull;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
 import io.ona.kujaku.exceptions.AsyncTaskCancelledException;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.utils.LogUtil;
 
-/**
- * Created by Ephraim Kigamba - ekigamba@ona.io on 03/10/2018
- */
-
-public class GenericAsyncTask extends AsyncTask<Void, Void, Object[]> {
-
+public class GenericAsyncTask {
     private static final String TAG = GenericAsyncTask.class.getName();
-    private AsyncTaskCallable toCall;
+    private final AsyncTaskCallable toCall;
     private OnFinishedListener onFinishedListener;
 
-    private Exception exception;
+    private ExecutorService executorService;
 
     public GenericAsyncTask(@NonNull AsyncTaskCallable toCall) {
         this.toCall = toCall;
     }
 
-    @Override
-    protected Object[] doInBackground(Void... voids) {
+    public void execute() {
+
         try {
-            return toCall.call();
+
+            executorService = Executors.newSingleThreadExecutor();
+
+            Future<Object[]> result = executorService.submit(toCall);
+
+            if (onFinishedListener != null) {
+                onFinishedListener.onSuccess(result.get());
+            }
+
         } catch (Exception e) {
             LogUtil.e(TAG, e);
-            exception = e;
-            this.cancel(true);
+            cancel(e);
 
-            return null;
+        } finally {
+
+            if (executorService != null)
+                executorService.shutdownNow();
         }
+
     }
 
-    @Override
-    protected void onPostExecute(Object[] objects) {
-        if (onFinishedListener != null) {
-            onFinishedListener.onSuccess(objects);
-        }
-    }
-
-    @Override
-    protected void onCancelled() {
+    protected void cancel(Exception exception) {
         if (onFinishedListener != null) {
             Exception cancelException = exception == null ?
                     new AsyncTaskCancelledException() :

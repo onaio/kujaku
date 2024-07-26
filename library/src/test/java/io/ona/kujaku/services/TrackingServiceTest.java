@@ -42,9 +42,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
-/**
- * Created by Emmanuel Otin - eo@novel-t.ch 03/20/19.
- */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TrackingServiceTest {
@@ -109,7 +106,13 @@ public class TrackingServiceTest {
         controller = Robolectric.buildService(TrackingService.class,
                 TrackingService.getIntent(context, MapActivity.class, new TrackingServiceHighAccuracyOptions()));
 
+        //disable GPS
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+
         controller.create().startCommand(0,0);
+
         assertEquals(TrackingService.TrackingServiceStatus.STOPPED_GPS, TrackingService.getTrackingServiceStatus());
 
         controller.destroy();

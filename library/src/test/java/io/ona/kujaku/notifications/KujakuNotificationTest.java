@@ -5,9 +5,11 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.annotation.Config;
 
@@ -15,14 +17,13 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-/**
- * Created by Ephraim Kigamba - ekigamba@ona.io on 17/01/2018.
- */
 public class KujakuNotificationTest extends BaseNotificationTest {
 
-    @Config(sdk = 26)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithTextAndChannelIdWhenGivenContent() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
@@ -31,7 +32,6 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         String content = "This is some sample content";
 
         // Create the notification channel
-        setSDKToAndroidOreo();
         kujakuNotification.setContext(context);
         kujakuNotification.createNotificationChannel(NotificationManager.IMPORTANCE_DEFAULT, "sample channel name", channelId);
 
@@ -41,9 +41,8 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertEquals(channelId, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
-    @Config(sdk = 25)
     @Test
-    public void createNotificationShouldCreateValidNotifcationBuilderWithTextOnly() throws NoSuchFieldException, IllegalAccessException {
+    public void createNotificationShouldCreateValidNotificationBuilderWithTextOnly() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
         String title = "sample tiTle 4";
         String content = "This is some sample content for the notification";
@@ -51,18 +50,15 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         NotificationCompat.Builder builder = kujakuNotification.createNotification(title, content);
 
         assertNotificationBuilder(builder, title, content, null);
-        assertEquals(null, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
+        assertNull(getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
-    @Config(sdk = 26)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithChannelIdOnly() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
         String title = "sample tiTle 4";
         String channelId = UUID.randomUUID().toString();
 
-        // Create the notification channel
-        setSDKToAndroidOreo();
         kujakuNotification.setContext(context);
         kujakuNotification.createNotificationChannel(NotificationManager.IMPORTANCE_DEFAULT, "sample channel name", channelId);
 
@@ -72,7 +68,6 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertEquals(channelId, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
-    @Config(sdk = 25)
     @Test
     public void createNotificationShouldCreateValidNotificationBuilderWithoutTextOrChannelId() throws NoSuchFieldException, IllegalAccessException {
         KujakuNotificationImplClass kujakuNotification = new KujakuNotificationImplClass();
@@ -81,10 +76,9 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         NotificationCompat.Builder builder = kujakuNotification.createNotification(title);
 
         assertNotificationBuilder(builder, title, null, null);
-        assertEquals(null, getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
+        assertNull(getValueInPrivateField(NotificationCompat.Builder.class, builder, "mChannelId"));
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Test
     public void createNotificationChannelShouldCreateValidNotificationChannel() {
         KujakuNotificationImplClass kujakuNotificationImplClass = new KujakuNotificationImplClass();
@@ -95,6 +89,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         int ledColor = Color.RED;
         long[] vibrationPattern = new long[]{200, 700, 200, 700};
         kujakuNotificationImplClass.createNotificationChannel(NotificationManager.IMPORTANCE_HIGH, channelName, channelId, channelDescription, ledColor, vibrationPattern);
+        assertNotNull(kujakuNotificationImplClass.getNotificationChannel());
 
         channelIdsAdded.add(channelId);
 
@@ -104,13 +99,12 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertNotNull(notificationChannel);
         assertEquals(channelName, notificationChannel.getName());
         assertEquals(channelDescription, notificationChannel.getDescription());
-        assertEquals(true, notificationChannel.shouldVibrate());
-        assertEquals(true, notificationChannel.shouldShowLights());
+        assertTrue(notificationChannel.shouldVibrate());
+        assertTrue(notificationChannel.shouldShowLights());
         assertArrayEquals(vibrationPattern, notificationChannel.getVibrationPattern());
         assertEquals(ledColor, notificationChannel.getLightColor());
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Test
     public void createNotificationChannelShouldCreateValidNotificationChannelWithoutLights() {
         KujakuNotificationImplClass kujakuNotificationImplClass = new KujakuNotificationImplClass();
@@ -129,12 +123,11 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertNotNull(notificationChannel);
         assertEquals(channelName, notificationChannel.getName());
         assertEquals(channelDescription, notificationChannel.getDescription());
-        assertEquals(true, notificationChannel.shouldVibrate());
-        assertEquals(false, notificationChannel.shouldShowLights());
+        assertTrue(notificationChannel.shouldVibrate());
+        assertFalse(notificationChannel.shouldShowLights());
         assertArrayEquals(vibrationPattern, notificationChannel.getVibrationPattern());
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Test
     public void createNotificationChannelShouldCreateValidNotificationChannelWithoutVibration() {
         KujakuNotificationImplClass kujakuNotificationImplClass = new KujakuNotificationImplClass();
@@ -153,12 +146,11 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertNotNull(notificationChannel);
         assertEquals(channelName, notificationChannel.getName());
         assertEquals(channelDescription, notificationChannel.getDescription());
-        assertEquals(false, notificationChannel.shouldVibrate());
-        assertEquals(true, notificationChannel.shouldShowLights());
+        assertFalse(notificationChannel.shouldVibrate());
+        assertTrue(notificationChannel.shouldShowLights());
         assertEquals(ledColor, notificationChannel.getLightColor());
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     @Test
     public void createNotificationChannelShouldCreateValidNotificationChannelWithoutLightsOrVibration() {
         KujakuNotificationImplClass kujakuNotificationImplClass = new KujakuNotificationImplClass();
@@ -176,7 +168,7 @@ public class KujakuNotificationTest extends BaseNotificationTest {
         assertNotNull(notificationChannel);
         assertEquals(channelName, notificationChannel.getName());
         assertEquals(channelDescription, notificationChannel.getDescription());
-        assertEquals(false, notificationChannel.shouldVibrate());
-        assertEquals(false, notificationChannel.shouldShowLights());
+        assertFalse(notificationChannel.shouldVibrate());
+        assertFalse(notificationChannel.shouldShowLights());
     }
 }

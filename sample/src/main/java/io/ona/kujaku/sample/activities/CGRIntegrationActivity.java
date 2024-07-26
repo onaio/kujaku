@@ -233,7 +233,7 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
             }
         });
 
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 
     private void showToast(@StringRes int stringRes) {

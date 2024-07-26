@@ -291,7 +291,7 @@ public class ArrowLineLayer extends KujakuLayer {
             }
         });
 
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 
     @Override
@@ -402,7 +402,7 @@ public class ArrowLineLayer extends KujakuLayer {
                 }
             });
 
-            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            genericAsyncTask.execute();
         }
     }
 

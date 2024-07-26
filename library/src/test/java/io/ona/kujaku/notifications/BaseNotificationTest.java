@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 16/01/2018.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = Build.VERSION_CODES.O)
+@Config(manifest = Config.NONE)
 public abstract class BaseNotificationTest extends BaseTest {
 
     protected Context context;
@@ -88,10 +88,6 @@ public abstract class BaseNotificationTest extends BaseTest {
 
     protected String getNotificationProgressContent(double percentageProgress) {
         return String.format(context.getString(R.string.notification_download_progress_content), DownloadProgressNotification.formatDecimal(percentageProgress));
-    }
-
-    protected void setSDKToAndroidOreo() throws NoSuchFieldException, IllegalAccessException {
-        setFinalStatic(Build.VERSION.class.getField("SDK_INT"), Build.VERSION_CODES.O);
     }
 
     @After

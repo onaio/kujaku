@@ -9,13 +9,15 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import timber.log.Timber;
+
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 11/01/2018.
  */
 
 abstract class KujakuNotification {
 
-    protected NotificationChannel notificationChannel;
+    private NotificationChannel notificationChannel;
     public static final int NO_LED_COLOR = 0;
     private int smallIcon;
     protected Context context;
@@ -93,7 +95,15 @@ abstract class KujakuNotification {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(notificationChannel.getId());
+
+            try {
+
+                builder.setChannelId(notificationChannel.getId());
+
+            } catch (NullPointerException e) {
+                Timber.e(e);
+            }
+
         }
 
         return builder;

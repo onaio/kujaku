@@ -202,7 +202,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             }
         });
         genericAsyncTask.setOnFinishedListener(onFinishedListener);
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 
     private void setCanStopMapDownload(boolean enabled) {
@@ -457,7 +457,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             }
         });
         genericAsyncTask.setOnFinishedListener(null);
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
   
     private void confirmSampleStyleAvailable() {

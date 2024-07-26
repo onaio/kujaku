@@ -154,7 +154,7 @@ public class BoundaryLayer extends KujakuLayer {
             }
         });
 
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 
     protected void createLayers(@NonNull MapboxMap mapboxMap) {
@@ -321,7 +321,7 @@ public class BoundaryLayer extends KujakuLayer {
                 }
             });
 
-            genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            genericAsyncTask.execute();
         }
     }
 

@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -30,7 +31,6 @@ public class GeoJSONHelperTest {
 
     @Test
     public void getFeatureShouldReturnPointFeatureWithoutProperties() {
-        // Might fail bcoz of Feature collection positioning
         String geoJsonFeatureCollection = "{\n" +
                 "  \"features\": [\n" +
                 "      {\n" +
@@ -60,8 +60,7 @@ public class GeoJSONHelperTest {
             JSONObject expectedJsonObject = new JSONObject(geoJsonFeatureCollection);
             JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getJsonFeatureCollection());
 
-            //todo - Make this better
-            assertEquals(expectedJsonObject.toString(), actualJsonObject.toString());
+            JSONAssert.assertEquals(expectedJsonObject.toString(), actualJsonObject.toString(), true);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -70,7 +69,6 @@ public class GeoJSONHelperTest {
 
     @Test
     public void getGeoJsonShouldReturnGeoJsonWithPointFeatureWithoutProperties() {
-        // Might fail bcoz of Feature collection positioning
         String geoJson = "{\n" +
                 "  \"type\": \"geojson\",\n" +
                 "  \"data\": {\n" +
@@ -103,8 +101,7 @@ public class GeoJSONHelperTest {
             JSONObject expectedJsonObject = new JSONObject(geoJson);
             JSONObject actualJsonObject = new JSONObject(geoJSONHelper.getGeoJsonData());
 
-            //todo - Make this better
-            assertEquals(expectedJsonObject.toString(), actualJsonObject.toString());
+            JSONAssert.assertEquals(expectedJsonObject.toString(), actualJsonObject.toString(), true);
 
         } catch (JSONException e) {
             e.printStackTrace();
