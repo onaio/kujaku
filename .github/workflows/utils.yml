@@ -22,16 +22,15 @@ jobs:
       - name: Cancel previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
         with:
-          access_token: ${{ github.token }} 
+          access_token: ${{ github.token }}
 
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
+          distribution: temurin
           java-version: 17
 
       - name: Create local.properties file
@@ -58,7 +57,7 @@ jobs:
       - name: Run Instrumented Tests manually
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 22
+          api-level: 34
           script: ./gradlew :utils:connectedDebug --stacktrace
 
       - name: Generate & upload utils snapshot artifact AAR (Android Archive) file to Sonatype

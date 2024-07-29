@@ -14,7 +14,10 @@ jobs:
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
-    runs-on: macos-13
+    runs-on: ubuntu-latest    
+    strategy:
+      matrix:
+        api-level: [34]
 
     steps:
       - name: Cancel Previous workflow runs
@@ -31,6 +34,12 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Create local.properties file
         run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
 
@@ -46,18 +55,38 @@ jobs:
       - name: Clean & Build project skipping tests
         run: ./gradlew clean build -x test --stacktrace
 
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebug --stacktrace --info
+          script: ./gradlew connectedDebug --stacktrace
 
       - name: Run jacocoTestReport for each module
-        run: ./gradlew jacocoTestReport --stacktrace --info
+        run: ./gradlew jacocoTestReport --stacktrace
 
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
