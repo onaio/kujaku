@@ -11,4 +11,6 @@
 
     <color name="positiveTasksColor">#1976d2</color>
     <color name="negativeTasksColor">#8e24aa</color>
+    <color name="my_location_marker_color">#3498db</color>
+    <color name="mapbox_blue">#1E8CAB</color>
 </resources>

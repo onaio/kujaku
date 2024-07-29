@@ -1,10 +1,7 @@
 package io.ona.kujaku.sample.repository;
 
-import net.sqlcipher.database.SQLiteDatabase;
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
-/**
- * @author Vincent Karuri
- */
 public class BaseRepository {
 
     private KujakuRepository repository;

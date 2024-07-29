@@ -43,7 +43,6 @@ import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import io.ona.kujaku.BuildConfig;
 import io.ona.kujaku.data.MapBoxDeleteTask;
 import io.ona.kujaku.data.MapBoxDownloadTask;
 import io.ona.kujaku.data.realm.RealmDatabase;

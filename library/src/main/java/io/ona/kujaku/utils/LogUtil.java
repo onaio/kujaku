@@ -2,9 +2,7 @@ package io.ona.kujaku.utils;
 
 import android.util.Log;
 
-/**
- * Created by Ephraim Kigamba - ekigamba@ona.io on 31/07/2018
- */
+import io.ona.kujaku.BuildConfig;
 
 public class LogUtil {
 

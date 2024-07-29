@@ -3,7 +3,7 @@ apply plugin: 'signing'
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier "sources"
+    getArchiveClassifier().set("sources")
 }
 
 task javaDoc(type: Javadoc) {
@@ -15,7 +15,7 @@ task javaDoc(type: Javadoc) {
 }
 
 task javadocJar(type: Jar, dependsOn: javaDoc) {
-    classifier = 'javadoc'
+    getArchiveClassifier().set('javadoc')
     from javaDoc.destinationDir
 }
 
@@ -43,7 +43,7 @@ def getGithubPackagesAccessToken() {
     return hasProperty('githubAccessToken') ? githubAccessToken : System.getenv("GITHUB_ACCESS_TOKEN") != null ? System.getenv("GITHUB_ACCESS_TOKEN") : ""
 }
 
-def getDate() {
+static def getDate() {
     return new Date().format('yyyy-MM-dd HH:mm:ss')
 }
 
@@ -77,10 +77,10 @@ publishing {
             }
 
             pom {
-                if (project.name.equals("utils")) {
+                if (project.name == "utils") {
                     name = 'Kujaku Utils'
                     description = 'Utilities for Mapping and check-in library for Android using MapBox SDK'
-                } else if (project.name.equals("library")) {
+                } else if (project.name == "library") {
                     name = 'Kujaku Library'
                     description = 'Mapping and check-in library for Android using MapBox SDK'
                 }
@@ -95,8 +95,8 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = 'ekigamba'
-                        name = 'Ephraim Kigamba'
+                        id = 'opensrp'
+                        name = 'OpenSRP Dev'
                     }
 
                     developer {

@@ -16,17 +16,15 @@ public class GenericAsyncTask {
     private final AsyncTaskCallable toCall;
     private OnFinishedListener onFinishedListener;
 
-    private ExecutorService executorService;
-
     public GenericAsyncTask(@NonNull AsyncTaskCallable toCall) {
         this.toCall = toCall;
     }
 
     public void execute() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         try {
 
-            executorService = Executors.newSingleThreadExecutor();
 
             Future<Object[]> result = executorService.submit(toCall);
 

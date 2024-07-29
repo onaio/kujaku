@@ -4,15 +4,13 @@ apply plugin: 'jacoco'
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
     }
     dependencies {
-        classpath "io.realm:realm-gradle-plugin:4.1.1"
+        classpath "io.realm:realm-gradle-plugin:10.18.0"
     }
 }
 
 apply plugin: 'realm-android'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 version '0.10.2-SNAPSHOT'
@@ -25,7 +23,13 @@ jacoco {
 
 android {
 
+    namespace "io.ona.kujaku"
+
     compileSdk rootProject.ext.compileSdkVersion
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -33,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
@@ -64,7 +68,7 @@ android {
 
         debug {
             // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
-            testCoverageEnabled false
+            testCoverageEnabled true
 
             if (project.rootProject.file("local.properties").exists()) {
                 Properties properties = new Properties()
@@ -124,13 +128,13 @@ dependencies { configuration ->
         exclude group: 'com.android.support', module: 'support-v4'
     }
 
-    implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'org.simpleframework:simple-xml:2.7.1'
     implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
-    implementation 'androidx.multidex:multidex:2.0.0'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)
@@ -154,7 +158,7 @@ private static void testDependencies(instance, configuration) {
 
     configuration.androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
     configuration.androidTestImplementation "org.mockito:mockito-core:$mockitoVersion"
-    configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:3.1.0', {
+    configuration.androidTestImplementation ('com.android.support.test.espresso:espresso-core:3.6.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'net.sf.kxml', module: 'kxml2'
     })
@@ -184,28 +188,7 @@ tasks.withType(Test) {
     jacoco.excludes = ['jdk.internal.*']
 }
 
-// createDebugCoverageReport is not available when android.buildTypes.debug.testCoverageEnabled is false
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) { //, 'createDebugCoverageReport']) {
-
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-
-    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
-    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
-
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
-                      , 'android/**/*.*', "io/realm/*.*"]
-    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
-    def mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom([mainSrc])
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
-    ]))
-}
 
 // Add github packages, maven-central and sonatype publishing
 apply from: '../publish.gradle'
+apply from: '../jacoco-report.gradle'

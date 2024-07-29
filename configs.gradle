@@ -112,7 +112,7 @@ ext {
     robolectricShadowsMultidexVersion = "4.13"
     robolectricVersion = "4.13"
     supportVersion = "1.0.0"
-    volleyVersion = "1.2.0"
+    volleyVersion = "1.2.1"
     targetSdkVersion = 34
 
     // Dependency names

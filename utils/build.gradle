@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 
@@ -13,6 +12,8 @@ jacoco {
 
 android {
 
+    namespace "io.ona.kujaku.utils"
+
     compileSdk rootProject.ext.compileSdkVersion
 
     compileOptions {
@@ -21,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName this.version
@@ -36,7 +37,7 @@ android {
 
         debug {
             // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
-            testCoverageEnabled false
+            testCoverageEnabled true
         }
     }
 
@@ -46,10 +47,10 @@ android {
 }
 
 dependencies {
-    androidTestImplementation ('androidx.test.espresso:espresso-core:3.1.0', {
+    androidTestImplementation ('androidx.test.espresso:espresso-core:3.6.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.cocoahero.android:geojson:1.0.1@jar'
     implementation (mapboxSDK) {
         transitive = true
@@ -73,32 +74,10 @@ tasks.withType(Test) {
     jacoco.excludes = ['jdk.internal.*']
 }
 
-// createDebugCoverageReport is not available when android.buildTypes.debug.testCoverageEnabled is false
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) { //, 'createDebugCoverageReport']) {
-
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-
-    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
-    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
-
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*'
-                      , 'android/**/*.*', "io/realm/*.*"]
-    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
-    def mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom(files([mainSrc]))
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
-    ]))
-}
-
 task printTasks {
     System.out.println("Jacoco version ${jacoco.toolVersion}")
 }
 
 // Add github packages, maven-central and sonatype publishing
 apply from: '../publish.gradle'
+apply from: '../jacoco-report.gradle'
