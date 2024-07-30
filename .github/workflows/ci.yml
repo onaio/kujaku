@@ -14,7 +14,7 @@ jobs:
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
-    runs-on: macos-latest 
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         api-level: [34]
@@ -29,10 +29,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Create local.properties file
         run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
@@ -46,18 +52,35 @@ jobs:
       - name: Git show commit count
         run: git fetch origin master && git rev-list --first-parent --count origin/master
 
-      - name: Clean & Build project skipping tests
-        run: ./gradlew clean build -x test --stacktrace
+      - name: Load AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
 
-      - name: Run Instrumented Tests manually
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          script: ./gradlew connectedDebug --stacktrace
-
-      - name: Run jacocoTestReport for each module
-        run: ./gradlew jacocoTestReport --stacktrace
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+      
+      - name: Run unit and instrumentation tests and generate coverage report
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew clean jacocoTestReport --stacktrace
 
       - name: Merge jacoco reports from all modules
         run: ./gradlew jacocoFullReport --stacktrace
