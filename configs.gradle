@@ -105,7 +105,7 @@ ext {
     // Dependency and other versions
     androidxTestCoreVersion = "1.4.0"
     buildToolsVersion = "30.0.3"
-    compileSdkVersion = 30
+    compileSdkVersion = 34
     jacocoVersion = "0.8.8"
     junitVersion = "4.12"
     mapboxAnnotationPluginVersion = "0.9.0"

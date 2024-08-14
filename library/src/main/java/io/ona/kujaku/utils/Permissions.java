@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -16,29 +18,39 @@ import java.util.List;
  */
 
 public class Permissions {
-    private static final String[] CRITICAL_PERMISSIONS = new String[]{
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
 
     /**
      * Returns {@link android.content.pm.PermissionInfo#PROTECTION_DANGEROUS} permissions which
-     * have not been requested yet/denied by the user from the list of {@link Permissions#CRITICAL_PERMISSIONS}
+     * have not been requested yet/denied by the user from the list of {@link Permissions}
      * required
      *
      * @param context
      * @return list of unauthorised permissions
      */
     public static String[] getUnauthorizedCriticalPermissions(Context context) {
+        String[] criticalPermissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 (API 33)
+            criticalPermissions = new String[]{
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            };
+        } else {
+            criticalPermissions = new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+        }
+
         List<String> unauthorizedPermissions = new ArrayList<>();
-        for (String curPermission : CRITICAL_PERMISSIONS) {
+        for (String curPermission : criticalPermissions) {
             if (!check(context, curPermission)) {
                 unauthorizedPermissions.add(curPermission);
             }
         }
 
-        return unauthorizedPermissions.toArray(new String[]{});
+        return unauthorizedPermissions.toArray(new String[0]);
     }
+
 
     /**
      * Checks if a specific application permission is authorised

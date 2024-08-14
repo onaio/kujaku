@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -68,10 +69,6 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private static final String SAMPLE_JSON_FILE_NAME = "2017-nov-27-kujaku-metadata.json";
     private static final int PERMISSIONS_REQUEST_CODE = 9823;
-    private String[] basicPermissions = new String[]{
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-    };
 
     // Kujaku library uses notification ids 80 to 2080
     private int lastNotificationId = 2081;
@@ -415,7 +412,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
             case MAP_ACTIVITY_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
                     // data from a dropped feature point
@@ -490,6 +488,18 @@ public class MainActivity extends BaseNavigationDrawerActivity {
 
     private void requestBasicPermissions() {
         ArrayList<String> notGivenPermissions = new ArrayList<>();
+        String[] basicPermissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 (API 33)
+            basicPermissions = new String[]{
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            };
+        } else {
+            basicPermissions = new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            };
+        }
 
         for (String permission : basicPermissions) {
             if (!Permissions.check(this, permission)) {
@@ -497,8 +507,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             }
         }
 
-        if (notGivenPermissions.size() > 0) {
-            Permissions.request(this, notGivenPermissions.toArray(new String[notGivenPermissions.size()]), PERMISSIONS_REQUEST_CODE);
+        if (!notGivenPermissions.isEmpty()) {
+            Permissions.request(this, notGivenPermissions.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
         } else {
             confirmSampleStyleAvailable();
         }
