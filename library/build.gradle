@@ -117,9 +117,9 @@ dependencies { configuration ->
     implementation mapboxAnnotationPlugin
 
     // Comment the line below when creating releases - The line is for development of the library & utils
-    //implementation (project(":utils")) {
+    implementation (project(":utils")) {
     // Uncomment the line below when creating releases
-    implementation('io.ona.kujaku:utils:0.10.5-SNAPSHOT') {
+    //implementation('io.ona.kujaku:utils:0.10.5-SNAPSHOT') {
         transitive = true;
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
