@@ -502,7 +502,7 @@ public class TrackingService extends Service {
     /**
      * Volatile because different methods are called from the main thread and serviceThread
      */
-    private volatile LocationListener locationListener = new LocationListener() {
+    private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
 
