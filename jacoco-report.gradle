@@ -1,7 +1,9 @@
 // createDebugCoverageReport is not available when android.buildTypes.debug.testCoverageEnabled is false
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']){
-                                                      //, 'connectedDebugAndroidTest']) {
-    //, 'createDebugCoverageReport']) { 
+task jacocoTestReport(type: JacocoReport){
+  // Removing dependents, to run the tests and get the report use the command below
+    // ./gradlew testDebugUnitTest connectedDebugAndroidTest jacocoTestReport --stacktrace
+//}, dependsOn: ['testDebugUnitTest', 'connectedDebugAndroidTest']) {
+    //, 'createDebugCoverageReport']) {
 
     reports {
         xml.required.set(true)

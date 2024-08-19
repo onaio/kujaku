@@ -82,7 +82,10 @@ jobs:
           disable-animations: true
           script: ./gradlew clean connectedDebugAndroidTest --stacktrace
           
-      - name: Run unit tests and generate jacocoTestReport for each module
+      - name: Run unit tests for each module
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Generate jacocoTestReport for each module
         run: ./gradlew jacocoTestReport --stacktrace
           
       - name: Merge jacoco reports from all modules
