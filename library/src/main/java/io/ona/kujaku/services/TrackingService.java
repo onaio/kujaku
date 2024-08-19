@@ -540,7 +540,7 @@ public class TrackingService extends Service {
         @Override
         public void onLocationChanged(Location location) {
             Timber.tag(TAG).d(TAG, "GPS position received");
-            Timber.tag(TAG).d(TAG, "GPS Location ThreadID: %s", android.os.Process.myTid());
+            Timber.tag(TAG).d(TAG, "GPS Location ThreadID: %s", Process.myTid());
 
             // This should never happen, but just in case (we really don't
             // want the service to crash):
