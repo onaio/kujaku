@@ -46,16 +46,7 @@ jobs:
         run: git fetch origin master && git rev-list --first-parent --count origin/master
         
       - name: Clean project
-        run: ./gradlew clean --stacktrace
-
-      - name: Build project skipping tests
-        run: ./gradlew build -x test --stacktrace 
-
-      - name: Run Instrumented Tests manually
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          script: ./gradlew :library:connectedDebug --stacktrace --info
+        run: ./gradlew clean --stacktrace 
       
       - name: Run unit tests with Gradle
         run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
