@@ -33,7 +33,7 @@ allprojects {
             url "https://dl.cloudsmith.io/public/terraframe/geoprism-registry/maven/"
         }
         maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            url "https://api.mapbox.com/downloads/v2/releases/maven"
             authentication {
                 basic(BasicAuthentication)
             }

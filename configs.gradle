@@ -109,6 +109,7 @@ ext {
     junitVersion = "4.13.2"
     mapboxAnnotationPluginVersion = "0.9.0"
     mapboxSdkVersion = "9.7.1"
+    mapboxSdkTurfVersion = "7.2.0"
     robolectricShadowsMultidexVersion = "4.13"
     robolectricVersion = "4.13"
     supportVersion = "1.0.0"
@@ -119,14 +120,11 @@ ext {
     androidxTestCore = "androidx.test:core:$androidxTestCoreVersion"
     junit = "junit:junit:$junitVersion"
     mapboxSDK = "com.mapbox.mapboxsdk:mapbox-android-sdk:$mapboxSdkVersion"
-    mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0"
+    mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:$mapboxSdkTurfVersion"
     mapboxAnnotationPlugin = "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:$mapboxAnnotationPluginVersion"
     robolectric = "org.robolectric:robolectric:$robolectricVersion"
     robolectricShadowsMultidex = "org.robolectric:shadows-multidex:$robolectricShadowsMultidexVersion"
 }
-
-
-//ext.mapboxSDK = "com.mapbox.maps:android:10.7.0"
 
 ext.mapboxDependencies = { instance, configuration ->
 
@@ -141,7 +139,7 @@ ext.mapboxDependencies = { instance, configuration ->
     // The local build has an issue fetching this library for some reason which
     // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
     // a runtime dependency
-    configuration.implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:4.8.0'
+    configuration.implementation "com.mapbox.mapboxsdk:mapbox-sdk-turf:$instance.mapboxSdkTurfVersion"
     configuration.implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${instance.mapboxAnnotationPluginVersion}"
 
 }
