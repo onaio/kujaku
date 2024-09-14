@@ -22,12 +22,12 @@ jobs:
       - name: Cancel previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
         with:
-          access_token: ${{ github.token }} 
+          access_token: ${{ github.token }}
 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
           distribution: temurin
@@ -52,7 +52,7 @@ jobs:
         run: ./gradlew clean --stacktrace
 
       - name: Build project skipping tests
-        run: ./gradlew build -x test --stacktrace
+        run: ./gradlew build -x test --stacktrace 
 
       - name: Run Instrumented Tests manually
         uses: reactivecircus/android-emulator-runner@v2
@@ -62,7 +62,6 @@ jobs:
       
       - name: Run unit tests with Gradle
         run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
- 
       - name: Generate & upload library snapshot artifact AAR (Android Archive) file
         run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
 

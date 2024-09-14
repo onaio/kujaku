@@ -34,9 +34,6 @@ public class KujakuMultiplePermissionListener extends BaseMultiplePermissionsLis
                     @Override public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
 
-                        if (context instanceof Activity) {
-                            ((Activity) context).finish();
-                        }
                     }
                 })
                 .show();
