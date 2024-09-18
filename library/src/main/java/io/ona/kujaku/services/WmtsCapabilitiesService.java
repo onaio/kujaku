@@ -87,6 +87,6 @@ public class WmtsCapabilitiesService {
             }
         });
 
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        task.execute();
     }
 }

@@ -1,6 +1,6 @@
 package io.ona.kujaku.utils.config;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,13 +8,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-import io.ona.kujaku.utils.BuildConfig;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
 
-/**
- * Created by Jason Rogena - jrogena@ona.io on 1/3/18.
- */
 @RunWith(RobolectricTestRunner.class)
 @org.robolectric.annotation.Config(manifest = org.robolectric.annotation.Config.NONE)
 public class SortFieldConfigTest {

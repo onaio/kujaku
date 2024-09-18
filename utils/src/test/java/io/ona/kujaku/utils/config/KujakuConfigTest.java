@@ -9,13 +9,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import io.ona.kujaku.utils.BuildConfig;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
 import io.ona.kujaku.utils.helpers.MapBoxStyleHelper;
-
-/**
- * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
- */
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)

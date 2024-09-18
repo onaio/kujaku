@@ -1,0 +1,35 @@
+// createDebugCoverageReport is not available when android.buildTypes.debug.testCoverageEnabled is false
+task jacocoTestReport(type: JacocoReport){
+  // Removing dependents, to run the tests and get the report use the command below
+    // ./gradlew testDebugUnitTest connectedDebugAndroidTest jacocoTestReport --stacktrace
+//}, dependsOn: ['testDebugUnitTest', 'connectedDebugAndroidTest']) {
+    //, 'createDebugCoverageReport']) {
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        xml.outputLocation = layout.buildDirectory.file("reports/jacoco/jacocoRootReport/merged.xml")
+        html.outputLocation = layout.buildDirectory.dir("reports/jacoco/jacocoRootReport/html")
+    }
+
+    def fileFilter = [
+            "**/R.class",
+            "**/R\$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*",
+            "android/**/*.*",
+            "io/realm/*.*",
+            "**/org/mockito/**",
+            "**/mockito-extensions/**"]
+    def debugTree = fileTree(dir: layout.buildDirectory.file("intermediates/javac/debug/compileDebugJavaWithJavac/classes/"), excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom([mainSrc])
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: layout.buildDirectory, includes:
+            [
+                    "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+                    "outputs/code_coverage/debugAndroidTest/connected/**/coverage.ec",
+            ]))
+}

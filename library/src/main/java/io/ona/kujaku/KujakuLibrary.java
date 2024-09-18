@@ -26,9 +26,6 @@ import timber.log.Timber;
 import static android.content.Context.ALARM_SERVICE;
 import static timber.log.Timber.DebugTree;
 
-/**
- * @author Vincent Karuri
- */
 public class KujakuLibrary {
 
     private static boolean enableMapDownloadResume;
@@ -63,7 +60,7 @@ public class KujakuLibrary {
         AndroidThreeTen.init(context);
 
         if (Timber.treeCount() < 1) {
-            Timber.plant(new DebugTree());
+            Timber.plant((Timber.Tree) (Object) new DebugTree());
         }
     }
 

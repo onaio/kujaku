@@ -42,6 +42,7 @@ import org.commongeoregistry.adapter.dataaccess.ChildTreeNode;
 import org.commongeoregistry.adapter.dataaccess.GeoObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import io.ona.kujaku.callables.AsyncTaskCallable;
@@ -192,7 +193,7 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
                 client.getIdService().populate(30);
 
                 GeoObject country = client.getGeoObjectByCode("1", "Cambodia");
-                ChildTreeNode countryChildren = client.getChildGeoObjects(country.getUid(), country.getType().getCode(), adminHierarchy, true);
+                ChildTreeNode countryChildren = client.getChildGeoObjects(country.getUid(), country.getType().getCode(), adminHierarchy, true, Calendar.getInstance().getTime());
 
                 return new Object[]{country, countryChildren};
             }
@@ -233,7 +234,7 @@ public class CGRIntegrationActivity extends BaseNavigationDrawerActivity impleme
             }
         });
 
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 
     private void showToast(@StringRes int stringRes) {

@@ -26,6 +26,8 @@ import android.os.PowerManager;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
+
+import android.os.Process;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.location.KujakuLocation;
 import io.ona.kujaku.services.options.TrackingServiceOptions;
 import io.ona.kujaku.services.options.TrackingServiceSaveBatteryOptions;
+import timber.log.Timber;
 
 
 /**
@@ -113,7 +116,7 @@ public class TrackingService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        Log.d(TAG, "Initializing tracking service.");
+        Timber.tag(TAG).d(TAG, "Initializing tracking service.");
 
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -154,7 +157,7 @@ public class TrackingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.d(TAG, "Main ThreadID: " + android.os.Process.myTid());
+        Timber.tag(TAG).d("Main ThreadID: " + Process.myTid());
 
         createNotificationPendingIntent(intent);
 
@@ -168,19 +171,19 @@ public class TrackingService extends Service {
         // possible that the service is killed by OS.
         startServiceForeground();
 
-        Log.d(TAG, "Min distance gps setting: " + trackingServiceOptions.getMinDistance());
-        Log.d(TAG, "Tolerance interval distance setting: " + trackingServiceOptions.getToleranceIntervalDistance());
-        Log.d(TAG, "Tag for location: " + trackingServiceOptions.getTag());
+        Timber.tag(TAG).d("Min distance gps setting: %s", trackingServiceOptions.getMinDistance());
+        Timber.tag(TAG).d("Tolerance interval distance setting: %s", trackingServiceOptions.getToleranceIntervalDistance());
+        Timber.tag(TAG).d("Tag for location: %s", trackingServiceOptions.getTag());
 
         switch (TrackingService.serviceStatus) {
             case TrackingServiceStatus.RUNNING:
             case TrackingServiceStatus.WAITING_FIRST_FIX:
             case TrackingServiceStatus.WAITING_FIRST_RECORD:
-                Log.w(TAG, "Service thread is already running.");
+                Timber.tag(TAG).w("Service thread is already running.");
                 return Service.START_STICKY;
 
             default:
-                Log.d(TAG, "Service starting.");
+                Timber.tag(TAG).d(TAG, "Service starting.");
 
                 // Prevent the device from sleeping
                 if (!this.getWakeLock().isHeld()) {
@@ -188,7 +191,7 @@ public class TrackingService extends Service {
                 }
 
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    Log.i(TAG, "Start tracking service thread.");
+                    Timber.tag(TAG).i("Start tracking service thread.");
 
                     try {
                         // Set the latch that will be unset when the service thread exits
@@ -198,7 +201,7 @@ public class TrackingService extends Service {
 
                     } catch (IllegalThreadStateException e) {
 
-                        Log.e(TAG, "Failed to start service thread.", e);
+                        Timber.tag(TAG).e(e, "Failed to start service thread.");
                         setServiceStatus(TrackingServiceStatus.STOPPED);
 
                         // Stop the service as there is something really
@@ -210,7 +213,7 @@ public class TrackingService extends Service {
 
                     setServiceStatus(TrackingServiceStatus.WAITING_FIRST_FIX);
 
-                    Log.i(TAG, "Tracking service running.");
+                    Timber.tag(TAG).i("Tracking service running.");
 
                     return Service.START_STICKY;
 
@@ -219,8 +222,7 @@ public class TrackingService extends Service {
                     setServiceStatus(TrackingServiceStatus.STOPPED_GPS);
 
                     // Creation not successful because either GPS is not enabled or
-                    Log.w(TAG,
-                            "Abort service when starting because GPS not enabled.");
+                    Timber.tag(TAG).w("Abort service when starting because GPS not enabled.");
 
                     // Stop the service
                     stopSelf();
@@ -233,50 +235,50 @@ public class TrackingService extends Service {
     @Override
     public void onDestroy() {
 
-        Log.d(TAG, "Tracking service stopping.");
+        Timber.tag(TAG).d("Tracking service stopping.");
 
         try {
             // Remove listeners
             if (locationManager != null && locationListener != null) {
-                Log.d(TAG, "Remove location manager updates.");
+                Timber.tag(TAG).d(TAG, "Remove location manager updates.");
                 locationManager.removeUpdates(locationListener);
             }
 
             // Stop the service thread by posting a runnable in the loop.
             if (gpsHandler != null) {
-                Log.d(TAG, "Quitting looper");
+                Timber.tag(TAG).d(TAG, "Quitting looper");
                 gpsHandler.post(stopServiceThread);
             }
 
             if (wakeLock != null && wakeLock.isHeld()) {
-                Log.d(TAG, "Release wake lock.");
+                Timber.tag(TAG).d(TAG, "Release wake lock.");
                 wakeLock.release();
             }
 
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Failed to stop service properly.", e);
+            Timber.tag(TAG).e(e, "Failed to stop service properly.");
         }
 
-        Log.d(TAG, "Wait for the threads to exit.");
+        Timber.tag(TAG).d(TAG, "Wait for the threads to exit.");
 
         // Wait for the threads to die. This is required to implement an async stop. See Utils.
         try {
             if (serviceThreadRunningLatch != null) {
                 if (!serviceThreadRunningLatch.await(WAIT_TIME_SERVICE_THREAD, TimeUnit.MILLISECONDS)) {
-                    Log.w(TAG, "Time out waiting for service thread to exit.");
+                    Timber.tag(TAG).w("Time out waiting for service thread to exit.");
                 }
-                Log.d(TAG, "Service thread has stopped.");
+                Timber.tag(TAG).d(TAG, "Service thread has stopped.");
             }
 
         } catch (InterruptedException ie) {
-            Log.e(TAG, "Main application thread was interrupted.", ie);
+            Timber.tag(TAG).e(ie, "Main application thread was interrupted.");
         }
 
         setServiceStatus(TrackingServiceStatus.STOPPED);
 
         super.onDestroy();
 
-        Log.i(TAG, "Tracking service stopped.");
+        Timber.tag(TAG).i("Tracking service stopped.");
     }
 
     @Override
@@ -326,7 +328,7 @@ public class TrackingService extends Service {
         try {
             cls = Class.forName(classname);
         } catch (ClassNotFoundException ex) {
-            Log.e(TAG, "Launch activity class not found", ex);
+            Timber.tag(TAG).e(ex, "Launch activity class not found");
         }
 
         return cls;
@@ -337,7 +339,7 @@ public class TrackingService extends Service {
      */
     @SuppressWarnings({"MissingPermission"})
     private void registerLocationListener() {
-        Log.d(TAG, "Register location update listener.");
+        Timber.tag(TAG).d(TAG, "Register location update listener.");
         // https://stackoverflow.com/questions/33022662/android-locationmanager-vs-google-play-services
         // FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
@@ -364,7 +366,7 @@ public class TrackingService extends Service {
         double distanceBetweenLocations;
 
         if (lastRecordedKujakuLocation == null) {
-            Log.d(TAG, "First kujakuLocation since service started or GPS was lost");
+            Timber.tag(TAG).d(TAG, "First kujakuLocation since service started or GPS was lost");
 
             // Create pending
             overwritePendingLocation(kujakuLocation);
@@ -383,30 +385,30 @@ public class TrackingService extends Service {
         // lastRecordedKujakuLocation is not null
         distanceBetweenLocations = kujakuLocation.distanceTo(lastRecordedKujakuLocation);
 
-        Log.d(TAG, "Distance to last recorded kujakuLocation (m) = " + distanceBetweenLocations);
+        Timber.tag(TAG).d(TAG, "Distance to last recorded kujakuLocation (m) = " + distanceBetweenLocations);
 
         if ((distanceBetweenLocations < (trackingServiceOptions.getMinDistance() - trackingServiceOptions.getToleranceIntervalDistance()))) {
-            Log.d(TAG, "New kujakuLocation too close from last recorded kujakuLocation.");
+            Timber.tag(TAG).d(TAG, "New kujakuLocation too close from last recorded kujakuLocation.");
             return;
         }
 
         if (distanceBetweenLocations < (trackingServiceOptions.getMinDistance() + trackingServiceOptions.getToleranceIntervalDistance())) {
-            Log.d(TAG, "New kujakuLocation within distance tolerance from last recorded kujakuLocation.");
+            Timber.tag(TAG).d(TAG, "New kujakuLocation within distance tolerance from last recorded kujakuLocation.");
 
             // Check if there is a pending kujakuLocation
             if (pendingRecordingKujakuLocation == null) {
-                Log.d(TAG, "No pending kujakuLocation.");
+                Timber.tag(TAG).d(TAG, "No pending kujakuLocation.");
                 overwritePendingLocation(kujakuLocation);
                 return;
             } else {
                 if (selectLocation(kujakuLocation, pendingRecordingKujakuLocation)) {
                     overwritePendingLocation(kujakuLocation);
-                    Log.d(TAG, "New kujakuLocation is better than pending kujakuLocation.");
+                    Timber.tag(TAG).d(TAG, "New kujakuLocation is better than pending kujakuLocation.");
 
                     return;
 
                 } else {
-                    Log.d(TAG,
+                    Timber.tag(TAG).d(TAG,
                             "New kujakuLocation has worse accuracy than pending one.");
                     return;
 
@@ -415,7 +417,7 @@ public class TrackingService extends Service {
             } // end test if pending
 
         } else {
-            Log.d(TAG, "New kujakuLocation out of distance tolerance.");
+            Timber.tag(TAG).d(TAG, "New kujakuLocation out of distance tolerance.");
             if (pendingRecordingKujakuLocation == null) {
                 // As this kujakuLocation is out of tolerance, the next one will also be.
                 // So we record it now. We cannot wait for better accuracy.
@@ -464,7 +466,7 @@ public class TrackingService extends Service {
      * @param kujakuLocation
      */
     private void overwritePendingLocation(KujakuLocation kujakuLocation) {
-        Log.d(TAG, "Overwrite pending kujakuLocation.");
+        Timber.tag(TAG).d(TAG, "Overwrite pending kujakuLocation.");
 
         pendingRecordingKujakuLocation = kujakuLocation;
 
@@ -480,7 +482,7 @@ public class TrackingService extends Service {
      */
     private synchronized void recordPendingLocation() {
         if (pendingRecordingKujakuLocation != null) {
-            Log.d(TAG, "Record pending location.");
+            Timber.tag(TAG).d(TAG, "Record pending location.");
 
             // We store the location in our list
             recordedKujakuLocations.add(pendingRecordingKujakuLocation);
@@ -490,7 +492,7 @@ public class TrackingService extends Service {
 
             storage.writeLocation(pendingRecordingKujakuLocation, recordedKujakuLocations.size());
         } else {
-            Log.d(TAG, "Service is not recording.");
+            Timber.tag(TAG).d(TAG, "Service is not recording.");
         }
 
         lastRecordedKujakuLocation = pendingRecordingKujakuLocation;
@@ -500,21 +502,21 @@ public class TrackingService extends Service {
     /**
      * Volatile because different methods are called from the main thread and serviceThread
      */
-    private volatile LocationListener locationListener = new LocationListener() {
+    private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
 
             switch (status) {
                 case LocationProvider.AVAILABLE:
-                    Log.d(TAG, "GPS available.");
+                    Timber.tag(TAG).d(TAG, "GPS available.");
                     break;
 
                 case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                    Log.d(TAG, "GPS temporary unavailable.");
+                    Timber.tag(TAG).d(TAG, "GPS temporary unavailable.");
                     break;
 
                 case LocationProvider.OUT_OF_SERVICE:
-                    Log.d(TAG, "GPS out of service.");
+                    Timber.tag(TAG).d(TAG, "GPS out of service.");
                     break;
 
                 default:
@@ -529,21 +531,21 @@ public class TrackingService extends Service {
 
         @Override
         public void onProviderDisabled(String provider) {
-            Log.i(TAG, "GPS Provider has been disabled.");
-            Log.i(TAG, "Stopping tracking service.");
+            Timber.tag(TAG).i("GPS Provider has been disabled.");
+            Timber.tag(TAG).i("Stopping tracking service.");
             // Stop the service
             TrackingService.this.stopSelf();
         }
 
         @Override
         public void onLocationChanged(Location location) {
-            Log.d(TAG, "GPS position received");
-            Log.d(TAG, "GPS Location ThreadID: " + android.os.Process.myTid());
+            Timber.tag(TAG).d(TAG, "GPS position received");
+            Timber.tag(TAG).d(TAG, "GPS Location ThreadID: %s", Process.myTid());
 
             // This should never happen, but just in case (we really don't
             // want the service to crash):
             if (location == null) {
-                Log.d(TAG, "No location available.");
+                Timber.tag(TAG).d(TAG, "No location available.");
                 return;
             }
 
@@ -554,7 +556,7 @@ public class TrackingService extends Service {
 
             // Ignore if the accuracy is too bad:
             if (kujakuLocation.getAccuracy() > trackingServiceOptions.getMinAccuracy()) {
-                Log.d(TAG, "Track ignored because of accuracy.");
+                Timber.tag(TAG).d(TAG, "Track ignored because of accuracy.");
                 return;
             }
 
@@ -567,7 +569,7 @@ public class TrackingService extends Service {
                     // ignored location can have better accuracy
                     // even if not recorded
 
-                    Log.d(TAG,
+                    Timber.tag(TAG).d(TAG,
                             "New location is used as latest best accuracy location.");
                     lastBestKujakuLocation = kujakuLocation;
                 }
@@ -583,12 +585,12 @@ public class TrackingService extends Service {
      */
     private volatile Thread serviceThread = new Thread("TrackingService") {
         public void run() {
-            Log.d(TAG, "Tracking thread started.");
+            Timber.tag(TAG).d(TAG, "Tracking thread started.");
             // preparing a looper on current thread
             // the current thread is being detected implicitly
             Looper.prepare();
 
-            Log.d(TAG, "Register GPS status listener.");
+            Timber.tag(TAG).d(TAG, "Register GPS status listener.");
 
             // No need to do it in thread as the listener only logs
             // which is fast
@@ -611,11 +613,11 @@ public class TrackingService extends Service {
             // quit() the looper (see below)
             Looper.loop();
 
-            Log.d(TAG, "Exiting looper.");
+            Timber.tag(TAG).d(TAG, "Exiting looper.");
 
             if (pendingRecordingKujakuLocation != null) {
 
-                Log.d(TAG, "Record last pending location.");
+                Timber.tag(TAG).d(TAG, "Record last pending location.");
                 recordPendingLocation();
             }
 
@@ -634,7 +636,7 @@ public class TrackingService extends Service {
             if (looper != null) {
                 looper.quit();
             } else {
-                Log.e(TAG, "Cannot stop service thread.");
+                Timber.tag(TAG).e("Cannot stop service thread.");
             }
         }
     };

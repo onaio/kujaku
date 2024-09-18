@@ -1,6 +1,6 @@
 # Kujaku (Peacock) ![Build Status](https://github.com/onaio/kujaku/actions/workflows/ci.yml/badge.svg) ![Download](https://badgen.net/maven/v/maven-central/io.ona.kujaku/library) [![Coverage Status](https://coveralls.io/repos/github/onaio/kujaku/badge.svg)](https://coveralls.io/github/onaio/kujaku)
 
-A mapping and check-in library for Android using **MapBox SDK (Version 8.3.3)** 
+A mapping and check-in library for Android using **MapBox SDK (Version 9.7.1)** 
 
 ## IMPORTANT UPDATE
 

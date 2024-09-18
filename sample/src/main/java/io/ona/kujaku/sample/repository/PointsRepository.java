@@ -1,9 +1,11 @@
 package io.ona.kujaku.sample.repository;
 
+import android.annotation.SuppressLint;
+import android.database.Cursor;
 import android.util.Log;
 
-import net.sqlcipher.Cursor;
-import net.sqlcipher.database.SQLiteDatabase;
+
+import net.zetetic.database.sqlcipher.SQLiteDatabase;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -120,6 +122,7 @@ public class PointsRepository extends BaseRepository {
         return points;
     }
 
+    @SuppressLint("Range")
     private Point createPoint(Cursor cursor) {
         return new Point(
                 cursor.getInt(cursor.getColumnIndex(ID)),

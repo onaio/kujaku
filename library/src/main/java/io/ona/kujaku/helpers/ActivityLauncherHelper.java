@@ -20,6 +20,7 @@ import io.ona.kujaku.domain.Point;
 import io.ona.kujaku.listeners.OnFinishedListener;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
+import timber.log.Timber;
 
 import static io.ona.kujaku.utils.Constants.ENABLE_DROP_POINT_BUTTON;
 import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
@@ -54,7 +55,7 @@ public class ActivityLauncherHelper {
             }
             @Override
             public void onError(Exception e) {
-                Log.e(TAG, Log.getStackTraceString(e));
+                Timber.tag(TAG).e(Log.getStackTraceString(e));
             }
         });
     }
@@ -76,6 +77,6 @@ public class ActivityLauncherHelper {
             }
         });
         genericAsyncTask.setOnFinishedListener(onFinishedListener);
-        genericAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        genericAsyncTask.execute();
     }
 }

@@ -264,4 +264,8 @@ public abstract class BaseNavigationDrawerActivity extends AppCompatActivity
         }
         navigationView.setCheckedItem(navigationItem);
     }
+
+    public static final class RES_CONSTANTS{
+        public static final int ACTION_SETTINGS = R.id.action_settings;
+    }
 }

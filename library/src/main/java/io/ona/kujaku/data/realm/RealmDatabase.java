@@ -157,9 +157,10 @@ public class RealmDatabase {
 
         RealmResults<MapBoxOfflineQueueTask> realmResults = realm.where(MapBoxOfflineQueueTask.class)
                 .equalTo("taskStatus", MapBoxOfflineQueueTask.TASK_STATUS_NOT_STARTED)
-                .findAllSorted("dateUpdated", Sort.ASCENDING);
+                .sort("dateUpdated", Sort.ASCENDING)
+                .findAll();
 
-        if (realmResults.size() > 0) {
+        if (!realmResults.isEmpty()) {
             return realmResults.first();
         }
 

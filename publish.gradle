@@ -1,22 +1,32 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-task sourceJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier "sources"
-}
+afterEvaluate {
 
-task javaDoc(type: Javadoc) {
-    failOnError false
-    def mainSrc = "$project.projectDir/src/main/java"
-    source = files([mainSrc])
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    //classpath += configurations.compile
-}
+    tasks.register('sourceJar', Jar) {
+        from android.sourceSets.main.java.srcDirs
+        getArchiveClassifier().set("sources")
+    }
 
-task javadocJar(type: Jar, dependsOn: javaDoc) {
-    classifier = 'javadoc'
-    from javaDoc.destinationDir
+    tasks.register('javaDoc', Javadoc) {
+
+        failOnError false
+        def mainSrc = "$project.projectDir/src/main/java"
+        source = files([mainSrc])
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        //  classpath += configurations.runtimeClasspath
+
+        options {
+            addStringOption('Xdoclint:none', '')
+            addStringOption('charset', 'UTF-8')
+        }
+    }
+
+    tasks.register('javadocJar', Jar) {
+        dependsOn javaDoc
+        getArchiveClassifier().set('javadoc')
+        from javaDoc.destinationDir
+    }
 }
 
 /**
@@ -43,7 +53,7 @@ def getGithubPackagesAccessToken() {
     return hasProperty('githubAccessToken') ? githubAccessToken : System.getenv("GITHUB_ACCESS_TOKEN") != null ? System.getenv("GITHUB_ACCESS_TOKEN") : ""
 }
 
-def getDate() {
+static def getDate() {
     return new Date().format('yyyy-MM-dd HH:mm:ss')
 }
 
@@ -53,121 +63,124 @@ def getDate() {
  * Run ./gradlew :library:clean && ./gradlew :library:assembleRelease && ./gradlew :library:publish
  * This publishes to all production artefact repositories
  */
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId project.name
-            artifact("$buildDir/outputs/aar/$artifactId-release.aar")
-            artifact(sourceJar)
-            artifact(javadocJar)
-            groupId 'io.ona.kujaku'
-            version this.version
 
-            //The publication doesn't know about our dependencies, so we have to manually add them to the pom
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
+afterEvaluate {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId project.name
+                artifact(layout.buildDirectory.file("outputs/aar/$artifactId-release.aar"))
+                artifact(sourceJar)
+                artifact(javadocJar)
+                groupId 'io.ona.kujaku'
+                version this.version
 
-                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.implementation.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
-                }
-            }
+                //The publication doesn't know about our dependencies, so we have to manually add them to the pom
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
 
-            pom {
-                if (project.name.equals("utils")) {
-                    name = 'Kujaku Utils'
-                    description = 'Utilities for Mapping and check-in library for Android using MapBox SDK'
-                } else if (project.name.equals("library")) {
-                    name = 'Kujaku Library'
-                    description = 'Mapping and check-in library for Android using MapBox SDK'
-                }
-
-                url = 'http://github.com/onaio/kujaku'
-                packaging = 'aar'
-                licenses {
-                    license {
-                        name = 'BSD 2-Clause "Simplified" License'
-                        url = 'https://raw.githubusercontent.com/onaio/kujaku/master/LICENSE'
+                    //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                    configurations.implementation.allDependencies.each {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
                     }
                 }
-                developers {
-                    developer {
-                        id = 'ekigamba'
-                        name = 'Ephraim Kigamba'
+
+                pom {
+                    if (project.name == "utils") {
+                        name = 'Kujaku Utils'
+                        description = 'Utilities for Mapping and check-in library for Android using MapBox SDK'
+                    } else if (project.name == "library") {
+                        name = 'Kujaku Library'
+                        description = 'Mapping and check-in library for Android using MapBox SDK'
                     }
 
-                    developer {
-                        id = 'onaio'
-                        name = 'Onaio'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/onaio/kujaku.git'
-                    developerConnection = 'scm:git:ssh://github.com/onaio/kujaku.git'
                     url = 'http://github.com/onaio/kujaku'
+                    packaging = 'aar'
+                    licenses {
+                        license {
+                            name = 'BSD 2-Clause "Simplified" License'
+                            url = 'https://raw.githubusercontent.com/onaio/kujaku/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'opensrp'
+                            name = 'OpenSRP Dev'
+                        }
+
+                        developer {
+                            id = 'onaio'
+                            name = 'Onaio'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/onaio/kujaku.git'
+                        developerConnection = 'scm:git:ssh://github.com/onaio/kujaku.git'
+                        url = 'http://github.com/onaio/kujaku'
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                /** Configure path of your package repository on Github
+                 *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
+                 * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
+                 */
+                url = uri("https://maven.pkg.github.com/onaio/kujaku")
+                credentials {
+                    /** Create github.properties in root project folder file with
+                     * gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
+                     * Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file
+                     */
+                    username = getGithubPublishUsername()
+                    password = getGithubPackagesAccessToken()
+                }
+            }
+
+            maven {
+                name = "MavenCentral"
+                /** Configure path of your package repository on Github
+                 *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
+                 * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
+                 */
+
+                def repositoryURL
+                def timestampMsg = " at " + getDate()
+                if (!version.contains("SNAPSHOT")) {
+                    println 'PROCESSING MAVEN RELEASE BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
+                    repositoryURL = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+                            : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                } else {
+                    println 'PROCESSING MAVEN REMOTE SNAPSHOT BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
+                    repositoryURL = hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+                            : "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+
+                }
+                url = uri(repositoryURL)
+                credentials {
+                    /** Create gradle.properties in root project folder file with
+                     * ossrhUsername=GITHUB_USER_ID & ossrhPassword=PERSONAL_ACCESS_TOKEN
+                     */
+                    username = getOSSRHRepositoryUsername()
+                    password = getOSSRHRepositoryPassword()
                 }
             }
         }
     }
 
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            /** Configure path of your package repository on Github
-             *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
-             * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
-             */
-            url = uri("https://maven.pkg.github.com/onaio/kujaku")
-            credentials {
-                /** Create github.properties in root project folder file with
-                 * gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
-                 * Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file
-                 */
-                username = getGithubPublishUsername()
-                password = getGithubPackagesAccessToken()
-            }
-        }
-
-        maven {
-            name = "MavenCentral"
-            /** Configure path of your package repository on Github
-             *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
-             * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
-             */
-
-            def repositoryURL
-            def timestampMsg = " at " + getDate()
-            if (!version.contains("SNAPSHOT")) {
-                println 'PROCESSING MAVEN RELEASE BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
-                repositoryURL = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-                        : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            } else {
-                println 'PROCESSING MAVEN REMOTE SNAPSHOT BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
-                repositoryURL = hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-                        : "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-
-            }
-            url = uri(repositoryURL)
-            credentials {
-                /** Create gradle.properties in root project folder file with
-                 * ossrhUsername=GITHUB_USER_ID & ossrhPassword=PERSONAL_ACCESS_TOKEN
-                 */
-                username = getOSSRHRepositoryUsername()
-                password = getOSSRHRepositoryPassword()
-            }
-        }
+    signing {
+        required !version.contains("SNAPSHOT")
+        sign(publishing.publications['mavenJava'])
     }
-}
 
-signing {
-    required !version.contains("SNAPSHOT")
-    sign(publishing.publications['mavenJava'])
-}
-
-artifacts {
-    archives sourceJar
-    archives javadocJar
+    artifacts {
+        archives sourceJar
+        archives javadocJar
+    }
 }

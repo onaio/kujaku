@@ -10,12 +10,7 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.ArrayList;
 
-import io.ona.kujaku.utils.BuildConfig;
 import io.ona.kujaku.utils.exceptions.InvalidMapBoxStyleException;
-
-/**
- * Created by Jason Rogena - jrogena@ona.io on 1/2/18.
- */
 
 @RunWith(RobolectricTestRunner.class)
 @org.robolectric.annotation.Config(manifest = org.robolectric.annotation.Config.NONE)

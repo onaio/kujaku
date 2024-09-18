@@ -8,10 +8,6 @@ import timber.log.Timber;
 
 import static io.ona.kujaku.sample.util.Constants.DATABASE_NAME;
 
-/**
- * Created by Ephraim Kigamba - ekigamba@ona.io on 15/11/2017.
- */
-
 public class MyApplication extends MultiDexApplication {
 
     private static final String TAG = MyApplication.class.getName();
@@ -31,7 +27,7 @@ public class MyApplication extends MultiDexApplication {
         KujakuLibrary.init(this); // must initialize KujakuLibrary
         getRepository(); // initialize KujakuRepository
 
-        Timber.plant(new Timber.DebugTree());
+        Timber.plant((Timber.Tree)(Object)new Timber.DebugTree());
     }
 
     public static MyApplication getInstance() {

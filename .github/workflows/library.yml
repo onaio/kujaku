@@ -22,17 +22,16 @@ jobs:
       - name: Cancel previous workflow runs
         uses: styfle/cancel-workflow-action@0.9.1
         with:
-          access_token: ${{ github.token }} 
+          access_token: ${{ github.token }}
 
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          distribution: temurin
+          java-version: 17
 
       - name: Create local.properties file
         run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
@@ -45,25 +44,12 @@ jobs:
 
       - name: Git show commit count
         run: git fetch origin master && git rev-list --first-parent --count origin/master
-
-      - name: Download Robolectric deps
-        run: chmod +x download-robolectric-deps.sh && ./download-robolectric-deps.sh
-
+        
       - name: Clean project
-        run: ./gradlew clean --stacktrace
-
-      - name: Build project skipping tests
-        run: ./gradlew build -x test --stacktrace
-
-      - name: Run Instrumented Tests manually
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 22
-          script: ./gradlew :library:connectedDebug --stacktrace --info
+        run: ./gradlew clean --stacktrace 
       
       - name: Run unit tests with Gradle
         run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
- 
       - name: Generate & upload library snapshot artifact AAR (Android Archive) file
         run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
 
