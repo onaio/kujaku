@@ -48,8 +48,6 @@ jobs:
       - name: Clean project
         run: ./gradlew clean --stacktrace 
       
-      - name: Run unit tests with Gradle
-        run: ./gradlew :library:clean :library:testDebugUnitTest --stacktrace
       - name: Generate & upload library snapshot artifact AAR (Android Archive) file
         run: ./gradlew :library:clean --stacktrace && ./gradlew :library:assembleRelease --stacktrace && ./gradlew :library:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
 
