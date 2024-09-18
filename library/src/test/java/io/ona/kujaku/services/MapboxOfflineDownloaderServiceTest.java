@@ -65,11 +65,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-/**
- *
- *
- * Created by Ephraim Kigamba - ekigamba@ona.io on 05/12/2017.
- */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {
@@ -83,23 +78,23 @@ import static org.mockito.Mockito.mock;
 })
 public class MapboxOfflineDownloaderServiceTest {
 
-    private String mapName = UUID.randomUUID().toString();
+    private final String mapName = UUID.randomUUID().toString();
     private static final String TAG = MapboxOfflineDownloaderServiceTest.class.getSimpleName();
 
     private Context context;
     private MapboxOfflineDownloaderService mapboxOfflineDownloaderService;
 
-    private String sampleValidMapboxStyleURL = "mapbox://styles/ona/90kiosdcIJ3d";
+    private final String sampleValidMapboxStyleURL = "mapbox://styles/ona/90kiosdcIJ3d";
     private String mapboxAccessToken;
-    private float minZoom = 22;
-    private float maxZoom = 10;
-    private LatLng topLeftBound = new LatLng(9.1, 9.1);
-    private LatLng topRightBound = new LatLng(9.1, 20.5);
-    private LatLng bottomRightBound = new LatLng(1.1, 20.5);
-    private LatLng bottomLeftBound = new LatLng(9.1, 1.1);
+    private final float minZoom = 22;
+    private final float maxZoom = 10;
+    private final LatLng topLeftBound = new LatLng(9.1, 9.1);
+    private final LatLng topRightBound = new LatLng(9.1, 20.5);
+    private final LatLng bottomRightBound = new LatLng(1.1, 20.5);
+    private final LatLng bottomLeftBound = new LatLng(9.1, 1.1);
 
     private CountDownLatch latch;
-    private ArrayList<Object> resultsToCheck = new ArrayList<>();
+    private final ArrayList<Object> resultsToCheck = new ArrayList<>();
 
     @Before
     public void setUp() throws Exception {

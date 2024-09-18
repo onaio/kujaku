@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'realm-android'
 apply plugin: 'maven-publish'
 
-version '0.10.6-SNAPSHOT'
+version '0.10.6-2-SNAPSHOT'
 
 project.version = this.version
 
@@ -123,7 +123,7 @@ dependencies { configuration ->
     //implementation (project(":utils")) {
     // Uncomment the line below when creating releases
     implementation('io.ona.kujaku:utils:0.10.6-SNAPSHOT') {
-        transitive = true;
+        transitive = true
         exclude group: 'com.mapbox.mapboxsdk', module: 'mapbox-android-sdk'
         exclude group: 'com.android.support', module: 'support-v4'
     }
