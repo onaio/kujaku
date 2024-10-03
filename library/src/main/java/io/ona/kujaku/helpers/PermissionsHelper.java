@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
+import timber.log.Timber;
 
 public class PermissionsHelper {
 
@@ -34,7 +35,7 @@ public class PermissionsHelper {
                     .check();
 
         } else {
-            Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
+            Timber.tag(TAG).wtf("KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
         }
     }
 }
