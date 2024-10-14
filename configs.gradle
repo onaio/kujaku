@@ -53,7 +53,7 @@ ext.getVersionName = getVersionName
 
 // LOAD PROPERTIES FILE
 Properties properties = new Properties()
-String[] propertyKeys = ["cgr.username", "cgr.password", "cgr.url", "mapbox.sdk.token", "mapbox.repo.token"]
+String[] propertyKeys = ["cgr.username", "cgr.password", "cgr.url", "mapbox.sdk.token"]
 
 
 if (project.rootProject.file("local.properties").exists()) {
