@@ -136,11 +136,6 @@ dependencies { configuration ->
 
     implementation 'androidx.multidex:multidex:2.0.1'
 
-    androidTestImplementation 'org.powermock:powermock-module-junit4:2.0.9'
-    androidTestImplementation 'org.powermock:powermock-api-mockito2:2.0.9'
-    androidTestImplementation 'org.mockito:mockito-core:5.12.0'
-    androidTestImplementation 'org.robolectric:robolectric:4.13'
-
     customDependencies(this, configuration)
     appPermissionsDependencies(configuration)
     infoWindowDependencies(this, configuration)
