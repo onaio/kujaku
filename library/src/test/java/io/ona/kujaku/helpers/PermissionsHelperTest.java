@@ -1,5 +1,7 @@
 package io.ona.kujaku.helpers;
 
+import static org.junit.Assert.assertFalse;
+
 import android.app.Activity;
 import android.content.Context;
 import org.junit.Before;
@@ -19,9 +21,6 @@ public class PermissionsHelperTest {
     @Mock
     Context mockContext;
 
-    @Mock
-    Activity mockActivity;
-
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -39,5 +38,19 @@ public class PermissionsHelperTest {
 
         // Check that the dialog was created with the expected properties
         Mockito.verify(report).isAnyPermissionPermanentlyDenied();
+    }
+
+    @Test
+    public void testOnPermissionsChecked_WhenAnyPermissionNotPermanentlyDenied() {
+        MultiplePermissionsReport report = Mockito.mock(MultiplePermissionsReport.class);
+        Mockito.when(report.isAnyPermissionPermanentlyDenied()).thenReturn(false);
+        Mockito.when(report.areAllPermissionsGranted()).thenReturn(false);
+        KujakuMultiplePermissionListener listener = new KujakuMultiplePermissionListener(mockContext);
+        listener.onPermissionsChecked(report);
+
+        boolean result = report.isAnyPermissionPermanentlyDenied();
+
+        // Use the result in your assertions or further logic
+        assertFalse(result);
     }
 }
