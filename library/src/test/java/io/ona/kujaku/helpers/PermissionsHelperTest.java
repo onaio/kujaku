@@ -29,7 +29,7 @@ public class PermissionsHelperTest {
     }
 
     @Test
-    public void testOnPermissionsChecked_WhenAnyPermissionPermanentlyDenied() {
+    public void testOnPermissionsCheckedWhenAnyPermissionPermanentlyDenied() {
         MultiplePermissionsReport report = Mockito.mock(MultiplePermissionsReport.class);
         Mockito.when(report.isAnyPermissionPermanentlyDenied()).thenReturn(true);
         Mockito.when(report.areAllPermissionsGranted()).thenReturn(false);
@@ -41,7 +41,7 @@ public class PermissionsHelperTest {
     }
 
     @Test
-    public void testOnPermissionsChecked_WhenAnyPermissionNotPermanentlyDenied() {
+    public void testOnPermissionsCheckedWhenAnyPermissionNotPermanentlyDenied() {
         MultiplePermissionsReport report = Mockito.mock(MultiplePermissionsReport.class);
         Mockito.when(report.isAnyPermissionPermanentlyDenied()).thenReturn(false);
         Mockito.when(report.areAllPermissionsGranted()).thenReturn(false);
