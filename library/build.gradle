@@ -55,7 +55,7 @@ android {
                 properties.load(project.rootProject.file("local.properties").newDataInputStream())
                 if (properties != null &&
                         properties.containsKey("mapbox.sdk.token")) {
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"" + localProperties["mapbox.sdk.token"] + "\""
                 } else {
                     println("One of the required config variables is not set in your local.properties");
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
@@ -75,7 +75,7 @@ android {
                 properties.load(project.rootProject.file("local.properties").newDataInputStream())
                 if (properties != null &&
                         properties.containsKey("mapbox.sdk.token")) {
-                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+                    buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"" + localProperties["mapbox.sdk.token"] + "\""
                 } else {
                     println("One of the required config variables is not set in your local.properties");
                     buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"sample_key\""
