@@ -19,23 +19,29 @@ public class PermissionsHelper {
 
     public static void checkPermissions(String TAG, Context context) {
         if (context instanceof Activity) {
-            List<String> permissions = new ArrayList<>();
-            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S) {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
             final Activity activity = (Activity) context;
 
             MultiplePermissionsListener dialogMultiplePermissionListener = new KujakuMultiplePermissionListener(activity);
 
-            Dexter.withActivity(activity)
-                    .withPermissions(permissions)
-                    .withListener(dialogMultiplePermissionListener)
-                    .check();
+            // Check permissions based on the Android version
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                // For Android versions below 13
+                Dexter.withActivity(activity)
+                        .withPermissions(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                        .withListener(dialogMultiplePermissionListener)
+                        .check();
+            } else {
+                Dexter.withActivity(activity)
+                        .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                        .withListener(dialogMultiplePermissionListener)
+                        .check();
+            }
 
         } else {
-            Timber.tag(TAG).wtf("KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
+            Log.wtf(TAG, "KujakuMapView was not started in an activity!! This is very bad or it is being used in tests. We are going to ignore the permissions check! Good luck");
         }
     }
 }

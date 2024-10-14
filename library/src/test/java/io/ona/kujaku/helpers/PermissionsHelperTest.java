@@ -1,12 +1,7 @@
 package io.ona.kujaku.helpers;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-
-import com.karumi.dexter.MultiplePermissionsReport;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,15 +10,17 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
+import com.karumi.dexter.MultiplePermissionsReport;
 import io.ona.kujaku.utils.KujakuMultiplePermissionListener;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 28)
 public class PermissionsHelperTest {
 
-    private Context mockContext;
+    @Mock
+    Context mockContext;
+
+    @Mock
+    Activity mockActivity;
 
     @Before
     public void setUp() {
