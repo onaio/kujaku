@@ -37,7 +37,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"" + localProperties["mapbox.sdk.token"] + "\""
             buildConfigField "String", "CGR_USERNAME", localProperties["cgr.username"]
             buildConfigField "String", "CGR_PASSWORD", localProperties["cgr.password"]
             buildConfigField "String", "CGR_URL", localProperties["cgr.url"]
@@ -47,7 +47,7 @@ android {
         debug {
             // See bug https://github.com/vanniktech/gradle-android-junit-jacoco-plugin/issues/183
             testCoverageEnabled true
-            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", localProperties["mapbox.sdk.token"]
+            buildConfigField "String", "MAPBOX_SDK_ACCESS_TOKEN", "\"" + localProperties["mapbox.sdk.token"] + "\""
             buildConfigField "String", "CGR_USERNAME", localProperties["cgr.username"]
             buildConfigField "String", "CGR_PASSWORD", localProperties["cgr.password"]
             buildConfigField "String", "CGR_URL", localProperties["cgr.url"]

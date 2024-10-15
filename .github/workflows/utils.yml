@@ -34,7 +34,7 @@ jobs:
           java-version: 17
 
       - name: Create local.properties file
-        run: touch local.properties && echo "mapbox.repo.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
+        run: touch local.properties && echo "mapbox.sdk.token=${{ secrets.MAPBOX_SDK_REPO_TOKEN }}" >> local.properties
 
       - name: Print Java version
         run: java -version
