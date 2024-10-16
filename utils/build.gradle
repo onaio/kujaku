@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 
-version '0.10.7-SNAPSHOT'
+version '0.10.8-SNAPSHOT'
 project.version = this.version
 
 
