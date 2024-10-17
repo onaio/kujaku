@@ -48,6 +48,15 @@ jobs:
       - name: Clean project
         run: ./gradlew clean --stacktrace
 
+      - name: Build project skipping tests
+        run: ./gradlew build -x test --stacktrace
+
+      - name: Run Instrumented Tests manually
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          script: ./gradlew :utils:connectedDebug --stacktrace
+
       - name: Generate & upload utils snapshot artifact AAR (Android Archive) file to Sonatype
         run: ./gradlew :utils:clean --stacktrace && ./gradlew :utils:assembleRelease --stacktrace && ./gradlew :utils:publishMavenJavaPublicationToMavenCentralRepository --stacktrace
 
