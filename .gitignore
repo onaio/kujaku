@@ -16,3 +16,5 @@
 # Robolectric dependencies
 robolectric-deps/
 **/robolectric-deps.properties
+
+*.swp
