@@ -110,7 +110,6 @@ ext {
     mapboxAnnotationPluginVersion = "0.9.0"
     mapboxSdkVersion = "9.7.1"
     mapboxSdkTurfVersion = "7.2.0"
-    robolectricShadowsMultidexVersion = "4.13"
     robolectricVersion = "4.13"
     supportVersion = "1.0.0"
     volleyVersion = "1.2.1"
@@ -123,13 +122,12 @@ ext {
     mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:$mapboxSdkTurfVersion"
     mapboxAnnotationPlugin = "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:$mapboxAnnotationPluginVersion"
     robolectric = "org.robolectric:robolectric:$robolectricVersion"
-    robolectricShadowsMultidex = "org.robolectric:shadows-multidex:$robolectricShadowsMultidexVersion"
 }
 
 ext.mapboxDependencies = { instance, configuration ->
 
     configuration.implementation("com.mapbox.maps:android:$mapboxSdkVersion") {
-        transitive = true;
+        transitive = true
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-fragment'

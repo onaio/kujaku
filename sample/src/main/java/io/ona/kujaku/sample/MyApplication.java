@@ -1,6 +1,5 @@
 package io.ona.kujaku.sample;
 
-import androidx.multidex.MultiDexApplication;
 import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.sample.repository.KujakuRepository;
 import io.ona.kujaku.sample.repository.PointsRepository;
@@ -8,7 +7,9 @@ import timber.log.Timber;
 
 import static io.ona.kujaku.sample.util.Constants.DATABASE_NAME;
 
-public class MyApplication extends MultiDexApplication {
+import android.app.Application;
+
+public class MyApplication extends Application {
 
     private static final String TAG = MyApplication.class.getName();
 
