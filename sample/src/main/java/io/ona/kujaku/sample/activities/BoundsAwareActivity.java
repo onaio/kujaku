@@ -90,7 +90,7 @@ public class BoundsAwareActivity extends BaseNavigationDrawerActivity {
                 .target(new LatLng(-1.284956, 36.768831))
                 .zoom(16)
                 .build();
-        kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.setCameraState(cameraPosition);
     }
 
     private void addPointsToMap(LatLng latLng) {

@@ -8,14 +8,14 @@ import java.util.Objects;
 /**
  * @author Vincent Karuri
  */
-public class Point implements Parcelable {
+public class PointModel implements Parcelable {
 
     private Integer id;
     private double lat;
     private double lng;
     private Long dateUpdated;
 
-    public Point(Integer id, double lat, double lng) {
+    public PointModel(Integer id, double lat, double lng) {
         this.id = id;
         this.lat = lat;
         this.lng = lng;
@@ -55,12 +55,12 @@ public class Point implements Parcelable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof Point)) {
+        if (o == null || !(o instanceof PointModel)) {
             return false;
         }
-        Point point = (Point) o;
-        return Double.compare(point.getLat(), getLat()) == 0 &&
-                Double.compare(point.getLng(), getLng()) == 0;
+        PointModel pointModel = (PointModel) o;
+        return Double.compare(pointModel.getLat(), getLat()) == 0 &&
+                Double.compare(pointModel.getLng(), getLng()) == 0;
     }
 
     @Override
@@ -69,19 +69,19 @@ public class Point implements Parcelable {
     }
 
     // Parcelable methods
-    public Point(Parcel in) {
+    public PointModel(Parcel in) {
         this.id = in.readInt();
         this.lat = in.readDouble();
         this.lng = in.readDouble();
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public Point createFromParcel(Parcel in) {
-            return new Point(in);
+        public PointModel createFromParcel(Parcel in) {
+            return new PointModel(in);
         }
 
-        public Point[] newArray(int size) {
-            return new Point[size];
+        public PointModel[] newArray(int size) {
+            return new PointModel[size];
         }
     };
 

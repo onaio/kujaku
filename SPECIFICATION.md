@@ -129,7 +129,7 @@ Steps for creating the mapbox style with Kujaku configuration:
 3. Add the Kujaku config
 
 The Kujaku config is a JSON Object with the following:
-1. `data_sources` JSON Array of `name`-only JSON Objects - The name points to the data source name in the style
+1. `data_sources` JSON Array of `name`-only JSON Objects - The name pointModels to the data source name in the style
 ```json
 "data_sources": [
         {
@@ -238,7 +238,7 @@ public void addWmtsLayer(WmtsCapabilities capabilities, String layerIdentifier, 
 
 ## 2. Using Tracking Service
 
-The Tracking Service is a foreground service providing Locations points regarding some options.
+The Tracking Service is a foreground service providing Locations pointModels regarding some options.
 The application needs to register the TrackingService listener to be able to receive notifications when :
 - First location as been received
 - A new location has been recorded
@@ -351,7 +351,7 @@ The **MapActivity** will request some permissions(during runtime & in the manife
 The `KujakuMapView` enables a developer to have low level access to the geo-spatial widget. The developer can access the Mapbox APIs exposed on the mapbox `MapView` and have the flexibility to implement the widget in whatever view they want.
 
 Example usage:
-1. Add point without GPS
+1. Add pointModel without GPS
 
 ```java 
         kujakuMapView.addPoint(false, new AddPointCallback() {
@@ -369,7 +369,7 @@ Example usage:
         });
 ```
 
-2. Add point with GPS
+2. Add pointModel with GPS
 
 ```java
         kujakuMapView.addPoint(true, new AddPointCallback() {
@@ -382,7 +382,7 @@ Example usage:
             public void onCancel() {
                 // Do something here -->
                 // 1. Explain to the user that a location is required
-                // 2. Give them the option of manually locating the point
+                // 2. Give them the option of manually locating the pointModel
             }
         });
 

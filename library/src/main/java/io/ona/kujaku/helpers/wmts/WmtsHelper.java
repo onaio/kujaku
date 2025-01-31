@@ -3,11 +3,11 @@ package io.ona.kujaku.helpers.wmts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
-import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.TileSet;
+import com.mapbox.bindgen.Value;
+import com.mapbox.maps.Style;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Set;
 
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
@@ -88,24 +88,26 @@ public class WmtsHelper {
     /**
      * Add all Wmts Layers in wmtsLayers on the map
      */
-    public static void addWmtsLayers(@Nullable Set<WmtsLayer> wmtsLayers,@NonNull Style style) {
-        // Add WmtsLayers
+    public static void addWmtsLayers(@Nullable Set<WmtsLayer> wmtsLayers, @NonNull Style style) {
         if (wmtsLayers != null) {
             for (WmtsLayer layer : wmtsLayers) {
-                if (style.getSource(layer.getIdentifier()) == null) {
 
-                    TileSet tileSet = new TileSet("tileset", layer.getTemplateUrl("tile"));
-                    tileSet.setMaxZoom(layer.getMaximumZoom());
-                    tileSet.setMinZoom(layer.getMinimumZoom());
+                HashMap<String, Value> tilesetProperties = new HashMap<>();
+                tilesetProperties.put("type", Value.valueOf("raster"));
+                tilesetProperties.put("tiles", Value.valueOf(Arrays.toString(new String[]{layer.getTemplateUrl("tile")})));
+                tilesetProperties.put("maxzoom", Value.valueOf(layer.getMaximumZoom()));
+                tilesetProperties.put("minzoom", Value.valueOf(layer.getMinimumZoom()));
+                tilesetProperties.put("tileSize", Value.valueOf(layer.getTilesSize()));
 
-                    RasterSource webMapSource = new RasterSource(
-                            layer.getIdentifier(),
-                            tileSet, layer.getTilesSize());
-                    style.addSource(webMapSource);
+                style.addStyleSource(layer.getIdentifier(), Value.valueOf(tilesetProperties));
 
-                    RasterLayer webMapLayer = new RasterLayer(layer.getIdentifier(), layer.getIdentifier());
-                    style.addLayer(webMapLayer);
-                }
+                // Create raster layer properties
+                HashMap<String, Value> layerProperties = new HashMap<>();
+                layerProperties.put("id", Value.valueOf(layer.getIdentifier()));
+                layerProperties.put("type", Value.valueOf("raster"));
+                layerProperties.put("source", Value.valueOf(layer.getIdentifier()));
+                // Add layer
+                style.addStyleLayer(Value.valueOf(layerProperties),null);
             }
         }
     }

@@ -62,6 +62,9 @@ dependencies {
     // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
     // a runtime dependency
     implementation mapboxSDKTurf
+    implementation mapboxStyleEx
+    implementation mapboxLocation
+    implementation mapboxGestures
     //implementation mapboxAnnotationPlugin
 
     testImplementation junit

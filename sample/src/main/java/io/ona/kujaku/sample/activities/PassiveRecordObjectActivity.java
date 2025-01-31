@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.listeners.TrackingServiceListener;
 import io.ona.kujaku.location.KujakuLocation;
@@ -116,11 +116,11 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     }
 
     private void displayTracksRecorded(List<KujakuLocation> locations) {
-        List<Point> points = new ArrayList<>();
+        List<PointModel> pointModels = new ArrayList<>();
         for (KujakuLocation location: locations) {
-            points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
+            pointModels.add(new PointModel(location.hashCode(), location.getLatitude(), location.getLongitude()));
         }
-        kujakuMapView.updateDroppedPoints(points);
+        kujakuMapView.updateDroppedPoints(pointModels);
     }
 
     /**** TrackingServiceListener ****/
@@ -146,9 +146,9 @@ public class PassiveRecordObjectActivity extends BaseNavigationDrawerActivity im
     @Override
     public void onNewLocationReceived(KujakuLocation location) {
         Toast.makeText(getApplicationContext(), "New Location received", Toast.LENGTH_SHORT).show();
-        List<Point> points = new ArrayList<>();
-        points.add(new Point(location.hashCode(), location.getLatitude(), location.getLongitude()));
-        kujakuMapView.updateDroppedPoints(points);
+        List<PointModel> pointModels = new ArrayList<>();
+        pointModels.add(new PointModel(location.hashCode(), location.getLatitude(), location.getLongitude()));
+        kujakuMapView.updateDroppedPoints(pointModels);
     }
 
     @Override

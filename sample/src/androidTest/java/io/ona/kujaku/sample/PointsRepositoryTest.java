@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.sample.repository.PointsRepository;
 
 import static io.ona.kujaku.sample.util.Constants.DATABASE_NAME;
@@ -30,35 +30,35 @@ public class PointsRepositoryTest extends BaseRepositoryTest {
 
     @Test
     public void testAddOrUpdateShouldAddNewPoint() {
-        Point point = new Point(null, 1, 3);
-        database.addOrUpdate(point);
+        PointModel pointModel = new PointModel(null, 1, 3);
+        database.addOrUpdate(pointModel);
         assertEquals(1, database.getAllPoints().size());
     }
 
     @Test
     public void testGetAllPointsShouldGetAllAddedPoints() {
-        Point point = new Point(null, 1, 3);
-        database.addOrUpdate(point);
-        point = new Point(null, 4, 7);
-        database.addOrUpdate(point);
-        point = new Point(null, 9, 10);
-        database.addOrUpdate(point);
+        PointModel pointModel = new PointModel(null, 1, 3);
+        database.addOrUpdate(pointModel);
+        pointModel = new PointModel(null, 4, 7);
+        database.addOrUpdate(pointModel);
+        pointModel = new PointModel(null, 9, 10);
+        database.addOrUpdate(pointModel);
         assertEquals(3, database.getAllPoints().size());
     }
 
     @Test
     public void testGetPointByIdShouldGetAddedPointById() {
-        Point expectedPoint = new Point(null, 1, 3);
-        database.addOrUpdate(expectedPoint);
+        PointModel expectedPointModel = new PointModel(null, 1, 3);
+        database.addOrUpdate(expectedPointModel);
 
-        Point point = new Point(null, 4, 7);
-        database.addOrUpdate(point);
-        point = new Point(null, 9, 10);
-        database.addOrUpdate(point);
+        PointModel pointModel = new PointModel(null, 4, 7);
+        database.addOrUpdate(pointModel);
+        pointModel = new PointModel(null, 9, 10);
+        database.addOrUpdate(pointModel);
 
-        Point actualPoint  = database.getPoint("1");
-        assertEquals((int) actualPoint.getId(), 1);
-        assertEquals(actualPoint.getLat(), expectedPoint.getLat());
-        assertEquals(actualPoint.getLng(), expectedPoint.getLng());
+        PointModel actualPointModel = database.getPoint("1");
+        assertEquals((int) actualPointModel.getId(), 1);
+        assertEquals(actualPointModel.getLat(), expectedPointModel.getLat());
+        assertEquals(actualPointModel.getLng(), expectedPointModel.getLng());
     }
 }
