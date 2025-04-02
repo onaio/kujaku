@@ -5,20 +5,20 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
-import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.BackgroundLayer;
-import com.mapbox.mapboxsdk.style.layers.CircleLayer;
 import com.mapbox.mapboxsdk.style.layers.ExposedLayoutPropertyValue;
 import com.mapbox.mapboxsdk.style.layers.ExposedPaintPropertyValue;
-import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
-import com.mapbox.mapboxsdk.style.layers.FillLayer;
-import com.mapbox.mapboxsdk.style.layers.HeatmapLayer;
-import com.mapbox.mapboxsdk.style.layers.HillshadeLayer;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.LineLayer;
-import com.mapbox.mapboxsdk.style.layers.PropertyValue;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.layers.generated.BackgroundLayer;
+import com.mapbox.maps.extension.style.layers.generated.CircleLayer;
+import com.mapbox.maps.extension.style.layers.generated.FillExtrusionLayer;
+import com.mapbox.maps.extension.style.layers.generated.FillLayer;
+import com.mapbox.maps.extension.style.layers.generated.HeatmapLayer;
+import com.mapbox.maps.extension.style.layers.generated.HillshadeLayer;
+import com.mapbox.maps.extension.style.layers.generated.LineLayer;
+import com.mapbox.maps.extension.style.layers.generated.RasterLayer;
+import com.mapbox.maps.extension.style.layers.generated.SymbolLayer;
+import com.mapbox.maps.extension.style.layers.properties.PropertyValue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -99,14 +99,14 @@ public class LayerUtil {
                                 value = getFloatArray(jsonArray);
                             }
                         } else {
-                            value = Expression.raw(value.toString());
+                            value = Expression.fromRaw(value.toString());
                         }
                     } else if (value instanceof JSONObject) {
                         value = value.toString();
                     }
 
                     if (value != null) {
-                        propertyValues.add(new ExposedLayoutPropertyValue<>(key, value));
+                        propertyValues.add(new PropertyValue(key, value));
                     }
 
                 }
@@ -129,86 +129,86 @@ public class LayerUtil {
                                 value = getFloatArray(jsonArray);
                             }
                         } else {
-                            value = Expression.raw(value.toString());
+                            value = Expression.fromRaw(value.toString());
                         }
                     } else if (value instanceof JSONObject) {
                         value = value.toString();
                     }
 
                     if (value != null) {
-                        propertyValues.add(new ExposedPaintPropertyValue<>(key, value));
+                        propertyValues.add(new PropertyValue(key, value));
                     }
 
                 }
             }
 
             if (!TextUtils.isEmpty(filter)) {
-                filterExpression = Expression.raw(filter);
+                filterExpression = Expression.fromRaw(filter);
             }
 
             if (layerType.equals(LAYER_TYPE.RASTER)) {
                 layer = new RasterLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((RasterLayer) layer).setSourceLayer(sourceLayer);
+                    ((RasterLayer) layer).sourceLayer(sourceLayer);
                 }
             } else if (layerType.equals(LAYER_TYPE.FILL)) {
                 layer = new FillLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((FillLayer) layer).setSourceLayer(sourceLayer);
+                    ((FillLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((FillLayer) layer).setFilter(filterExpression);
+                    ((FillLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.LINE)) {
                 layer = new LineLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((LineLayer) layer).setSourceLayer(sourceLayer);
+                    ((LineLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((LineLayer) layer).setFilter(filterExpression);
+                    ((LineLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.SYMBOL)) {
                 layer = new SymbolLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((SymbolLayer) layer).setSourceLayer(sourceLayer);
+                    ((SymbolLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((SymbolLayer) layer).setFilter(filterExpression);
+                    ((SymbolLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.CIRCLE)) {
                 layer = new CircleLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((CircleLayer) layer).setSourceLayer(sourceLayer);
+                    ((CircleLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((CircleLayer) layer).setFilter(filterExpression);
+                    ((CircleLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.HEATMAP)) {
                 layer = new HeatmapLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((HeatmapLayer) layer).setSourceLayer(sourceLayer);
+                    ((HeatmapLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((HeatmapLayer) layer).setFilter(filterExpression);
+                    ((HeatmapLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.FILL_EXTRUSION)) {
                 layer = new FillExtrusionLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((FillExtrusionLayer) layer).setSourceLayer(sourceLayer);
+                    ((FillExtrusionLayer) layer).sourceLayer(sourceLayer);
                 }
 
                 if (filterExpression != null) {
-                    ((FillExtrusionLayer) layer).setFilter(filterExpression);
+                    ((FillExtrusionLayer) layer).filter(filterExpression);
                 }
             } else if (layerType.equals(LAYER_TYPE.HILLSHADE)) {
                 layer = new HillshadeLayer(layerId, source);
                 if (!TextUtils.isEmpty(sourceLayer)) {
-                    ((HillshadeLayer) layer).setSourceLayer(sourceLayer);
+                    ((HillshadeLayer) layer).sourceLayer(sourceLayer);
                 }
             } else if (layerType.equals(LAYER_TYPE.BACKGROUND)) {
                 layer = new BackgroundLayer(layerId);
@@ -218,11 +218,11 @@ public class LayerUtil {
                 layer.setProperties(propertyValues.toArray(new PropertyValue[0]));
 
                 if (jsonObject.has(MINZOOM)) {
-                    layer.setMinZoom(((Double) jsonObject.getDouble(MINZOOM)).floatValue());
+                    layer.minZoom(((Double) jsonObject.getDouble(MINZOOM)).floatValue());
                 }
 
                 if (jsonObject.has(MAXZOOM)) {
-                    layer.setMaxZoom(((Double) jsonObject.getDouble(MAXZOOM)).floatValue());
+                    layer.maxZoom(((Double) jsonObject.getDouble(MAXZOOM)).floatValue());
                 }
             }
         } catch (JSONException e) {

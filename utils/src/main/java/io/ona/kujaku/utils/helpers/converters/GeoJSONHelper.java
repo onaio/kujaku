@@ -6,9 +6,8 @@ import com.cocoahero.android.geojson.Feature;
 import com.cocoahero.android.geojson.FeatureCollection;
 import com.cocoahero.android.geojson.GeoJSON;
 import com.cocoahero.android.geojson.MultiPoint;
-import com.cocoahero.android.geojson.Point;
 import com.cocoahero.android.geojson.Position;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -108,15 +107,15 @@ public class GeoJSONHelper {
         GeoJSONFeature.Type featureType = geoJSONFeature.getFeatureType();
 
         if (featureType == GeoJSONFeature.Type.POINT) {
-            LatLng latLng = geoJSONFeature.getFeaturePoints().get(0);
-            Point point = new Point(latLng.getLatitude(), latLng.getLongitude(), latLng.getAltitude());
+            Point latLng = geoJSONFeature.getFeaturePoints().get(0);
+            com.cocoahero.android.geojson.Point point = new com.cocoahero.android.geojson.Point(latLng.latitude(), latLng.longitude(), latLng.altitude());
             finalFeature = new Feature(point);
 
         } else if (featureType == GeoJSONFeature.Type.MULTI_POINT) {
             MultiPoint multiPoint = new MultiPoint();
 
-            for (LatLng latLng: geoJSONFeature.getFeaturePoints()) {
-                multiPoint.addPosition(new Position(latLng.getLatitude(), latLng.getLongitude(), latLng.getAltitude()));
+            for (Point latLng: geoJSONFeature.getFeaturePoints()) {
+                multiPoint.addPosition(new Position(latLng.latitude(), latLng.longitude(), latLng.altitude()));
             }
             finalFeature = new Feature(multiPoint);
         } else {

@@ -34,10 +34,11 @@
                 android:layout_height="match_parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+                <!-- TODO figure out what happens to these values when migrating to v10
                 app:mapbox_uiLogoGravity="right|bottom"
                 app:mapbox_uiLogoMarginRight="30dp"
-                app:mapbox_uiAttributionGravity="right|end|bottom"/>
+                app:mapbox_uiAttributionGravity="right|end|bottom"/>-->
 
             <ImageButton
                 android:id="@+id/map_view_hamburger_menu"

@@ -32,8 +32,10 @@
         android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
-        android:contentDescription="@string/mapbox_attributionsIconContentDescription"
         app:srcCompat="@drawable/mapbox_info_bg_selector"/>
+       <!-- TODO figure out what happens to these values when migrating to v10
+        android:contentDescription="@string/mapbox_attributionsIconContentDescription"-->
+
 
     <!-- END OF MAPBOX VIEW XML -->
 
@@ -44,8 +46,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        android:src="@drawable/mapbox_markerview_icon_default"/>
+        android:visibility="gone"/>
+
+        <!--TODO figure out what happens to these values when migrating to v10
+        android:src="@drawable/mapbox_markerview_icon_default"-->
 
     <!-- This is the target button shown on the up-right -->
     <ImageButton

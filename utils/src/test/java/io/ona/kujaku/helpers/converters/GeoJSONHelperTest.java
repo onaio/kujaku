@@ -1,9 +1,8 @@
 package io.ona.kujaku.helpers.converters;
 
 import com.cocoahero.android.geojson.GeoJSON;
-import com.mapbox.mapboxsdk.BuildConfig;
-import com.mapbox.mapboxsdk.constants.GeometryConstants;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Geometry;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +50,7 @@ public class GeoJSONHelperTest {
                 "}";
 
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
-        geoJSONFeature.addPoint(new LatLng(-1.293522, 36.791183));
+        geoJSONFeature.addPoint(Point.fromLngLat(36.791183,-1.293522));
         geoJSONFeature.setId("b3369aa6b5022be641198d898bd20e47");
 
         GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
@@ -92,7 +91,7 @@ public class GeoJSONHelperTest {
                 "}";
 
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
-        geoJSONFeature.addPoint(new LatLng(-1.293522, 36.791183));
+        geoJSONFeature.addPoint(Point.fromLngLat(36.791183, -1.293522));
         geoJSONFeature.setId("b3369aa6b5022be641198d898bd20e47");
 
         GeoJSONHelper geoJSONHelper = new GeoJSONHelper(geoJSONFeature);
@@ -111,7 +110,7 @@ public class GeoJSONHelperTest {
     @Test
     public void getFeatureShouldReturnMultiPointFeatureWithoutProperties() throws JSONException {
         int pointsLen = 5;
-        ArrayList<LatLng> multiPoints = new ArrayList<>();
+        ArrayList<Point> multiPoints = new ArrayList<>();
 
         for(int i = 0; i < pointsLen; i++) {
             multiPoints.add(generateLatLng());
@@ -133,7 +132,7 @@ public class GeoJSONHelperTest {
     @Test
     public void getFeatureShouldReturnPointFeatureWithProperties() throws JSONException {
         int propertiesLen = 5;
-        ArrayList<LatLng> multiPoints = new ArrayList<>();
+        ArrayList<Point> multiPoints = new ArrayList<>();
         multiPoints.add(generateLatLng());
 
         ArrayList<GeoJSONFeature.Property> multiProperties = new ArrayList<>();
@@ -159,7 +158,7 @@ public class GeoJSONHelperTest {
     public void getFeatureShouldReturnMultiPointFeatureWithProperties() throws JSONException {
         int propertiesLen = 5;
         int pointsLen = 8;
-        ArrayList<LatLng> multiPoints = new ArrayList<>();
+        ArrayList<Point> multiPoints = new ArrayList<>();
 
         ArrayList<GeoJSONFeature.Property> multiProperties = new ArrayList<>();
 
@@ -184,10 +183,17 @@ public class GeoJSONHelperTest {
         assertEquals(pointsLen, jsonObject.getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("coordinates").length());
     }
 
-    private LatLng generateLatLng() {
+/*   TODO figure out where to find GeometryConstants after migrating to v10
+   private LatLng generateLatLng() {
         return new LatLng(
                 (Math.random() * (GeometryConstants.MAX_LATITUDE - GeometryConstants.MIN_LATITUDE)) + GeometryConstants.MIN_LATITUDE,
                 (Math.random() * 340d) + GeometryConstants.MIN_LONGITUDE
+        );
+    }*/
+    private Point generateLatLng() {
+        return Point.fromLngLat(
+                (Math.random() * 340d) + -1.7976931348623157E308,
+                (Math.random() * (90.0 - -90.0)) +  	-90.0
         );
     }
 

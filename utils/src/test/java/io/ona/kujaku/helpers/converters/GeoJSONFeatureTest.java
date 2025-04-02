@@ -1,12 +1,12 @@
 package io.ona.kujaku.helpers.converters;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
-
 import org.junit.Test;
 import java.util.ArrayList;
 import io.ona.kujaku.utils.helpers.converters.GeoJSONFeature;
 
 import static org.junit.Assert.*;
+
+import com.mapbox.geojson.Point;
 
 /**
  * Created by Ephraim Kigamba on 06/11/2017.
@@ -43,12 +43,12 @@ public class GeoJSONFeatureTest {
 
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
         geoJSONFeature.addProperty("name", "Some boundary");
-        geoJSONFeature.addPoint(new LatLng(3, 4));
-        geoJSONFeature.addPoint(new LatLng(9, 12));
+        geoJSONFeature.addPoint(Point.fromLngLat(4,3));
+        geoJSONFeature.addPoint(Point.fromLngLat(12,9));
 
         int count = 10;
         for(int i = 0; i < count; i++) {
-            geoJSONFeature.addPoint(new LatLng(getRandomLatOrLong(), getRandomLatOrLong()));
+            geoJSONFeature.addPoint(Point.fromLngLat(getRandomLatOrLong(), getRandomLatOrLong()));
             assertEquals(geoJSONFeature.getFeaturePoints().size(), i + 3);
         }
 
@@ -58,12 +58,12 @@ public class GeoJSONFeatureTest {
     public void constructorShouldCreatePointFeature() {
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
         geoJSONFeature.addProperty("monitor name", "Samsung");
-        geoJSONFeature.addPoint(new LatLng(3, 4));
+        geoJSONFeature.addPoint(Point.fromLngLat(4,3));
 
         assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature.getFeatureType());
 
-        ArrayList<LatLng> myPoints = new ArrayList<>();
-        myPoints.add(new LatLng(-5, 30));
+        ArrayList<Point> myPoints = new ArrayList<>();
+        myPoints.add(Point.fromLngLat(30,-5));
         GeoJSONFeature geoJSONFeature2 = new GeoJSONFeature(myPoints);
 
         assertEquals(GeoJSONFeature.Type.POINT, geoJSONFeature2.getFeatureType());
@@ -81,14 +81,14 @@ public class GeoJSONFeatureTest {
 
         GeoJSONFeature geoJSONFeature = new GeoJSONFeature();
         geoJSONFeature.addProperty("monitor name", "Samsung");
-        geoJSONFeature.addPoint(new LatLng(3, 4));
-        geoJSONFeature.addPoint(new LatLng(9, 12));
+        geoJSONFeature.addPoint(Point.fromLngLat(4,3));
+        geoJSONFeature.addPoint(Point.fromLngLat(12,9));
 
         assertEquals(GeoJSONFeature.Type.MULTI_POINT, geoJSONFeature.getFeatureType());
 
-        ArrayList<LatLng> myPoints = new ArrayList<>();
-        myPoints.add(new LatLng(-5, 30));
-        myPoints.add(new LatLng(-1.2923, 5.29093));
+        ArrayList<Point> myPoints = new ArrayList<>();
+        myPoints.add(Point.fromLngLat(30,-5));
+        myPoints.add(Point.fromLngLat(5.29093,-1.2923));
         GeoJSONFeature geoJSONFeature2 = new GeoJSONFeature(myPoints);
 
         assertEquals(GeoJSONFeature.Type.MULTI_POINT, geoJSONFeature2.getFeatureType());

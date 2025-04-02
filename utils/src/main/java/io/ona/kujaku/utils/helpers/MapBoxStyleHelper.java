@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -174,29 +174,29 @@ public class MapBoxStyleHelper {
      * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
      * property of a map to the center of the bounds given
      *
-     * @see MapBoxStyleHelper#setMapCenter(LatLng)
+     * @see MapBoxStyleHelper#setMapCenter(Point)
      *
      * @param topLeft
      * @param bottomRight
      * @throws JSONException
      */
-    public void setMapCenter(@NonNull LatLng topLeft, @NonNull LatLng bottomRight) throws JSONException {
+    public void setMapCenter(@NonNull Point topLeft, @NonNull Point bottomRight) throws JSONException {
         setMapCenter(getCenterFromBounds(topLeft, bottomRight));
     }
 
     /**
      * Sets the <a href="https://www.mapbox.com/mapbox-gl-js/style-spec/#root-center">root center</a>
-     * property of a map to the center of the {@link LatLng} given
+     * property of a map to the center of the {@link Point} given
      *
-     * @see MapBoxStyleHelper#setMapCenter(LatLng, LatLng)
+     * @see MapBoxStyleHelper#setMapCenter(Point, Point)
      *
      * @param mapCenter
      * @throws JSONException
      */
-    public void setMapCenter(@NonNull LatLng mapCenter) throws JSONException {
+    public void setMapCenter(@NonNull Point mapCenter) throws JSONException {
         JSONArray jsonArray = new JSONArray();
-        jsonArray.put(mapCenter.getLongitude());
-        jsonArray.put(mapCenter.getLatitude());
+        jsonArray.put(mapCenter.longitude());
+        jsonArray.put(mapCenter.latitude());
 
         styleObject.put(MapBoxStyleHelper.KEY_MAP_CENTER, jsonArray);
     }
@@ -223,10 +223,10 @@ public class MapBoxStyleHelper {
         return styleObject;
     }
 
-    public static LatLng getCenterFromBounds(LatLng topLeft, LatLng bottomRight) {
-        return new LatLng(
-                (topLeft.getLatitude() + bottomRight.getLatitude())/2,
-                (bottomRight.getLongitude() + topLeft.getLongitude())/2
+    public static Point getCenterFromBounds(Point topLeft, Point bottomRight) {
+        return Point.fromLngLat(
+                (bottomRight.longitude() + topLeft.longitude())/2,
+                (topLeft.latitude() + bottomRight.latitude())/2
         );
     }
 }

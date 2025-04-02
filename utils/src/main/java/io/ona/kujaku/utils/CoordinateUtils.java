@@ -4,8 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mapbox.geojson.Point;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
+import com.mapbox.maps.CoordinateBounds;
 import com.mapbox.turf.TurfConstants;
 import com.mapbox.turf.TurfMeasurement;
 
@@ -22,8 +21,8 @@ public class CoordinateUtils {
      * @param myMapBounds
      * @return
      */
-    public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, @NonNull LatLngBounds myMapBounds) {
-        return isLocationInBounds(positionInQuestion, myMapBounds.getLatNorth(), myMapBounds.getLatSouth(), myMapBounds.getLonEast(), myMapBounds.getLonWest());
+    public static boolean isLocationInBounds(@NonNull Point positionInQuestion, @NonNull CoordinateBounds myMapBounds) {
+        return isLocationInBounds(positionInQuestion, myMapBounds.north(), myMapBounds.south(), myMapBounds.east(), myMapBounds.west());
     }
 
     /**
@@ -36,11 +35,11 @@ public class CoordinateUtils {
      * @param lonWest
      * @return
      */
-    public static boolean isLocationInBounds(@NonNull LatLng positionInQuestion, double latNorth, double latSouth, double lonEast, double lonWest) {
-        return (positionInQuestion.getLatitude() <= latNorth
-                && positionInQuestion.getLatitude() >= latSouth
-                && positionInQuestion.getLongitude() <= lonEast
-                && positionInQuestion.getLongitude() >= lonWest);
+    public static boolean isLocationInBounds(@NonNull Point positionInQuestion, double latNorth, double latSouth, double lonEast, double lonWest) {
+        return (positionInQuestion.latitude() <= latNorth
+                && positionInQuestion.latitude() >= latSouth
+                && positionInQuestion.longitude() <= lonEast
+                && positionInQuestion.longitude() >= lonWest);
     }
 
 
@@ -93,17 +92,17 @@ public class CoordinateUtils {
      * @return
      */
     @Nullable
-    public static LatLng[] generate5pointsFromBbox(@NonNull double[] bbox) {
+    public static Point[] generate5pointsFromBbox(@NonNull double[] bbox) {
         if (bbox.length < 4) {
             return null;
         }
 
-        return new LatLng[]{
-                new LatLng(bbox[1], bbox[0]),
-                new LatLng(bbox[3], bbox[0]),
-                new LatLng(bbox[3], bbox[2]),
-                new LatLng(bbox[1], bbox[2]),
-                new LatLng(bbox[1], bbox[0])
+        return new Point[]{
+                Point.fromLngLat(bbox[0],bbox[0]),
+                Point.fromLngLat(bbox[0],bbox[3]),
+                Point.fromLngLat(bbox[2],bbox[3]),
+                Point.fromLngLat(bbox[2],bbox[1]),
+                Point.fromLngLat(bbox[0],bbox[1])
         };
     }
 

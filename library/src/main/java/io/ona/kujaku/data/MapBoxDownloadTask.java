@@ -3,7 +3,7 @@ package io.ona.kujaku.data;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,10 +28,10 @@ public class MapBoxDownloadTask {
     private String mapBoxStyleUrl;
     private double minZoom;
     private double maxZoom;
-    private LatLng topLeftBound;
-    private LatLng topRightBound;
-    private LatLng bottomRightBound;
-    private LatLng bottomLeftBound;
+    private Point topLeftBound;
+    private Point topRightBound;
+    private Point bottomRightBound;
+    private Point bottomLeftBound;
     private String mapBoxAccessToken;
 
     private JSONObject jsonObject;
@@ -59,10 +59,10 @@ public class MapBoxDownloadTask {
                               @NonNull String mapName,
                               @NonNull String mapBoxStyleUrl,
                               double minZoom, double maxZoom,
-                              @NonNull LatLng topLeftBound,
-                              @NonNull LatLng topRightBound,
-                              @NonNull LatLng bottomRightBound,
-                              @NonNull LatLng bottomLeftBound,
+                              @NonNull Point topLeftBound,
+                              @NonNull Point topRightBound,
+                              @NonNull Point bottomRightBound,
+                              @NonNull Point bottomLeftBound,
                               @NonNull String mapBoxAccessToken) {
         this.packageName = packageName;
         this.mapName = mapName;
@@ -164,19 +164,19 @@ public class MapBoxDownloadTask {
         this.maxZoom = maxZoom;
     }
 
-    public LatLng getTopLeftBound() {
+    public Point getTopLeftBound() {
         return topLeftBound;
     }
 
-    public void setTopLeftBound(LatLng topLeftBound) {
+    public void setTopLeftBound(Point topLeftBound) {
         this.topLeftBound = topLeftBound;
     }
 
-    public LatLng getBottomRightBound() {
+    public Point getBottomRightBound() {
         return bottomRightBound;
     }
 
-    public void setBottomRightBound(LatLng bottomRightBound) {
+    public void setBottomRightBound(Point bottomRightBound) {
         this.bottomRightBound = bottomRightBound;
     }
 
@@ -189,48 +189,48 @@ public class MapBoxDownloadTask {
     }
 
 
-    public LatLng getTopRightBound() {
+    public Point getTopRightBound() {
         return topRightBound;
     }
 
-    public void setTopRightBound(LatLng topRightBound) {
+    public void setTopRightBound(Point topRightBound) {
         this.topRightBound = topRightBound;
     }
 
-    public LatLng getBottomLeftBound() {
+    public Point getBottomLeftBound() {
         return bottomLeftBound;
     }
 
-    public void setBottomLeftBound(LatLng bottomLeftBound) {
+    public void setBottomLeftBound(Point bottomLeftBound) {
         this.bottomLeftBound = bottomLeftBound;
     }
 
     /**
-     * Converts {@link LatLng} to JSONObject so that it can be stored in
+     * Converts {@link Point} to JSONObject so that it can be stored in
      * {@link MapBoxDownloadTask#bottomRightBound} & {@link MapBoxDownloadTask#topLeftBound}
      *
      * @param latLng to convert to {@link JSONObject}
-     * @return {@link JSONObject} with the latitude & longitude from {@link LatLng}
+     * @return {@link JSONObject} with the latitude & longitude from {@link Point}
      * @throws JSONException
      */
-    public static JSONObject constructLatLngJSONObject(LatLng latLng) throws JSONException {
+    public static JSONObject constructLatLngJSONObject(Point latLng) throws JSONException {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(BOUND_LATITUDE, latLng.getLatitude());
-        jsonObject.put(BOUND_LONGITUDE, latLng.getLongitude());
+        jsonObject.put(BOUND_LATITUDE, latLng.latitude());
+        jsonObject.put(BOUND_LONGITUDE, latLng.longitude());
 
         return jsonObject;
     }
 
     /**
-     * Converts {@link JSONObject} to {@link LatLng}. The LatLng is used as {@link JSONObject}
+     * Converts {@link JSONObject} to {@link Point}. The LatLng is used as {@link JSONObject}
      * inside {@link MapBoxDownloadTask#topLeftBound} & {@link MapBoxDownloadTask#bottomRightBound}
      *
      * @param jsonObject {@link JSONObject} to convert
-     * @return similar {@link LatLng} to {@code jsonObject} passed
+     * @return similar {@link Point} to {@code jsonObject} passed
      * @throws JSONException
      */
-    public static LatLng constructLatLng(JSONObject jsonObject) throws JSONException {
-        return new LatLng(jsonObject.getDouble(BOUND_LATITUDE), jsonObject.getDouble(BOUND_LONGITUDE));
+    public static Point constructLatLng(JSONObject jsonObject) throws JSONException {
+        return Point.fromLngLat(jsonObject.getDouble(BOUND_LONGITUDE), jsonObject.getDouble(BOUND_LATITUDE));
     }
 
     /**

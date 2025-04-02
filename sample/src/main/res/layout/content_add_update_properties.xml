@@ -51,9 +51,12 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                />
+             <!--   TODO find out what these values were changed to
                 app:mapbox_uiLogoGravity="right|top"
                 app:mapbox_uiLogoMarginRight="30dp"
-                app:mapbox_uiAttributionGravity="right|end|top" />
+                app:mapbox_uiAttributionGravity="right|end|top" />-->
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>

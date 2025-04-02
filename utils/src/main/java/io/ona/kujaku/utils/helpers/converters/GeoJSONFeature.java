@@ -1,6 +1,6 @@
 package io.ona.kujaku.utils.helpers.converters;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class GeoJSONFeature {
 
     private String id;
-    private List<LatLng> featurePoints = new ArrayList<>();
+    private List<Point> featurePoints = new ArrayList<>();
     private List<Property> featureProperties = new ArrayList<>();
     public static enum Type {
         POINT,
@@ -28,7 +28,7 @@ public class GeoJSONFeature {
 
     public GeoJSONFeature() {}
 
-    public GeoJSONFeature(List<LatLng> featurePoints, List<Property> featureProperties) {
+    public GeoJSONFeature(List<Point> featurePoints, List<Property> featureProperties) {
         this.featurePoints = featurePoints;
         this.featureProperties = featureProperties;
 
@@ -37,11 +37,11 @@ public class GeoJSONFeature {
         }
     }
 
-    public GeoJSONFeature(List<LatLng> featurePoints) {
+    public GeoJSONFeature(List<Point> featurePoints) {
         this(featurePoints, new ArrayList<Property>());
     }
 
-    public GeoJSONFeature addPoint(LatLng latLng) {
+    public GeoJSONFeature addPoint(Point latLng) {
         if (featurePoints == null) {
             featurePoints = new ArrayList<>();
         }
@@ -62,7 +62,7 @@ public class GeoJSONFeature {
         return this;
     }
 
-    public List<LatLng> getFeaturePoints() {
+    public List<Point> getFeaturePoints() {
         return featurePoints;
     }
 
