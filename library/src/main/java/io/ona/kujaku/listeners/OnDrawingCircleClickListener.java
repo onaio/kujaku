@@ -2,8 +2,7 @@ package io.ona.kujaku.listeners;
 
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+import com.mapbox.geojson.Point;
 
 public interface OnDrawingCircleClickListener {
 
@@ -18,5 +17,5 @@ public interface OnDrawingCircleClickListener {
      * Called when no circle was clicked
      *
      */
-    void onCircleNotClick(@NonNull LatLng latLng);
+    void onCircleNotClick(@NonNull Point latLng);
 }

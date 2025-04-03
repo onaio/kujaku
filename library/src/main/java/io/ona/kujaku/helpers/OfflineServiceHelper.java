@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import io.ona.kujaku.data.realm.objects.MapBoxOfflineQueueTask;
 import io.ona.kujaku.services.MapboxOfflineDownloaderService;
@@ -34,8 +34,8 @@ public abstract class OfflineServiceHelper {
      */
     public static void requestOfflineMapDownload(@NonNull Context context, @NonNull String mapName,
                                           @NonNull String mapboxStyleUrl, @NonNull String mapBoxAccessToken,
-                                          @NonNull LatLng topLeftBound, @NonNull LatLng topRightBound,
-                                          @NonNull LatLng bottomRightBound, @NonNull LatLng bottomLeftBound,
+                                          @NonNull Point topLeftBound, @NonNull Point topRightBound,
+                                          @NonNull Point bottomRightBound, @NonNull Point bottomLeftBound,
                                           @NonNull ZoomRange zoomRange) {
         requestOfflineMapDownload(context, mapName, mapboxStyleUrl, mapBoxAccessToken, topLeftBound, topRightBound, bottomRightBound, bottomLeftBound, zoomRange,6000l);
     }
@@ -60,8 +60,8 @@ public abstract class OfflineServiceHelper {
      */
     public static void requestOfflineMapDownload(@NonNull Context context, @NonNull String mapName,
                                                  @NonNull String mapboxStyleUrl, @NonNull String mapBoxAccessToken,
-                                                 @NonNull LatLng topLeftBound, @NonNull LatLng topRightBound,
-                                                 @NonNull LatLng bottomRightBound, @NonNull LatLng bottomLeftBound,
+                                                 @NonNull Point topLeftBound, @NonNull Point topRightBound,
+                                                 @NonNull Point bottomRightBound, @NonNull Point bottomLeftBound,
                                                  @NonNull ZoomRange zoomRange, @NonNull Long tileDownloadLimit) {
         Intent intent = new Intent(context, MapboxOfflineDownloaderService.class);
         intent.putExtra(Constants.PARCELABLE_KEY_SERVICE_ACTION, MapboxOfflineDownloaderService.SERVICE_ACTION.DOWNLOAD_MAP);

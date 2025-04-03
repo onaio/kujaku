@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -271,10 +271,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         currentMapDownload = mapName;
 
         String mapboxStyle = "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m";
-        LatLng topLeftBound = new LatLng(topLeftLat, topLeftLng);
-        LatLng topRightBound = new LatLng(topRightLat, topRightLng);
-        LatLng bottomRightBound = new LatLng(bottomRightLat, bottomRightLng);
-        LatLng bottomLeftBound = new LatLng(bottomLeftLat, bottomLeftLng);
+        Point topLeftBound = Point.fromLngLat(topLeftLng, topLeftLat);
+        Point topRightBound = Point.fromLngLat(topRightLng, topRightLat);
+        Point bottomRightBound = Point.fromLngLat(bottomRightLng, bottomRightLat);
+        Point bottomLeftBound = Point.fromLngLat(bottomLeftLng, bottomLeftLat);
 
         double maxZoom = 20.0;
         double minZoom = 0.0;
@@ -517,6 +517,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             requestBasicPermissions();
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void showInfoNotification(String title, String content) {
