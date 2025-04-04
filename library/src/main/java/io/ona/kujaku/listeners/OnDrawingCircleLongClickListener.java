@@ -1,9 +1,10 @@
 package io.ona.kujaku.listeners;
 
+import android.graphics.Point;
+
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotation;
 
 public interface OnDrawingCircleLongClickListener {
 
@@ -12,11 +13,11 @@ public interface OnDrawingCircleLongClickListener {
      *
      * @param circle the circle clicked.
      */
-    void onCircleLongClick(@NonNull Circle circle);
+    void onCircleLongClick(@NonNull CircleAnnotation circle);
 
     /**
      * Called when no circle was clicked
      *
      */
-    void onCircleNotLongClick(@NonNull LatLng latLng);
+    void onCircleNotLongClick(@NonNull Point latLng);
 }

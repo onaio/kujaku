@@ -3,6 +3,7 @@ package io.ona.kujaku.manager;
 import androidx.annotation.NonNull;
 
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotation;
 
 /**
  * KujakuCircle class embeds a Circle instance
@@ -13,12 +14,12 @@ import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 public class KujakuCircle {
 
     private boolean isMiddleCircle;
-    private Circle circle;
+    private CircleAnnotation circle;
 
     private KujakuCircle previousKujakuCircle;
     private KujakuCircle nextKujakuCircle;
 
-    KujakuCircle(@NonNull Circle circle, KujakuCircle previousKujakuCircle, boolean isMiddleCircle) {
+    KujakuCircle(@NonNull CircleAnnotation circle, KujakuCircle previousKujakuCircle, boolean isMiddleCircle) {
        this.circle = circle;
        this.previousKujakuCircle = previousKujakuCircle;
        this.isMiddleCircle = isMiddleCircle;
@@ -33,7 +34,7 @@ public class KujakuCircle {
      *
      * @return
      */
-    public Circle getCircle() {
+    public CircleAnnotation getCircle() {
         return this.circle;
     }
 

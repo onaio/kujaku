@@ -6,8 +6,9 @@ package io.ona.kujaku.listeners;
  * Created by Ephraim Kigamba - ekigamba@ona.io on 21/11/2017.
  */
 
-import com.mapbox.mapboxsdk.offline.OfflineRegion;
-import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+
+import com.mapbox.maps.OfflineRegion;
+import com.mapbox.maps.OfflineRegionStatus;
 
 /**
  * This callback receives an asynchronous response containing the OfflineRegionStatus

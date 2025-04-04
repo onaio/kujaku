@@ -2,39 +2,42 @@ package io.ona.kujaku.manager;
 
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
-import com.mapbox.mapboxsdk.plugins.annotation.FillManager;
-import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
+import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.Style;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
+import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager;
 
 import io.ona.kujaku.views.KujakuMapView;
 
 public class AnnotationRepositoryManager {
 
-    private static FillManager fillManager;
-    private static LineManager lineManager;
-    private static CircleManager circleManager;
+    private static PointAnnotationManager fillManager;
+    private static PolylineAnnotationManager lineManager;
+    private static CircleAnnotationManager circleManager;
 
-    public static FillManager getFillManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+    public static PointAnnotationManager getFillManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         if (fillManager == null) {
-            fillManager = new FillManager(mapView, mapboxMap, style);
+            /* TODO Refactor this
+            fillManager = new PointAnnotationManager(mapView, mapboxMap, style);*/
         }
 
         return fillManager;
     }
 
-    public static LineManager getLineManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+    public static PolylineAnnotationManager getLineManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         if (lineManager == null) {
-            lineManager = new LineManager(mapView, mapboxMap, style);
+            /*TODO Refactor this
+            lineManager = new PolylineAnnotationManager(mapView, mapboxMap, style);*/
         }
 
         return lineManager;
     }
 
-    public static CircleManager getCircleManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
+    public static CircleAnnotationManager getCircleManagerInstance(@NonNull KujakuMapView mapView, @NonNull MapboxMap mapboxMap, @NonNull Style style) {
         if (circleManager == null) {
-            circleManager = new CircleManager(mapView, mapboxMap, style);
+            /*TODO Refactor this
+            circleManager = new CircleAnnotationManager(mapView, mapboxMap, style);*/
         }
 
         return circleManager;

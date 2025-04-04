@@ -9,6 +9,8 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.maps.extension.observable.model.RenderMode;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 
 import org.json.JSONException;

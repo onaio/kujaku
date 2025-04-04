@@ -3,7 +3,10 @@ package io.ona.kujaku.views;
 import static com.mapbox.maps.plugin.Plugin.MAPBOX_ANNOTATION_PLUGIN_ID;
 import static com.mapbox.maps.plugin.Plugin.MAPBOX_CAMERA_PLUGIN_ID;
 
+import static io.realm.Realm.getApplicationContext;
+
 import android.Manifest;
+import android.animation.Animator;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,7 +22,7 @@ import android.os.IBinder;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
+
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,13 +39,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
-import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraState;
 import com.mapbox.maps.MapView;
 import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.RenderModeType;
 import com.mapbox.maps.Style;
 import com.mapbox.maps.extension.style.expressions.generated.Expression;
 import com.mapbox.maps.extension.style.layers.Layer;
@@ -630,13 +633,14 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
-        if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
+       /* TODO Refactor this
+       if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
             style.addStyleSource(getPrimaryGeoJsonSource());
         }
 
         if (getPrimaryLayer() != null && style.getLayer(getPrimaryLayer().getId()) == null) {
             style.addLayer(getPrimaryLayer());
-        }
+        }*/
 
         if (isFetchSourceFromStyle) {
             initializeSourceAndFeatureCollectionFromStyle(style);
@@ -693,12 +697,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         this.wmtsLayers.add(WmtsHelper.identifyLayer(capabilities, layerIdentifier, styleIdentifier, tileMatrixSetLinkIdentifier));
 
-        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isStyleLoaded()) {
             WmtsHelper.addWmtsLayers(this.wmtsLayers, mapboxMap.getStyle());
         }
     }
 
     private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
+        /* TODO Refactor this
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
@@ -717,32 +722,35 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             public void onMoveEnd(@NonNull MoveGestureDetector detector) {
                 callBoundsChangedListeners();
             }
-        });
+        });*/
     }
 
     private void callBoundsChangedListeners() {
         if (boundsChangeListener != null) {
+           /* TODO Refactor this
             VisibleRegion visibleRegion = getCurrentBounds();
 
             if (visibleRegion != null) {
                 boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
                         , visibleRegion.nearRight, visibleRegion.nearLeft);
-            }
+            }*/
         }
     }
 
-    @VisibleForTesting
+ /*  TODO Refactor this
+  @VisibleForTesting
     @Nullable
     protected VisibleRegion getCurrentBounds() {
         return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
-    }
+    }*/
 
     private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
+        /* TODO Refactor this
         mapboxMap.removeOnMapClickListener(this);
         mapboxMap.addOnMapClickListener(this);
 
         mapboxMap.removeOnMapLongClickListener(this);
-        mapboxMap.addOnMapLongClickListener(this);
+        mapboxMap.addOnMapLongClickListener(this);*/
     }
 
     private void dropPointOnMap(@NonNull PointModel pointModel) {
@@ -783,9 +791,30 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         MapAnimationOptions animationOptions = new MapAnimationOptions.Builder()
                 .duration(animateToNewTargetDuration)
                 .build();
+        Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(@NonNull Animator animation) {
+
+            }
+        };
 
             CameraAnimationsPlugin cameraAnimations = getPlugin(MAPBOX_CAMERA_PLUGIN_ID);
-            cameraAnimations.flyTo(cameraOptions, animationOptions);
+            cameraAnimations.flyTo(cameraOptions, animationOptions, animatorListener);
 
     }
 
@@ -887,7 +916,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation) {
-        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderMode.NORMAL);
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderModeType.FULL.ordinal());
     }
 
     @Override
@@ -897,7 +926,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
-        focusOnUserLocation(focusOnMyLocation, radius, RenderMode.NORMAL);
+        focusOnUserLocation(focusOnMyLocation, radius, RenderModeType.FULL.ordinal());
     }
 
     @Override
@@ -917,7 +946,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
 
-        locationRenderMode = renderMode;
+        /* TODO Refator this
+            locationRenderMode = renderMode;*/
     }
 
     @Override
@@ -946,7 +976,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
             mapboxMap.getStyle(new Style.OnStyleLoaded() {
                 @Override
                 public void onStyleLoaded(@NonNull Style style) {
-                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
+                   /* TODO Refactor this
+                   ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getSourceId())).setGeoJson(KujakuMapView.this.featureCollection);*/
                 }
             });
         }
@@ -973,7 +1004,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            /* TODO Refactor this
+            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getSourceId())).setGeoJson(this.featureCollection);*/
         }
     }
 
@@ -996,7 +1028,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     private void initializeSourceAndFeatureCollectionFromStyle(@NonNull Style style) {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());
+            /* TODO Refactor this
+            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());*/
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Timber.e(e);
@@ -1137,7 +1170,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public boolean onMapClick(@NonNull LatLng point) {
+    public boolean onMapClick(@NonNull Point point) {
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onFeatureClickListener != null) {
@@ -1159,7 +1192,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     }
 
     @Override
-    public boolean onMapLongClick(@NonNull LatLng point) {
+    public boolean onMapLongClick(@NonNull Point point) {
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onFeatureLongClickListener != null) {
@@ -1309,7 +1342,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView {
     @Override
     public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
         String[] layerIds = kujakuLayer.getLayerIds();
-        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isStyleLoaded()) {
             for (String layerId : layerIds) {
                 if (mapboxMap.getStyle().getLayer(layerId) == null) {
                     return false;

@@ -11,7 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.maps.Style;
 
 import java.util.ArrayList;
 
@@ -179,7 +179,7 @@ public class BaseLayerSwitcherPlugin implements PopupMenu.OnMenuItemClickListene
 
     @VisibleForTesting
     protected void showBaseLayer(@NonNull BaseLayer baseLayer) {
-        if (style.isFullyLoaded()) {
+        if (style.isStyleLoaded()) {
             // Remove the previous baseLayer
             if (currentBaseLayer != null) {
                 // Todo: Figure out this issue, where "Cannot Add Already Added Layer" or "Memory Violation"

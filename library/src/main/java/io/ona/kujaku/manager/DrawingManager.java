@@ -1,7 +1,7 @@
 package io.ona.kujaku.manager;
 
 import android.graphics.Color;
-import android.graphics.PointF;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -11,19 +11,15 @@ import com.mapbox.geojson.Geometry;
 import com.mapbox.geojson.MultiPolygon;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.plugins.annotation.Circle;
-import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
-import com.mapbox.mapboxsdk.plugins.annotation.FillManager;
-import com.mapbox.mapboxsdk.plugins.annotation.FillOptions;
-import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
-import com.mapbox.mapboxsdk.plugins.annotation.LineOptions;
-import com.mapbox.mapboxsdk.plugins.annotation.OnCircleClickListener;
-import com.mapbox.mapboxsdk.plugins.annotation.OnCircleDragListener;
-import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.Style;
+import com.mapbox.maps.plugin.annotation.Annotation;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotation;
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager;
+import com.mapbox.maps.plugin.annotation.generated.OnCircleAnnotationDragListener;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
+import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationManager;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +43,9 @@ public class DrawingManager {
     private List<KujakuCircle> circles;
     private KujakuCircle currentKujakuCircle;
 
-    private FillManager fillManager;
-    private LineManager lineManager;
-    private CircleManager circleManager;
+    private PointAnnotationManager fillManager;
+    private PolylineAnnotationManager lineManager;
+    private CircleAnnotationManager circleManager;
 
     private OnDrawingCircleClickListener onDrawingCircleClickListener;
     private OnKujakuLayerLongClickListener onKujakuLayerLongClickListener;
@@ -77,39 +73,37 @@ public class DrawingManager {
         lineManager = AnnotationRepositoryManager.getLineManagerInstance(mapView, mapboxMap, style);
         circleManager = AnnotationRepositoryManager.getCircleManagerInstance(mapView, mapboxMap, style);
 
-        circleManager.addClickListener(new OnCircleClickListener() {
-            @Override
-            public boolean onAnnotationClick(Circle circle) {
-                if (drawingEnabled) {
-                    unsetCurrentCircleDraggable();
-                    setDraggable(!circle.isDraggable(), circle);
+        circleManager.addClickListener(circle -> {
+            if (drawingEnabled) {
+                unsetCurrentCircleDraggable();
+                setDraggable(!circle.isDraggable(), circle);
 
-                    if (onDrawingCircleClickListener != null) {
-                        onDrawingCircleClickListener.onCircleClick(circle);
-                    }
+                if (onDrawingCircleClickListener != null) {
+                    onDrawingCircleClickListener.onCircleClick(circle);
                 }
-
-                return false;
             }
+
+            return false;
         });
 
-        circleManager.addDragListener(new OnCircleDragListener() {
+        circleManager.addDragListener(new OnCircleAnnotationDragListener() {
             @Override
-            public void onAnnotationDragStarted(Circle circle) {
+            public void onAnnotationDragFinished(@NonNull Annotation<?> annotation) {
                 // Left empty on purpose
             }
 
             @Override
-            public void onAnnotationDrag(Circle circle) {
+            public void onAnnotationDragStarted(@NonNull Annotation<?> annotation) {
+                // Left empty on purpose
+            }
+
+            @Override
+            public void onAnnotationDrag(@NonNull Annotation<?> annotation) {
                 refreshPolygon();
             }
-
-            @Override
-            public void onAnnotationDragFinished(Circle circle) {
-                // Left empty on purpose
-            }
         });
 
+        /* TODO Refactor this
         mapboxMap.addOnMapClickListener(new MapboxMap.OnMapClickListener() {
             @Override
             public boolean onMapClick(@NonNull LatLng point) {
@@ -133,7 +127,7 @@ public class DrawingManager {
 
                 return false;
             }
-        });
+        });*/
 
         kujakuMapView.setOnKujakuLayerLongClickListener(new OnKujakuLayerLongClickListener() {
             @Override
@@ -187,7 +181,7 @@ public class DrawingManager {
      *
      * @param circle
      */
-    private void setCurrentCircle(@Nullable Circle circle) {
+    private void setCurrentCircle(@Nullable CircleAnnotation circle) {
         this.currentKujakuCircle = getKujakuCircle(circle);
     }
 
@@ -344,7 +338,7 @@ public class DrawingManager {
      * @param circle
      * @return
      */
-    private KujakuCircle getKujakuCircle(@Nullable Circle circle) {
+    private KujakuCircle getKujakuCircle(@Nullable CircleAnnotation circle) {
         if (circle == null) {
             return null;
         }
@@ -366,8 +360,8 @@ public class DrawingManager {
             List<KujakuCircleOptions> newCirclesOptions = new ArrayList<>();
 
             List<KujakuCircle> circles = this.getKujakuCircles();
-            Circle circle1 = null;
-            Circle circle2 = null;
+            CircleAnnotation circle1 = null;
+            CircleAnnotation circle2 = null;
 
             for(int i = 0 ; i < circles.size() ; i ++) {
                 KujakuCircle circle = circles.get(i);
@@ -375,7 +369,7 @@ public class DrawingManager {
                 if (!circle.isMiddleCircle()) {
                     if (circle1 == null) {
                         circle1 = circle.getCircle();
-                        newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle1.getLatLng()));
+                        newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle1.getPoint()));
                     } else {
                         circle2 = circle.getCircle();
                     }
@@ -384,7 +378,7 @@ public class DrawingManager {
                 if (circle1 != null && circle2 != null) {
                     KujakuCircleOptions newKujakuCircleOptions = this.createMiddleKujakuCircleOptions(circle1, circle2, getKujakuCircleMiddleOptions()) ;
                     newCirclesOptions.add(newKujakuCircleOptions);
-                    newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle2.getLatLng()));
+                    newCirclesOptions.add(getKujakuCircleOptions().withLatLng(circle2.getPoint()));
 
                     circle1 = circle2;
                     circle2 = null;
@@ -411,17 +405,19 @@ public class DrawingManager {
      * @param options
      * @return
      */
-    private KujakuCircleOptions createMiddleKujakuCircleOptions(@NonNull Circle circle1, @NonNull Circle circle2, @NonNull KujakuCircleOptions options) {
-        double lonEast = Math.max(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
-        double lonWest = Math.min(circle1.getLatLng().getLongitude(), circle2.getLatLng().getLongitude());
-        double latNorth = Math.max(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
-        double latSouth = Math.min(circle1.getLatLng().getLatitude(), circle2.getLatLng().getLatitude());
+    private KujakuCircleOptions createMiddleKujakuCircleOptions(@NonNull CircleAnnotation circle1, @NonNull CircleAnnotation circle2, @NonNull KujakuCircleOptions options) {
+        /* TODO Refactor this
+        double lonEast = Math.max(circle1.getPoint().longitude(), circle2.getPoint().longitude());
+        double lonWest = Math.min(circle1.getPoint().longitude(), circle2.getPoint().longitude());
+        double latNorth = Math.max(circle1.getPoint().latitude(), circle2.getLagetPointtLng().getLatitude());
+        double latSouth = Math.min(circle1.getPoint().latitude(), circle2.getPoint().latitude());
 
-        LatLng latLng =
+        Point latLng =
                 LatLngBounds.from(latNorth, lonEast, latSouth, lonWest).getCenter();
 
         return options
-                .withLatLng(latLng);
+                .withLatLng(latLng);*/
+        return options;
     }
 
     /**
@@ -433,14 +429,14 @@ public class DrawingManager {
         lineManager.deleteAll();
 
         if (this.getKujakuCircles().size() > 1) {
-            List<LatLng> list = new ArrayList<>();
+            List<Point> list = new ArrayList<>();
             for (int i = 0 ; i < this.getKujakuCircles().size() ; i++) {
                 if (! this.getKujakuCircles().get(i).isMiddleCircle()) {
-                    list.add(this.getKujakuCircles().get(i).getCircle().getLatLng());
+                    list.add(this.getKujakuCircles().get(i).getCircle().getPoint());
                 }
             }
 
-            List<List<LatLng>> lists =  new ArrayList<>();
+            List<List<Point>> lists =  new ArrayList<>();
             lists.add(list);
 
             fillManager.create(new FillOptions()
@@ -464,7 +460,7 @@ public class DrawingManager {
      * @param latLng
      * @return
      */
-    public Circle drawCircle(@NonNull LatLng latLng) {
+    public CircleAnnotation drawCircle(@NonNull Point latLng) {
         return this.create(DrawingManager.getKujakuCircleOptions().withLatLng(latLng));
     }
 
@@ -474,7 +470,7 @@ public class DrawingManager {
      * @param options
      * @return
      */
-    public Circle create(@NonNull KujakuCircleOptions options) {
+    public CircleAnnotation create(@NonNull KujakuCircleOptions options) {
        return this.create(options, true);
     }
 
@@ -486,8 +482,8 @@ public class DrawingManager {
      * @param refresh
      * @return
      */
-    private Circle create(@NonNull KujakuCircleOptions options, boolean refresh) {
-        Circle circle = circleManager.create(options);
+    private CircleAnnotation create(@NonNull KujakuCircleOptions options, boolean refresh) {
+        CircleAnnotation circle = circleManager.create(options);
         KujakuCircle previousCircle = null;
 
         if (circles.size() > 0) {
@@ -592,7 +588,7 @@ public class DrawingManager {
      * @param draggable
      * @param circle
      */
-    public void setDraggable(boolean draggable, @NonNull Circle circle) {
+    public void setDraggable(boolean draggable, @NonNull CircleAnnotation circle) {
         circle.setDraggable(draggable);
         KujakuCircleOptions options;
 
@@ -660,9 +656,9 @@ public class DrawingManager {
      * @param circle
      * @return
      */
-    public boolean isMiddleCircle(@NonNull Circle circle) {
+    public boolean isMiddleCircle(@NonNull CircleAnnotation circle) {
         for (KujakuCircle c : circles) {
-            if (c.getCircle().getId() == circle.getId()) {
+            if (c.getCircle().getId().equals(circle.getId())) {
                 return c.isMiddleCircle();
             }
         }
