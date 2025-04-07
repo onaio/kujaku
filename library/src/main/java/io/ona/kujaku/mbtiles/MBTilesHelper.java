@@ -7,19 +7,21 @@ import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.layers.FillLayer;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.LineLayer;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
-import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.Source;
-import com.mapbox.mapboxsdk.style.sources.TileSet;
-import com.mapbox.mapboxsdk.style.sources.VectorSource;
+
+import com.mapbox.maps.Style;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.layers.generated.FillLayer;
+import com.mapbox.maps.extension.style.layers.generated.LineLayer;
+import com.mapbox.maps.extension.style.layers.generated.RasterLayer;
+import com.mapbox.maps.extension.style.sources.Source;
+import com.mapbox.maps.extension.style.sources.TileSet;
+import com.mapbox.maps.extension.style.sources.generated.RasterSource;
+import com.mapbox.maps.extension.style.sources.generated.VectorSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -29,12 +31,6 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin;
 import io.ona.kujaku.plugin.switcher.layer.MBTilesLayer;
 import timber.log.Timber;
 
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterOpacity;
 
 /**
  * Created by samuelgithengi on 9/29/19.
@@ -118,9 +114,10 @@ public class MBTilesHelper {
     private void addMbtiles(Style style, String id, File file) {
         Pair<Source, List<Layer>> sourceAndLayers = addMbtiles(id, file);
         if (sourceAndLayers != null) {
+            /* TODO Refactor this
             style.addSource(sourceAndLayers.first);
             for (Layer layer : sourceAndLayers.second)
-                style.addLayer(layer);
+                style.addLayer(layer);*/
         }
     }
 
@@ -139,61 +136,79 @@ public class MBTilesHelper {
         tileServer.addSource(id, mbtiles);
 
         if (mbtiles.getType() == MbtilesFile.Type.VECTOR) {
-            source = new VectorSource(id, tileSet);
+           // source = new VectorSource(id, tileSet);
+            source = new VectorSource(new VectorSource.Builder(id).tileSet(tileSet));
             List<MbtilesFile.VectorLayer> layers = mbtiles.getVectorLayers();
             for (MbtilesFile.VectorLayer layer : layers) {
                 // Pick a colour that's a function of the filename and layer name.
                 int hue = (((id + "." + layer.name).hashCode()) & 0x7fffffff) % 360;
-                mapLayers.add(new FillLayer(id + "/" + layer.name + ".fill", id).withProperties(
-                        fillColor(Color.HSVToColor(new float[]{hue, 0.3f, 1})),
-                        fillOpacity(0.1f)
-                ).withSourceLayer(layer.name));
-                mapLayers.add(new LineLayer(id + "/" + layer.name + ".line", id).withProperties(
-                        lineColor(Color.HSVToColor(new float[]{hue, 0.7f, 1})),
-                        lineWidth(1f),
-                        lineOpacity(0.7f)
-                ).withSourceLayer(layer.name));
+                mapLayers.add(new FillLayer(id + "/" + layer.name + ".fill", id)
+                        .fillColor(Color.HSVToColor(new float[]{hue, 0.3f, 1}))
+                        .fillOpacity(0.1f)
+                        .sourceLayer(layer.name));
+
+                mapLayers.add(new LineLayer(id + "/" + layer.name + ".line", id).lineColor(Color.HSVToColor(new float[]{hue, 0.7f, 1}))
+                        .lineWidth(1f)
+                        .lineOpacity(0.7f)
+                        .sourceLayer(layer.name));
             }
         }
         if (mbtiles.getType() == MbtilesFile.Type.RASTER) {
-            source = new RasterSource(id, tileSet);
-            mapLayers.add(new RasterLayer(id + ".raster", id).withProperties(
-                    rasterOpacity(0.5f)
-            ));
+            source = new RasterSource(new RasterSource.Builder(id).tileSet(tileSet));
+            mapLayers.add(new RasterLayer(id + ".raster", id)
+                    .rasterOpacity(0.5f)
+            );
         }
         Timber.i("Added %s as a %s layer at /%s", file, mbtiles.getType(), id);
         return new Pair<>(source, mapLayers);
     }
 
     private TileSet createTileSet(MbtilesFile mbtiles, String urlTemplate) {
-        TileSet tileSet = new TileSet("2.2.0", urlTemplate);
-
-        // Configure the TileSet using the metadata in the .mbtiles file.
-        tileSet.setName(mbtiles.getMetadata("name"));
+        //TileSet tileSet = new TileSet("2.2.0", urlTemplate);
+        int minZoom = 0;
+        int maxZoom = 30;
         try {
-            tileSet.setMinZoom(Integer.parseInt(mbtiles.getMetadata("minzoom")));
-            tileSet.setMaxZoom(Integer.parseInt(mbtiles.getMetadata("maxzoom")));
+            minZoom = Integer.parseInt(mbtiles.getMetadata("minzoom"));
+            maxZoom = Integer.parseInt(mbtiles.getMetadata("maxzoom"));
         } catch (NumberFormatException e) { /* ignore */ }
 
-        String[] parts = mbtiles.getMetadata("center").split(",");
-        if (parts.length == 3) {  // latitude, longitude, zoom
+        String[] centerParts = mbtiles.getMetadata("center").split(",");
+        Double latitude = null;
+        Double longitude = null;
+        Double zoom = null;
+        if (centerParts.length == 3) {  // latitude, longitude, zoom
             try {
-                tileSet.setCenter(
-                        Float.parseFloat(parts[0]), Float.parseFloat(parts[1]),
-                        (float) Integer.parseInt(parts[2])
-                );
+                latitude = Double.parseDouble(centerParts[0]);
+                longitude = Double.parseDouble(centerParts[1]);
+                zoom = (double) Integer.parseInt(centerParts[2]);
+
             } catch (NumberFormatException e) { /* ignore */ }
         }
 
-        parts = mbtiles.getMetadata("bounds").split(",");
-        if (parts.length == 4) {  // left, bottom, right, top
+        String[] boundspartS = mbtiles.getMetadata("bounds").split(",");
+        Double left = -180.0;
+        Double bottom = -90.0;
+        Double right = 180.0;
+        Double top = 90.0;
+        if (boundspartS.length == 4) {  // left, bottom, right, top
             try {
-                tileSet.setBounds(
-                        Float.parseFloat(parts[0]), Float.parseFloat(parts[1]),
-                        Float.parseFloat(parts[2]), Float.parseFloat(parts[3])
-                );
+                left = Double.parseDouble(boundspartS[0]);
+                bottom = Double.parseDouble(boundspartS[1]);
+                right =Double.parseDouble(boundspartS[2]);
+                top = Double.parseDouble(boundspartS[3]);
+
             } catch (NumberFormatException e) { /* ignore */ }
         }
+
+        TileSet tileSet = new TileSet.Builder("2.2.0", Collections.singletonList(urlTemplate))
+                // Configure the TileSet using the metadata in the .mbtiles file.
+                .name(mbtiles.getMetadata("name"))
+                .minZoom(minZoom)
+                .maxZoom(maxZoom)
+                .center(Arrays.asList(latitude,longitude,zoom))
+                .bounds(Arrays.asList(left, bottom, right, top))
+                .build();
+
 
         return tileSet;
     }

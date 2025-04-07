@@ -3,12 +3,12 @@ package io.ona.kujaku.plugin.switcher.layer;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.FillLayer;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.sources.Source;
-import com.mapbox.mapboxsdk.style.sources.VectorSource;
+
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.layers.generated.FillLayer;
+import com.mapbox.maps.extension.style.sources.Source;
+import com.mapbox.maps.extension.style.sources.generated.VectorSource;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +39,10 @@ public class StreetsBaseLayer extends BaseLayer {
     }
 
     protected void createLayersAndSources(@NonNull Context context) {
-        VectorSource streetSource = new VectorSource(streetSourceId, "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2");
+        //VectorSource streetSource = new VectorSource(streetSourceId, "mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2");
+        VectorSource streetSource = new VectorSource.Builder(streetSourceId)
+                .url("mapbox://mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2")
+                .build();
         sourcesList.add(streetSource);
 
         LayerUtil layerUtil = new LayerUtil();
@@ -54,9 +57,10 @@ public class StreetsBaseLayer extends BaseLayer {
 
                 Layer layer = layerUtil.getLayer(jsonObject.toString());
 
-                if (layer != null && layer.getId().equals("hillshade") && layer instanceof FillLayer) {
+                if (layer != null && layer.getLayerId().equals("hillshade") && layer instanceof FillLayer) {
                     // Add the correct opacity
-                    Expression fillOpacityExpression = Expression.interpolate(Expression.Interpolator.linear()
+                   /* TODO Refactor this
+                   Expression fillOpacityExpression = Expression.interpolate(Expression.Interpolator.linear()
                             , Expression.zoom()
                             , Expression.literal(14)
                             , Expression.match(
@@ -65,7 +69,7 @@ public class StreetsBaseLayer extends BaseLayer {
                                     Expression.stop(new ExpressionArrayLiteral(new Object[]{89, 78}), 0.05)
                             ), Expression.literal(16), Expression.literal(0));
 
-                    ((FillLayer) layer).withProperties(PropertyFactory.fillOpacity(fillOpacityExpression));
+                    ((FillLayer) layer).withProperties(PropertyFactory.fillOpacity(fillOpacityExpression));*/
                 }
 
                 if (layer != null) {
@@ -112,7 +116,7 @@ public class StreetsBaseLayer extends BaseLayer {
 
         int counter = 0;
         for (Layer layer: layers) {
-            layerIds[counter] = layer.getId();
+            layerIds[counter] = layer.getLayerId();
             counter++;
         }
 

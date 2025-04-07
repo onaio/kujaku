@@ -1,12 +1,17 @@
 package io.ona.kujaku.plugin.switcher.layer;
 
+import static com.mapbox.maps.extension.style.layers.properties.generated.Visibility.NONE;
+import static com.mapbox.maps.extension.style.layers.properties.generated.Visibility.VISIBLE;
+
 import androidx.annotation.NonNull;
 
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.sources.Source;
+import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.Style;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.sources.Source;
+import com.mapbox.maps.extension.style.sources.SourceUtils;
+import com.mapbox.maps.extension.style.sources.SourceUtils.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,9 +24,6 @@ import io.ona.kujaku.layers.KujakuLayer;
 import io.ona.kujaku.utils.Constants;
 import timber.log.Timber;
 
-import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
-import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-16
@@ -57,39 +59,42 @@ public abstract class BaseLayer extends KujakuLayer {
     @Override
     public void addLayerToMap(@NonNull MapboxMap mapboxMap) {
         Style style = mapboxMap.getStyle();
-        if (style != null && style.isFullyLoaded()) {
+        if (style != null && style.isStyleLoaded()) {
             // Add the sources
             List<Source> sourceList = getSources();
 
             for (Source source : sourceList) {
-                if (style.getSource(source.getId()) == null) {
-                    addedSources.add(source.getId());
-                    style.addSource(source);
-                }
+                /* TODO Refactor this
+                if (style.getStyleSource(source.getSourceId()) == null) {
+                    addedSources.add(source.getSourceId());
+                    SourceUtils.addSource(style, source);
+                }*/
             }
 
             LinkedList<Layer> layerList = new LinkedList<>(getLayers());
 
-            Layer backgroundLayer = style.getLayer(backgroundLayerName);
+            Layer backgroundLayer = null; /*style.getLayer(backgroundLayerName);*/
             if (backgroundLayer != null) {
                 Iterator<Layer> layerIterator = layerList.descendingIterator();
                 while (layerIterator.hasNext()) {
                     Layer layer = layerIterator.next();
-                    if (style.getLayer(layer.getId()) == null) {
-                        addedLayers.add(layer.getId());
+                    /* TODO Refactor this
+                    if (style.getLayer(layer.getLayerId()) == null) {
+                        addedLayers.add(layer.getLayerId());
                         style.addLayerAbove(layer, backgroundLayerName);
-                    }
+                    }*/
                 }
             } else {
                 int counter = 0;
                 Iterator<Layer> layerIterator = layerList.descendingIterator();
                 while (layerIterator.hasNext()) {
                     Layer layer = layerIterator.next();
-                    if (style.getLayer(layer.getId()) == null) {
-                        addedLayers.add(layer.getId());
+                  /* TODO Refactor this
+                   if (style.getLayer(layer.getLayerId()) == null) {
+                        addedLayers.add(layer.getLayerId());
                         style.addLayerAt(layer, counter);
                         counter++;
-                    }
+                    }*/
                 }
             }
 
@@ -103,7 +108,8 @@ public abstract class BaseLayer extends KujakuLayer {
     public void enableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         for (Layer layer: getLayers()) {
             if (layer != null && NONE.equals(layer.getVisibility().getValue())) {
-                layer.setProperties(visibility(VISIBLE));
+                /* TODO refactor this
+                    layer.setProperties(layer.visibility(VISIBLE));*/
                 visible = true;
             }
         }
@@ -112,11 +118,14 @@ public abstract class BaseLayer extends KujakuLayer {
     @Override
     public void disableLayerOnMap(@NonNull MapboxMap mapboxMap) {
         Style style = mapboxMap.getStyle();
-        if (style != null && style.isFullyLoaded()) {
+        if (style != null && style.isStyleLoaded()) {
             for (String layerId : addedLayers) {
-                Layer layer = style.getLayer(layerId);
+                Layer layer = null;
+                /*TODO Refactor this
+                Layer layer = style.getStyleLayers().(layerId);*/
                 if (layer != null && VISIBLE.equals(layer.getVisibility().getValue())) {
-                    layer.setProperties(visibility(NONE));
+                    /* TODO Refactor this
+                    layer.setProperties(layer.visibility(NONE));*/
                     visible = false;
                 }
             }
@@ -137,13 +146,13 @@ public abstract class BaseLayer extends KujakuLayer {
         // Remove the layers & sources
         Style style = mapboxMap.getStyle();
 
-        if (style != null && style.isFullyLoaded()) {
+        if (style != null && style.isStyleLoaded()) {
             for (String layerId: addedLayers) {
-                style.removeLayer(layerId);
+                style.removeStyleLayer(layerId);
             }
 
             for (String sourceId: addedSources) {
-                style.removeSource(sourceId);
+                style.removeStyleSource(sourceId);
             }
 
             return true;

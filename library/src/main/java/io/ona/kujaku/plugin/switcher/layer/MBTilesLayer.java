@@ -4,9 +4,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Pair;
 
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.sources.Source;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -16,6 +13,9 @@ import java.util.Set;
 import io.ona.kujaku.mbtiles.MBTilesHelper;
 
 import static io.ona.kujaku.mbtiles.MBTilesHelper.MB_TILES_EXTENSION;
+
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.sources.Source;
 
 /**
  * Created by samuelgithengi on 9/30/19.
@@ -48,13 +48,13 @@ public class MBTilesLayer extends BaseLayer {
             layers = new LinkedHashSet<>(sourcesAndLayers.second);
             List<String> sourceIdList = new ArrayList<>();
             for (Source source : sources) {
-                sourceIdList.add(source.getId());
+                sourceIdList.add(source.getSourceId());
             }
             this.sourceIds = sourceIdList.toArray(this.sourceIds);
 
             List<String> layerIdList = new ArrayList<>();
             for (Layer layer : layers) {
-                layerIdList.add(layer.getId());
+                layerIdList.add(layer.getLayerId());
             }
             this.layerIds = layerIdList.toArray(this.layerIds);
         }

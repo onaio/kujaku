@@ -2,13 +2,17 @@ package io.ona.kujaku.plugin.switcher;
 
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
+
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 2019-05-21
  */
 
-public class ExpressionArrayLiteral extends Expression.ExpressionLiteral {
+/*
+* TODO Refactor the [extends Expression.ExpressionLiteral] section
+* */
+public class ExpressionArrayLiteral /*extends Expression.ExpressionLiteral */{
 
     private Object[] object;
 
@@ -18,7 +22,7 @@ public class ExpressionArrayLiteral extends Expression.ExpressionLiteral {
      * @param object the object to be treated as literal
      */
     public ExpressionArrayLiteral(@NonNull Object[] object) {
-        super(object);
+        //super(object);
         this.object = object;
     }
 
