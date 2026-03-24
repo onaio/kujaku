@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -22,7 +21,7 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +34,7 @@ import java.util.List;
 import es.dmoral.toasty.Toasty;
 import io.ona.kujaku.KujakuLibrary;
 import io.ona.kujaku.callables.AsyncTaskCallable;
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
 import io.ona.kujaku.helpers.MapBoxWebServiceApi;
 import io.ona.kujaku.helpers.OfflineServiceHelper;
@@ -47,7 +46,6 @@ import io.ona.kujaku.services.MapboxOfflineDownloaderService;
 import io.ona.kujaku.tasks.GenericAsyncTask;
 import io.ona.kujaku.utils.Constants;
 import io.ona.kujaku.utils.Permissions;
-import timber.log.Timber;
 
 import static io.ona.kujaku.utils.Constants.MAP_ACTIVITY_REQUEST_CODE;
 import static io.ona.kujaku.utils.Constants.NEW_FEATURE_POINTS_JSON;
@@ -74,7 +72,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
     private int lastNotificationId = 2081;
     private final static String TAG = MainActivity.class.getSimpleName();
 
-    private List<Point> points;
+    private List<PointModel> pointModels;
 
     private Activity mainActivity = this;
 
@@ -153,8 +151,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         final OnFinishedListener onPointsFetchFinishedListener = new OnFinishedListener() {
             @Override
             public void onSuccess(Object[] objects) {
-                points = (List<Point>) objects[0];
-                KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
+                pointModels = (List<PointModel>) objects[0];
+                KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, pointModels, true);
             }
             @Override
             public void onError(Exception e) {
@@ -167,10 +165,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
-                if (points == null || points.size() == 0) {
+                if (pointModels == null || pointModels.size() == 0) {
                     fetchDroppedPoints(onPointsFetchFinishedListener);
                 } else {
-                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, pointModels, true);
                 }
             }
         });
@@ -181,10 +179,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
             @Override
             public void onClick(View v) {
                 // TODO: will need to figure out how to get new points added after initial MainActivity instantiation
-                if (points == null || points.size() == 0) {
+                if (pointModels == null || pointModels.size() == 0) {
                     fetchDroppedPoints(onPointsFetchFinishedListener);
                 } else {
-                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, points, true);
+                    KujakuLibrary.getInstance().launchMapActivity(mainActivity, BuildConfig.MAPBOX_SDK_ACCESS_TOKEN, pointModels, true);
                 }
             }
         });
@@ -194,8 +192,8 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         GenericAsyncTask genericAsyncTask = new GenericAsyncTask(new AsyncTaskCallable() {
             @Override
             public Object[] call() throws Exception {
-                List<Point> droppedPoints = MyApplication.getInstance().getPointsRepository().getAllPoints();
-                return new Object[]{droppedPoints};
+                List<PointModel> droppedPointModels = MyApplication.getInstance().getPointsRepository().getAllPoints();
+                return new Object[]{droppedPointModels};
             }
         });
         genericAsyncTask.setOnFinishedListener(onFinishedListener);
@@ -273,10 +271,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         currentMapDownload = mapName;
 
         String mapboxStyle = "mapbox://styles/ona/cj9jueph7034i2rphe0gp3o6m";
-        LatLng topLeftBound = new LatLng(topLeftLat, topLeftLng);
-        LatLng topRightBound = new LatLng(topRightLat, topRightLng);
-        LatLng bottomRightBound = new LatLng(bottomRightLat, bottomRightLng);
-        LatLng bottomLeftBound = new LatLng(bottomLeftLat, bottomLeftLng);
+        Point topLeftBound = Point.fromLngLat(topLeftLng, topLeftLat);
+        Point topRightBound = Point.fromLngLat(topRightLng, topRightLat);
+        Point bottomRightBound = Point.fromLngLat(bottomRightLng, bottomRightLat);
+        Point bottomLeftBound = Point.fromLngLat(bottomLeftLng, bottomLeftLat);
 
         double maxZoom = 20.0;
         double minZoom = 0.0;
@@ -443,10 +441,10 @@ public class MainActivity extends BaseNavigationDrawerActivity {
                     try {
                         JSONObject featurePoint = new JSONObject(geoJSONFeature);
                         JSONArray coordinates = featurePoint.getJSONObject("geometry").getJSONArray("coordinates");
-                        Point newPoint = new Point(null, (double) coordinates.get(1), (double) coordinates.get(0));
-                        MyApplication.getInstance().getPointsRepository().addOrUpdate(newPoint);
-                        newPoint.setId((int) (Math.random() * Integer.MAX_VALUE));
-                        points.add(newPoint);
+                        PointModel newPointModel = new PointModel(null, (double) coordinates.get(1), (double) coordinates.get(0));
+                        MyApplication.getInstance().getPointsRepository().addOrUpdate(newPointModel);
+                        newPointModel.setId((int) (Math.random() * Integer.MAX_VALUE));
+                        pointModels.add(newPointModel);
                     } catch (Exception e) {
                         Log.e(TAG, "JsonArray parse error occured");
                     }
@@ -519,6 +517,7 @@ public class MainActivity extends BaseNavigationDrawerActivity {
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             requestBasicPermissions();
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void showInfoNotification(String title, String content) {

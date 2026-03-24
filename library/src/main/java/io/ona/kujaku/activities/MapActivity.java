@@ -24,12 +24,7 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.maps.MapboxMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +39,7 @@ import io.ona.kujaku.R;
 import io.ona.kujaku.adapters.InfoWindowAdapter;
 import io.ona.kujaku.adapters.InfoWindowObject;
 import io.ona.kujaku.adapters.holders.InfoWindowViewHolder;
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.helpers.storage.MapBoxStyleStorage;
 import io.ona.kujaku.sorting.Sorter;
 import io.ona.kujaku.utils.Constants;
@@ -76,7 +71,7 @@ import static io.ona.kujaku.utils.Constants.PARCELABLE_POINTS_LIST;
  * <p>
  * Created by Ephraim Kigamba - ekigamba@ona.io
  */
-public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapClickListener {
+public class MapActivity extends AppCompatActivity  {
     private static final int PERMISSIONS_REQUEST_CODE = 342;
     private KujakuMapView kujakuMapView;
     private String currentStylePath;
@@ -127,13 +122,11 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         if (bundle != null
                 && bundle.containsKey(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN)
                 && bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN) != null) {
-            String mapBoxAccessToken = bundle.getString(Constants.PARCELABLE_KEY_MAPBOX_ACCESS_TOKEN);
-            Mapbox.getInstance(this, mapBoxAccessToken);
-            List<Point> points = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
+            List<PointModel> pointModels = bundle.getParcelableArrayList(PARCELABLE_POINTS_LIST);
             enableDropPoint = bundle.getBoolean(ENABLE_DROP_POINT_BUTTON, false);
 
             setContentView(R.layout.activity_map);
-            initializeViews(points, enableDropPoint);
+            initializeViews(pointModels, enableDropPoint);
             checkPermissions(savedInstanceState);
         } else {
             finish();
@@ -270,7 +263,7 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
         );
     }
 
-    private void initializeViews(List<Point> points, boolean enableDropPoint) {
+    private void initializeViews(List<PointModel> pointModels, boolean enableDropPoint) {
         dismissAllDialogs();
         alertDialogs = new HashMap<>();
         infoWindowsRecyclerView = findViewById(R.id.rv_mapActivity_infoWindow);
@@ -309,8 +302,8 @@ public class MapActivity extends AppCompatActivity implements MapboxMap.OnMapCli
             });
             btnDone.setVisibility(View.VISIBLE);
 
-            if (points != null) {
-                kujakuMapView.updateDroppedPoints(new ArrayList<>(points));
+            if (pointModels != null) {
+                kujakuMapView.updateDroppedPoints(new ArrayList<>(pointModels));
             }
         }
     }

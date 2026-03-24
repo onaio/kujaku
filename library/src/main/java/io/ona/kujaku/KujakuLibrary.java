@@ -15,7 +15,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen;
 import java.util.List;
 
 import io.ona.kujaku.data.realm.RealmDatabase;
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.exceptions.KujakuLibraryInitializationException;
 import io.ona.kujaku.helpers.ActivityLauncherHelper;
 import io.ona.kujaku.receivers.KujakuNetworkChangeReceiver;
@@ -87,8 +87,8 @@ public class KujakuLibrary {
     }
 
     public void launchMapActivity(@NonNull Activity hostActivity, @NonNull String mapboxAccessToken
-            , @Nullable List<Point> points, boolean enableDropPoint) {
-        ActivityLauncherHelper.launchMapActivity(hostActivity, mapboxAccessToken, points, enableDropPoint);
+            , @Nullable List<PointModel> pointModels, boolean enableDropPoint) {
+        ActivityLauncherHelper.launchMapActivity(hostActivity, mapboxAccessToken, pointModels, enableDropPoint);
     }
 
     public void showToast(@NonNull String text) {

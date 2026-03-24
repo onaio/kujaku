@@ -124,7 +124,7 @@ private static void libraryModuleDevelopment(instance, configuration) {
 
     configuration.implementation instance.mapboxSDKTurf
 
-    configuration.implementation instance.mapboxAnnotationPlugin
+//    configuration.implementation instance.mapboxAnnotationPlugin
 }
 
 // This is used when making a release and you need to test that the published artifacts work in host applications OK

@@ -7,8 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
 
 import java.util.ArrayList;
 import java.util.List;

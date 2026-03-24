@@ -116,7 +116,10 @@ dependencies { configuration ->
     // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
     // a runtime dependency
     implementation mapboxSDKTurf
-    implementation mapboxAnnotationPlugin
+    implementation mapboxStyleEx
+    implementation mapboxLocation
+    implementation mapboxGestures
+//    implementation mapboxAnnotationPlugin
 
     // Comment the line below when creating releases - The line is for development of the library & utils
     implementation (project(":utils")) {

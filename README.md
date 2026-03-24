@@ -104,7 +104,7 @@ The library offers a view `KujakuMapView` that provides more functionality than 
 
 ## `Unable to resolve artifact: Missing` while running tests
 
-This is encountered when Robolectric has problems downloading the jars it needs for different Android SDK levels. If you keep running into this you can download the JARs locally and point Robolectric to them by doing:
+This is encountered when Robolectric has problems downloading the jars it needs for different Android SDK levels. If you keep running into this you can download the JARs locally and pointModel Robolectric to them by doing:
 
 ```
 ./download-robolectric-deps.sh

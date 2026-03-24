@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 
 import static io.ona.kujaku.sample.util.Constants.INSERT_OR_REPLACE;
 
@@ -47,14 +47,14 @@ public class PointsRepository extends BaseRepository {
         database.execSQL(CREATE_POINTS_TABLE);
     }
 
-    public void addOrUpdate(Point point) {
+    public void addOrUpdate(PointModel pointModel) {
 
-        if (point == null) {
+        if (pointModel == null) {
             return;
         }
 
-        if (point.getDateUpdated() == null) {
-            point.setDateUpdated(Calendar.getInstance().getTimeInMillis());
+        if (pointModel.getDateUpdated() == null) {
+            pointModel.setDateUpdated(Calendar.getInstance().getTimeInMillis());
         }
 
         try {
@@ -62,19 +62,19 @@ public class PointsRepository extends BaseRepository {
 
             String query = String.format(INSERT_OR_REPLACE, POINTS_TABLE);
             query += "(" + StringUtils.repeat("?", ",", POINTS_TABLE_COLUMNS.length) + ")";
-            database.execSQL(query, createQueryValues(point));
+            database.execSQL(query, createQueryValues(pointModel));
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
         }
     }
 
-    public List<Point> getAllPoints() {
+    public List<PointModel> getAllPoints() {
 
-        List<Point> points = new ArrayList<>();
+        List<PointModel> pointModels = new ArrayList<>();
         Cursor cursor = null;
         try {
             cursor = getReadableDatabase().rawQuery("SELECT * " + " FROM " +  POINTS_TABLE, null);
-            points = readPoints(cursor);
+            pointModels = readPoints(cursor);
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
         } finally {
@@ -82,16 +82,16 @@ public class PointsRepository extends BaseRepository {
                 cursor.close();
             }
         }
-        return points;
+        return pointModels;
     }
 
-    public Point getPoint(String id) {
-        Point point = null;
+    public PointModel getPoint(String id) {
+        PointModel pointModel = null;
         Cursor cursor = null;
         try {
             cursor = getReadableDatabase().rawQuery("SELECT * " + " FROM " + POINTS_TABLE + " WHERE " + ID + "=?", new String[]{id});
-            List<Point> points = readPoints(cursor);
-            point = points.size() > 0 ? points.get(0) : null;
+            List<PointModel> pointModels = readPoints(cursor);
+            pointModel = pointModels.size() > 0 ? pointModels.get(0) : null;
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
         } finally {
@@ -99,16 +99,16 @@ public class PointsRepository extends BaseRepository {
                 cursor.close();
             }
         }
-        return point;
+        return pointModel;
     }
 
-    private List<Point> readPoints(Cursor cursor) {
+    private List<PointModel> readPoints(Cursor cursor) {
 
-        List<Point> points = new ArrayList<>();
+        List<PointModel> pointModels = new ArrayList<>();
         try {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    points.add(createPoint(cursor));
+                    pointModels.add(createPoint(cursor));
                     cursor.moveToNext();
                 }
             }
@@ -119,24 +119,24 @@ public class PointsRepository extends BaseRepository {
                 cursor.close();
             }
         }
-        return points;
+        return pointModels;
     }
 
     @SuppressLint("Range")
-    private Point createPoint(Cursor cursor) {
-        return new Point(
+    private PointModel createPoint(Cursor cursor) {
+        return new PointModel(
                 cursor.getInt(cursor.getColumnIndex(ID)),
                 cursor.getDouble(cursor.getColumnIndex(LAT)),
                 cursor.getDouble(cursor.getColumnIndex(LNG))
         );
     }
 
-    private Object[] createQueryValues(Point point) {
+    private Object[] createQueryValues(PointModel pointModel) {
         Object[] values = new Object[]{
-                point.getId(),
-                point.getLat(),
-                point.getLng(),
-                point.getDateUpdated()
+                pointModel.getId(),
+                pointModel.getLat(),
+                pointModel.getLng(),
+                pointModel.getDateUpdated()
         };
         return values;
     }

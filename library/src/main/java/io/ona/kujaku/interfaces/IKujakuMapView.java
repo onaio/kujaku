@@ -8,18 +8,17 @@ import android.content.Context;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
-import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.maps.extension.observable.model.RenderMode;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 
 import org.json.JSONException;
 
 import java.util.List;
 
 import io.ona.kujaku.callbacks.AddPointCallback;
-import io.ona.kujaku.domain.Point;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.layers.ArrowLineLayer;
@@ -56,9 +55,9 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
      * @param useGPS
      * @param addPointCallback returns the location chosen by user from GPS or calls {@link AddPointCallback#onCancel()}
      *                         if the user cancels the operation
-     * @param markerOptions    Specifies the marker properties
+     * @param pointAnnotationOptions    Specifies the marker properties
      */
-    void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions);
+    void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable PointAnnotationOptions pointAnnotationOptions);
 
 
     /**
@@ -164,11 +163,11 @@ public interface IKujakuMapView extends IKujakuMapViewLowLevel {
     /**
      * This function updates the list of points displayed in KujakuMapView
      * <p>
-     * This is done both in the internal {@link List<Point>} data structure and visually on the map using location markers defined by the user
+     * This is done both in the internal {@link List< PointModel >} data structure and visually on the map using location markers defined by the user
      *
-     * @param points A list of {@link Point}
+     * @param pointModels A list of {@link PointModel}
      */
-    void updateDroppedPoints(List<Point> points);
+    void updateDroppedPoints(List<PointModel> pointModels);
 
     /**
      * Sets an {@link OnFeatureClickListener} which will be fired when a feature on the map in either of the {@code layerIds}

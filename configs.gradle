@@ -101,26 +101,26 @@ ext.localProperties = properties
  */
 
 ext {
-
     // Dependency and other versions
     androidxTestCoreVersion = "1.4.0"
     compileSdkVersion = 34
     jacocoVersion = "0.8.11"
     junitVersion = "4.13.2"
-    mapboxAnnotationPluginVersion = "0.9.0"
-    mapboxSdkVersion = "9.7.1"
-    mapboxSdkTurfVersion = "7.2.0"
+    mapboxVersion = "11.0.0"
+    mapboxServicesVersion = "5.4.1"  // For Services, GeoJSON, and Turf
     robolectricVersion = "4.13"
     supportVersion = "1.0.0"
     volleyVersion = "1.2.1"
     targetSdkVersion = 34
 
-    // Dependency names
     androidxTestCore = "androidx.test:core:$androidxTestCoreVersion"
     junit = "junit:junit:$junitVersion"
-    mapboxSDK = "com.mapbox.mapboxsdk:mapbox-android-sdk:$mapboxSdkVersion"
-    mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:$mapboxSdkTurfVersion"
-    mapboxAnnotationPlugin = "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:$mapboxAnnotationPluginVersion"
+
+    mapboxSDK = "com.mapbox.maps:android:$mapboxVersion"
+    mapboxLocation = "com.mapbox.plugin:maps-locationcomponent:$mapboxVersion"
+    mapboxGestures = "com.mapbox.plugin:maps-gestures:$mapboxVersion"
+    mapboxStyleEx = "com.mapbox.extension:maps-style:$mapboxVersion"
+    mapboxSDKTurf = "com.mapbox.mapboxsdk:mapbox-sdk-turf:$mapboxServicesVersion"
     robolectric = "org.robolectric:robolectric:$robolectricVersion"
 }
 
@@ -138,7 +138,6 @@ ext.mapboxDependencies = { instance, configuration ->
     // is a dependency of the mapbox-android-sdk. The mapbox-sdk-turf is declared as
     // a runtime dependency
     configuration.implementation "com.mapbox.mapboxsdk:mapbox-sdk-turf:$instance.mapboxSdkTurfVersion"
-    configuration.implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:${instance.mapboxAnnotationPluginVersion}"
 
 }
 

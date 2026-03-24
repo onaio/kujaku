@@ -71,7 +71,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .target(new LatLng(-1.284956, 36.768831))
                 .zoom(16)
                 .build();
-        kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.setCameraState(cameraPosition);
     }
 
     private void initializeFromStyleSource() {
@@ -82,7 +82,7 @@ public class AddUpdatePropertiesActivity extends BaseNavigationDrawerActivity {
                 .target(new LatLng(-14.1706623, 32.5987837))
                 .zoom(16)
                 .build();
-        kujakuMapView.setCameraPosition(cameraPosition);
+        kujakuMapView.setCameraState(cameraPosition);
         File mbFilesDir = new File(Environment.getExternalStorageDirectory().getPath() + MBTilesHelper.MB_TILES_DIRECTORY);
         kujakuMapView.getMapAsync(new OnMapReadyCallback() {
             @Override

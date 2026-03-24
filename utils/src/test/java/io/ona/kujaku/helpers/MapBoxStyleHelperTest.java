@@ -1,6 +1,6 @@
 package io.ona.kujaku.helpers;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.geojson.Point;
 
 import junit.framework.Assert;
 
@@ -60,7 +60,7 @@ public class MapBoxStyleHelperTest {
     @Test
     public void setMapCenterWhenGivenCenterPoint() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = MapBoxStyleHelper.KEY_MAP_CENTER;
-        LatLng mapCenter = new LatLng(23.89454, 57.909234);
+        Point mapCenter = Point.fromLngLat(57.909234,23.89454);
         String sampleStyle = getSampleMapboxStyle();
         JSONObject mapboxStyleJSONObject = new JSONObject(sampleStyle);
 
@@ -69,16 +69,16 @@ public class MapBoxStyleHelperTest {
 
         JSONObject finalMapboxStyleJSONObject = mapBoxStyleHelper.getStyleObject();
 
-        Assert.assertEquals(mapCenter.getLongitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(0), 0);
-        Assert.assertEquals(mapCenter.getLatitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(1), 0);
+        Assert.assertEquals(mapCenter.longitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(0), 0);
+        Assert.assertEquals(mapCenter.latitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(1), 0);
     }
 
     @Test
     public void setMapCenterWhenGivenBounds() throws JSONException, InvalidMapBoxStyleException {
         String zoomKey = MapBoxStyleHelper.KEY_MAP_CENTER;
-        LatLng topLeft = new LatLng(20.0, -20.0);
-        LatLng bottomRight = new LatLng(-10.0, 10.0);
-        LatLng mapCenter = new LatLng(5.0, -5.0);
+        Point topLeft = Point.fromLngLat(-20.0, 20.0);
+        Point bottomRight = Point.fromLngLat(10.0, -10.0);
+        Point mapCenter = Point.fromLngLat(-5.0, 5.0);
 
         String sampleStyle = getSampleMapboxStyle();
         JSONObject mapboxStyleJSONObject = new JSONObject(sampleStyle);
@@ -88,8 +88,8 @@ public class MapBoxStyleHelperTest {
 
         JSONObject finalMapboxStyleJSONObject = mapBoxStyleHelper.getStyleObject();
 
-        Assert.assertEquals(mapCenter.getLongitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(0), 0);
-        Assert.assertEquals(mapCenter.getLatitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(1), 0);
+        Assert.assertEquals(mapCenter.longitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(0), 0);
+        Assert.assertEquals(mapCenter.latitude(), finalMapboxStyleJSONObject.getJSONArray(zoomKey).getDouble(1), 0);
     }
 
     @Test

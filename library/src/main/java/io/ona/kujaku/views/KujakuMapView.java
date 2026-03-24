@@ -1,12 +1,20 @@
 package io.ona.kujaku.views;
 
+import static com.mapbox.maps.plugin.Plugin.MAPBOX_ANNOTATION_PLUGIN_ID;
+import static com.mapbox.maps.plugin.Plugin.MAPBOX_CAMERA_PLUGIN_ID;
+
+import static io.realm.Realm.getApplicationContext;
+
 import android.Manifest;
+import android.animation.Animator;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,7 +22,7 @@ import android.os.IBinder;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
+
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,31 +33,32 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.cocoahero.android.geojson.Feature;
-import com.cocoahero.android.geojson.Point;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.JsonElement;
-import com.mapbox.android.gestures.MoveGestureDetector;
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.VisibleRegion;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.style.expressions.Expression;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.geojson.Point;
+import com.mapbox.maps.CameraState;
+import com.mapbox.maps.MapView;
+import com.mapbox.maps.MapboxMap;
+import com.mapbox.maps.RenderModeType;
+import com.mapbox.maps.Style;
+import com.mapbox.maps.extension.style.expressions.generated.Expression;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource;
+import com.mapbox.maps.plugin.animation.CameraAnimationsPlugin;
+import com.mapbox.maps.plugin.animation.MapAnimationOptions;
+import com.mapbox.maps.plugin.annotation.AnnotationConfig;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
+import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManagerKt;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
+import com.mapbox.maps.CameraOptions;
+import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,6 +73,7 @@ import java.util.Set;
 import io.ona.kujaku.R;
 import io.ona.kujaku.callbacks.AddPointCallback;
 import io.ona.kujaku.callbacks.OnLocationServicesEnabledCallBack;
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.exceptions.TrackingServiceNotInitializedException;
 import io.ona.kujaku.exceptions.WmtsCapabilitiesException;
 import io.ona.kujaku.helpers.MapboxLocationComponentWrapper;
@@ -99,12 +109,11 @@ import io.ona.kujaku.wmts.model.WmtsCapabilities;
 import io.ona.kujaku.wmts.model.WmtsLayer;
 import timber.log.Timber;
 
-import static com.mapbox.mapboxsdk.Mapbox.getApplicationContext;
 
 /**
  * Created by Ephraim Kigamba - ekigamba@ona.io on 26/09/2018
  */
-public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.OnMapClickListener, MapboxMap.OnMapLongClickListener {
+public class KujakuMapView extends MapView implements IKujakuMapView {
 
     private static final String TAG = KujakuMapView.class.getName();
     public static final double LOCATION_FOCUS_ZOOM = 20d;
@@ -127,9 +136,9 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private static final int ANIMATE_TO_LOCATION_DURATION = 1000;
 
-    protected Set<io.ona.kujaku.domain.Point> droppedPoints;
+    protected Set<PointModel> droppedPointModels;
 
-    private LatLng latestLocationCoordinates;
+    private PointModel latestLocationCoordinates;
 
     private Location latestLocation;
 
@@ -137,7 +146,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean updateUserLocationOnMap = false;
     private boolean updateCameraUserLocationOnMap = false;
-    private int locationRenderMode = RenderMode.NORMAL;
 
     private final float DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS = 25f;
 
@@ -162,7 +170,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     private boolean isFetchSourceFromStyle = false;
 
-    private CameraPosition cameraPosition = null;
+    private CameraState cameraState = null;
 
     private BoundsChangeListener boundsChangeListener;
 
@@ -207,6 +215,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
      * MBtiles
      **/
     private MBTilesHelper mbTilesHelper;
+    private PointAnnotationManager pointAnnotationManager;
 
     /**
      * Drawing Manager
@@ -227,10 +236,6 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         init(context, attrs);
     }
 
-    public KujakuMapView(@NonNull Context context, @Nullable MapboxMapOptions options) {
-        super(context, options);
-        init(context, null);
-    }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attributeSet) {
         LayoutInflater inflater = (LayoutInflater) context
@@ -241,7 +246,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
         markerLayout = findViewById(R.id.iv_mapview_locationSelectionMarker);
 
-        droppedPoints = new HashSet<>();
+        droppedPointModels = new HashSet<>();
         wmtsLayers = new HashSet<>();
 
         doneAddingPointBtn = findViewById(R.id.btn_mapview_locationSelectionBtn);
@@ -251,7 +256,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         trackingServiceStatusButton = findViewById(R.id.iv_mapview_tracking_service_status);
         mbTilesHelper = new MBTilesHelper();
 
-        getMapboxMap();
+//      getMapboxMap();
+        initMapBox();
         cancelAddingPoint = findViewById(R.id.btn_mapview_locationSelectionCancelBtn);
 
         currentLocationBtn.setOnClickListener(new OnClickListener() {
@@ -326,8 +332,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                         distanceMoved = latestLocation.distanceTo(location);
                     }
                     latestLocation = location;
-                    latestLocationCoordinates = new LatLng(location.getLatitude()
-                            , location.getLongitude());
+                    latestLocationCoordinates = new PointModel(location.hashCode(), location.getLatitude(), location.getLongitude());
                 }
 
                 if (onLocationChangedListener != null) {
@@ -343,6 +348,16 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         }
 
         locationClientCallbacks.clear();
+    }
+
+    private void initMapBox(){
+        mapboxMap = getMapboxMap();
+        mapboxMap.getStyle(new Style.OnStyleLoaded() {
+            @Override
+            public void onStyleLoaded(@NonNull Style style) {
+                afterStyleLoadedOperations(style);
+            }
+        });
     }
 
     private Map<String, Object> extractStyleValues(@Nullable AttributeSet attrs) {
@@ -370,7 +385,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable MarkerOptions markerOptions) {
+    public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @Nullable PointAnnotationOptions pointAnnotationOptions) {
         addPointBtn.setVisibility(VISIBLE);
         addPointBtn.setOnClickListener(new OnClickListener() {
             @Override
@@ -383,7 +398,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject featureJSON = dropPoint(markerOptions);
+                            JSONObject featureJSON = dropPoint(pointAnnotationOptions);
                             addPointCallback.onPointAdd(featureJSON);
 
                             enableAddPoint(false, null);
@@ -398,7 +413,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     doneAddingPointBtn.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject featureJSON = dropPoint(markerOptions);
+                            JSONObject featureJSON = dropPoint(pointAnnotationOptions);
                             addPointCallback.onPointAdd(featureJSON);
 
                             enableAddPoint(false);
@@ -433,9 +448,10 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void addPoint(boolean useGPS, @NonNull AddPointCallback addPointCallback, @DrawableRes int markerResourceId) {
-        addPoint(useGPS, addPointCallback,
-                new MarkerOptions().setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId))
-        );
+        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), markerResourceId);
+        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                .withIconImage(bitmap);
+        addPoint(useGPS, addPointCallback, pointAnnotationOptions);
     }
 
     @Override
@@ -488,8 +504,17 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         if (latestLocation != null) {
             latestLocation.setAccuracy(this.locationBufferRadius);
 
-            if (getMapboxLocationComponentWrapper().getLocationComponent() != null) {
-                getMapboxLocationComponentWrapper().getLocationComponent().forceLocationUpdate(latestLocation);
+            LocationComponentPlugin locationComponent = getMapboxLocationComponentWrapper().getLocationComponent();
+            if (locationComponent != null) {
+                CameraOptions cameraOptions = new CameraOptions.Builder()
+                        .center(Point.fromLngLat(
+                                latestLocation.getLongitude(),
+                                latestLocation.getLatitude()
+                        ))
+                        .build();
+
+                getMapboxMap().setCamera(cameraOptions);
+                locationComponent.setEnabled(true);
             }
         }
     }
@@ -497,43 +522,42 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public @Nullable
     JSONObject dropPoint() {
-        return dropPoint((MarkerOptions) null);
+        return dropPoint((PointAnnotationOptions) null);
     }
 
 
     @Nullable
     @Override
     public JSONObject dropPoint(@DrawableRes int markerResourceId) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .setIcon(IconFactory.getInstance(getContext()).fromResource(markerResourceId));
+        // Create bitmap from resource
+        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), markerResourceId);
 
-        return dropPoint(markerOptions);
+        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                .withIconImage(bitmap);
+
+        return dropPoint(pointAnnotationOptions);
     }
 
     @Override
     public @Nullable
-    JSONObject dropPoint(@Nullable LatLng latLng) {
+    JSONObject dropPoint(@Nullable PointModel pointModel) {
         return dropPoint(
-                new MarkerOptions()
-                        .setPosition(latLng)
+                new PointAnnotationOptions()
+                        .withPoint(Point.fromLngLat(pointModel.getLng(), pointModel.getLat()))
         );
     }
 
     @Nullable
     @Override
-    public JSONObject dropPoint(@Nullable MarkerOptions markerOptions) {
+    public JSONObject dropPoint(@Nullable PointAnnotationOptions pointAnnotationOptions) {
         if (mapboxMap != null && canAddPoint) {
-            if (markerOptions != null && markerOptions.getPosition() != null) {
-                LatLng latLng = markerOptions.getPosition();
-                Feature feature = new Feature();
-                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
-
+            if (pointAnnotationOptions != null && pointAnnotationOptions.getPoint() != null) {
+                PointModel pointModel = new PointModel(pointAnnotationOptions.getPoint().hashCode(), pointAnnotationOptions.getPoint().longitude(),pointAnnotationOptions.getPoint().longitude());
+                Feature feature = Feature.fromGeometry(pointAnnotationOptions.getPoint());
                 try {
-                    JSONObject jsonObject = feature.toJSON();
-
-                    // Add a layer with the current point
-                    centerMap(latLng, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(mapboxMap, getZoomToUse(mapboxMap, LOCATION_FOCUS_ZOOM)));
-                    dropPointOnMap(latLng, markerOptions);
+                    JSONObject jsonObject = new JSONObject(feature.toJson());
+                    centerMap(pointModel, ANIMATE_TO_LOCATION_DURATION, getZoomToUse(getMapboxMap(), getZoomToUse(getMapboxMap(), LOCATION_FOCUS_ZOOM)));
+                    dropPointOnMap(pointModel, pointAnnotationOptions);
 
                     enableAddPoint(false);
 
@@ -548,16 +572,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
                     LogUtil.e(TAG, Log.getStackTraceString(e));
                 }
             } else {
-                LatLng latLng = mapboxMap.getCameraPosition().target;
-
-                Feature feature = new Feature();
-                feature.setGeometry(new Point(latLng.getLatitude(), latLng.getLongitude()));
+                CameraState cameraState = getMapboxMap().getCameraState();
+                Point point =  Point.fromLngLat(cameraState.getCenter().longitude(), cameraState.getCenter().latitude());
+                Feature feature = com.mapbox.geojson.Feature.fromGeometry(point);
 
                 try {
-                    JSONObject jsonObject = feature.toJSON();
-
-                    // Add a layer with the current point
-                    dropPointOnMap(latLng, markerOptions);
+                    JSONObject jsonObject = new JSONObject(feature.toJson());
+                    dropPointOnMap(new PointModel(point.hashCode(), point.longitude(), point.longitude()), pointAnnotationOptions);
 
                     return jsonObject;
                 } catch (JSONException e) {
@@ -570,70 +591,56 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Nullable
-    @Override
-    public JSONObject dropPoint(@Nullable LatLng latLng, @DrawableRes int markerResourceId) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .setPosition(latLng)
-                .setIcon(
-                        IconFactory.getInstance(getContext())
-                                .fromResource(markerResourceId)
-                );
+    public JSONObject dropPoint(@Nullable PointModel pointModel, @DrawableRes int markerResourceId) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), markerResourceId);
+        PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+                .withPoint(Point.fromLngLat(
+                        pointModel.getLat(),
+                        pointModel.getLng()
+                ))
+                .withIconImage(bitmap);
 
-        return dropPoint(markerOptions);
-    }
-
-    private void getMapboxMap() {
-        if (mapboxMap == null) {
-            getMapAsync(new OnMapReadyCallback() {
-                @Override
-                public void onMapReady(@NonNull MapboxMap mapboxMap) {
-                    KujakuMapView.this.mapboxMap = mapboxMap;
-                    mapboxMap.getUiSettings().setCompassEnabled(false);
-
-                    // Operations that require the style to be loaded
-                    mapboxMap.getStyle(new Style.OnStyleLoaded() {
-                        @Override
-                        public void onStyleLoaded(@NonNull Style style) {
-                            afterStyleLoadedOperations(style);
-                        }
-                    });
-                }
-            });
-        }
+        return dropPoint(pointAnnotationOptions);
     }
 
     private void afterStyleLoadedOperations(@NonNull Style style) {
-        if (KujakuMapView.this.droppedPoints != null) {
-            List<io.ona.kujaku.domain.Point> droppedPoints = new ArrayList<>(KujakuMapView.this.droppedPoints);
-            for (io.ona.kujaku.domain.Point point : droppedPoints) {
-                dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+        if (KujakuMapView.this.droppedPointModels != null) {
+            List<PointModel> droppedPointModels = new ArrayList<>(KujakuMapView.this.droppedPointModels);
+            for (PointModel pointModel : droppedPointModels) {
+                dropPointOnMap(pointModel);
             }
         }
 
         addPrimaryGeoJsonSourceAndLayerToStyle(style);
 
-        if (getCameraPosition() != null) {
-            mapboxMap.setCameraPosition(getCameraPosition());
+        if (getCameraState() != null) {
+            CameraOptions cameraOptions = new CameraOptions.Builder()
+                    .center(getCameraState().getCenter())  // CameraState already uses Point
+                    .zoom(getCameraState().getZoom())
+                    .bearing(getCameraState().getBearing())
+                    .pitch(getCameraState().getPitch())
+                    .build();
+            mapboxMap.setCamera(cameraOptions);
         }
 
-        // add bounds change listener
         addMapScrollListenerAndBoundsChangeEmitterToMap(mapboxMap);
         callBoundsChangedListeners();
         enableFeatureClickListenerEmitter(mapboxMap);
 
         WmtsHelper.addWmtsLayers(wmtsLayers, style);
 
-        mapboxLocationComponentWrapper.init(KujakuMapView.this.mapboxMap, getContext(), locationRenderMode);
+        mapboxLocationComponentWrapper.init(KujakuMapView.this, getContext(), false );
     }
 
     private void addPrimaryGeoJsonSourceAndLayerToStyle(@NonNull Style style) {
-        if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
-            style.addSource(getPrimaryGeoJsonSource());
+       /* TODO Refactor this
+       if (getPrimaryGeoJsonSource() != null && style.getSource(getPrimaryGeoJsonSource().getId()) == null) {
+            style.addStyleSource(getPrimaryGeoJsonSource());
         }
 
         if (getPrimaryLayer() != null && style.getLayer(getPrimaryLayer().getId()) == null) {
             style.addLayer(getPrimaryLayer());
-        }
+        }*/
 
         if (isFetchSourceFromStyle) {
             initializeSourceAndFeatureCollectionFromStyle(style);
@@ -690,12 +697,13 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     public void addWmtsLayer(@NonNull WmtsCapabilities capabilities, @Nullable String layerIdentifier, @Nullable String styleIdentifier, @Nullable String tileMatrixSetLinkIdentifier) throws WmtsCapabilitiesException {
         this.wmtsLayers.add(WmtsHelper.identifyLayer(capabilities, layerIdentifier, styleIdentifier, tileMatrixSetLinkIdentifier));
 
-        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isStyleLoaded()) {
             WmtsHelper.addWmtsLayers(this.wmtsLayers, mapboxMap.getStyle());
         }
     }
 
     private void addMapScrollListenerAndBoundsChangeEmitterToMap(@NonNull MapboxMap mapboxMap) {
+        /* TODO Refactor this
         mapboxMap.addOnMoveListener(new MapboxMap.OnMoveListener() {
             @Override
             public void onMoveBegin(@NonNull MoveGestureDetector detector) {
@@ -714,74 +722,110 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             public void onMoveEnd(@NonNull MoveGestureDetector detector) {
                 callBoundsChangedListeners();
             }
-        });
+        });*/
     }
 
     private void callBoundsChangedListeners() {
         if (boundsChangeListener != null) {
+           /* TODO Refactor this
             VisibleRegion visibleRegion = getCurrentBounds();
 
             if (visibleRegion != null) {
                 boundsChangeListener.onBoundsChanged(visibleRegion.farLeft, visibleRegion.farRight
                         , visibleRegion.nearRight, visibleRegion.nearLeft);
-            }
+            }*/
         }
     }
 
-    @VisibleForTesting
+ /*  TODO Refactor this
+  @VisibleForTesting
     @Nullable
     protected VisibleRegion getCurrentBounds() {
         return mapboxMap != null ? mapboxMap.getProjection().getVisibleRegion() : null;
-    }
+    }*/
 
     private void enableFeatureClickListenerEmitter(@NonNull MapboxMap mapboxMap) {
+        /* TODO Refactor this
         mapboxMap.removeOnMapClickListener(this);
         mapboxMap.addOnMapClickListener(this);
 
         mapboxMap.removeOnMapLongClickListener(this);
-        mapboxMap.addOnMapLongClickListener(this);
+        mapboxMap.addOnMapLongClickListener(this);*/
     }
 
-    private void dropPointOnMap(@NonNull LatLng latLng) {
-        dropPointOnMap(latLng, null);
+    private void dropPointOnMap(@NonNull PointModel pointModel) {
+        dropPointOnMap(pointModel, null);
     }
 
-    private void dropPointOnMap(@NonNull LatLng latLng, @Nullable MarkerOptions markerOptionsParam) {
-        MarkerOptions markerOptions = markerOptionsParam;
-        if (markerOptions == null) {
-            markerOptions = new MarkerOptions()
-                    .position(latLng);
-        } else if (markerOptions.getPosition() == null) {
-            markerOptions.setPosition(latLng);
+    private void dropPointOnMap(@NonNull PointModel pointModel, @Nullable PointAnnotationOptions pointAnnotationOptions) {
+        if (pointAnnotationManager == null) {
+            AnnotationConfig config = new AnnotationConfig();
+//            AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(this);
+            AnnotationPlugin annotationPlugin = getPlugin(MAPBOX_ANNOTATION_PLUGIN_ID);
+            pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, config);
         }
 
-        mapboxMap.addMarker(markerOptions);
+        PointAnnotationOptions annotationOptions = pointAnnotationOptions;
+        if (annotationOptions == null) {
+            annotationOptions = new PointAnnotationOptions()
+                    .withPoint(com.mapbox.geojson.Point.fromLngLat(pointModel.getLng(), pointModel.getLat()));
+        } else if (annotationOptions.getPoint() == null) {
+            annotationOptions.withPoint(com.mapbox.geojson.Point.fromLngLat(pointModel.getLng(), pointModel.getLat()));
+        }
+
+        pointAnnotationManager.create(annotationOptions);
     }
 
     public boolean isCanAddPoint() {
         return canAddPoint;
     }
 
-    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration, double newZoom) {
-        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
-                .target(point);
+    public void centerMap(@NonNull PointModel pointModel, int animateToNewTargetDuration, double newZoom) {
+
+        CameraOptions.Builder cameraOptionsBuilder = new CameraOptions.Builder()
+                .center(com.mapbox.geojson.Point.fromLngLat(pointModel.getLng(), pointModel.getLat()));
         if (newZoom != -1d) {
-            cameraPositionBuilder.zoom(newZoom);
+            cameraOptionsBuilder.zoom(newZoom);
         }
+        CameraOptions cameraOptions = cameraOptionsBuilder.build();
+        MapAnimationOptions animationOptions = new MapAnimationOptions.Builder()
+                .duration(animateToNewTargetDuration)
+                .build();
+        Animator.AnimatorListener animatorListener = new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(@NonNull Animator animation) {
 
-        CameraPosition cameraPosition = cameraPositionBuilder.build();
+            }
 
-        if (mapboxMap != null) {
-            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), animateToNewTargetDuration);
-        }
+            @Override
+            public void onAnimationEnd(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationCancel(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(@NonNull Animator animation) {
+
+            }
+        };
+
+            CameraAnimationsPlugin cameraAnimations = getPlugin(MAPBOX_CAMERA_PLUGIN_ID);
+            cameraAnimations.flyTo(cameraOptions, animationOptions, animatorListener);
+
     }
 
-    public void centerMap(@NonNull LatLng point, int animateToNewTargetDuration) {
-        centerMap(point, animateToNewTargetDuration, -1d);
+    public void centerMap(@NonNull PointModel pointModel, int animateToNewTargetDuration) {
+        centerMap(pointModel, animateToNewTargetDuration, -1d);
     }
+
 
     private double getZoomToUse(@NonNull MapboxMap mapboxMap, double zoomLevel) {
-        return mapboxMap == null ? zoomLevel : mapboxMap.getCameraPosition().zoom > zoomLevel ? -1d : zoomLevel;
+        double currentZoom = mapboxMap.getCameraState().getZoom();
+        return currentZoom > zoomLevel ? -1d : zoomLevel;
     }
 
     @Override
@@ -808,22 +852,22 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         view.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
-    public Set<io.ona.kujaku.domain.Point> getDroppedPoints() {
-        return droppedPoints;
+    public Set<PointModel> getDroppedPoints() {
+        return droppedPointModels;
     }
 
-    public void updateDroppedPoints(List<io.ona.kujaku.domain.Point> droppedPoints) {
-        if (droppedPoints == null) {
+    public void updateDroppedPoints(List<PointModel> droppedPointModels) {
+        if (droppedPointModels == null) {
             return;
         }
         // remove duplicates
-        for (io.ona.kujaku.domain.Point point : droppedPoints) {
-            if (!this.droppedPoints.contains(point)) {
+        for (PointModel pointModel : droppedPointModels) {
+            if (!this.droppedPointModels.contains(pointModel)) {
                 // drop new unique points
                 if (this.mapboxMap != null) {
-                    dropPointOnMap(new LatLng(point.getLat(), point.getLng()));
+                    dropPointOnMap(pointModel);
                 }
-                this.droppedPoints.add(point);
+                this.droppedPointModels.add(pointModel);
             }
         }
     }
@@ -872,7 +916,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation) {
-        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderMode.NORMAL);
+        focusOnUserLocation(focusOnMyLocation, DEFAULT_LOCATION_OUTER_CIRCLE_RADIUS, RenderModeType.FULL.ordinal());
     }
 
     @Override
@@ -882,7 +926,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
 
     @Override
     public void focusOnUserLocation(boolean focusOnMyLocation, Float radius) {
-        focusOnUserLocation(focusOnMyLocation, radius, RenderMode.NORMAL);
+        focusOnUserLocation(focusOnMyLocation, radius, RenderModeType.FULL.ordinal());
     }
 
     @Override
@@ -902,7 +946,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             changeImageButtonResource(currentLocationBtn, R.drawable.ic_cross_hair);
         }
 
-        locationRenderMode = renderMode;
+        /* TODO Refator this
+            locationRenderMode = renderMode;*/
     }
 
     @Override
@@ -931,7 +976,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
             mapboxMap.getStyle(new Style.OnStyleLoaded() {
                 @Override
                 public void onStyleLoaded(@NonNull Style style) {
-                    ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getId())).setGeoJson(KujakuMapView.this.featureCollection);
+                   /* TODO Refactor this
+                   ((GeoJsonSource) style.getSource(primaryGeoJsonSource.getSourceId())).setGeoJson(KujakuMapView.this.featureCollection);*/
                 }
             });
         }
@@ -958,7 +1004,8 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
         FeatureCollection newFeatureCollection = FeatureCollection.fromFeatures(newFeatures);
         addFeaturePoints(newFeatureCollection);
         if (mapboxMap != null) {
-            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getId())).setGeoJson(this.featureCollection);
+            /* TODO Refactor this
+            ((GeoJsonSource) mapboxMap.getStyle().getSource(primaryGeoJsonSource.getSourceId())).setGeoJson(this.featureCollection);*/
         }
     }
 
@@ -981,19 +1028,20 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     private void initializeSourceAndFeatureCollectionFromStyle(@NonNull Style style) {
         try {
             FeatureCollection featureCollection = FeatureCollection.fromJson(getGeoJsonSourceString());
-            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());
+            /* TODO Refactor this
+            primaryGeoJsonSource = style.getSourceAs(getPrimaryGeoJsonSourceId());*/
             addFeaturePoints(featureCollection);
         } catch (Exception e) {
             Timber.e(e);
         }
     }
 
-    public CameraPosition getCameraPosition() {
-        return cameraPosition;
+    public CameraState getCameraState() {
+        return cameraState;
     }
 
-    public void setCameraPosition(CameraPosition cameraPosition) {
-        this.cameraPosition = cameraPosition;
+    public void setCameraState(CameraState cameraState) {
+        this.cameraState = cameraState;
     }
 
     public GeoJsonSource getPrimaryGeoJsonSource() {
@@ -1122,7 +1170,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public boolean onMapClick(@NonNull LatLng point) {
+    public boolean onMapClick(@NonNull Point point) {
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onFeatureClickListener != null) {
@@ -1144,7 +1192,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     }
 
     @Override
-    public boolean onMapLongClick(@NonNull LatLng point) {
+    public boolean onMapLongClick(@NonNull Point point) {
         PointF pixel = mapboxMap.getProjection().toScreenLocation(point);
 
         if (onFeatureLongClickListener != null) {
@@ -1294,7 +1342,7 @@ public class KujakuMapView extends MapView implements IKujakuMapView, MapboxMap.
     @Override
     public boolean isKujakuLayerAdded(@NonNull KujakuLayer kujakuLayer) {
         String[] layerIds = kujakuLayer.getLayerIds();
-        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isFullyLoaded()) {
+        if (mapboxMap != null && mapboxMap.getStyle() != null && mapboxMap.getStyle().isStyleLoaded()) {
             for (String layerId : layerIds) {
                 if (mapboxMap.getStyle().getLayer(layerId) == null) {
                     return false;

@@ -3,12 +3,9 @@ package io.ona.kujaku.interfaces;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntegerRes;
 import androidx.annotation.Nullable;
-
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 import org.json.JSONObject;
-
+import io.ona.kujaku.domain.PointModel;
 import io.ona.kujaku.listeners.OnLocationChanged;
 
 /**
@@ -52,11 +49,11 @@ public interface IKujakuMapViewLowLevel {
      * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
      * feature at @param latLng
      *
-     * @param markerOptions This specifies how the marker should look like
+     * @param pointAnnotationOptions This specifies how the marker should look like
      *
      * @return
      */
-    @Nullable JSONObject dropPoint(@Nullable MarkerOptions markerOptions);
+    @Nullable JSONObject dropPoint(@Nullable PointAnnotationOptions pointAnnotationOptions);
 
     /**
      * This should be called after calling {@link #enableAddPoint(boolean)} with {@code true} thus
@@ -74,21 +71,21 @@ public interface IKujakuMapViewLowLevel {
      * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
      * feature at @param latLng
      *
-     * @param latLng
+     * @param pointModel
      *
      * @return
      */
-    @Nullable JSONObject dropPoint(@Nullable LatLng latLng);
+    @Nullable JSONObject dropPoint(@Nullable PointModel pointModel);
 
     /**
      * This should be called after calling {@link #enableAddPoint(boolean, OnLocationChanged)} with {@code true} thus
      * disabling the marker layout, disabling GPS location updates, adding a point at @param latLng & returns a geoJSON
      * feature at @param latLng
      *
-     * @param latLng
+     * @param pointModel
      * @param markerResourceId This is the resource that should be shown as the marker
      *
      * @return
      */
-    @Nullable JSONObject dropPoint(@Nullable LatLng latLng, @DrawableRes int markerResourceId);
+    @Nullable JSONObject dropPoint(@Nullable PointModel pointModel, @DrawableRes int markerResourceId);
 }

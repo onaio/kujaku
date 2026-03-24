@@ -1,7 +1,7 @@
 package io.ona.kujaku.listeners;
 
-import com.mapbox.mapboxsdk.offline.OfflineRegion;
-import com.mapbox.mapboxsdk.offline.OfflineRegionStatus;
+import com.mapbox.maps.OfflineRegion;
+import com.mapbox.maps.OfflineRegionStatus;
 
 /**
  * Used to post progress when a Map Download is requested

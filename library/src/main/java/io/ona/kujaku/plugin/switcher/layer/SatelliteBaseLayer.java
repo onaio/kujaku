@@ -2,11 +2,10 @@ package io.ona.kujaku.plugin.switcher.layer;
 
 import androidx.annotation.NonNull;
 
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.RasterLayer;
-import com.mapbox.mapboxsdk.style.sources.RasterSource;
-import com.mapbox.mapboxsdk.style.sources.Source;
+import com.mapbox.maps.extension.style.layers.Layer;
+import com.mapbox.maps.extension.style.layers.generated.RasterLayer;
+import com.mapbox.maps.extension.style.sources.Source;
+import com.mapbox.maps.extension.style.sources.generated.RasterSource;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -29,13 +28,18 @@ public class SatelliteBaseLayer extends BaseLayer {
     }
 
     private void createLayersAndSources() {
-        RasterSource rasterSource = new RasterSource(satelliteSourceId, "mapbox://mapbox.satellite", 256);
+        //RasterSource rasterSource = new RasterSource(satelliteSourceId, "mapbox://mapbox.satellite", 256);
+        // TODO Refactor this to add 256
+        RasterSource rasterSource = new RasterSource.Builder(satelliteSourceId)
+                .url("mapbox://mapbox.satellite")
+                .build();
 
         RasterLayer rasterLayer = new RasterLayer(satelliteLayerId, satelliteSourceId);
-        rasterLayer.setSourceLayer("mapbox_satellite_full");
-        rasterLayer.setProperties(PropertyFactory.rasterOpacity(1f)
+        rasterLayer.sourceLayer("mapbox_satellite_full");
+/*       TODO Refactor this
+         rasterLayer.setProperties(PropertyFactory.rasterOpacity(1f)
                 , PropertyFactory.rasterSaturation(-0.55f)
-                , PropertyFactory.rasterHueRotate(0f));
+                , PropertyFactory.rasterHueRotate(0f));*/
 
         layers.add(rasterLayer);
         sources.add(rasterSource);

@@ -10,7 +10,7 @@
         android:background="@android:color/transparent"
         android:contentDescription="@null"/>
 
-    <com.mapbox.mapboxsdk.maps.widgets.CompassView
+    <com.mapbox.maps.plugin.compass.CompassViewImpl
         android:id="@+id/compassView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
     <!-- END OF MAPBOX VIEW XML -->
 
     <!-- START OF CUSTOM VIEWS ADDED TO KujakuMapView -->
-    <!-- This is the drop point layout used to simulate the position on which the user wants to drop a point -->
+    <!-- This is the drop pointModel layout used to simulate the position on which the user wants to drop a pointModel -->
     <ImageView
         android:id="@+id/iv_mapview_locationSelectionMarker"
         android:layout_width="wrap_content"

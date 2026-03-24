@@ -41,9 +41,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:mapbox_uiLogoGravity="right|top"
-                app:mapbox_uiLogoMarginRight="30dp"
-                app:mapbox_uiAttributionGravity="right|end|top" />
+                />
+           <!-- TODO figure out what happens to these values when migrating to v10
+            app:mapbox_uiLogoGravity="right|top"
+            app:mapbox_uiLogoMarginRight="30dp"
+            app:mapbox_uiAttributionGravity="right|end|top"-->
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
