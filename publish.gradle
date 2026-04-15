@@ -29,30 +29,6 @@ afterEvaluate {
     }
 }
 
-/**
- * Retrieves property `ossrhPassword` stored in the gradle.properties file (in project or gradle user-root folder)
- * @return
- */
-def getOSSRHRepositoryPassword() {
-    return hasProperty('ossrhPassword') ? ossrhPassword : System.getenv("OSSRH_PASSWORD") != null ? System.getenv("OSSRH_PASSWORD") : ""
-}
-
-/**
- * Retrieves property `ossrhUsername` stored in the gradle.properties file (in project or gradle user-root folder)
- * @return
- */
-def getOSSRHRepositoryUsername() {
-    return hasProperty('ossrhUsername') ? ossrhUsername : System.getenv("OSSRH_USERNAME") != null ? System.getenv("OSSRH_USERNAME") : ""
-}
-
-def getGithubPublishUsername() {
-    return hasProperty('githubUsername') ? githubUsername : System.getenv("GITHUB_USERNAME") != null ? System.getenv("GITHUB_USERNAME") : ""
-}
-
-def getGithubPackagesAccessToken() {
-    return hasProperty('githubAccessToken') ? githubAccessToken : System.getenv("GITHUB_ACCESS_TOKEN") != null ? System.getenv("GITHUB_ACCESS_TOKEN") : ""
-}
-
 static def getDate() {
     return new Date().format('yyyy-MM-dd HH:mm:ss')
 }
@@ -72,7 +48,7 @@ afterEvaluate {
                 artifact(layout.buildDirectory.file("outputs/aar/$artifactId-release.aar"))
                 artifact(sourceJar)
                 artifact(javadocJar)
-                groupId 'io.ona.kujaku'
+                groupId 'org.smartregister'
                 version this.version
 
                 //The publication doesn't know about our dependencies, so we have to manually add them to the pom
@@ -133,43 +109,21 @@ afterEvaluate {
                  * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
                  */
                 url = uri("https://maven.pkg.github.com/onaio/kujaku")
-                credentials {
-                    /** Create github.properties in root project folder file with
-                     * gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
-                     * Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file
-                     */
-                    username = getGithubPublishUsername()
-                    password = getGithubPackagesAccessToken()
-                }
+                credentials(PasswordCredentials)
             }
 
             maven {
-                name = "MavenCentral"
-                /** Configure path of your package repository on Github
-                 *  Replace GITHUB_USERID with your or organisation Github userID and REPOSITORY with the repository name on GitHub
-                 * e.g. "https://maven.pkg.github.com/opensrp/opensrp-client-reporting"
-                 */
+                name = "Central"
+                url = uri(hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+                        : "https://central.sonatype.com/repository/maven-releases/")
+                credentials(PasswordCredentials)
+            }
 
-                def repositoryURL
-                def timestampMsg = " at " + getDate()
-                if (!version.contains("SNAPSHOT")) {
-                    println 'PROCESSING MAVEN RELEASE BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
-                    repositoryURL = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-                            : "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                } else {
-                    println 'PROCESSING MAVEN REMOTE SNAPSHOT BUILD VERSION ' + project.VERSION_NAME + timestampMsg + '...'
-                    repositoryURL = hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-                            : "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-
-                }
-                url = uri(repositoryURL)
-                credentials {
-                    /** Create gradle.properties in root project folder file with
-                     * ossrhUsername=GITHUB_USER_ID & ossrhPassword=PERSONAL_ACCESS_TOKEN
-                     */
-                    username = getOSSRHRepositoryUsername()
-                    password = getOSSRHRepositoryPassword()
-                }
+            maven {
+                name = "CentralSnapshots"
+                url = uri(hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+                        : "https://central.sonatype.com/repository/maven-snapshots/")
+                credentials(PasswordCredentials)
             }
         }
     }
